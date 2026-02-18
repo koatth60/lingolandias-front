@@ -1,47 +1,49 @@
 import { useState } from 'react';
+import { FiChevronDown } from 'react-icons/fi';
 
-const Dropdown = ({ children }) => {
+const Dropdown = ({ children, buttonText = "Actions", buttonClassName, buttonStyle }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="relative inline-block text-left z-10">
+    <div className="relative inline-block text-left">
       <div>
         <button
           type="button"
-          className="inline-flex justify-center w-full rounded-md border border-gray-300 dark:border-purple-500/20 shadow-sm px-4 py-2 bg-white dark:bg-brand-dark text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500"
-          id="options-menu"
-          aria-haspopup="true"
-          aria-expanded="true"
+          className={buttonClassName || "inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10 border border-gray-200 dark:border-[#9E2FD0]/20 transition-all group"}
+          style={buttonStyle || {}}
           onClick={() => setIsOpen(!isOpen)}
         >
-          Actions
-          <svg
-            className="-mr-1 ml-2 h-5 w-5"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              fillRule="evenodd"
-              d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-              clipRule="evenodd"
-            />
-          </svg>
+          <span>{buttonText}</span>
+          <FiChevronDown 
+            size={16} 
+            className={`transition-transform duration-200 ${
+              isOpen ? 'rotate-180 text-[#9E2FD0]' : ''
+            }`}
+          />
         </button>
       </div>
 
       {isOpen && (
-        <div className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-brand-dark-secondary ring-1 ring-black ring-opacity-5">
-          <div
-            className="py-1"
-            role="menu"
-            aria-orientation="vertical"
-            aria-labelledby="options-menu"
-          >
-            {children}
+        <>
+          <div 
+            className="fixed inset-0 z-40"
+            onClick={() => setIsOpen(false)}
+          />
+          <div className="absolute right-0 mt-2 w-56 rounded-xl shadow-lg overflow-hidden z-50">
+            {/* Fondo con gradiente */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-[#0d0a1e] dark:via-[#1a1a2e] dark:to-[#110e28]" />
+            
+            {/* Ambient glow para dark mode */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none hidden dark:block">
+              <div className="absolute w-24 h-24 rounded-full bg-[#9E2FD0]/10 blur-2xl -top-12 -right-12" />
+            </div>
+
+            {/* Contenido */}
+            <div className="relative z-10 py-1 border border-gray-200 dark:border-[#9E2FD0]/20 rounded-xl">
+              {children}
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );

@@ -1,20 +1,14 @@
-import { MdDelete, MdEdit } from "react-icons/md";
+import { MdDelete } from "react-icons/md";
 
 const MessageOptionsCard = ({ onDelete, onEdit }) => {
   return (
-    <div className="bg-white shadow-lg rounded-md p-2 flex flex-col space-y-2">
-      {/* <button
-        onClick={onEdit}
-        className="flex items-center space-x-2 text-blue-600 hover:text-blue-800"
-      >
-        <MdEdit className="text-lg" />
-        <span>Edit</span>
-      </button> */}
+    <div className="msg-options-card msg-fade-in">
       <button
         onClick={onDelete}
-        className="flex items-center space-x-2 text-red-600 hover:text-red-800"
+        className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all duration-150"
       >
-        <MdDelete className="text-lg" />
+        <MdDelete size={16} />
+        <span>Delete</span>
       </button>
     </div>
   );

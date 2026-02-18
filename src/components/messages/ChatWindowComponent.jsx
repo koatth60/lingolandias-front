@@ -1,10 +1,12 @@
+// ChatWindowComponent.jsx
 import { useEffect, useRef, useState } from "react";
 import send from "../../assets/logos/send.png";
 import { BsEmojiSmile, BsThreeDots } from "react-icons/bs";
+import { FiVideo, FiChevronLeft } from "react-icons/fi";
+import { FaComments } from "react-icons/fa";
 import PerfectScrollbar from "react-perfect-scrollbar";
 import "react-perfect-scrollbar/dist/css/styles.css";
 import EmojiPicker from "emoji-picker-react";
-import avatar from "../../assets/logos/avatar.jpg";
 import MessageOptionsCard from "./MessageOptionsCard";
 import useDeleteMessage from "../../hooks/useDeleteMessage.js";
 import useChatWindow from "../../hooks/useChatWindow.js";
@@ -30,44 +32,27 @@ const ChatWindowComponent = ({
   const user = useSelector((state) => state.user.userInfo.user);
 
   const { chatMessages, setChatMessages, sendMessage } = useGlobalChat(
-    socket,
-    room,
-    username,
-    email,
-    userUrl
+    socket, room, username, email, userUrl
   );
 
   const [message, setMessage] = useState("");
-  const {
-    showEmojiPicker,
-    setShowEmojiPicker,
-    handleInput,
-    handleEmojiClick,
-  } = useChatInputHandler(message, setMessage);
+  const { showEmojiPicker, setShowEmojiPicker, handleInput, handleEmojiClick } =
+    useChatInputHandler(message, setMessage);
 
   const handleSendMessage = () => {
-    if (message.trim() === "") return;
+    if (!message.trim()) return;
     sendMessage(message);
     setMessage("");
-    const textarea = document.querySelector("textarea");
-    if (textarea) {
-      textarea.style.height = "auto";
-    }
+    const ta = document.querySelector("textarea");
+    if (ta) ta.style.height = "auto";
   };
 
-  const handleKeyDown = (event) => {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      handleSendMessage();
-    }
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSendMessage(); }
   };
 
-  const {
-    handleDeleteMessage,
-    handleEditMessage,
-    toggleOptionsMenu,
-    openMessageId,
-  } = useDeleteMessage(setChatMessages, socket, room);
+  const { handleDeleteMessage, handleEditMessage, toggleOptionsMenu, openMessageId } =
+    useDeleteMessage(setChatMessages, socket, room);
 
   const { readMessages } = useChatWindow();
 
@@ -79,211 +64,341 @@ const ChatWindowComponent = ({
   }, [room, user?.id, dispatch, userId, readMessages]);
 
   useEffect(() => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop =
-        scrollContainerRef.current.scrollHeight;
-    }
+    if (scrollContainerRef.current)
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
   }, [chatMessages]);
 
-  const formatTimestamp = (timestamp) => {
-    const date = new Date(timestamp);
+  const formatTimestamp = (ts) => {
+    const d = new Date(ts);
     const today = new Date();
-    const yesterday = new Date();
-    yesterday.setDate(today.getDate() - 1);
-
-    if (date.toDateString() === today.toDateString()) {
-      return `${date.toLocaleTimeString()}`;
-    } else if (date.toDateString() === yesterday.toDateString()) {
-      return `Yesterday at ${date.toLocaleTimeString()}`;
-    } else {
-      return `${date.toLocaleDateString("en-US", {
-        month: "long",
-        day: "numeric",
-      })} at ${date.toLocaleTimeString()}`;
-    }
+    const yest = new Date(); yest.setDate(today.getDate() - 1);
+    const t = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    if (d.toDateString() === today.toDateString()) return t;
+    if (d.toDateString() === yest.toDateString()) return `Yesterday ${t}`;
+    return `${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })} ${t}`;
   };
 
   const getInitials = (name) => {
-    const names = name.split(" ");
-    const firstInitial = names[0] ? names[0].charAt(0).toUpperCase() : "";
-    const lastInitial = names.length > 1 ? names[names.length - 1].charAt(0).toUpperCase() : "";
-    return `${firstInitial}${lastInitial}`;
+    if (!name || name === "undefined" || name === "null") return "?";
+    const p = name.trim().split(" ");
+    return ((p[0]?.[0] ?? "") + (p.length > 1 ? p[p.length - 1][0] : "")).toUpperCase();
   };
 
   const generateColor = (name) => {
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-      hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const color = `hsl(${hash % 360}, 75%, 60%)`;
-    return color;
+    let h = 0;
+    for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
+    return `hsl(${Math.abs(h) % 360}, 60%, 52%)`;
   };
 
   const handleJoinGeneralClass = () => {
     const userName = user.name;
-    const email = user.email;
-    let roomId = "";  
-    if (user?.language === "english") {
-      roomId = 'generalEnglishRoom'
-    } else if (user?.language === "spanish") {
-      roomId = 'generalSpanishRoom';
-    } else if (user?.language === "polish") {
-      roomId = 'generalPolishRoom';
-    }
-    navigate("/classroom", {
-      state: { roomId, userName, email, fromMessage: true, },
-    });
-  }
+    const emailVal = user.email;
+    let roomId = "";
+    if (user?.language === "english") roomId = "generalEnglishRoom";
+    else if (user?.language === "spanish") roomId = "generalSpanishRoom";
+    else if (user?.language === "polish") roomId = "generalPolishRoom";
+    navigate("/classroom", { state: { roomId, userName, email: emailVal, fromMessage: true } });
+  };
+
+  const isGeneralChat = studentName.includes("General Chat ");
+
   return (
-    <div className="w-full h-full flex flex-col bg-gray-50 dark:bg-brand-dark relative">
-      <div className="p-4 bg-white dark:bg-brand-dark-secondary shadow-md z-10 flex items-center justify-between border-b border-gray-200 dark:border-purple-500/20">
-        <button onClick={onBackClick} className="lg:hidden p-2 text-gray-500 dark:text-gray-400 hover:text-purple-600 dark:hover:text-brand-orange">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <h2 className="text-xl font-bold text-gray-800 dark:text-white text-center flex-grow">
-          {studentName.includes("General Chat ") ? (
-            <>
-              {studentName}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6 inline-block ml-2 cursor-pointer text-purple-600 dark:text-brand-purple hover:text-purple-800 dark:hover:text-brand-orange transition-colors"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                onClick={handleJoinGeneralClass}
-              >
-                <path d="M23 7l-7 4 7 4V7z" />
-                <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
-              </svg>
-            </>
-          ) : (
-            studentName
-          )}
-          <span className="block text-sm font-normal text-green-500 mt-1">
-            Active now
-          </span>
-        </h2>
-        <div className="lg:hidden w-8"></div>
+    <div className="w-full h-full flex flex-col relative overflow-hidden
+                    bg-gray-50 dark:bg-[#0d0a1e] transition-colors duration-300">
+      
+      {/* Orbs de fondo - solo visibles en dark mode */}
+      <div className="absolute inset-0 pointer-events-none hidden dark:block" aria-hidden="true">
+        <div
+          className="absolute rounded-full blur-3xl opacity-20"
+          style={{
+            background: 'radial-gradient(circle, rgba(158,47,208,0.5), transparent 70%)',
+            width: '400px',
+            height: '400px',
+            top: '-10%',
+            right: '-5%',
+          }}
+        />
+        <div
+          className="absolute rounded-full blur-3xl opacity-15"
+          style={{
+            background: 'radial-gradient(circle, rgba(38,217,161,0.4), transparent 70%)',
+            width: '350px',
+            height: '350px',
+            bottom: '-5%',
+            left: '-5%',
+          }}
+        />
+        <div
+          className="absolute rounded-full blur-3xl opacity-10"
+          style={{
+            background: 'radial-gradient(circle, rgba(246,184,46,0.3), transparent 70%)',
+            width: '300px',
+            height: '300px',
+            top: '20%',
+            left: '20%',
+          }}
+        />
       </div>
 
+      {/* Header */}
+      <div className="relative flex items-center gap-3 px-4 py-3 flex-shrink-0
+                      bg-white dark:bg-black/40 backdrop-blur-xl
+                      border-b border-gray-200 dark:border-white/10
+                      z-10 transition-colors duration-300">
+        
+        <button
+          onClick={onBackClick}
+          className="lg:hidden p-1.5 rounded-lg 
+                     text-gray-600 dark:text-gray-300
+                     hover:bg-gray-100 dark:hover:bg-white/10 
+                     transition-colors flex-shrink-0"
+        >
+          <FiChevronLeft size={20} />
+        </button>
+
+        <div className="w-9 h-9 rounded-2xl flex items-center justify-center flex-shrink-0
+                        bg-purple-100 dark:bg-purple-500/20 
+                        border border-purple-200 dark:border-purple-500/30">
+          <FaComments className="text-purple-600 dark:text-purple-400" size={15} />
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-semibold 
+                          text-gray-900 dark:text-white 
+                          truncate">
+              {studentName}
+            </h2>
+            {isGeneralChat && (
+              <button
+                onClick={handleJoinGeneralClass}
+                title="Join video class"
+                className="text-gray-500 dark:text-gray-400 
+                         hover:text-purple-600 dark:hover:text-purple-400 
+                         transition-colors flex-shrink-0"
+              >
+                <FiVideo size={15} />
+              </button>
+            )}
+          </div>
+          <span className="text-[11px] font-medium 
+                         text-emerald-600 dark:text-emerald-400">
+            ● Active now
+          </span>
+        </div>
+
+        <div className="lg:hidden w-8 flex-shrink-0" />
+      </div>
+
+      {/* Línea de acento con gradiente */}
+      <div className="relative h-[2px] flex-shrink-0 z-10
+                      opacity-70 dark:opacity-100"
+           style={{ background: 'linear-gradient(90deg, #9E2FD0, #F6B82E, #26D9A1)' }} />
+
+      {/* Área de mensajes */}
       <PerfectScrollbar
         containerRef={(ref) => (scrollContainerRef.current = ref)}
-        className="flex-1 p-6"
+        className="flex-1 relative z-10
+                   bg-transparent dark:bg-transparent
+                   transition-colors duration-300"
+        options={{ suppressScrollX: true }}
       >
-        <ul className="space-y-4">
-          {chatMessages.map((msg, index) => {
-            const showTimestamp =
-              index === 0 ||
-              new Date(msg.timestamp) -
-                new Date(chatMessages[index - 1].timestamp) >
-                3 * 60 * 1000;
+        <div className="p-4 sm:p-6">
 
-            const showUsername =
-              msg.email !== email &&
-              (index === 0 || msg.email !== chatMessages[index - 1].email);
+          {chatMessages.length === 0 && (
+            <div className="flex flex-col items-center justify-center h-48 gap-3">
+              <div className="w-14 h-14 rounded-full 
+                             bg-purple-100 dark:bg-purple-500/20 
+                             border border-purple-200 dark:border-purple-500/30 
+                             flex items-center justify-center">
+                <FaComments className="text-purple-400 dark:text-purple-400" size={24} />
+              </div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                No messages yet — say hi!
+              </p>
+            </div>
+          )}
 
-            const isSender = msg.email === email;
-            const isFirstFromUser =
-              index === 0 || msg.email !== chatMessages[index - 1].email;
+          <ul className="space-y-1">
+            {chatMessages.map((msg, index) => {
+              const prev = chatMessages[index - 1];
+              const showTimestamp = index === 0 || new Date(msg.timestamp) - new Date(prev.timestamp) > 3 * 60 * 1000;
+              const isSender       = msg.email === email;
+              const isFirstFromUser = index === 0 || msg.email !== prev.email;
+              const showUsername    = !isSender && isFirstFromUser;
 
-            const initials = getInitials(msg.username);
-            const avatarColor = generateColor(msg.username);
+              const initials    = getInitials(msg.username);
+              const avatarColor = generateColor(msg.username);
 
-            return (
-              <div key={index}>
-                {showTimestamp && (
-                  <div className="text-center text-gray-500 dark:text-gray-400 text-xs my-4">
-                    {formatTimestamp(msg.timestamp)}
-                  </div>
-                )}
-                <li className={`flex items-end gap-3 ${isSender ? "justify-end" : "justify-start"}`}>
-                  {!isSender && isFirstFromUser && (
-                    <>
-                      {msg.userUrl ? (
-                        <img
-                          src={msg.userUrl}
-                          alt="Avatar"
-                          className="w-10 h-10 rounded-full shadow-md"
-                        />
-                      ) : (
-                        <div
-                          className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-md shadow-md"
-                          style={{ backgroundColor: avatarColor }}
-                        >
-                          {initials}
-                        </div>
-                      )}
-                    </>
+              return (
+                <div key={index}>
+                  {showTimestamp && (
+                    <div className="flex items-center gap-3 my-5">
+                      <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
+                      <span className="text-[10px] font-medium 
+                                     text-gray-600 dark:text-gray-300
+                                     px-3 py-1 rounded-full
+                                     bg-white dark:bg-black/40 
+                                     backdrop-blur-sm
+                                     border border-gray-200 dark:border-white/10">
+                        {formatTimestamp(msg.timestamp)}
+                      </span>
+                      <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
+                    </div>
                   )}
-                  <div
-                    className={`relative max-w-md p-4 rounded-2xl shadow-lg ${
-                      isSender
-                        ? "bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-br-none"
-                        : "bg-white dark:bg-brand-dark-secondary text-gray-800 dark:text-gray-300 rounded-bl-none"
-                    } ${!isFirstFromUser && !isSender ? "ml-14" : ""}`}
-                  >
-                    {showUsername && (
-                      <p className="text-sm font-bold mb-1 text-brand-teal">{msg.username}</p>
-                    )}
-                    <p className="text-sm" style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}>
-                      {msg.message}
-                    </p>
-                    {isSender && (
-                      <div className="absolute top-1/2 -left-10 transform -translate-y-1/2">
-                        <button
-                          onClick={() => toggleOptionsMenu(msg.id)}
-                          className="p-2 hover:bg-gray-200 dark:hover:bg-white/10 rounded-full"
-                        >
-                          <BsThreeDots className="text-gray-500 dark:text-gray-400" />
-                        </button>
-                        {openMessageId === msg.id && (
-                          <div className="absolute top-0 left-8 z-10">
-                            <MessageOptionsCard
-                              onEdit={() => handleEditMessage(msg)}
-                              onDelete={() => handleDeleteMessage(msg.id)}
-                            />
-                          </div>
-                        )}
+
+                  <li className={`group flex items-end gap-2 mb-1.5 ${isSender ? "justify-end" : "justify-start"}`}>
+
+                    {!isSender && (
+                      <div className="flex-shrink-0 w-8 self-end">
+                        {isFirstFromUser ? (
+                          msg.userUrl ? (
+                            <img src={msg.userUrl} alt="avatar"
+                              className="w-8 h-8 rounded-full object-cover shadow 
+                                       ring-2 ring-purple-200 dark:ring-purple-500/30" />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full 
+                                          flex items-center justify-center 
+                                          text-white text-xs font-bold shadow 
+                                          ring-2 ring-purple-200 dark:ring-purple-500/30"
+                              style={{ background: avatarColor }}>
+                              {initials}
+                            </div>
+                          )
+                        ) : <div className="w-8 h-8" />}
                       </div>
                     )}
-                  </div>
-                </li>
-              </div>
-            );
-          })}
-        </ul>
+
+                    {isSender ? (
+                      <div className="flex items-end gap-1.5 max-w-[75%] sm:max-w-[60%]">
+                        <div className="relative self-end mb-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                          <button
+                            onClick={() => toggleOptionsMenu(msg.id)}
+                            className="p-1.5 rounded-full 
+                                     text-gray-500 dark:text-gray-400 
+                                     hover:text-purple-600 dark:hover:text-purple-400
+                                     hover:bg-purple-50 dark:hover:bg-white/10 
+                                     transition-colors duration-150"
+                          >
+                            <BsThreeDots size={14} />
+                          </button>
+                          {openMessageId === msg.id && (
+                            <div className="absolute bottom-full right-0 mb-1 z-20">
+                              <MessageOptionsCard
+                                onEdit={() => handleEditMessage(msg)}
+                                onDelete={() => handleDeleteMessage(msg.id)}
+                              />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Burbuja del remitente */}
+                        <div
+                          className="px-4 py-2.5 rounded-2xl rounded-br-sm 
+                                   text-white text-sm leading-relaxed
+                                   shadow-lg"
+                          style={{
+                            background: "linear-gradient(135deg, #9E2FD0 0%, #7b22a8 100%)",
+                          }}
+                        >
+                          <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                            {msg.message}
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      /* Burbuja del receptor */
+                      <div className="max-w-[75%] sm:max-w-[60%]">
+                        {showUsername && msg.username && msg.username !== "undefined" && (
+                          <p className="text-[11px] font-semibold 
+                                      text-purple-600 dark:text-purple-400 
+                                      mb-1 ml-1">
+                            {msg.username}
+                          </p>
+                        )}
+                        <div className="px-4 py-2.5 rounded-2xl rounded-bl-sm 
+                                      text-sm leading-relaxed
+                                      bg-white dark:bg-white/5 
+                                      text-gray-800 dark:text-gray-100
+                                      border border-gray-200 dark:border-white/10
+                                      shadow-sm dark:shadow-none">
+                          <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                            {msg.message}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </li>
+                </div>
+              );
+            })}
+          </ul>
+        </div>
       </PerfectScrollbar>
 
-      <div className="p-4 bg-white dark:bg-brand-dark-secondary border-t border-gray-200 dark:border-purple-500/20">
-        <div className="relative flex items-center">
+      {/* Input bar */}
+      <div className="relative flex-shrink-0 px-3 sm:px-5 py-3 z-10
+                      bg-white dark:bg-black/40 backdrop-blur-xl
+                      border-t border-gray-200 dark:border-white/10
+                      transition-colors duration-300">
+        <div className="flex items-end gap-2
+                        bg-gray-50 dark:bg-black/40 
+                        rounded-2xl px-3 py-2
+                        border border-gray-200 dark:border-white/10
+                        focus-within:border-purple-400 dark:focus-within:border-purple-500/50 
+                        transition-colors duration-200">
+          
           <button
-            onClick={() => setShowEmojiPicker((prev) => !prev)}
-            className="p-2 text-gray-500 dark:text-gray-400 hover:text-purple-600 dark:hover:text-brand-orange"
+            onClick={() => setShowEmojiPicker((p) => !p)}
+            className="flex-shrink-0 p-1.5 rounded-lg self-end mb-0.5
+                       text-gray-500 dark:text-gray-400 
+                       hover:text-amber-600 dark:hover:text-amber-400 
+                       transition-colors duration-150"
           >
-            <BsEmojiSmile size={24} />
+            <BsEmojiSmile size={19} />
           </button>
+
           <textarea
-            placeholder="Type a message..."
+            placeholder="Type a message…"
             value={message}
             onChange={handleInput}
             onClick={() => dispatch(fetchUnreadMessages(user.id))}
             onKeyDown={handleKeyDown}
-            className="w-full p-3 pl-12 border-none rounded-full focus:outline-none bg-gray-100 dark:bg-brand-dark text-gray-800 dark:text-gray-300 resize-none text-sm"
             rows={1}
+            className="flex-1 bg-transparent resize-none outline-none
+                       text-sm text-gray-900 dark:text-white
+                       placeholder-gray-400 dark:placeholder-gray-500
+                       max-h-32 leading-relaxed py-1.5"
           />
+
           <button
             onClick={handleSendMessage}
-            className="ml-3 p-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-full shadow-lg hover:opacity-90 transition-opacity flex-shrink-0"
+            disabled={!message.trim()}
+            className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center
+                       self-end transition-all duration-150
+                       disabled:opacity-30 disabled:cursor-not-allowed
+                       hover:scale-105 active:scale-95
+                       text-white"
+            style={{
+              background: message.trim()
+                ? "linear-gradient(135deg, #9E2FD0, #7b22a8)"
+                : "#9E2FD0",
+              opacity: message.trim() ? 1 : 0.3,
+            }}
           >
-            <img src={send} alt="send" className="w-6 h-6" />
+            <img src={send} alt="send" className="w-4 h-4 brightness-200" />
           </button>
         </div>
+
         {showEmojiPicker && (
-          <div className="absolute bottom-20 right-4 z-10">
-            <EmojiPicker onEmojiClick={handleEmojiClick} />
+          <div className="absolute bottom-full right-4 mb-2 z-20">
+            <div className="bg-white dark:bg-[#1a1a2e] 
+                          rounded-2xl 
+                          border border-gray-200 dark:border-white/10 
+                          overflow-hidden
+                          shadow-xl">
+              <EmojiPicker onEmojiClick={handleEmojiClick} />
+            </div>
           </div>
         )}
       </div>

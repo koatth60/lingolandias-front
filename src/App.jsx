@@ -8,7 +8,7 @@ import Shchedule from './components/schedule/schedule';
 import RequireAuth from './components/requireAuth';
 import JitsiClassRoom from './components/JitsiClassRoom';
 import Messages from './sections/messages';
-import Trello from './sections/trello';
+// import Trello from './sections/trello'; // Hidden — work in progress
 import ForgotPassword from './components/login/forgotPassword';
 import ResetPassword from './components/login/resetPassword';
 import GlobalNotificationHandler from './components/GlobalNotificationHandler';
@@ -16,6 +16,8 @@ import FilePreviewModal from './components/FilePreviewModal';
 import HelpCenter from './components/help-center/HelpCenter';
 import Settings from './components/settings/Settings';
 import { useSelector } from 'react-redux';
+import { ToastContainer, Slide } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   const { userInfo } = useSelector((state) => state.user);
@@ -26,6 +28,14 @@ function App() {
       <Router>
         <GlobalNotificationHandler />
         <FilePreviewModal />
+        <ToastContainer
+          position="bottom-left"
+          autoClose={2500}
+          limit={3}
+          transition={Slide}
+          newestOnTop
+          theme="light"
+        />
         <Routes>
           <Route path="/" element={<Navigate to="/home" />} />
           <Route path="/login" element={<Login />} />
@@ -85,6 +95,7 @@ function App() {
               </RequireAuth>
             }
           />
+          {/* Trello route hidden — work in progress
            <Route
             path="/trello"
             element={
@@ -92,7 +103,7 @@ function App() {
                  <Trello  />
               </RequireAuth>
             }
-          />
+          /> */}
           <Route
             path="/help-center"
             element={

@@ -1,61 +1,63 @@
-import { FiCalendar, FiUsers, FiBook, FiUserCheck } from "react-icons/fi";
+import { FiUsers, FiBook, FiUserCheck } from "react-icons/fi";
 
-const AdminStats = ({ 
-  teachersCount = 0, 
-  studentsCount = 0, 
+const STAT_COLORS = [
+  { gradient: "linear-gradient(135deg, #9E2FD0, #7b22a8)", shadow: "rgba(158,47,208,0.35)" },
+  { gradient: "linear-gradient(135deg, #26D9A1, #1fa07a)", shadow: "rgba(38,217,161,0.35)" },
+  { gradient: "linear-gradient(135deg, #F6B82E, #d4981a)", shadow: "rgba(246,184,46,0.35)" },
+  { gradient: "linear-gradient(135deg, #c084fc, #9E2FD0)", shadow: "rgba(192,132,252,0.35)" },
+];
+
+const AdminStats = ({
+  teachersCount = 0,
+  studentsCount = 0,
   unassignedStudentsCount = 0,
-  totalUsers = 0 
+  totalUsers = 0,
 }) => {
-  // Calculate percentages
   const teacherPercentage = totalUsers > 0 ? Math.round((teachersCount / totalUsers) * 100) : 0;
   const studentPercentage = totalUsers > 0 ? Math.round((studentsCount / totalUsers) * 100) : 0;
-  
-  const adminStats = [
-    { 
-      label: "Total Users", 
-      value: totalUsers.toString(), 
-      icon: <FiUsers />, 
-      change: `${totalUsers} total`,
-      description: "All platform users"
+
+  const stats = [
+    { label: "Total Users",       value: totalUsers,               icon: <FiUsers size={16} />,    sub: `${totalUsers} registered` },
+    { label: "Teachers",          value: teachersCount,            icon: <FiUserCheck size={16} />, sub: `${teacherPercentage}% of total` },
+    { label: "Students",          value: studentsCount,            icon: <FiUsers size={16} />,    sub: `${studentPercentage}% of total` },
+    {
+      label: "Unassigned",
+      value: unassignedStudentsCount,
+      icon: <FiBook size={16} />,
+      sub: studentsCount > 0
+        ? `${Math.round((unassignedStudentsCount / studentsCount) * 100)}% of students`
+        : "0% of students",
     },
-    { 
-      label: "Teachers", 
-      value: teachersCount.toString(), 
-      icon: <FiUserCheck />, 
-      change: `${teacherPercentage}% of total`,
-      description: "Active teachers"
-    },
-    { 
-      label: "Students", 
-      value: studentsCount.toString(), 
-      icon: <FiUsers />, 
-      change: `${studentPercentage}% of total`,
-      description: "All students"
-    },
-    { 
-      label: "Unassigned Students", 
-      value: unassignedStudentsCount.toString(), 
-      icon: <FiBook />, 
-      change: studentsCount > 0 ? `${Math.round((unassignedStudentsCount / studentsCount) * 100)}% of students` : "0%",
-      description: "Students without teacher"
-    }
   ];
 
   return (
-    <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-      {adminStats.map((stat, index) => (
-        <div key={index} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow duration-300">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
-              {stat.icon}
+    <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-10">
+      {stats.map((stat, i) => (
+        <div
+          key={i}
+          className="relative rounded-2xl overflow-hidden transition-transform duration-200 hover:-translate-y-1 shadow-sm dark:shadow-none"
+          style={{ border: "1px solid rgba(158,47,208,0.15)" }}
+        >
+          <div className="dark:hidden absolute inset-0 bg-white" />
+          <div
+            className="hidden dark:block absolute inset-0"
+            style={{ background: "linear-gradient(135deg, rgba(13,10,30,0.94), rgba(26,26,46,0.92))" }}
+          />
+          <div className="absolute top-0 left-0 w-full h-[1.5px] bg-gradient-to-r from-[#9E2FD0] via-[#F6B82E] to-[#26D9A1] opacity-50" />
+
+          <div className="relative z-10 p-3 sm:p-5">
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <div
+                className="p-1.5 sm:p-2 rounded-xl text-white"
+                style={{ background: STAT_COLORS[i].gradient, boxShadow: `0 4px 12px ${STAT_COLORS[i].shadow}` }}
+              >
+                {stat.icon}
+              </div>
+              <span className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 font-medium hidden xs:block sm:block truncate ml-2 max-w-[70px] sm:max-w-none">{stat.sub}</span>
             </div>
-            <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">
-              {stat.change}
-            </span>
+            <p className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">{stat.value}</p>
+            <p className="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400 mt-0.5">{stat.label}</p>
           </div>
-          <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{stat.value}</h3>
-          <p className="text-gray-600 dark:text-gray-400 font-medium mb-1">{stat.label}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-500">{stat.description}</p>
         </div>
       ))}
     </section>

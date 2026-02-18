@@ -114,11 +114,7 @@ const Messages = () => {
     <div className="flex w-full relative h-screen">
       <Dashboard />
       <div className="w-full flex flex-col">
-        <section className="w-full bg-brand-navbar-light dark:bg-brand-dark-secondary shadow-md border-b border-transparent dark:border-purple-500/20">
-          <div className="container">
-            <Navbar header="MESSAGES PAGE" />
-          </div>
-        </section>
+        <Navbar header="Messages Page" />
 
         <section className="flex-grow min-h-0">
           <div className={`w-full h-full ${showChatList ? 'hidden lg:flex' : 'flex'}`}>

@@ -35,6 +35,7 @@ export const organizeClassesByLanguage = (todaysSchedules, usersData) => {
       id: schedule.id,
       teacherName: schedule.teacherName || `${teacher.name} ${teacher.lastName}`,
       teacherAvatar: teacher.avatarUrl || `https://ui-avatars.com/api/?name=${teacher.name}+${teacher.lastName}`,
+      teacherEmail: teacher.email,
       studentName: schedule.studentName || `${student.name} ${student.lastName}`,
       studentAvatar: student.avatarUrl || `https://ui-avatars.com/api/?name=${student.name}+${student.lastName}`,
       time: formatTimeRange(schedule.startTime, schedule.endTime),

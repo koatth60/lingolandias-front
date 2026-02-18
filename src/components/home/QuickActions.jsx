@@ -1,22 +1,68 @@
+import { useNavigate } from "react-router-dom";
+import { FiBarChart2, FiUsers, FiSettings } from "react-icons/fi";
+
+const ACTIONS = [
+  {
+    icon: FiBarChart2,
+    title: "View Analytics",
+    description: "Access detailed platform analytics and reports",
+    gradient: "linear-gradient(135deg, #9E2FD0, #7b22a8)",
+    shadow: "rgba(158,47,208,0.35)",
+    to: null,
+  },
+  {
+    icon: FiUsers,
+    title: "Manage Users",
+    description: "Add, edit or remove users and teachers",
+    gradient: "linear-gradient(135deg, #26D9A1, #1fa07a)",
+    shadow: "rgba(38,217,161,0.35)",
+    to: "/admin",
+  },
+  {
+    icon: FiSettings,
+    title: "Platform Settings",
+    description: "Configure platform settings and preferences",
+    gradient: "linear-gradient(135deg, #F6B82E, #d4981a)",
+    shadow: "rgba(246,184,46,0.35)",
+    to: "/settings",
+  },
+];
+
 const QuickActions = () => {
-  const actions = [
-    { icon: "📊", title: "View Analytics", description: "Access detailed platform analytics and reports" },
-    { icon: "👥", title: "Manage Users", description: "Add, edit or remove users and teachers" },
-    { icon: "⚙️", title: "Platform Settings", description: "Configure platform settings and preferences" }
-  ];
+  const navigate = useNavigate();
 
   return (
-    <section className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-8 shadow-lg border border-purple-100 dark:border-gray-700">
-      <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Quick Actions</h3>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {actions.map((action, index) => (
-          <button 
-            key={index}
-            className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow hover:shadow-lg transition-shadow duration-300 text-left group"
+    <section>
+      <h3 className="text-base font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+        <span
+          className="inline-block w-1 h-4 rounded-full flex-shrink-0"
+          style={{ background: "linear-gradient(to bottom, #9E2FD0, #F6B82E)" }}
+        />
+        Quick Actions
+      </h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+        {ACTIONS.map(({ icon: Icon, title, description, gradient, shadow, to }) => (
+          <button
+            key={title}
+            onClick={() => to && navigate(to)}
+            className="group relative rounded-2xl p-5 flex items-start gap-4 text-left transition-transform duration-200 hover:-translate-y-1 shadow-sm dark:shadow-none"
+            style={{ border: "1px solid rgba(158,47,208,0.15)", cursor: to ? "pointer" : "default" }}
           >
-            <div className="text-3xl text-purple-600 dark:text-brand-purple mb-3">{action.icon}</div>
-            <h4 className="font-bold text-gray-900 dark:text-white mb-2">{action.title}</h4>
-            <p className="text-gray-600 dark:text-gray-400 text-sm">{action.description}</p>
+            <div className="dark:hidden absolute inset-0 rounded-2xl bg-white" />
+            <div
+              className="hidden dark:block absolute inset-0 rounded-2xl"
+              style={{ background: "linear-gradient(135deg, rgba(13,10,30,0.90), rgba(26,26,46,0.88))" }}
+            />
+            <div
+              className="relative z-10 p-2.5 rounded-xl flex-shrink-0"
+              style={{ background: gradient, boxShadow: `0 4px 14px ${shadow}` }}
+            >
+              <Icon size={18} className="text-white" />
+            </div>
+            <div className="relative z-10">
+              <p className="font-bold text-gray-800 dark:text-white text-sm">{title}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">{description}</p>
+            </div>
           </button>
         ))}
       </div>

@@ -68,7 +68,8 @@ const JitsiClassRoom = () => {
   };
 
   const handleCallEnd = () => {
-    navigate("/schedule");
+    // Admin observers go back to the dashboard, not the schedule
+    navigate(user.role === "admin" ? "/home" : "/schedule");
     window.location.reload();
   };
 
@@ -130,17 +131,19 @@ const JitsiClassRoom = () => {
           }}
         />
 
-        <button
-          onClick={toggleChat}
-          className="absolute lg:bottom-[23px] 2xl:bottom-[17px] bottom-[8rem] py-[17px] 2xl:right-[30%] lg:right-[20%] right-[5%] bg-[#191318] text-white rounded-lg p-2 cursor-pointer"
-        >
-          <FiMessageSquare size={24} />
-          {(user.role === "teacher" ? unreadCount : studentUnreadCount) > 0 && (
-            <span className="absolute -top-1 -right-1 bg-[#9E2FD0] text-white text-lg font-semibold rounded-full px-2">
-              {user.role === "teacher" ? unreadCount : studentUnreadCount}
-            </span>
-          )}
-        </button>
+        {user.role !== "admin" && (
+          <button
+            onClick={toggleChat}
+            className="absolute lg:bottom-[23px] 2xl:bottom-[17px] bottom-[8rem] py-[17px] 2xl:right-[30%] lg:right-[20%] right-[5%] bg-[#191318] text-white rounded-lg p-2 cursor-pointer"
+          >
+            <FiMessageSquare size={24} />
+            {(user.role === "teacher" ? unreadCount : studentUnreadCount) > 0 && (
+              <span className="absolute -top-1 -right-1 bg-[#9E2FD0] text-white text-lg font-semibold rounded-full px-2">
+                {user.role === "teacher" ? unreadCount : studentUnreadCount}
+              </span>
+            )}
+          </button>
+        )}
       </div>
       {/* Chat Window */}
       <div

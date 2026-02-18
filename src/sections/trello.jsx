@@ -17,11 +17,7 @@ const Trello = () => {
         {/* Contenido principal - SIN overflow aquí */}
         <div className="flex-1 flex flex-col min-h-screen">
           {/* Navbar */}
-          <section className="w-full bg-brand-navbar-light dark:bg-brand-dark-secondary shadow-md border-b border-transparent dark:border-purple-500/20">
-            <div className="container">
-              <Navbar header={header} />
-            </div>
-          </section>
+          <Navbar header={header} />
           
           {/* Banner */}
           {showBanner && (

@@ -1,159 +1,299 @@
-import React, { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { FiMoon, FiBell, FiUser, FiEye, FiDroplet, FiType, FiShield, FiLogOut, FiGlobe, FiInfo } from 'react-icons/fi';
-import Dashboard from '../../sections/dashboard';
-import Navbar from '../navbar';
-import { updateUserSettings } from '../../redux/userSlice';
+import { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  FiMoon, FiBell, FiUser, FiEye, FiDroplet, FiType,
+  FiShield, FiLogOut, FiGlobe, FiInfo, FiX, FiSun, FiCheck,
+} from "react-icons/fi";
+import Dashboard from "../../sections/dashboard";
+import Navbar from "../navbar";
+import { updateUserSettings } from "../../redux/userSlice";
+
+const glassCard = {
+  border: "1px solid rgba(158,47,208,0.15)",
+  boxShadow: "0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(158,47,208,0.06)",
+};
+
+const TABS = [
+  { id: "appearance",    label: "Appearance",   icon: FiEye  },
+  { id: "notifications", label: "Notifications", icon: FiBell },
+  { id: "account",       label: "Account",       icon: FiUser },
+];
+
+const SettingRow = ({ icon: Icon, label, children }) => (
+  <div className="flex items-center justify-between gap-4 py-4 border-b border-black/5 dark:border-white/5 last:border-0">
+    <div className="flex items-center gap-3 min-w-0">
+      <div
+        className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+        style={{ background: "rgba(158,47,208,0.08)", border: "1px solid rgba(158,47,208,0.15)" }}
+      >
+        <Icon size={14} style={{ color: "#9E2FD0" }} />
+      </div>
+      <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 truncate">{label}</span>
+    </div>
+    <div className="flex-shrink-0">{children}</div>
+  </div>
+);
+
+const BrandToggle = ({ checked, onChange }) => (
+  <div
+    className="relative w-11 h-6 cursor-pointer rounded-full transition-colors duration-200"
+    style={{
+      background: checked ? "#9E2FD0" : "rgba(158,158,158,0.25)",
+      border: `1px solid ${checked ? "#9E2FD0" : "rgba(158,158,158,0.3)"}`,
+    }}
+    onClick={onChange}
+  >
+    <div
+      className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-200 flex items-center justify-center"
+      style={{ transform: checked ? "translateX(22px)" : "translateX(2px)" }}
+    >
+      {checked && <FiCheck size={10} style={{ color: "#9E2FD0" }} />}
+    </div>
+  </div>
+);
+
+const BrandSelect = ({ value, onChange, children }) => (
+  <select
+    value={value}
+    onChange={onChange}
+    className="text-sm rounded-xl outline-none border transition-all duration-200 appearance-none px-3 py-2 text-gray-700 dark:text-gray-200"
+    style={{
+      background: "rgba(158,47,208,0.06)",
+      borderColor: "rgba(158,47,208,0.20)",
+      minWidth: "120px",
+    }}
+    onFocus={(e) => { e.target.style.borderColor = "rgba(158,47,208,0.6)"; }}
+    onBlur={(e) => { e.target.style.borderColor = "rgba(158,47,208,0.20)"; }}
+  >
+    {children}
+  </select>
+);
 
 const Settings = () => {
   const dispatch = useDispatch();
   const { userInfo } = useSelector((state) => state.user);
-  const [activeTab, setActiveTab] = useState('appearance');
+  const [activeTab, setActiveTab] = useState("appearance");
   const [showBanner, setShowBanner] = useState(true);
 
   const darkMode = userInfo?.user?.settings?.darkMode || false;
-  const [accentColor, setAccentColor] = useState('#3B82F6');
-  const [fontSize, setFontSize] = useState('medium');
+  const [accentColor, setAccentColor] = useState("#9E2FD0");
+  const [fontSize, setFontSize] = useState("medium");
   const [classReminders, setClassReminders] = useState(true);
   const [messageNotifications, setMessageNotifications] = useState(true);
-  const [language, setLanguage] = useState('en');
+  const [language, setLanguage] = useState("en");
 
   const handleDarkModeToggle = () => {
-    const newDarkModeState = !darkMode;
-    dispatch(updateUserSettings({ darkMode: newDarkModeState }));
+    dispatch(updateUserSettings({ darkMode: !darkMode }));
+  };
+
+  const accentForTab = {
+    appearance: "#9E2FD0",
+    notifications: "#26D9A1",
+    account: "#F6B82E",
   };
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'appearance':
+      case "appearance":
         return (
-          <div className="space-y-8">
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Appearance</h2>
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-4">
-                <FiMoon className="text-xl text-gray-500 dark:text-gray-400" />
-                <span className="font-semibold text-gray-700 dark:text-gray-300">Dark Mode</span>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={darkMode}
-                  onChange={handleDarkModeToggle}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-              </label>
+          <div>
+            <div className="flex items-center gap-2 mb-5">
+              <FiEye size={15} style={{ color: "#9E2FD0" }} />
+              <h2 className="text-base font-extrabold text-gray-800 dark:text-white">Appearance</h2>
             </div>
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-4">
-                <FiDroplet className="text-xl text-gray-500 dark:text-gray-400" />
-                <span className="font-semibold text-gray-700 dark:text-gray-300">Accent Color</span>
-              </div>
-              <input type="color" value={accentColor} onChange={(e) => setAccentColor(e.target.value)} className="w-10 h-10 rounded-full" />
-            </div>
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-4">
-                <FiType className="text-xl text-gray-500 dark:text-gray-400" />
-                <span className="font-semibold text-gray-700 dark:text-gray-300">Font Size</span>
-              </div>
-              <select value={fontSize} onChange={(e) => setFontSize(e.target.value)} className="border-gray-300 dark:border-purple-500/20 rounded-md bg-white dark:bg-brand-dark text-gray-700 dark:text-gray-300">
+            <SettingRow icon={darkMode ? FiMoon : FiSun} label="Dark Mode">
+              <BrandToggle checked={darkMode} onChange={handleDarkModeToggle} />
+            </SettingRow>
+            <SettingRow icon={FiDroplet} label="Accent Color">
+              <input
+                type="color"
+                value={accentColor}
+                onChange={(e) => setAccentColor(e.target.value)}
+                className="w-8 h-8 rounded-lg cursor-pointer"
+                style={{ border: "none", padding: 0, background: "none" }}
+              />
+            </SettingRow>
+            <SettingRow icon={FiType} label="Font Size">
+              <BrandSelect value={fontSize} onChange={(e) => setFontSize(e.target.value)}>
                 <option value="small">Small</option>
                 <option value="medium">Medium</option>
                 <option value="large">Large</option>
-              </select>
-            </div>
+              </BrandSelect>
+            </SettingRow>
           </div>
         );
-      case 'notifications':
+
+      case "notifications":
         return (
-          <div className="space-y-8">
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Notifications</h2>
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-4">
-                <FiBell className="text-xl text-gray-500 dark:text-gray-400" />
-                <span className="font-semibold text-gray-700 dark:text-gray-300">Class Reminders</span>
-              </div>
+          <div>
+            <div className="flex items-center gap-2 mb-5">
+              <FiBell size={15} style={{ color: "#26D9A1" }} />
+              <h2 className="text-base font-extrabold text-gray-800 dark:text-white">Notifications</h2>
             </div>
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-4">
-                <FiBell className="text-xl text-gray-500 dark:text-gray-400" />
-                <span className="font-semibold text-gray-700 dark:text-gray-300">New Messages</span>
-              </div>
-            </div>
+            <SettingRow icon={FiBell} label="Class Reminders">
+              <BrandToggle checked={classReminders} onChange={() => setClassReminders((p) => !p)} />
+            </SettingRow>
+            <SettingRow icon={FiBell} label="New Messages">
+              <BrandToggle checked={messageNotifications} onChange={() => setMessageNotifications((p) => !p)} />
+            </SettingRow>
           </div>
         );
-      case 'account':
+
+      case "account":
         return (
-          <div className="space-y-8">
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Account</h2>
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-4">
-                <FiGlobe className="text-xl text-gray-500 dark:text-gray-400" />
-                <span className="font-semibold text-gray-700 dark:text-gray-300">Language</span>
-              </div>
-              <select value={language} onChange={(e) => setLanguage(e.target.value)} className="border-gray-300 dark:border-purple-500/20 rounded-md bg-white dark:bg-brand-dark text-gray-700 dark:text-gray-300">
+          <div>
+            <div className="flex items-center gap-2 mb-5">
+              <FiUser size={15} style={{ color: "#F6B82E" }} />
+              <h2 className="text-base font-extrabold text-gray-800 dark:text-white">Account</h2>
+            </div>
+            <SettingRow icon={FiGlobe} label="Language">
+              <BrandSelect value={language} onChange={(e) => setLanguage(e.target.value)}>
                 <option value="en">English</option>
                 <option value="es">Español</option>
                 <option value="fr">Français</option>
-              </select>
+              </BrandSelect>
+            </SettingRow>
+
+            <div className="py-3 border-b border-black/5 dark:border-white/5">
+              <button
+                className="w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-150"
+                style={{ background: "rgba(158,47,208,0.05)", border: "1px solid rgba(158,47,208,0.10)" }}
+              >
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                  style={{ background: "rgba(158,47,208,0.08)", border: "1px solid rgba(158,47,208,0.15)" }}
+                >
+                  <FiShield size={14} style={{ color: "#9E2FD0" }} />
+                </div>
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">Change Password</span>
+              </button>
             </div>
-            <button className="w-full text-left flex items-center gap-4 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
-              <FiShield className="text-xl text-gray-500 dark:text-gray-400" />
-              <span className="font-semibold text-gray-700 dark:text-gray-300">Change Password</span>
-            </button>
-            <button className="w-full text-left flex items-center gap-4 p-3 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-red-600 dark:text-red-500">
-              <FiLogOut className="text-xl" />
-              <span className="font-semibold">Logout</span>
-            </button>
+
+            <div className="pt-3">
+              <button
+                className="w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-150"
+                style={{ background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.12)" }}
+              >
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                  style={{ background: "rgba(239,68,68,0.10)", border: "1px solid rgba(239,68,68,0.20)" }}
+                >
+                  <FiLogOut size={14} style={{ color: "#ef4444" }} />
+                </div>
+                <span className="text-sm font-semibold" style={{ color: "#ef4444" }}>Logout</span>
+              </button>
+            </div>
           </div>
         );
+
       default:
         return null;
     }
   };
 
   return (
-    <div className="flex w-full min-h-screen bg-gray-100 dark:bg-brand-dark">
+    <div className="flex w-full relative min-h-screen">
+      {/* Page backgrounds */}
+      <div className="absolute inset-0 pointer-events-none dark:hidden"
+        style={{ background: "linear-gradient(135deg, #f8f8fa 0%, #f2f2f6 100%)" }} />
+      <div className="absolute inset-0 pointer-events-none hidden dark:block"
+        style={{ background: "linear-gradient(135deg, #0d0a1e 0%, #1a1a2e 55%, #110e28 100%)" }} />
+      {/* Ambient orbs */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden hidden dark:block">
+        <div className="absolute rounded-full blur-3xl opacity-10"
+          style={{ background: "radial-gradient(circle, rgba(158,47,208,0.6), transparent 70%)", width: "500px", height: "500px", top: "-5%", right: "0%" }} />
+        <div className="absolute rounded-full blur-3xl opacity-8"
+          style={{ background: "radial-gradient(circle, rgba(38,217,161,0.4), transparent 70%)", width: "350px", height: "350px", bottom: "10%", left: "5%" }} />
+      </div>
+
       <Dashboard />
-      <div className="w-full">
-        <section className="w-full bg-brand-navbar-light dark:bg-brand-dark-secondary shadow-md border-b border-transparent dark:border-purple-500/20">
-          <div className="container">
-            <Navbar header="Settings" />
-          </div>
-        </section>
-        <div className="p-8">
+
+      <div className="w-full min-w-0 relative z-10 flex flex-col min-h-screen overflow-x-hidden">
+        <Navbar header="Settings" />
+
+        <div className="px-3 sm:px-6 md:px-8 py-5 sm:py-8 flex flex-col gap-5 sm:gap-8 max-w-4xl mx-auto w-full">
+
+          {/* ── Demo banner ── */}
           {showBanner && (
-            <div className="bg-yellow-100 dark:bg-yellow-900/50 border-l-4 border-yellow-500 text-yellow-700 dark:text-yellow-300 p-4 rounded-lg mb-8 flex justify-between items-center shadow-md">
-              <div className="flex items-center">
-                <FiInfo className="text-2xl mr-3" />
-                <p className="font-semibold">This page is for demonstration purposes only. Settings are not yet functional.</p>
+            <div className="relative rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(246,184,46,0.28)" }}>
+              <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(246,184,46,0.07)" }} />
+              <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(246,184,46,0.06)" }} />
+              <div className="relative z-10 flex items-start sm:items-center justify-between gap-3 p-4">
+                <div className="flex items-start sm:items-center gap-3">
+                  <FiInfo size={15} style={{ color: "#F6B82E" }} className="flex-shrink-0 mt-0.5 sm:mt-0" />
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    This page is for demonstration purposes only. Settings are not yet fully functional.
+                  </p>
+                </div>
+                <button onClick={() => setShowBanner(false)} className="flex-shrink-0 transition-opacity hover:opacity-60">
+                  <FiX size={15} style={{ color: "#F6B82E" }} />
+                </button>
               </div>
-              <button onClick={() => setShowBanner(false)} className="text-xl font-bold">&times;</button>
             </div>
           )}
-          <div className="text-center mb-12">
-            <h1 className="text-5xl font-extrabold text-gray-900 dark:text-white">Settings</h1>
-            <p className="text-lg text-gray-500 dark:text-gray-400 mt-2">Manage your preferences</p>
+
+          {/* ── Page header ── */}
+          <div>
+            <p className="text-[10px] font-bold tracking-widest text-[#9E2FD0] uppercase mb-1">Preferences</p>
+            <h1 className="text-2xl sm:text-3xl font-extrabold login-gradient-text">Settings</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage your platform preferences</p>
           </div>
-          <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
+
+          {/* ── Layout ── */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
+
+            {/* Sidebar tabs */}
             <div className="md:col-span-1">
-              <div className="bg-white dark:bg-brand-dark-secondary rounded-xl shadow-lg p-4 space-y-2 border border-gray-200 dark:border-purple-500/20">
-                <button onClick={() => setActiveTab('appearance')} className={`w-full text-left flex items-center gap-3 p-3 rounded-lg font-semibold ${activeTab === 'appearance' ? 'bg-blue-500 dark:bg-brand-purple text-white' : 'hover:bg-gray-100 dark:hover:bg-white/5 text-gray-700 dark:text-gray-300'}`}>
-                  <FiEye /> Appearance
-                </button>
-                <button onClick={() => setActiveTab('notifications')} className={`w-full text-left flex items-center gap-3 p-3 rounded-lg font-semibold ${activeTab === 'notifications' ? 'bg-blue-500 dark:bg-brand-purple text-white' : 'hover:bg-gray-100 dark:hover:bg-white/5 text-gray-700 dark:text-gray-300'}`}>
-                  <FiBell /> Notifications
-                </button>
-                <button onClick={() => setActiveTab('account')} className={`w-full text-left flex items-center gap-3 p-3 rounded-lg font-semibold ${activeTab === 'account' ? 'bg-blue-500 dark:bg-brand-purple text-white' : 'hover:bg-gray-100 dark:hover:bg-white/5 text-gray-700 dark:text-gray-300'}`}>
-                  <FiUser /> Account
-                </button>
+              <div className="relative rounded-2xl overflow-hidden" style={glassCard}>
+                <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)" }} />
+                <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.65)", backdropFilter: "blur(16px)" }} />
+                <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#9E2FD0] via-[#F6B82E] to-[#26D9A1] opacity-70" />
+                <div className="relative z-10 p-3 flex md:flex-col flex-row gap-1.5 overflow-x-auto">
+                  {TABS.map(({ id, label, icon: Icon }) => {
+                    const isActive = activeTab === id;
+                    return (
+                      <button
+                        key={id}
+                        onClick={() => setActiveTab(id)}
+                        className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 whitespace-nowrap flex-shrink-0 md:w-full"
+                        style={
+                          isActive
+                            ? {
+                                background: "linear-gradient(135deg, rgba(158,47,208,0.15), rgba(246,184,46,0.06))",
+                                border: "1px solid rgba(158,47,208,0.28)",
+                                color: "#9E2FD0",
+                              }
+                            : {
+                                background: "transparent",
+                                border: "1px solid transparent",
+                                color: "#6b7280",
+                              }
+                        }
+                      >
+                        <Icon size={14} />
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
+
+            {/* Content panel */}
             <div className="md:col-span-3">
-              <div className="bg-white dark:bg-brand-dark-secondary rounded-xl shadow-lg p-8 border border-gray-200 dark:border-purple-500/20">
-                {renderContent()}
+              <div className="relative rounded-2xl overflow-hidden" style={glassCard}>
+                <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)" }} />
+                <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.65)", backdropFilter: "blur(16px)" }} />
+                <div
+                  className="absolute top-0 left-0 w-full h-[2px]"
+                  style={{ background: `linear-gradient(90deg, ${accentForTab[activeTab]}, transparent)` }}
+                />
+                <div className="relative z-10 p-5 sm:p-7">
+                  {renderContent()}
+                </div>
               </div>
             </div>
+
           </div>
         </div>
       </div>

@@ -4,21 +4,36 @@ import { FiUserPlus, FiUser, FiMail, FiLock, FiX } from "react-icons/fi";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-const inputStyle = {
-  background: "rgba(255,255,255,0.05)",
-  borderColor: "rgba(255,255,255,0.12)",
-};
+// Detect dark mode from the DOM (class-based dark mode)
+const isDark = () => !!document.querySelector(".dark");
+
 const onFocus = (e) => {
   e.target.style.borderColor = "rgba(158,47,208,0.7)";
-  e.target.style.background = "rgba(158,47,208,0.08)";
+  e.target.style.background = isDark() ? "rgba(158,47,208,0.10)" : "rgba(158,47,208,0.06)";
 };
 const onBlur = (e) => {
-  e.target.style.borderColor = "rgba(255,255,255,0.12)";
-  e.target.style.background = "rgba(255,255,255,0.05)";
+  e.target.style.borderColor = "";
+  e.target.style.background = "";
 };
 
 const inputCls =
-  "w-full pl-11 pr-4 py-3 rounded-xl text-white text-sm placeholder-gray-600 outline-none border transition-all duration-200";
+  "w-full pl-11 pr-4 py-3 rounded-xl text-sm outline-none border transition-all duration-200 " +
+  "bg-gray-100 border-gray-200 text-gray-800 placeholder-gray-400 " +
+  "dark:bg-white/5 dark:border-white/10 dark:text-white dark:placeholder-gray-600";
+
+const selectCls =
+  "w-full px-4 py-3 rounded-xl text-sm outline-none border transition-all duration-200 appearance-none " +
+  "bg-gray-100 border-gray-200 text-gray-800 " +
+  "dark:bg-white/5 dark:border-white/10 dark:text-white";
+
+const onSelectFocus = (e) => {
+  e.target.style.borderColor = "rgba(158,47,208,0.7)";
+  e.target.style.background = isDark() ? "rgba(158,47,208,0.10)" : "rgba(158,47,208,0.06)";
+};
+const onSelectBlur = (e) => {
+  e.target.style.borderColor = "";
+  e.target.style.background = "";
+};
 
 const UserModal = ({ show, handleClose }) => {
   const [name, setName] = useState("");
@@ -54,26 +69,30 @@ const UserModal = ({ show, handleClose }) => {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)" }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4"
+      style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)" }}
     >
-      <div
-        className="relative w-full max-w-md rounded-3xl overflow-y-auto max-h-[92vh]"
-        style={{
-          background: "rgba(13,10,30,0.98)",
-          backdropFilter: "blur(24px)",
-          WebkitBackdropFilter: "blur(24px)",
-          border: "1px solid rgba(255,255,255,0.08)",
-          boxShadow: "0 32px 64px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)",
-        }}
+      <div className="relative w-full max-w-md rounded-3xl overflow-y-auto max-h-[92vh]"
+        style={{ boxShadow: "0 32px 64px rgba(0,0,0,0.25)" }}
       >
+        {/* Light mode background */}
+        <div
+          className="absolute inset-0 dark:hidden rounded-3xl"
+          style={{ background: "rgba(255,255,255,0.98)", backdropFilter: "blur(24px)", border: "1px solid rgba(0,0,0,0.08)" }}
+        />
+        {/* Dark mode background */}
+        <div
+          className="absolute inset-0 hidden dark:block rounded-3xl"
+          style={{ background: "rgba(13,10,30,0.98)", backdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.08)" }}
+        />
+
         {/* Top accent */}
         <div
-          className="absolute top-0 left-0 w-full h-[2px]"
+          className="absolute top-0 left-0 w-full h-[2px] z-10 rounded-t-3xl"
           style={{ background: "linear-gradient(90deg, #26D9A1, #9E2FD0, #F6B82E)" }}
         />
 
-        <div className="relative z-10 p-8">
+        <div className="relative z-10 p-6 sm:p-8">
           {/* Header */}
           <div className="flex items-center gap-3 mb-6">
             <div
@@ -83,12 +102,12 @@ const UserModal = ({ show, handleClose }) => {
               <FiUserPlus size={17} style={{ color: "#26D9A1" }} />
             </div>
             <div>
-              <h2 className="text-lg font-extrabold text-white leading-tight">Create New User</h2>
-              <p className="text-xs text-gray-500">Fill in the details below</p>
+              <h2 className="text-lg font-extrabold text-gray-800 dark:text-white leading-tight">Create New User</h2>
+              <p className="text-xs text-gray-400 dark:text-gray-500">Fill in the details below</p>
             </div>
             <button
               onClick={handleClose}
-              className="ml-auto text-gray-500 hover:text-white transition-colors duration-200 p-1"
+              className="ml-auto text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-white transition-colors duration-200 p-1"
             >
               <FiX size={18} />
             </button>
@@ -103,37 +122,27 @@ const UserModal = ({ show, handleClose }) => {
           <form onSubmit={createUser} className="space-y-4">
             {/* Name row */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="relative group">
-                <FiUser
-                  className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-200"
-                  size={14}
-                  style={{ color: "#6b7280" }}
-                />
+              <div className="relative">
+                <FiUser className="absolute left-4 top-1/2 -translate-y-1/2" size={14} style={{ color: "#9ca3af" }} />
                 <input
                   type="text"
                   placeholder="First Name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className={inputCls}
-                  style={inputStyle}
                   onFocus={onFocus}
                   onBlur={onBlur}
                   required
                 />
               </div>
-              <div className="relative group">
-                <FiUser
-                  className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-200"
-                  size={14}
-                  style={{ color: "#6b7280" }}
-                />
+              <div className="relative">
+                <FiUser className="absolute left-4 top-1/2 -translate-y-1/2" size={14} style={{ color: "#9ca3af" }} />
                 <input
                   type="text"
                   placeholder="Last Name"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   className={inputCls}
-                  style={inputStyle}
                   onFocus={onFocus}
                   onBlur={onBlur}
                   required
@@ -142,19 +151,14 @@ const UserModal = ({ show, handleClose }) => {
             </div>
 
             {/* Email */}
-            <div className="relative group">
-              <FiMail
-                className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-200"
-                size={14}
-                style={{ color: "#6b7280" }}
-              />
+            <div className="relative">
+              <FiMail className="absolute left-4 top-1/2 -translate-y-1/2" size={14} style={{ color: "#9ca3af" }} />
               <input
                 type="email"
                 placeholder="Email Address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className={inputCls}
-                style={inputStyle}
                 onFocus={onFocus}
                 onBlur={onBlur}
                 required
@@ -162,19 +166,14 @@ const UserModal = ({ show, handleClose }) => {
             </div>
 
             {/* Password */}
-            <div className="relative group">
-              <FiLock
-                className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-200"
-                size={14}
-                style={{ color: "#6b7280" }}
-              />
+            <div className="relative">
+              <FiLock className="absolute left-4 top-1/2 -translate-y-1/2" size={14} style={{ color: "#9ca3af" }} />
               <input
                 type="password"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className={inputCls}
-                style={inputStyle}
                 onFocus={onFocus}
                 onBlur={onBlur}
                 required
@@ -185,37 +184,27 @@ const UserModal = ({ show, handleClose }) => {
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl text-sm outline-none border transition-all duration-200 appearance-none"
-              style={{
-                background: "rgba(255,255,255,0.05)",
-                borderColor: "rgba(255,255,255,0.12)",
-                color: role ? "#ffffff" : "#6b7280",
-              }}
-              onFocus={(e) => { e.target.style.borderColor = "rgba(158,47,208,0.7)"; e.target.style.background = "rgba(158,47,208,0.08)"; }}
-              onBlur={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.12)"; e.target.style.background = "rgba(255,255,255,0.05)"; }}
+              className={selectCls}
+              onFocus={onSelectFocus}
+              onBlur={onSelectBlur}
             >
-              <option value="user" style={{ background: "#1a1a2e" }}>user</option>
-              <option value="teacher" style={{ background: "#1a1a2e" }}>teacher</option>
-              <option value="admin" style={{ background: "#1a1a2e" }}>admin</option>
+              <option value="user">user</option>
+              <option value="teacher">teacher</option>
+              <option value="admin">admin</option>
             </select>
 
             {/* Language */}
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl text-sm outline-none border transition-all duration-200 appearance-none"
-              style={{
-                background: "rgba(255,255,255,0.05)",
-                borderColor: "rgba(255,255,255,0.12)",
-                color: language ? "#ffffff" : "#6b7280",
-              }}
-              onFocus={(e) => { e.target.style.borderColor = "rgba(158,47,208,0.7)"; e.target.style.background = "rgba(158,47,208,0.08)"; }}
-              onBlur={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.12)"; e.target.style.background = "rgba(255,255,255,0.05)"; }}
+              className={selectCls}
+              onFocus={onSelectFocus}
+              onBlur={onSelectBlur}
             >
-              <option value="" disabled style={{ background: "#1a1a2e" }}>select language</option>
-              <option value="english" style={{ background: "#1a1a2e" }}>english</option>
-              <option value="spanish" style={{ background: "#1a1a2e" }}>spanish</option>
-              <option value="polish" style={{ background: "#1a1a2e" }}>polish</option>
+              <option value="" disabled>select language</option>
+              <option value="english">english</option>
+              <option value="spanish">spanish</option>
+              <option value="polish">polish</option>
             </select>
 
             {/* Actions */}
@@ -223,22 +212,14 @@ const UserModal = ({ show, handleClose }) => {
               <button
                 type="button"
                 onClick={handleClose}
-                className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
-                style={{
-                  background: "rgba(255,255,255,0.06)",
-                  border: "1px solid rgba(255,255,255,0.10)",
-                  color: "#9ca3af",
-                }}
+                className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-white/6 border border-gray-200 dark:border-white/10"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 className="flex-1 py-3 rounded-xl text-white text-sm font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
-                style={{
-                  background: "linear-gradient(135deg, #26D9A1, #1fa07a)",
-                  boxShadow: "0 4px 20px rgba(38,217,161,0.35)",
-                }}
+                style={{ background: "linear-gradient(135deg, #26D9A1, #1fa07a)", boxShadow: "0 4px 20px rgba(38,217,161,0.35)" }}
               >
                 <FiUserPlus size={14} />
                 Create User

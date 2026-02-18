@@ -4,7 +4,7 @@ import PerfectScrollbar from "react-perfect-scrollbar";
 import "react-perfect-scrollbar/dist/css/styles.css";
 import EmojiPicker from "emoji-picker-react";
 import { BsEmojiSmile, BsPaperclip, BsThreeDots } from "react-icons/bs";
-import { FiX, FiArrowLeft, FiMessageSquare, FiSend } from "react-icons/fi";
+import { FiX, FiArrowLeft, FiMessageSquare, FiSend, FiDownload, FiEye } from "react-icons/fi";
 import useDeleteMessage from "../hooks/useDeleteMessage";
 import useSocketManager from "../hooks/useSocketManager";
 import useMessageHandler from "../hooks/useMessageHandler";
@@ -134,8 +134,13 @@ const ChatWindow = ({
 
   return (
     <div
-      className="w-full flex flex-col overflow-hidden"
-      style={{ height: height || "630px" }}
+      className="relative w-full flex flex-col overflow-hidden rounded-2xl
+                 bg-white dark:bg-[#0f0d24]
+                 border border-gray-200 dark:border-[rgba(158,47,208,0.18)]"
+      style={{
+        height: height || "630px",
+        boxShadow: "0 8px 32px rgba(0,0,0,0.10), 0 2px 10px rgba(158,47,208,0.08)",
+      }}
     >
       {/* ── Header ── */}
       <div className="relative flex-shrink-0">
@@ -147,7 +152,8 @@ const ChatWindow = ({
           className="absolute inset-0 dark:hidden"
           style={{
             background:
-              "linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,245,255,0.95) 100%)",
+              "linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(248,245,255,0.98) 100%)",
+            borderBottom: "1px solid rgba(158,47,208,0.08)",
           }}
         />
         {/* Dark bg */}
@@ -155,12 +161,13 @@ const ChatWindow = ({
           className="absolute inset-0 hidden dark:block"
           style={{
             background:
-              "linear-gradient(135deg, rgba(13,10,30,0.85) 0%, rgba(26,26,46,0.85) 100%)",
+              "linear-gradient(135deg, rgba(15,13,36,0.98) 0%, rgba(26,20,50,0.98) 100%)",
+            borderBottom: "1px solid rgba(158,47,208,0.15)",
           }}
         />
 
-        <div className="relative z-10 flex items-center px-4 py-3 border-b border-[#9E2FD0]/10 dark:border-[#9E2FD0]/20 mt-[2px] gap-3">
-          {/* Back button — shown when coming from chat list (onBack) or isChatOpen */}
+        <div className="relative z-10 flex items-center px-4 py-3 mt-[2px] gap-3">
+          {/* Back button */}
           {onBack && (
             <button
               onClick={onBack}
@@ -244,20 +251,24 @@ const ChatWindow = ({
       {/* ── Message area ── */}
       <PerfectScrollbar
         containerRef={(ref) => (scrollContainerRef.current = ref)}
-        className="flex-1 p-6 bg-slate-100 dark:bg-brand-dark"
+        className="flex-1 p-4 sm:p-5 bg-gray-50 dark:bg-black/20"
       >
         {hasMore && (
-          <div className="text-center">
+          <div className="text-center mb-4">
             <button
               onClick={handleLoadMore}
-              className="my-2 py-1 px-4 bg-white border border-gray-300 text-gray-600 text-sm rounded-full hover:bg-gray-100 transition-colors focus:outline-none"
+              className="py-1.5 px-5 text-xs font-semibold rounded-full transition-all duration-150
+                         text-[#9E2FD0] dark:text-[#c084fc]
+                         border border-[rgba(158,47,208,0.25)] dark:border-[rgba(158,47,208,0.35)]
+                         bg-white dark:bg-white/5
+                         hover:bg-[rgba(158,47,208,0.06)] dark:hover:bg-white/10"
             >
               Load more messages
             </button>
           </div>
         )}
 
-        <ul className="space-y-4">
+        <ul className="space-y-3">
           {allMessages.map((msg, index) => {
             const showTimestamp =
               index === 0 ||
@@ -270,44 +281,49 @@ const ChatWindow = ({
             return (
               <div key={index}>
                 {showTimestamp && (
-                  <div className="text-center text-gray-500 text-xs my-4">
-                    {formatTimestamp(msg.timestamp)}
+                  <div className="flex items-center gap-3 my-4">
+                    <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
+                    <span className="text-[10px] font-medium px-3 py-1 rounded-full
+                                     text-gray-500 dark:text-gray-400
+                                     bg-white dark:bg-white/5
+                                     border border-gray-200 dark:border-white/10">
+                      {formatTimestamp(msg.timestamp)}
+                    </span>
+                    <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
                   </div>
                 )}
                 <li
-                  className={`flex items-end gap-3 ${
+                  className={`flex items-end gap-2 ${
                     isSender ? "justify-end" : "justify-start"
                   }`}
                 >
                   <div
-                    className={`relative max-w-xs p-4 rounded-2xl shadow-md text-sm ${
+                    className={`relative max-w-[75%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed shadow-sm ${
                       isSender
-                        ? "text-white rounded-br-none"
-                        : "bg-white dark:bg-brand-dark-secondary text-gray-800 dark:text-white rounded-bl-none"
+                        ? "text-white rounded-br-sm"
+                        : "bg-white dark:bg-white/8 text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-white/10 rounded-bl-sm"
                     }`}
                     style={
                       isSender
                         ? {
                             background:
                               "linear-gradient(135deg, #9E2FD0, #7b22a8)",
-                            boxShadow: "0 3px 12px rgba(158,47,208,0.35)",
+                            boxShadow: "0 3px 12px rgba(158,47,208,0.30)",
                           }
                         : {}
                     }
                   >
                     {isSender && (
-                      <div className="absolute top-1/2 -left-10 transform -translate-y-1/2">
+                      <div className="absolute top-1/2 -left-9 transform -translate-y-1/2">
                         <button
                           onClick={() => toggleOptionsMenu(msg.id)}
-                          className="p-2 hover:bg-gray-200 rounded-full"
+                          className="p-1.5 rounded-full text-gray-400 hover:text-[#9E2FD0] hover:bg-[rgba(158,47,208,0.08)] transition-colors"
                         >
-                          <BsThreeDots className="text-gray-500" />
+                          <BsThreeDots size={13} />
                         </button>
                       </div>
                     )}
-                    <div
-                      style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}
-                    >
+                    <div style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
                       {isFileMessage
                         ? renderFileMessage(msg.message, isSender)
                         : formatMessageWithLinks(msg.message, isSender)}
@@ -330,90 +346,116 @@ const ChatWindow = ({
 
       {/* ── File preview modal ── */}
       {selectedFile && (
-        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
-          <div className="bg-white rounded-lg shadow-xl p-6 w-72">
-            <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">
-              File Options
-            </h3>
-            <div className="flex flex-col gap-3">
-              <button
-                onClick={handlePreview}
-                className="py-2 px-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-              >
-                Preview
-              </button>
-              <button
-                onClick={handleDownload}
-                className="py-2 px-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-              >
-                Download
-              </button>
-              <button
-                onClick={handleCloseModal}
-                className="py-2 px-4 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
-              >
-                Cancel
-              </button>
+        <div className="absolute inset-0 flex items-center justify-center z-40"
+          style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)" }}>
+          <div className="relative w-64 rounded-2xl overflow-hidden"
+            style={{ boxShadow: "0 24px 48px rgba(0,0,0,0.3)" }}>
+            {/* Light bg */}
+            <div className="absolute inset-0 dark:hidden rounded-2xl"
+              style={{ background: "rgba(255,255,255,0.98)", border: "1px solid rgba(0,0,0,0.08)" }} />
+            {/* Dark bg */}
+            <div className="absolute inset-0 hidden dark:block rounded-2xl"
+              style={{ background: "rgba(15,13,36,0.98)", border: "1px solid rgba(158,47,208,0.18)" }} />
+            {/* Top accent */}
+            <div className="absolute top-0 left-0 w-full h-[2px]"
+              style={{ background: "linear-gradient(90deg, #9E2FD0, #F6B82E, #26D9A1)" }} />
+            <div className="relative z-10 p-5">
+              <h3 className="text-sm font-extrabold text-gray-800 dark:text-white mb-4 text-center">
+                File Options
+              </h3>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={handlePreview}
+                  className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-white text-sm font-semibold transition-all hover:opacity-90"
+                  style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 3px 12px rgba(158,47,208,0.3)" }}
+                >
+                  <FiEye size={14} /> Preview
+                </button>
+                <button
+                  onClick={handleDownload}
+                  className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-white text-sm font-semibold transition-all hover:opacity-90"
+                  style={{ background: "linear-gradient(135deg, #26D9A1, #1fa07a)", boxShadow: "0 3px 12px rgba(38,217,161,0.3)" }}
+                >
+                  <FiDownload size={14} /> Download
+                </button>
+                <button
+                  onClick={handleCloseModal}
+                  className="py-2.5 px-4 rounded-xl text-sm font-semibold transition-all
+                             text-gray-600 dark:text-gray-300
+                             bg-gray-100 dark:bg-white/8
+                             border border-gray-200 dark:border-white/10
+                             hover:bg-gray-200 dark:hover:bg-white/12"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
 
       {/* ── Input area ── */}
-      <div className="p-3 bg-transparent">
+      <div className="relative flex-shrink-0 p-3
+                      bg-white dark:bg-[#0f0d24]
+                      border-t border-gray-100 dark:border-[rgba(158,47,208,0.12)]">
         {file && (
-          <div className="p-3 mb-3 border rounded-lg bg-gray-100">
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-700 truncate">{file.name}</p>
-              <button
-                onClick={handleClearFile}
-                className="text-red-500 hover:text-red-700"
-              >
-                <FiX />
+          <div className="p-2.5 mb-3 rounded-xl
+                          bg-gray-50 dark:bg-white/5
+                          border border-gray-200 dark:border-white/10">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs text-gray-700 dark:text-gray-300 truncate">{file.name}</p>
+              <button onClick={handleClearFile} className="text-red-400 hover:text-red-600 flex-shrink-0">
+                <FiX size={14} />
               </button>
             </div>
-            <p className="text-xs text-gray-500 mt-1">Ready to send.</p>
+            <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">Ready to send.</p>
           </div>
         )}
         {uploading && (
-          <p className="text-sm text-purple-600 mb-2">Uploading...</p>
+          <p className="text-xs text-[#9E2FD0] mb-2 font-medium">Uploading...</p>
         )}
-        {error && <p className="text-sm text-red-600 mb-2">{error}</p>}
-        <div className="relative flex items-center">
-          <div className="relative flex-1">
-            <textarea
-              ref={textareaRef}
-              placeholder="Type a message..."
-              value={message}
-              onChange={handleInput}
-              onKeyDown={handleKeyDown}
-              className="w-full p-3 pr-24 bg-gray-100 dark:bg-brand-dark border-none rounded-lg focus:outline-none text-gray-800 dark:text-white resize-none text-sm"
-              disabled={!!file}
-              style={{ maxHeight: "150px", overflowY: "auto" }}
-              rows={1}
+        {error && <p className="text-xs text-red-500 mb-2">{error}</p>}
+
+        <div className="flex items-center gap-2
+                        bg-gray-50 dark:bg-white/5
+                        rounded-xl px-3 py-2
+                        border border-gray-200 dark:border-white/10
+                        focus-within:border-[rgba(158,47,208,0.5)] dark:focus-within:border-[rgba(158,47,208,0.4)]
+                        transition-colors duration-200">
+          <textarea
+            ref={textareaRef}
+            placeholder="Type a message..."
+            value={message}
+            onChange={handleInput}
+            onKeyDown={handleKeyDown}
+            className="flex-1 bg-transparent resize-none outline-none
+                       text-sm text-gray-900 dark:text-white
+                       placeholder-gray-400 dark:placeholder-gray-500
+                       max-h-32 leading-relaxed py-1"
+            disabled={!!file}
+            rows={1}
+          />
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              className="text-gray-400 hover:text-[#F6B82E] transition-colors"
+            >
+              <BsEmojiSmile size={18} />
+            </button>
+            <label
+              htmlFor="fileInput"
+              className="text-gray-400 hover:text-[#26D9A1] cursor-pointer transition-colors"
+            >
+              <BsPaperclip size={18} />
+            </label>
+            <input
+              type="file"
+              id="fileInput"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              disabled={uploading}
+              className="hidden"
             />
-            <div className="absolute bottom-1/2 right-4 transform translate-y-1/2 flex items-center gap-3">
-              <button
-                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                className="text-gray-500 hover:text-purple-600"
-              >
-                <BsEmojiSmile size={22} />
-              </button>
-              <label
-                htmlFor="fileInput"
-                className="text-gray-500 hover:text-purple-600 cursor-pointer"
-              >
-                <BsPaperclip size={22} />
-              </label>
-              <input
-                type="file"
-                id="fileInput"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                disabled={uploading}
-                className="hidden"
-              />
-            </div>
           </div>
           <button
             onClick={
@@ -421,19 +463,22 @@ const ChatWindow = ({
                 ? uploadFile
                 : () => sendMessage(message, setMessage, resetTextarea)
             }
-            className="ml-2 flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-opacity hover:opacity-90 disabled:opacity-40"
+            className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:opacity-90 active:scale-95 disabled:opacity-30"
             style={{
               background: "linear-gradient(135deg, #9E2FD0, #7b22a8)",
-              boxShadow: "0 3px 12px rgba(158,47,208,0.4)",
+              boxShadow: "0 2px 8px rgba(158,47,208,0.35)",
             }}
             disabled={uploading || (!message.trim() && !file)}
           >
-            <FiSend size={16} className="text-white" />
+            <FiSend size={13} className="text-white" />
           </button>
         </div>
+
         {showEmojiPicker && (
-          <div className="absolute bottom-20 right-4 z-10">
-            <EmojiPicker onEmojiClick={handleEmojiClick} />
+          <div className="absolute bottom-full right-3 mb-2 z-20">
+            <div className="rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 shadow-xl">
+              <EmojiPicker onEmojiClick={handleEmojiClick} />
+            </div>
           </div>
         )}
       </div>

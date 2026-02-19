@@ -12,7 +12,7 @@ import notificationSound from "../assets/sounds/notification.wav";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-const useSocketManager = (room, username, email) => {
+const useSocketManager = (room, username, email, onNewMessage) => {
   const [socket, setSocket] = useState(socketInstance);
   const [chatMessages, setChatMessages] = useState([]);
   const user = useSelector((state) => state.user.userInfo.user);
@@ -58,6 +58,7 @@ const useSocketManager = (room, username, email) => {
       const handleChatMessage = (data) => {
         if (data.email !== email) {
           playSound();
+          onNewMessage?.();
         }
         readChat(room, email);
         setChatMessages((prevMessages) => [...prevMessages, data]);

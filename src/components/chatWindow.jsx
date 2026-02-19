@@ -1,4 +1,4 @@
-import { useRef, useLayoutEffect, useState } from "react";
+import { useRef, useLayoutEffect, useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import PerfectScrollbar from "react-perfect-scrollbar";
 import "react-perfect-scrollbar/dist/css/styles.css";
@@ -26,6 +26,8 @@ const ChatWindow = ({
   setShowChat,
   handleJoinMeeting,
   onBack,
+  meeting = false,
+  onNewMessage,
 }) => {
   const user = useSelector((state) => state.user.userInfo.user);
   const teacher = useSelector((state) => state.user.userInfo.user.teacher);
@@ -37,7 +39,8 @@ const ChatWindow = ({
   const { socket, chatMessages, setChatMessages } = useSocketManager(
     room,
     username,
-    email
+    email,
+    onNewMessage
   );
   const { allMessages, fetchArchivedMessages, hasMore } = useArchivedMessages(
     room,
@@ -124,22 +127,45 @@ const ChatWindow = ({
     }
   }, [allMessages]);
 
-  useLayoutEffect(() => {
+  const resizeTextarea = () => {
     const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = "auto";
-      textarea.style.height = `${textarea.scrollHeight}px`;
-    }
+    if (!textarea) return;
+    textarea.style.overflowY = "hidden";
+    textarea.style.height = "1px";
+    const newHeight = Math.max(Math.min(textarea.scrollHeight, 128), 32);
+    textarea.style.height = `${newHeight}px`;
+    textarea.style.overflowY = newHeight >= 128 ? "auto" : "hidden";
+  };
+
+  // Runs on every keystroke — immediate, before paint
+  useLayoutEffect(() => {
+    resizeTextarea();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [message]);
+
+  // Poll every frame for 500ms after mount — the chat panel animates from w-0
+  // so the first few useLayoutEffect measurements are wrong (0-width container).
+  // This keeps correcting until the transition finishes.
+  useEffect(() => {
+    let rafId;
+    const start = Date.now();
+    const poll = () => {
+      resizeTextarea();
+      if (Date.now() - start < 500) rafId = requestAnimationFrame(poll);
+    };
+    rafId = requestAnimationFrame(poll);
+    return () => cancelAnimationFrame(rafId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div
-      className="relative w-full flex flex-col overflow-hidden rounded-2xl
-                 bg-white dark:bg-[#0f0d24]
-                 border border-gray-200 dark:border-[rgba(158,47,208,0.18)]"
+      className={`relative w-full flex flex-col overflow-hidden bg-white dark:bg-[#0f0d24] ${
+        meeting ? "" : "rounded-2xl border border-gray-200 dark:border-[rgba(158,47,208,0.18)]"
+      }`}
       style={{
         height: height || "630px",
-        boxShadow: "0 8px 32px rgba(0,0,0,0.10), 0 2px 10px rgba(158,47,208,0.08)",
+        boxShadow: meeting ? "none" : "0 8px 32px rgba(0,0,0,0.10), 0 2px 10px rgba(158,47,208,0.08)",
       }}
     >
       {/* ── Header ── */}
@@ -252,6 +278,7 @@ const ChatWindow = ({
       <PerfectScrollbar
         containerRef={(ref) => (scrollContainerRef.current = ref)}
         className="flex-1 p-4 sm:p-5 bg-gray-50 dark:bg-black/20"
+        style={{ minHeight: 0 }}
       >
         {hasMore && (
           <div className="text-center mb-4">
@@ -301,7 +328,7 @@ const ChatWindow = ({
                     className={`relative max-w-[75%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed shadow-sm ${
                       isSender
                         ? "text-white rounded-br-sm"
-                        : "bg-white dark:bg-white/8 text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-white/10 rounded-bl-sm"
+                        : "bg-white dark:bg-[rgba(255,255,255,0.08)] text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-white/10 rounded-bl-sm"
                     }`}
                     style={
                       isSender
@@ -431,7 +458,8 @@ const ChatWindow = ({
             className="flex-1 bg-transparent resize-none outline-none
                        text-sm text-gray-900 dark:text-white
                        placeholder-gray-400 dark:placeholder-gray-500
-                       max-h-32 leading-relaxed py-1"
+                       leading-relaxed py-1"
+            style={{ minHeight: "32px", maxHeight: "128px", overflowY: "hidden" }}
             disabled={!!file}
             rows={1}
           />

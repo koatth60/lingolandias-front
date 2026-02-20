@@ -4,6 +4,16 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Apply dark class before first paint to prevent flash of wrong theme on all browsers -->
+    <script>
+      try {
+        var s = JSON.parse(localStorage.getItem('state'));
+        if (s && s.user && s.user.userInfo && s.user.userInfo.user &&
+            s.user.userInfo.user.settings && s.user.userInfo.user.settings.darkMode) {
+          document.documentElement.classList.add('dark');
+        }
+      } catch (e) {}
+    </script>
     <!-- KEEP THIS ONE (v6) -->
     <link
       rel="stylesheet"

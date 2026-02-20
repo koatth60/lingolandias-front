@@ -374,7 +374,7 @@ const ChatWindow = ({
       {/* ── File preview modal ── */}
       {selectedFile && (
         <div className="absolute inset-0 flex items-center justify-center z-40"
-          style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)" }}>
+          style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)" }}>
           <div className="relative w-64 rounded-2xl overflow-hidden"
             style={{ boxShadow: "0 24px 48px rgba(0,0,0,0.3)" }}>
             {/* Light bg */}

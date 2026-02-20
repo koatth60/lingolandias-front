@@ -320,8 +320,7 @@ const Dashboard = () => {
                         }`}
                         style={isActive ? {
                           background: 'linear-gradient(135deg, rgba(158,47,208,0.13) 0%, rgba(246,184,46,0.06) 100%)',
-                          backdropFilter: 'blur(8px)',
-                          WebkitBackdropFilter: 'blur(8px)',
+                          backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
                           border: '1px solid rgba(158,47,208,0.28)',
                           boxShadow: '0 2px 14px rgba(158,47,208,0.15), inset 0 1px 0 rgba(255,255,255,0.15)',
                         } : {}}
@@ -389,8 +388,7 @@ const Dashboard = () => {
                       }`}
                       style={isActive ? {
                         background: 'linear-gradient(135deg, rgba(158,47,208,0.13) 0%, rgba(246,184,46,0.06) 100%)',
-                        backdropFilter: 'blur(8px)',
-                        WebkitBackdropFilter: 'blur(8px)',
+                        backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
                         border: '1px solid rgba(158,47,208,0.28)',
                         boxShadow: '0 2px 14px rgba(158,47,208,0.15), inset 0 1px 0 rgba(255,255,255,0.15)',
                       } : {}}

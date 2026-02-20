@@ -196,8 +196,7 @@ const Schedule = () => {
                       className="absolute inset-0 dark:hidden"
                       style={{
                         background: 'rgba(255,255,255,0.88)',
-                        backdropFilter: 'blur(16px)',
-                        WebkitBackdropFilter: 'blur(16px)',
+                        backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
                       }}
                     />
                     {/* Dark mode glass */}
@@ -205,8 +204,7 @@ const Schedule = () => {
                       className="absolute inset-0 hidden dark:block"
                       style={{
                         background: 'rgba(13,10,30,0.65)',
-                        backdropFilter: 'blur(16px)',
-                        WebkitBackdropFilter: 'blur(16px)',
+                        backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
                       }}
                     />
 
@@ -262,8 +260,8 @@ const Schedule = () => {
                       boxShadow: '0 8px 32px rgba(0,0,0,0.06)',
                     }}
                   >
-                    <div className="absolute inset-0 dark:hidden" style={{ background: 'rgba(255,255,255,0.88)', backdropFilter: 'blur(16px)' }} />
-                    <div className="absolute inset-0 hidden dark:block" style={{ background: 'rgba(13,10,30,0.65)', backdropFilter: 'blur(16px)' }} />
+                    <div className="absolute inset-0 dark:hidden" style={{ background: 'rgba(255,255,255,0.88)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }} />
+                    <div className="absolute inset-0 hidden dark:block" style={{ background: 'rgba(13,10,30,0.65)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }} />
                     <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#9E2FD0] via-[#F6B82E] to-[#26D9A1] opacity-60" />
                     <div className="relative z-10 text-center px-6">
                       <div

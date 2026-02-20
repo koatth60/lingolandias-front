@@ -1,9 +1,60 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import Swal from "sweetalert2";
-import { Calendar, dayjsLocalizer } from "react-big-calendar";
+import { Calendar, dayjsLocalizer, Navigate } from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
+import "./studentAssignment.css";
 import dayjs from "dayjs";
-import { FiUserCheck, FiCalendar, FiClock, FiX, FiCheckCircle } from "react-icons/fi";
+import { FiUserCheck, FiCalendar, FiClock, FiX, FiCheckCircle, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+
+const CalendarToolbar = ({ label, onNavigate, onView, view }) => (
+  <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-[#13102a] border-b border-gray-200 dark:border-white/[0.08] flex-wrap gap-3">
+    {/* Navigation */}
+    <div className="flex items-center gap-2">
+      <button
+        onClick={() => onNavigate(Navigate.PREVIOUS)}
+        className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:border-purple-400 hover:text-purple-600 dark:hover:text-purple-400 transition-all"
+        title="Previous"
+      >
+        <FiChevronLeft size={18} />
+      </button>
+      <button
+        onClick={() => onNavigate(Navigate.TODAY)}
+        className="px-4 h-9 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:border-purple-400 hover:text-purple-600 dark:hover:text-purple-400 transition-all"
+      >
+        Today
+      </button>
+      <button
+        onClick={() => onNavigate(Navigate.NEXT)}
+        className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:border-purple-400 hover:text-purple-600 dark:hover:text-purple-400 transition-all"
+        title="Next"
+      >
+        <FiChevronRight size={18} />
+      </button>
+    </div>
+
+    {/* Current label */}
+    <span className="text-base font-extrabold text-gray-900 dark:text-white">{label}</span>
+
+    {/* View switcher */}
+    <div className="flex items-center gap-1 p-1 rounded-xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10">
+      {["month", "week"].map((v) => (
+        <button
+          key={v}
+          onClick={() => onView(v)}
+          className={`px-4 h-8 rounded-lg text-sm font-bold capitalize transition-all ${
+            view === v
+              ? "text-white shadow-md"
+              : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white"
+          }`}
+          style={view === v ? { background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" } : {}}
+        >
+          {v}
+        </button>
+      ))}
+    </div>
+  </div>
+);
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -69,24 +120,38 @@ const StudentAssignment = ({ teachers, students }) => {
   const [eventModalOpen, setEventModalOpen] = useState(false);
   const [events, setEvents] = useState([]);
   const [eventDetails, setEventDetails] = useState({ start: "", end: "" });
-  const [teachersEvents, setTeachersEvents] = useState({});
+  const [teachersEvents, setTeachersEvents] = useState([]);
 
   const localizer = dayjsLocalizer(dayjs);
 
   const studentsWithoutTeacher = students.filter((student) => student.teacher === null);
 
   const handleCalendarOpen = () => {
-    if (selectedTeacher?.teacherSchedules) {
-      const endDate = dayjs().add(1, "month");
+    if (selectedTeacher?.teacherSchedules?.length > 0) {
+      const endDate = dayjs().add(2, "month");
       const formattedEvents = selectedTeacher.teacherSchedules.flatMap((event) => {
-        const startTime = dayjs(event.startTime);
-        const endTime = dayjs(event.endTime);
-        return Array.from({ length: 4 }, (_, i) => {
-          const start = startTime.add(i * 7, "day");
-          const end = endTime.add(i * 7, "day");
+        const initialDate = dayjs(event.initialDateTime).local();
+        const originalStart = dayjs(event.startTime).local();
+        const originalEnd = dayjs(event.endTime).local();
+        const eventDayOfWeek = initialDate.day();
+        const durationMinutes = originalEnd.diff(originalStart, "minute");
+
+        const now = dayjs().startOf("week").local();
+        let firstOccurrence = now.startOf("day").day(eventDayOfWeek);
+        if (firstOccurrence.isBefore(now)) {
+          firstOccurrence = firstOccurrence.add(1, "week");
+        }
+
+        return Array.from({ length: 8 }, (_, i) => {
+          const start = firstOccurrence
+            .add(i * 7, "day")
+            .set("hour", originalStart.hour())
+            .set("minute", originalStart.minute())
+            .set("second", 0);
+          const end = start.add(durationMinutes, "minute");
           if (start.isBefore(endDate)) {
             return {
-              title: selectedTeacher.role === "teacher" ? event.studentName : event.teacherName,
+              title: event.studentName,
               start: start.toDate(),
               end: end.toDate(),
               studentId: event.studentId,
@@ -97,7 +162,7 @@ const StudentAssignment = ({ teachers, students }) => {
       });
       setTeachersEvents(formattedEvents);
     }
-    setIsCalendarOpen(!isCalendarOpen);
+    setIsCalendarOpen(true);
   };
 
   const handleSelectSlot = ({ start }) => {
@@ -147,7 +212,17 @@ const StudentAssignment = ({ teachers, students }) => {
         if (!response.ok) return response.text().then((t) => { throw new Error(t || "An error occurred"); });
         return response.json();
       })
-      .then(() => { window.location.reload(); })
+      .then(() => {
+        Swal.fire({
+          title: "Student Assigned!",
+          text: `${selectedStudent.name} ${selectedStudent.lastName} has been assigned to ${selectedTeacher.name} ${selectedTeacher.lastName}.`,
+          icon: "success",
+          confirmButtonText: "Great!",
+          confirmButtonColor: "#9E2FD0",
+          timer: 3000,
+          timerProgressBar: true,
+        }).then(() => window.location.reload());
+      })
       .catch((error) => { console.error("Error:", error); });
   };
 
@@ -162,15 +237,6 @@ const StudentAssignment = ({ teachers, students }) => {
   };
 
   const formatDateTime = (dateTime) => dayjs(dateTime).isValid() ? dayjs(dateTime).format("HH:mm") : "Invalid Date";
-
-  const inputFocusStyle = (e) => {
-    e.target.style.borderColor = "rgba(158,47,208,0.7)";
-    e.target.style.background = "rgba(158,47,208,0.08)";
-  };
-  const inputBlurStyle = (e) => {
-    e.target.style.borderColor = "rgba(255,255,255,0.12)";
-    e.target.style.background = "rgba(255,255,255,0.05)";
-  };
 
   return (
     <section>
@@ -283,94 +349,146 @@ const StudentAssignment = ({ teachers, students }) => {
         </div>
       </div>
 
-      {/* ── Calendar Modal ── */}
-      {isCalendarOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)" }}>
+      {/* ── Calendar Modal — rendered on document.body via portal ── */}
+      {isCalendarOpen && createPortal(
+        <div
+          className="fixed inset-0 flex items-center justify-center p-3 sm:p-6"
+          style={{ background: "rgba(0,0,0,0.70)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", zIndex: 99999 }}
+          onClick={(e) => { if (e.target === e.currentTarget) setIsCalendarOpen(false); }}
+        >
           <div
-            className="relative w-full max-w-3xl rounded-2xl overflow-hidden"
-            style={{ background: "rgba(13,10,30,0.98)", border: "1px solid rgba(255,255,255,0.08)", boxShadow: "0 32px 64px rgba(0,0,0,0.6)" }}
+            className="relative w-full rounded-2xl bg-white dark:bg-[#0d0a1e] flex flex-col"
+            style={{
+              maxWidth: "min(1100px, 96vw)",
+              height: "min(800px, 90vh)",
+              border: "1px solid rgba(158,47,208,0.30)",
+              boxShadow: "0 32px 80px rgba(0,0,0,0.5)",
+              zIndex: 100000,
+            }}
           >
-            <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, #9E2FD0, #F6B82E, #26D9A1)" }} />
-            <div className="relative z-10 p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base font-extrabold text-white flex items-center gap-2">
-                  <FiCalendar size={15} style={{ color: "#9E2FD0" }} />
-                  {selectedTeacher?.name}'s Schedule
-                </h3>
-                <button onClick={() => setIsCalendarOpen(false)} className="text-gray-500 hover:text-white transition-colors p-1">
-                  <FiX size={16} />
-                </button>
+            {/* gradient top bar */}
+            <div className="absolute top-0 left-0 w-full h-[3px] rounded-t-2xl" style={{ background: "linear-gradient(90deg, #9E2FD0, #F6B82E, #26D9A1)" }} />
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 pt-5 pb-4 flex-shrink-0 border-b border-gray-100 dark:border-white/[0.07]">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}>
+                  <FiCalendar size={16} className="text-white" />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-gray-900 dark:text-white leading-tight">
+                    {selectedTeacher?.name} {selectedTeacher?.lastName}&apos;s Schedule
+                  </h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    Use the arrows to navigate months · Switch between Month and Week views
+                  </p>
+                </div>
               </div>
-              <div className="rounded-xl overflow-hidden">
+              <button
+                onClick={() => setIsCalendarOpen(false)}
+                className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-all flex-shrink-0"
+              >
+                <FiX size={18} />
+              </button>
+            </div>
+
+            {/* Calendar */}
+            <div className="flex-1 overflow-hidden p-4">
+              <div className="rbc-admin-cal h-full rounded-xl overflow-hidden border border-gray-200 dark:border-white/[0.07]">
                 <Calendar
                   localizer={localizer}
-                  events={teachersEvents}
+                  events={[...teachersEvents, ...events]}
                   startAccessor="start"
                   endAccessor="end"
-                  style={{ height: 400, width: "100%" }}
+                  style={{ height: "100%", width: "100%" }}
                   views={["month", "week"]}
+                  defaultView="week"
+                  defaultDate={new Date()}
+                  components={{ toolbar: CalendarToolbar }}
+                  formats={{
+                    timeGutterFormat: "HH:mm",
+                    eventTimeRangeFormat: ({ start, end }) =>
+                      `${dayjs(start).format("HH:mm")} – ${dayjs(end).format("HH:mm")}`,
+                  }}
                   selectable
                   onSelectSlot={handleSelectSlot}
+                  eventPropGetter={() => ({
+                    style: {
+                      background: "linear-gradient(135deg, #9E2FD0, #7b22a8)",
+                      border: "none",
+                      borderRadius: 6,
+                      color: "#fff",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      padding: "2px 6px",
+                    },
+                  })}
                 />
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {/* ── Event Time Modal ── */}
-      {eventModalOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)" }}>
+      {/* ── Event Time Modal — also on document.body ── */}
+      {eventModalOpen && createPortal(
+        <div
+          className="fixed inset-0 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.70)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", zIndex: 100001 }}
+          onClick={(e) => { if (e.target === e.currentTarget) setEventModalOpen(false); }}
+        >
           <div
-            className="relative w-full max-w-sm rounded-2xl overflow-hidden"
-            style={{ background: "rgba(13,10,30,0.98)", border: "1px solid rgba(255,255,255,0.08)", boxShadow: "0 32px 64px rgba(0,0,0,0.6)" }}
+            className="relative w-full max-w-sm rounded-2xl bg-white dark:bg-[#0d0a1e]"
+            style={{
+              border: "1px solid rgba(158,47,208,0.30)",
+              boxShadow: "0 32px 64px rgba(0,0,0,0.5)",
+              zIndex: 100002,
+            }}
           >
-            <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, #F6B82E, #9E2FD0)" }} />
-            <div className="relative z-10 p-6">
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="text-base font-extrabold text-white flex items-center gap-2">
+            <div className="absolute top-0 left-0 w-full h-[2px] rounded-t-2xl" style={{ background: "linear-gradient(90deg, #F6B82E, #9E2FD0)" }} />
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
                   <FiClock size={15} style={{ color: "#F6B82E" }} />
                   Add Class Time
                 </h3>
-                <button onClick={() => setEventModalOpen(false)} className="text-gray-500 hover:text-white transition-colors p-1">
-                  <FiX size={16} />
+                <button
+                  onClick={() => setEventModalOpen(false)}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-all"
+                >
+                  <FiX size={15} />
                 </button>
               </div>
-              <p className="text-xs text-gray-400 mb-5">
+              <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-5">
                 {selectedDate ? dayjs(selectedDate).format("dddd, MMMM D YYYY") : ""}
               </p>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Start Time (HH:MM)</label>
+                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">Start Time (HH:MM)</label>
                   <div className="relative">
-                    <FiClock className="absolute left-4 top-1/2 -translate-y-1/2" size={13} style={{ color: "#6b7280" }} />
+                    <FiClock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={13} />
                     <input
                       type="text"
                       placeholder="09:00"
                       name="start"
                       value={eventDetails.start}
                       onChange={handleEventDetailsChange}
-                      className="w-full pl-10 pr-4 py-3 rounded-xl text-white text-sm placeholder-gray-600 outline-none border transition-all duration-200"
-                      style={{ background: "rgba(255,255,255,0.05)", borderColor: "rgba(255,255,255,0.12)" }}
-                      onFocus={inputFocusStyle}
-                      onBlur={inputBlurStyle}
+                      className="w-full pl-10 pr-4 py-3 rounded-xl text-gray-900 dark:text-white text-sm placeholder-gray-400 outline-none border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-200"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">End Time (HH:MM)</label>
+                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">End Time (HH:MM)</label>
                   <div className="relative">
-                    <FiClock className="absolute left-4 top-1/2 -translate-y-1/2" size={13} style={{ color: "#6b7280" }} />
+                    <FiClock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={13} />
                     <input
                       type="text"
                       placeholder="10:00"
                       name="end"
                       value={eventDetails.end}
                       onChange={handleEventDetailsChange}
-                      className="w-full pl-10 pr-4 py-3 rounded-xl text-white text-sm placeholder-gray-600 outline-none border transition-all duration-200"
-                      style={{ background: "rgba(255,255,255,0.05)", borderColor: "rgba(255,255,255,0.12)" }}
-                      onFocus={inputFocusStyle}
-                      onBlur={inputBlurStyle}
+                      className="w-full pl-10 pr-4 py-3 rounded-xl text-gray-900 dark:text-white text-sm placeholder-gray-400 outline-none border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-200"
                     />
                   </div>
                 </div>
@@ -385,7 +503,8 @@ const StudentAssignment = ({ teachers, students }) => {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </section>
   );

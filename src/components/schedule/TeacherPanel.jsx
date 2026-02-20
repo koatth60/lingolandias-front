@@ -311,7 +311,7 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
                   <div className="relative flex items-center gap-3">
                     <FiCalendar size={24} className="text-white" />
                     <div>
-                      <p className="font-semibold text-white">Add Event</p>
+                      <p className="font-semibold text-white">Add Class</p>
                       <p className="text-sm text-white/80">Schedule a new class</p>
                     </div>
                   </div>
@@ -329,7 +329,7 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
                   <div className="relative flex items-center gap-3">
                     <FiUserMinus size={24} className="text-white" />
                     <div>
-                      <p className="font-semibold text-white">Remove Student/Events</p>
+                      <p className="font-semibold text-white">Remove Student/Class</p>
                       <p className="text-sm text-white/80">Manage student relationship</p>
                     </div>
                   </div>

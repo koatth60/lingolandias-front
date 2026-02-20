@@ -331,8 +331,7 @@ const MainChat = ({
         className="absolute inset-0 dark:hidden"
         style={{
           background: "rgba(255,255,255,0.88)",
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
+          backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
         }}
       />
       {/* Dark mode glass */}
@@ -340,8 +339,7 @@ const MainChat = ({
         className="absolute inset-0 hidden dark:block"
         style={{
           background: "rgba(13,10,30,0.65)",
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
+          backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
         }}
       />
 

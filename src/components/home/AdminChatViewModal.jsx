@@ -159,13 +159,13 @@ const AdminChatViewModal = ({ classItem, onClose }) => {
         {/* Background layers */}
         <div
           className="absolute inset-0 dark:hidden"
-          style={{ background: "rgba(255,255,255,0.97)", backdropFilter: "blur(20px)" }}
+          style={{ background: "rgba(255,255,255,0.97)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)" }}
         />
         <div
           className="absolute inset-0 hidden dark:block"
           style={{
             background: "linear-gradient(135deg, rgba(13,10,30,0.98) 0%, rgba(26,26,46,0.97) 100%)",
-            backdropFilter: "blur(20px)",
+            backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
           }}
         />
 

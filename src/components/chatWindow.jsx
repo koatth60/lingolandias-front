@@ -1,10 +1,9 @@
 import { useRef, useLayoutEffect, useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import PerfectScrollbar from "react-perfect-scrollbar";
-import "react-perfect-scrollbar/dist/css/styles.css";
 import EmojiPicker from "emoji-picker-react";
 import { BsEmojiSmile, BsPaperclip, BsThreeDots } from "react-icons/bs";
-import { FiX, FiArrowLeft, FiMessageSquare, FiSend, FiDownload, FiEye } from "react-icons/fi";
+import { FiX, FiArrowLeft, FiMessageSquare, FiSend, FiDownload, FiEye, FiBell, FiBellOff } from "react-icons/fi";
+import { updateUserSettings } from "../redux/userSlice";
 import useDeleteMessage from "../hooks/useDeleteMessage";
 import useSocketManager from "../hooks/useSocketManager";
 import useMessageHandler from "../hooks/useMessageHandler";
@@ -32,6 +31,10 @@ const ChatWindow = ({
   const user = useSelector((state) => state.user.userInfo.user);
   const teacher = useSelector((state) => state.user.userInfo.user.teacher);
   const dispatch = useDispatch();
+  const soundEnabled = user?.settings?.notificationSound !== false;
+  const handleToggleSound = () => {
+    dispatch(updateUserSettings({ notificationSound: !soundEnabled }));
+  };
   const scrollContainerRef = useRef(null);
   const fileInputRef = useRef(null);
   const textareaRef = useRef(null);
@@ -246,6 +249,15 @@ const ChatWindow = ({
             )}
           </div>
 
+          {/* Sound toggle */}
+          <button
+            onClick={handleToggleSound}
+            title={soundEnabled ? "Mute notification sounds" : "Unmute notification sounds"}
+            className="flex-shrink-0 p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+          >
+            {soundEnabled ? <FiBell size={16} /> : <FiBellOff size={16} />}
+          </button>
+
           {/* Student dropdown */}
           {user.role === "user" && (
             <Dropdown>
@@ -275,9 +287,9 @@ const ChatWindow = ({
       </div>
 
       {/* ── Message area ── */}
-      <PerfectScrollbar
-        containerRef={(ref) => (scrollContainerRef.current = ref)}
-        className="flex-1 p-4 sm:p-5 bg-gray-50 dark:bg-black/20"
+      <div
+        ref={scrollContainerRef}
+        className="flex-1 p-4 sm:p-5 bg-gray-50 dark:bg-black/20 overflow-y-auto"
         style={{ minHeight: 0 }}
       >
         {hasMore && (
@@ -369,7 +381,7 @@ const ChatWindow = ({
             );
           })}
         </ul>
-      </PerfectScrollbar>
+      </div>
 
       {/* ── File preview modal ── */}
       {selectedFile && (

@@ -4,12 +4,10 @@ import { BsEmojiSmile, BsThreeDots } from "react-icons/bs";
 import { FiSend, FiMessageSquare } from "react-icons/fi";
 import { FaComments } from "react-icons/fa";
 import axios from "axios";
-import PerfectScrollbar from "react-perfect-scrollbar";
-import "react-perfect-scrollbar/dist/css/styles.css";
 import EmojiPicker from "emoji-picker-react";
-import avatar from "../../assets/logos/avatar.jpg";
 import MessageOptionsCard from "./MessageOptionsCard";
 import useDeleteMessage from "../../hooks/useDeleteMessage";
+import { useSelector } from "react-redux";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -20,6 +18,8 @@ const CallChatWindow = ({
   email,
   userUrl,
 }) => {
+  const user = useSelector((state) => state.user.userInfo?.user);
+
   const [socket, setSocket] = useState(null);
   const [message, setMessage] = useState("");
   const [chatMessages, setChatMessages] = useState([]);
@@ -184,11 +184,10 @@ const CallChatWindow = ({
       </div>
 
       {/* ── Messages ── */}
-      <PerfectScrollbar
-        containerRef={(ref) => (scrollContainerRef.current = ref)}
-        className="flex-1 p-4 sm:p-5 bg-gray-50 dark:bg-black/20"
+      <div
+        ref={scrollContainerRef}
+        className="flex-1 p-4 sm:p-5 bg-gray-50 dark:bg-black/20 overflow-y-auto"
         style={{ minHeight: 0 }}
-        options={{ suppressScrollX: true }}
       >
         {chatMessages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-40 gap-3">
@@ -279,7 +278,7 @@ const CallChatWindow = ({
             );
           })}
         </ul>
-      </PerfectScrollbar>
+      </div>
 
       {/* ── Input ── */}
       <div className="relative flex-shrink-0 p-3 bg-white dark:bg-[#0f0d24] border-t border-gray-100 dark:border-[rgba(158,47,208,0.12)]">

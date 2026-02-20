@@ -52,9 +52,9 @@ const messageSlice = createSlice({
           // Save room-specific unread counts
           state.unreadCounts = roomUnreadCounts;
       
-          // Calculate total unread count
-          state.totalUnread = Object.values(roomUnreadCounts).reduce(
-            (total, count) => total + count,
+          // Calculate total unread count (exclude supportRoom — has its own badge)
+          state.totalUnread = Object.entries(roomUnreadCounts).reduce(
+            (total, [key, count]) => key === 'supportRoom' ? total : total + count,
             0
           );
         } else {

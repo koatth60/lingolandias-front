@@ -14,6 +14,8 @@ const GlobalNotificationHandler = () => {
   const playSound = useNotificationSound(notificationSound);
   const prevTotalUnreadCount = useRef(0);
 
+  const soundEnabled = user?.settings?.notificationSound !== false;
+
   useEffect(() => {
     let currentTotalUnreadCount = 0;
     if (user?.role === "teacher") {
@@ -25,12 +27,12 @@ const GlobalNotificationHandler = () => {
       currentTotalUnreadCount = studentUnreadCount;
     }
 
-    if (currentTotalUnreadCount > prevTotalUnreadCount.current) {
+    if (currentTotalUnreadCount > prevTotalUnreadCount.current && soundEnabled) {
       playSound();
     }
 
     prevTotalUnreadCount.current = currentTotalUnreadCount;
-  }, [unreadCountsByRoom, studentUnreadCount, user, playSound]);
+  }, [unreadCountsByRoom, studentUnreadCount, user, playSound, soundEnabled]);
 
   return null;
 };

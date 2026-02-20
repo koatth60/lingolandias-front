@@ -9,6 +9,7 @@ import Shchedule from './components/schedule/schedule';
 import RequireAuth from './components/requireAuth';
 import JitsiClassRoom from './components/JitsiClassRoom';
 import Messages from './sections/messages';
+import Support from './sections/support';
 // import Trello from './sections/trello'; // Hidden — work in progress
 import ForgotPassword from './components/login/forgotPassword';
 import ResetPassword from './components/login/resetPassword';
@@ -129,6 +130,14 @@ function App() {
             element={
               <RequireAuth>
                 <Settings />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/support"
+            element={
+              <RequireAuth>
+                <Support />
               </RequireAuth>
             }
           />

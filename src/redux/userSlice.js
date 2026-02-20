@@ -209,11 +209,25 @@ const userSlice = createSlice({
         state.error = action.payload || action.error.message;
       })
       
-      .addCase(updateUserSettings.pending, (state) => {
+      .addCase(updateUserSettings.pending, (state, action) => {
         state.status = "loading";
+        // Optimistic update so the UI reflects the change immediately
+        if (state.userInfo?.user) {
+          state._previousSettings = state.userInfo.user.settings
+            ? { ...state.userInfo.user.settings }
+            : null;
+          if (!state.userInfo.user.settings) {
+            state.userInfo.user.settings = {};
+          }
+          state.userInfo.user.settings = {
+            ...state.userInfo.user.settings,
+            ...action.meta.arg,
+          };
+        }
       })
       .addCase(updateUserSettings.fulfilled, (state, action) => {
         state.status = "succeeded";
+        delete state._previousSettings;
         if (!state.userInfo.user.settings) {
           state.userInfo.user.settings = {};
         }
@@ -222,6 +236,11 @@ const userSlice = createSlice({
       .addCase(updateUserSettings.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload || action.error.message;
+        // Revert the optimistic update
+        if (state.userInfo?.user && "_previousSettings" in state) {
+          state.userInfo.user.settings = state._previousSettings;
+          delete state._previousSettings;
+        }
       });
   },
 });

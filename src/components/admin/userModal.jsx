@@ -70,7 +70,7 @@ const UserModal = ({ show, handleClose }) => {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4"
-      style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)" }}
+      style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)" }}
     >
       <div className="relative w-full max-w-md rounded-3xl overflow-y-auto max-h-[92vh]"
         style={{ boxShadow: "0 32px 64px rgba(0,0,0,0.25)" }}
@@ -78,12 +78,12 @@ const UserModal = ({ show, handleClose }) => {
         {/* Light mode background */}
         <div
           className="absolute inset-0 dark:hidden rounded-3xl"
-          style={{ background: "rgba(255,255,255,0.98)", backdropFilter: "blur(24px)", border: "1px solid rgba(0,0,0,0.08)" }}
+          style={{ background: "rgba(255,255,255,0.98)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "1px solid rgba(0,0,0,0.08)" }}
         />
         {/* Dark mode background */}
         <div
           className="absolute inset-0 hidden dark:block rounded-3xl"
-          style={{ background: "rgba(13,10,30,0.98)", backdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.08)" }}
+          style={{ background: "rgba(13,10,30,0.98)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.08)" }}
         />
 
         {/* Top accent */}

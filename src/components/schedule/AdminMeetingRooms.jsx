@@ -108,7 +108,7 @@ const AdminMeetingRooms = ({ onJoinMeeting }) => {
                   background: isHovered
                     ? `linear-gradient(160deg, rgba(255,255,255,0.97) 0%, ${room.glow} 100%)`
                     : "rgba(255,255,255,0.92)",
-                  backdropFilter: "blur(16px)",
+                  backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
                 }}
               />
               <div
@@ -117,7 +117,7 @@ const AdminMeetingRooms = ({ onJoinMeeting }) => {
                   background: isHovered
                     ? `linear-gradient(160deg, rgba(13,10,30,0.95) 0%, ${room.glow} 100%)`
                     : "rgba(13,10,30,0.88)",
-                  backdropFilter: "blur(16px)",
+                  backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
                 }}
               />
 

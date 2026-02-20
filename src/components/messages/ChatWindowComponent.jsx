@@ -90,14 +90,46 @@ const ChatWindowComponent = ({
     return `hsl(${Math.abs(h) % 360}, 60%, 52%)`;
   };
 
+  const formatMessageWithLinks = (text) => {
+    if (!text) return text;
+    const parts = [];
+    let lastIndex = 0;
+    const regex = /https?:\/\/[^\s]+/g;
+    let match;
+    while ((match = regex.exec(text)) !== null) {
+      if (match.index > lastIndex) parts.push(text.slice(lastIndex, match.index));
+      parts.push(
+        <a
+          key={match.index}
+          href={match[0]}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline break-all hover:opacity-80 transition-opacity"
+          style={{ color: "inherit", textDecorationColor: "rgba(255,255,255,0.6)" }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {match[0]}
+        </a>
+      );
+      lastIndex = regex.lastIndex;
+    }
+    if (lastIndex < text.length) parts.push(text.slice(lastIndex));
+    return parts.length > 0 ? parts : text;
+  };
+
   const handleJoinGeneralClass = () => {
-    const userName = user.name;
-    const emailVal = user.email;
-    let roomId = "";
-    if (user?.language === "english") roomId = "generalEnglishRoom";
-    else if (user?.language === "spanish") roomId = "generalSpanishRoom";
-    else if (user?.language === "polish") roomId = "generalPolishRoom";
-    navigate("/classroom", { state: { roomId, userName, email: emailVal, fromMessage: true } });
+    // Use the chat's own UUID as the Jitsi room name so everyone in this chat
+    // lands in the same meeting and the in-call chat shows the same messages.
+    navigate("/classroom", {
+      state: {
+        roomId: room,
+        chatRoomId: room,
+        userName: user.name,
+        email: user.email,
+        fromMessage: true,
+        chatName: studentName,
+      },
+    });
   };
 
   const isGeneralChat = studentName.includes("General Chat ");
@@ -294,7 +326,7 @@ const ChatWindowComponent = ({
 
                         {/* Burbuja del remitente */}
                         <div
-                          className="px-4 py-2.5 rounded-2xl rounded-br-sm 
+                          className="px-4 py-2.5 rounded-2xl rounded-br-sm
                                    text-white text-sm leading-relaxed
                                    shadow-lg"
                           style={{
@@ -302,7 +334,7 @@ const ChatWindowComponent = ({
                           }}
                         >
                           <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-                            {msg.message}
+                            {formatMessageWithLinks(msg.message)}
                           </p>
                         </div>
                       </div>
@@ -310,20 +342,20 @@ const ChatWindowComponent = ({
                       /* Burbuja del receptor */
                       <div className="max-w-[75%] sm:max-w-[60%]">
                         {showUsername && msg.username && msg.username !== "undefined" && (
-                          <p className="text-[11px] font-semibold 
-                                      text-purple-600 dark:text-purple-400 
+                          <p className="text-[11px] font-semibold
+                                      text-purple-600 dark:text-purple-400
                                       mb-1 ml-1">
                             {msg.username}
                           </p>
                         )}
-                        <div className="px-4 py-2.5 rounded-2xl rounded-bl-sm 
+                        <div className="px-4 py-2.5 rounded-2xl rounded-bl-sm
                                       text-sm leading-relaxed
-                                      bg-white dark:bg-white/5 
+                                      bg-white dark:bg-white/5
                                       text-gray-800 dark:text-gray-100
                                       border border-gray-200 dark:border-white/10
                                       shadow-sm dark:shadow-none">
                           <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-                            {msg.message}
+                            {formatMessageWithLinks(msg.message)}
                           </p>
                         </div>
                       </div>

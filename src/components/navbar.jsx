@@ -199,8 +199,7 @@ const Navbar = ({ header }) => {
               <div
                 className="absolute right-0 top-10 sm:top-12 w-56 sm:w-64 rounded-2xl z-50 overflow-hidden"
                 style={{
-                  backdropFilter: 'blur(20px)',
-                  WebkitBackdropFilter: 'blur(20px)',
+                  backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
                   border: '1px solid rgba(158,47,208,0.20)',
                   boxShadow: '0 20px 50px rgba(0,0,0,0.18), 0 0 0 1px rgba(255,255,255,0.08) inset',
                   animation: 'navbarDropdownIn 0.2s cubic-bezier(0.16,1,0.3,1) both',

@@ -11,7 +11,7 @@ const CHAT_ICON = `data:image/svg+xml;base64,${btoa(
 
 const JitsiClassRoom = () => {
   const location = useLocation();
-  const { userName, roomId, email, fromMeeting } = location.state || {};
+  const { userName, roomId, chatRoomId, chatName, email, fromMeeting, fromMessage } = location.state || {};
   const domain = "jitsi.srv570363.hstgr.cloud";
 
   const user = useSelector((state) => state.user.userInfo.user);
@@ -43,7 +43,14 @@ const JitsiClassRoom = () => {
           "modules/statistics/CallStats.js": "error",
         },
       },
-      toolbarButtons: ["microphone", "camera", "desktop", "hangup"],
+      // Mobile screen sharing
+      desktopSharingChromeDisabled: false,
+      desktopSharingFirefoxDisabled: false,
+      desktopSharingSources: ["screen", "window", "tab"],
+      testing: {
+        mobileDesktopSharingEnabled: true,
+      },
+      toolbarButtons: ["microphone", "camera", "desktop", "hangup", "tileview"],
       customToolbarButtons: [
         { icon: CHAT_ICON, id: "lingo-chat", text: "Chat" },
       ],
@@ -153,11 +160,12 @@ const JitsiClassRoom = () => {
       >
         {showChat && (
           <div className="relative w-full h-full chat-slide-in">
-            {fromMeeting ? (
+            {(fromMeeting || fromMessage) ? (
               <CallChatWindow
                 username={userName}
                 email={email}
-                room={roomId}
+                room={fromMessage ? (chatRoomId || roomId) : roomId}
+                chatName={fromMessage ? chatName : undefined}
                 height="100dvh"
                 externalMessages={chatMessages}
                 onSendMessage={sendMessageToJitsi}

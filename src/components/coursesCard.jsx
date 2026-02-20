@@ -16,8 +16,8 @@ const CoursesCard = ({ title, description, image, button, level, duration }) => 
       style={{ border: "1px solid rgba(158,47,208,0.15)", boxShadow: "0 6px 24px rgba(0,0,0,0.08)" }}
     >
       {/* Glass backgrounds */}
-      <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(12px)" }} />
-      <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.80)", backdropFilter: "blur(12px)" }} />
+      <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }} />
+      <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.80)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }} />
 
       {/* Top accent bar */}
       <div className="absolute top-0 left-0 w-full h-[2px] z-10" style={{ background: "linear-gradient(90deg, #9E2FD0, #F6B82E, #26D9A1)" }} />
@@ -29,7 +29,7 @@ const CoursesCard = ({ title, description, image, button, level, duration }) => 
         {/* Level badge */}
         <span
           className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-bold"
-          style={{ background: lc.bg, border: `1px solid ${lc.border}`, color: lc.color, backdropFilter: "blur(8px)" }}
+          style={{ background: lc.bg, border: `1px solid ${lc.border}`, color: lc.color, backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}
         >
           {level}
         </span>

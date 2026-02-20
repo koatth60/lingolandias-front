@@ -98,7 +98,7 @@ const AnimatedLogo = () => (
         <span
           key={lang}
           className="px-3 py-1 text-xs rounded-full border border-white/10 text-gray-300 transition-all duration-300 hover:border-purple-500/50 hover:text-white hover:bg-purple-500/10 cursor-default"
-          style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(8px)' }}
+          style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
         >
           {flag} {lang}
         </span>

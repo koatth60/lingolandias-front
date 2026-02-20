@@ -4,6 +4,15 @@ html, body, #root {
   padding: 0;
 }
 
+/* Tell the browser which color scheme is active so native UI (scrollbars,
+   form controls, date pickers) adapts correctly on Safari and all browsers */
+:root {
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import Login from './components/login/login';
 import Home from './sections/home';
 import Profile from './sections/profile';
@@ -23,8 +24,19 @@ function App() {
   const { userInfo } = useSelector((state) => state.user);
   const darkMode = userInfo?.user?.settings?.darkMode;
 
+  // Apply dark class to <html> so Tailwind dark: selectors work everywhere,
+  // including portal-rendered modals and native browser UI on all browsers/OS.
+  useEffect(() => {
+    const html = document.documentElement;
+    if (darkMode) {
+      html.classList.add('dark');
+    } else {
+      html.classList.remove('dark');
+    }
+  }, [darkMode]);
+
   return (
-    <div className={`${darkMode ? 'dark' : ''} bg-brand-light dark:bg-brand-dark min-h-screen`}>
+    <div className="bg-brand-light dark:bg-brand-dark min-h-screen">
       <Router>
         <GlobalNotificationHandler />
         <FilePreviewModal />

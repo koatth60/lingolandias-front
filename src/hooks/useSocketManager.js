@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { socket as socketInstance } from "../socket";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
@@ -19,6 +19,11 @@ const useSocketManager = (room, username, email, onNewMessage) => {
   const dispatch = useDispatch();
   const { readChat } = useChatWindow();
   const playSound = useNotificationSound(notificationSound);
+
+  // Ref so the socket handler always reads the latest value without needing
+  // to re-register the listener every time the setting changes.
+  const soundEnabledRef = useRef(user?.settings?.notificationSound !== false);
+  soundEnabledRef.current = user?.settings?.notificationSound !== false;
 
   const fetchMessages = useCallback(async () => {
     try {
@@ -57,7 +62,7 @@ const useSocketManager = (room, username, email, onNewMessage) => {
 
       const handleChatMessage = (data) => {
         if (data.email !== email) {
-          playSound();
+          if (soundEnabledRef.current) playSound();
           onNewMessage?.();
         }
         readChat(room, email);

@@ -6,6 +6,7 @@ import { toggleSidebar } from "../redux/sidebarSlice";
 import {
   FiHome, FiCalendar, FiBookOpen, FiMessageSquare, FiUser,
   FiSettings, FiHelpCircle, FiUsers, FiChevronLeft, FiVideo,
+  FiRadio,
   /* FiGrid — Trello hidden for now */ FiLogOut
 } from "react-icons/fi";
 import { fetchUnreadMessages } from "../redux/messageSlice";
@@ -39,7 +40,8 @@ const Dashboard = () => {
   const studentUnreadCount = useSelector((state) => state.chat.studentUnreadCount);
   const user = useSelector((state) => state.user.userInfo.user);
   const isSidebarOpen = useSelector((state) => state.sidebar.isSidebarOpen);
-  const { totalUnread } = useSelector((state) => state.messages);
+  const { totalUnread, unreadCounts } = useSelector((state) => state.messages);
+  const supportUnreadCount = unreadCounts?.supportRoom || 0;
 
   useEffect(() => {
     setActiveLink(location.pathname);
@@ -76,11 +78,15 @@ const Dashboard = () => {
       socket.on("newUnreadGlobalMessage", () => {
         dispatch(fetchUnreadMessages(user.id));
       });
+      socket.on("newUnreadSupportMessage", () => {
+        dispatch(fetchUnreadMessages(user.id));
+      });
     }
     return () => {
       if (socket) {
         socket.off("userStatus");
         socket.off("newUnreadGlobalMessage");
+        socket.off("newUnreadSupportMessage");
         socket.disconnect();
       }
     };
@@ -119,6 +125,9 @@ const Dashboard = () => {
       : { to: "/schedule", icon: FiCalendar, text: "My Schedule", unread: totalScheduleUnread },
     { to: "/learning", icon: FiBookOpen, text: "Learning" },
     { to: "/messages", icon: FiMessageSquare, text: "Messages", unread: totalUnread },
+    ...(user?.role === "teacher" || user?.role === "admin"
+      ? [{ to: "/support", icon: FiRadio, text: "Updates & Support", unread: supportUnreadCount, accent: true }]
+      : []),
     // { to: "/trello", icon: FiGrid, text: "Trello" }, // Hidden — work in progress
   ];
 

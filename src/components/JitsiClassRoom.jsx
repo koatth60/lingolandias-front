@@ -50,7 +50,7 @@ const JitsiClassRoom = () => {
       testing: {
         mobileDesktopSharingEnabled: true,
       },
-      toolbarButtons: ["microphone", "camera", "desktop", "hangup", "tileview"],
+      toolbarButtons: ["microphone", "camera", "desktop", "hangup"],
       customToolbarButtons: [
         { icon: CHAT_ICON, id: "lingo-chat", text: "Chat" },
       ],

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
-  FiMoon, FiBell, FiUser, FiEye, FiDroplet, FiType,
+  FiMoon, FiBell, FiBellOff, FiUser, FiEye, FiDroplet, FiType,
   FiShield, FiLogOut, FiGlobe, FiInfo, FiX, FiSun, FiCheck,
 } from "react-icons/fi";
 import Dashboard from "../../sections/dashboard";
@@ -76,6 +76,7 @@ const Settings = () => {
   const [showBanner, setShowBanner] = useState(true);
 
   const darkMode = userInfo?.user?.settings?.darkMode || false;
+  const notificationSound = userInfo?.user?.settings?.notificationSound !== false;
   const [accentColor, setAccentColor] = useState("#9E2FD0");
   const [fontSize, setFontSize] = useState("medium");
   const [classReminders, setClassReminders] = useState(true);
@@ -84,6 +85,10 @@ const Settings = () => {
 
   const handleDarkModeToggle = () => {
     dispatch(updateUserSettings({ darkMode: !darkMode }));
+  };
+
+  const handleNotificationSoundToggle = () => {
+    dispatch(updateUserSettings({ notificationSound: !notificationSound }));
   };
 
   const accentForTab = {
@@ -130,6 +135,9 @@ const Settings = () => {
               <FiBell size={15} style={{ color: "#26D9A1" }} />
               <h2 className="text-base font-extrabold text-gray-800 dark:text-white">Notifications</h2>
             </div>
+            <SettingRow icon={notificationSound ? FiBell : FiBellOff} label="Notification Sound">
+              <BrandToggle checked={notificationSound} onChange={handleNotificationSoundToggle} />
+            </SettingRow>
             <SettingRow icon={FiBell} label="Class Reminders">
               <BrandToggle checked={classReminders} onChange={() => setClassReminders((p) => !p)} />
             </SettingRow>

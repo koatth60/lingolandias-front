@@ -152,6 +152,83 @@ const userSlice = createSlice({
         state.userInfo.user.students = state.userInfo.user.students.filter(s => s.id !== studentId);
       }
     },
+    // Keeps the teacher's own calendar in sync after schedule changes
+    addTeacherSchedule: (state, action) => {
+      if (!state.userInfo?.user) return;
+      if (!Array.isArray(state.userInfo.user.teacherSchedules)) {
+        state.userInfo.user.teacherSchedules = [];
+      }
+      const e = action.payload;
+      state.userInfo.user.teacherSchedules.push({
+        ...e,
+        startTime: e.startTime || e.start,
+        endTime: e.endTime || e.end,
+        initialDateTime: e.initialDateTime || e.startTime || e.start,
+      });
+    },
+    removeTeacherSchedules: (state, action) => {
+      const ids = action.payload;
+      if (state.userInfo?.user?.teacherSchedules) {
+        state.userInfo.user.teacherSchedules = state.userInfo.user.teacherSchedules.filter(
+          s => !ids.includes(s.id)
+        );
+      }
+    },
+    updateTeacherSchedule: (state, action) => {
+      const e = action.payload;
+      if (state.userInfo?.user?.teacherSchedules) {
+        const idx = state.userInfo.user.teacherSchedules.findIndex(s => s.id === e.id);
+        if (idx !== -1) {
+          state.userInfo.user.teacherSchedules[idx] = {
+            ...state.userInfo.user.teacherSchedules[idx],
+            ...e,
+            startTime: e.startTime || e.start,
+            endTime: e.endTime || e.end,
+          };
+        }
+      }
+    },
+    // Replaces the student's full schedule list (used on reconnect/mount to apply missed changes)
+    setStudentSchedules: (state, action) => {
+      if (!state.userInfo?.user) return;
+      state.userInfo.user.studentSchedules = action.payload;
+    },
+    // Keeps the student's own calendar in sync after schedule changes pushed via socket
+    addStudentSchedule: (state, action) => {
+      if (!state.userInfo?.user) return;
+      if (!Array.isArray(state.userInfo.user.studentSchedules)) {
+        state.userInfo.user.studentSchedules = [];
+      }
+      const e = action.payload;
+      state.userInfo.user.studentSchedules.push({
+        ...e,
+        startTime: e.startTime || e.start,
+        endTime: e.endTime || e.end,
+        initialDateTime: e.initialDateTime || e.startTime || e.start,
+      });
+    },
+    removeStudentSchedules: (state, action) => {
+      const ids = action.payload;
+      if (state.userInfo?.user?.studentSchedules) {
+        state.userInfo.user.studentSchedules = state.userInfo.user.studentSchedules.filter(
+          s => !ids.includes(s.id)
+        );
+      }
+    },
+    updateStudentSchedule: (state, action) => {
+      const e = action.payload;
+      if (state.userInfo?.user?.studentSchedules) {
+        const idx = state.userInfo.user.studentSchedules.findIndex(s => s.id === e.id);
+        if (idx !== -1) {
+          state.userInfo.user.studentSchedules[idx] = {
+            ...state.userInfo.user.studentSchedules[idx],
+            ...e,
+            startTime: e.startTime || e.start,
+            endTime: e.endTime || e.end,
+          };
+        }
+      }
+    },
     logout: (state) => {
       state.userInfo = null;
       localStorage.removeItem("token");
@@ -245,6 +322,19 @@ const userSlice = createSlice({
   },
 });
 
-export const { logout, updateUserStatus, updateUserEvents, removeStudent, updateEvent } = userSlice.actions;
+export const {
+  logout,
+  updateUserStatus,
+  updateUserEvents,
+  removeStudent,
+  updateEvent,
+  addTeacherSchedule,
+  removeTeacherSchedules,
+  updateTeacherSchedule,
+  setStudentSchedules,
+  addStudentSchedule,
+  removeStudentSchedules,
+  updateStudentSchedule,
+} = userSlice.actions;
 
 export default userSlice.reducer;

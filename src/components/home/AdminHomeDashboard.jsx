@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { setSchedulesData } from "../../redux/schedulesSlice";
 import { FiGlobe } from "react-icons/fi";
 import AdminStats from "./AdminStats";
 import LanguageFilter from "./LanguageFilter";
@@ -15,13 +16,13 @@ import { getFilteredClasses } from "../../data/filterClasses";
 
 const AdminHomeDashboard = () => {
   const [activeSection, setActiveSection] = useState("all");
-  const [users, setUsers] = useState([]);
-  const [todaysClasses, setTodaysClasses] = useState({ english: [], spanish: [], polish: [] });
   const [loading, setLoading] = useState(true);
   const [chatModal, setChatModal] = useState(null); // holds classItem or null
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const admin = useSelector((state) => state.user.userInfo.user);
+  const { allSchedules, allUsers } = useSelector((state) => state.schedules);
 
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001/api";
 
@@ -31,11 +32,8 @@ const AdminHomeDashboard = () => {
       try {
         const usersResponse = await fetch(`${BACKEND_URL}/users`);
         const usersData = await usersResponse.json();
-        const allSchedules = await fetchAllSchedules(BACKEND_URL, usersData);
-        const todaysSchedules = getTodaysSchedules(allSchedules);
-        const classesByLanguage = organizeClassesByLanguage(todaysSchedules, usersData);
-        setUsers(usersData);
-        setTodaysClasses(classesByLanguage);
+        const scheduleData = await fetchAllSchedules(BACKEND_URL, usersData);
+        dispatch(setSchedulesData({ schedules: scheduleData, users: usersData }));
       } catch (error) {
         console.error("Error:", error);
       } finally {
@@ -45,7 +43,16 @@ const AdminHomeDashboard = () => {
     fetchData();
   }, []);
 
-  const { teachers, allStudents, unassignedStudents } = filterUsers(users);
+  // Re-derives instantly whenever allSchedules or allUsers changes in Redux
+  const todaysClasses = useMemo(() => {
+    const todaysSchedules = getTodaysSchedules(allSchedules);
+    return organizeClassesByLanguage(todaysSchedules, allUsers);
+  }, [allSchedules, allUsers]);
+
+  const { teachers, allStudents, unassignedStudents } = useMemo(
+    () => filterUsers(allUsers),
+    [allUsers]
+  );
   const filteredClasses = getFilteredClasses(activeSection, todaysClasses);
 
   // Join class as admin observer — room is the student's ID

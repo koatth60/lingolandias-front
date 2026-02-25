@@ -17,6 +17,7 @@ import {
   fetchMessagesForTeacher,
   fetchUnreadCountsForStudent,
 } from "../../redux/chatSlice";
+import { addStudentSchedule, removeStudentSchedules, updateStudentSchedule, setStudentSchedules } from "../../redux/userSlice";
 import { io } from "socket.io-client";
 import { meetingRooms, teacherChats } from "../../constants";
 import EditEventModal from "./EditEventModal";
@@ -51,7 +52,10 @@ const Schedule = () => {
     openModalFrom,
     setOpenModalFrom,
     handleSelectSlot,
-  } = useEventEdit();
+  } = useEventEdit(undefined, () => {
+    setIsModalOpen(false);
+    setEditingEvent(false);
+  });
 
   useEffect(() => {
     if (user.role === "teacher") {
@@ -66,6 +70,21 @@ const Schedule = () => {
       setLoading(false);
     }
   }, [user, events]);
+
+  // On mount: students fetch their fresh schedules from the server so any changes
+  // made while the tab was closed are applied immediately (no logout required).
+  useEffect(() => {
+    if (user.role === 'user' && user.id) {
+      fetch(`${BACKEND_URL}/users/student-schedules/${user.id}`)
+        .then((res) => res.json())
+        .then((schedules) => {
+          if (Array.isArray(schedules)) {
+            dispatch(setStudentSchedules(schedules));
+          }
+        })
+        .catch((err) => console.error('Failed to refresh student schedules:', err));
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     let socket;
@@ -84,11 +103,21 @@ const Schedule = () => {
         }
       };
 
+      const handleScheduleUpdated = ({ studentId, action, schedule, eventIds }) => {
+        if (user.role === 'user' && user.id === studentId) {
+          if (action === 'add') dispatch(addStudentSchedule(schedule));
+          else if (action === 'remove') dispatch(removeStudentSchedules(eventIds));
+          else if (action === 'modify') dispatch(updateStudentSchedule(schedule));
+        }
+      };
+
       socket.on("newChat", handleNewChat);
+      socket.on("scheduleUpdated", handleScheduleUpdated);
 
       return () => {
         if (socket) {
           socket.off("newChat", handleNewChat);
+          socket.off("scheduleUpdated", handleScheduleUpdated);
           socket.disconnect();
         }
       };

@@ -2,10 +2,11 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import Swal from "sweetalert2";
 import dayjs from 'dayjs';
-import { updateEvent } from "../redux/userSlice";
+import { updateTeacherSchedule } from "../redux/userSlice";
+import { updateScheduleEvent } from "../redux/schedulesSlice";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
-const useEventEdit = (studentId) => {
+const useEventEdit = (studentId, onSuccess) => {
   const dispatch = useDispatch();
   // State to store event details
   const [eventDetails, setEventDetails] = useState({
@@ -107,16 +108,20 @@ const useEventEdit = (studentId) => {
            const updatedEvent = await response.json();
            const serializedEvent = {
              ...updatedEvent,
-             start: new Date(updatedEvent.start).toISOString(),
-             end: new Date(updatedEvent.end).toISOString(),
+             startTime: new Date(updatedEvent.startTime).toISOString(),
+             endTime: new Date(updatedEvent.endTime).toISOString(),
+             initialDateTime: new Date(updatedEvent.initialDateTime).toISOString(),
            };
-           dispatch(updateEvent({ studentId, eventId: eventDetails.eventId, updatedEvent: serializedEvent }));
+           dispatch(updateScheduleEvent(serializedEvent));
+           dispatch(updateTeacherSchedule(serializedEvent));
          } catch (error) {
            console.error("Failed to parse JSON, state will not be updated:", error);
          }
         });
         setIsEditing(false);
         setEventDetails({ start: "", end: "", eventId: "" });
+        setOpenModalFrom(false);
+        onSuccess?.();
       } else {
         Swal.fire({
           title: "Error!",

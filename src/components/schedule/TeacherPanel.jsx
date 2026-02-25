@@ -3,7 +3,8 @@ import { useDispatch } from "react-redux";
 import Swal from "sweetalert2";
 import RemoveStudentModal from "./RemoveStudentModal";
 import AddEventModal from "./AddEventModal";
-import { removeStudent, updateUserEvents } from "../../redux/userSlice";
+import { removeStudent, updateUserEvents, addTeacherSchedule, removeTeacherSchedules } from "../../redux/userSlice";
+import { addSchedule, removeSchedules } from "../../redux/schedulesSlice";
 import { FiUserPlus, FiUserMinus, FiCalendar, FiMail, FiChevronRight } from "react-icons/fi";
 
 const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
@@ -68,6 +69,11 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
           }).then(() => {
            if (selectedStudent && selectedStudent.id) {
              dispatch(removeStudent(selectedStudent.id));
+             if (selectedStudent.events?.length > 0) {
+               const ids = selectedStudent.events.map(e => e.id);
+               dispatch(removeSchedules(ids));
+               dispatch(removeTeacherSchedules(ids));
+             }
            }
           });
         } else {
@@ -111,6 +117,8 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
                  end: new Date(event.end).toISOString(),
                }));
              dispatch(updateUserEvents({ studentId: selectedStudent.id, updatedEvents }));
+             dispatch(removeSchedules(events));
+             dispatch(removeTeacherSchedules(events));
            }
           });
         } else {
@@ -163,15 +171,12 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
              const newEvent = await response.json();
              const serializedEvent = {
                ...newEvent,
-               start: new Date(newEvent.start).toISOString(),
-               end: new Date(newEvent.end).toISOString(),
+               startTime: new Date(newEvent.startTime).toISOString(),
+               endTime: new Date(newEvent.endTime).toISOString(),
+               initialDateTime: new Date(newEvent.initialDateTime).toISOString(),
              };
-             const updatedEvents = [...selectedStudent.events, serializedEvent].map(event => ({
-               ...event,
-               start: new Date(event.start).toISOString(),
-               end: new Date(event.end).toISOString(),
-             }));
-             dispatch(updateUserEvents({ studentId: selectedStudent.id, updatedEvents }));
+             dispatch(addSchedule(serializedEvent));
+             dispatch(addTeacherSchedule(serializedEvent));
            } catch (error) {
              console.error("Failed to parse JSON, state will not be updated:", error);
            }
@@ -329,7 +334,7 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
                   <div className="relative flex items-center gap-3">
                     <FiUserMinus size={24} className="text-white" />
                     <div>
-                      <p className="font-semibold text-white">Remove Student/Class</p>
+                      <p className="font-semibold text-white">Remove Class/Student</p>
                       <p className="text-sm text-white/80">Manage student relationship</p>
                     </div>
                   </div>

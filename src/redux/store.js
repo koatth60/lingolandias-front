@@ -4,6 +4,7 @@ import sidebarReducer from '../redux/sidebarSlice';
 import messageReducer from '../redux/messageSlice'; // Existing messages reducer
 import chatReducer from '../redux/chatSlice'; // New chat reducer
 import filePreviewReducer from './filePreviewSlice';
+import schedulesReducer from './schedulesSlice';
 
 const saveState = (state) => {
   try {
@@ -36,6 +37,7 @@ const store = configureStore({
     messages: messageReducer,
     chat: chatReducer,
     filePreview: filePreviewReducer,
+    schedules: schedulesReducer,
   },
   preloadedState: persistedState,
 });

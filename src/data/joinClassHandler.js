@@ -24,6 +24,7 @@ export const handleJoinClass = ({
       setIsModalOpen(true);
     } else {
       let roomId;
+      let chatName;
       if (user.role === "user") {
         // For students, use the student's own id as the room id.
         roomId = user.id;
@@ -31,11 +32,12 @@ export const handleJoinClass = ({
         // For teachers, look up the student in the teacher's students array.
         const student = user.students?.find((s) => s.id === classSession.studentId);
         roomId = student ? student.id : classSession.studentId;
+        chatName = student?.name;
       }
       const userName = user.name;
       const email = user.email;
       navigate("/classroom", {
-        state: { roomId, userName, email, fromMeeting: false },
+        state: { roomId, userName, email, fromMeeting: false, chatName },
       });
     }
   };

@@ -2,12 +2,13 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { setSchedulesData } from "../../redux/schedulesSlice";
-import { FiGlobe } from "react-icons/fi";
+import { FiGlobe, FiVideo } from "react-icons/fi";
 import AdminStats from "./AdminStats";
 import LanguageFilter from "./LanguageFilter";
 import ClassCard from "./ClassCard";
 import QuickActions from "./QuickActions";
 import AdminChatViewModal from "./AdminChatViewModal";
+import RecordingsModal from "./RecordingsModal";
 
 import { getTodayDayName } from "../../data/dateUtils";
 import { filterUsers } from "../../data/userUtils";
@@ -18,6 +19,7 @@ const AdminHomeDashboard = () => {
   const [activeSection, setActiveSection] = useState("all");
   const [loading, setLoading] = useState(true);
   const [chatModal, setChatModal] = useState(null); // holds classItem or null
+  const [showRecordings, setShowRecordings] = useState(false);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -105,14 +107,27 @@ const AdminHomeDashboard = () => {
             className="absolute top-[-60px] right-[-40px] w-[220px] h-[220px] rounded-full pointer-events-none"
             style={{ background: "radial-gradient(circle, rgba(158,47,208,0.18), transparent 70%)" }}
           />
-          <div className="relative z-10 px-4 sm:px-10 py-6 sm:py-8">
-            <p className="text-[10px] font-bold tracking-widest text-[#9E2FD0] uppercase mb-2">Admin Panel</p>
-            <h1 className="text-3xl sm:text-4xl font-extrabold login-gradient-text mb-2">
-              Admin Dashboard
-            </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Today is <span className="font-semibold text-gray-700 dark:text-gray-300">{getTodayDayName()}</span> — showing classes scheduled for today.
-            </p>
+          <div className="relative z-10 px-4 sm:px-10 py-6 sm:py-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-bold tracking-widest text-[#9E2FD0] uppercase mb-2">Admin Panel</p>
+              <h1 className="text-3xl sm:text-4xl font-extrabold login-gradient-text mb-2">
+                Admin Dashboard
+              </h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Today is <span className="font-semibold text-gray-700 dark:text-gray-300">{getTodayDayName()}</span> — showing classes scheduled for today.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowRecordings(true)}
+              className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-sm font-semibold text-white shadow-lg transition-all hover:opacity-90 hover:scale-[1.02] active:scale-100 self-start sm:self-auto flex-shrink-0"
+              style={{
+                background: "linear-gradient(135deg, #9E2FD0, #7b22a8)",
+                boxShadow: "0 4px 16px rgba(158,47,208,0.35)",
+              }}
+            >
+              <FiVideo size={16} />
+              Class Recordings
+            </button>
           </div>
         </section>
 
@@ -121,7 +136,7 @@ const AdminHomeDashboard = () => {
           teachersCount={teachers.length}
           studentsCount={allStudents.length}
           unassignedStudentsCount={unassignedStudents.length}
-          totalUsers={users.length}
+          totalUsers={allUsers.length}
           todaysClassesCount={filteredClasses.length}
         />
 
@@ -183,6 +198,11 @@ const AdminHomeDashboard = () => {
           classItem={chatModal}
           onClose={() => setChatModal(null)}
         />
+      )}
+
+      {/* ── Recordings modal ── */}
+      {showRecordings && (
+        <RecordingsModal onClose={() => setShowRecordings(false)} />
       )}
     </>
   );

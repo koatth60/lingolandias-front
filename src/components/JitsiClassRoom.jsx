@@ -4,9 +4,14 @@ import { useLocation, useNavigate } from "react-router-dom";
 import ChatWindow from "./chatWindow";
 import CallChatWindow from "./messages/CallChatWindow";
 import { useSelector } from "react-redux";
+import useRecording from "../hooks/useRecording";
 
 const CHAT_ICON = `data:image/svg+xml;base64,${btoa(
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg>'
+)}`;
+
+const RECORD_ICON = `data:image/svg+xml;base64,${btoa(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5" fill="white" stroke="none"/></svg>'
 )}`;
 
 const JitsiClassRoom = () => {
@@ -21,9 +26,18 @@ const JitsiClassRoom = () => {
 
   const navigate = useNavigate();
   const [chatMessages, setChatMessages] = useState([]);
-  const [showChat,   setShowChat]   = useState(false);
-  const [loading,    setLoading]    = useState(true);
-  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [showChat,     setShowChat]     = useState(false);
+  const [loading,      setLoading]      = useState(true);
+  const [isChatOpen,   setIsChatOpen]   = useState(false);
+
+  const {
+    isRecording,
+    isRecordingRef,
+    recordingSeconds,
+    formatTime,
+    toggleRecording,
+    stopRecording,
+  } = useRecording({ userName, roomId, role: user.role, email, studentName: chatName });
 
   useEffect(() => {
     if (apiRef.current) {
@@ -31,39 +45,9 @@ const JitsiClassRoom = () => {
     }
   }, [userName]);
 
-  const options = {
-    configOverwrite: {
-      startWithAudioMuted: false,
-      disableModeratorIndicator: true,
-      apiLogLevels: ["error"],
-      logging: {
-        defaultLogLevel: "error",
-        loggers: {
-          "modules/RTC/TraceablePeerConnection.js": "error",
-          "modules/statistics/CallStats.js": "error",
-        },
-      },
-      // Mobile screen sharing
-      desktopSharingChromeDisabled: false,
-      desktopSharingFirefoxDisabled: false,
-      desktopSharingSources: ["screen", "window", "tab"],
-      testing: {
-        mobileDesktopSharingEnabled: true,
-      },
-      toolbarButtons: ["microphone", "camera", "desktop", "hangup"],
-      customToolbarButtons: [
-        { icon: CHAT_ICON, id: "lingo-chat", text: "Chat" },
-      ],
-    },
-    interfaceConfigOverwrite: {
-      DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
-    },
-    userInfo: { displayName: userName },
-  };
-
   const handleCallEnd = () => {
+    if (isRecordingRef.current) stopRecording();
     navigate(user.role === "admin" ? "/home" : "/schedule");
-    window.location.reload();
   };
 
   const handleIncomingMessage = (message) => {
@@ -80,6 +64,36 @@ const JitsiClassRoom = () => {
     showChatRef.current = false;
     setShowChat(false);
     setIsChatOpen(false);
+  };
+
+  const options = {
+    configOverwrite: {
+      startWithAudioMuted: false,
+      disableModeratorIndicator: true,
+      apiLogLevels: ["error"],
+      logging: {
+        defaultLogLevel: "error",
+        loggers: {
+          "modules/RTC/TraceablePeerConnection.js": "error",
+          "modules/statistics/CallStats.js": "error",
+        },
+      },
+      desktopSharingChromeDisabled: false,
+      desktopSharingFirefoxDisabled: false,
+      desktopSharingSources: ["screen", "window", "tab"],
+      testing: { mobileDesktopSharingEnabled: true },
+      toolbarButtons: ["microphone", "camera", "desktop", "hangup"],
+      customToolbarButtons: [
+        { icon: CHAT_ICON, id: "lingo-chat", text: "Chat" },
+        ...(user.role === "teacher" || user.role === "admin"
+          ? [{ icon: RECORD_ICON, id: "lingo-record", text: "Record" }]
+          : []),
+      ],
+    },
+    interfaceConfigOverwrite: {
+      DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
+    },
+    userInfo: { displayName: userName },
   };
 
   return (
@@ -112,19 +126,18 @@ const JitsiClassRoom = () => {
             apiRef.current = externalApi;
             externalApi.executeCommand("displayName", userName);
             externalApi.addEventListener("videoConferenceLeft", handleCallEnd);
-            externalApi.addEventListener("incomingMessage", (message) => {
-              handleIncomingMessage(message);
-            });
+            externalApi.addEventListener("incomingMessage", handleIncomingMessage);
 
-            if (user.role !== "admin") {
-              externalApi.addEventListener("toolbarButtonClicked", ({ key }) => {
-                if (key !== "lingo-chat") return;
+            externalApi.addEventListener("toolbarButtonClicked", ({ key }) => {
+              if (key === "lingo-chat") {
                 const next = !showChatRef.current;
                 showChatRef.current = next;
                 setShowChat(next);
                 setIsChatOpen(next);
-              });
-            }
+              } else if (key === "lingo-record") {
+                toggleRecording();
+              }
+            });
 
             setLoading(false);
           }}
@@ -144,6 +157,21 @@ const JitsiClassRoom = () => {
             }}
           />
         )}
+
+        {/* Recording indicator — pulsing red dot + elapsed time */}
+        {isRecording && (
+          <div
+            className="absolute top-4 left-4 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full pointer-events-none"
+            style={{ background: "rgba(0,0,0,0.60)", backdropFilter: "blur(6px)" }}
+          >
+            <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
+            <span className="text-white text-sm font-mono font-semibold tracking-wide">
+              {formatTime(recordingSeconds)}
+            </span>
+          </div>
+        )}
+
+        {/* Upload status is now shown globally by UploadStatusBar in App.jsx */}
       </div>
 
       {/* Chat panel — slides in from the RIGHT */}

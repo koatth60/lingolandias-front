@@ -140,8 +140,10 @@ const Schedule = () => {
       const roomId = event.studentId;
       const userName = user.name;
       const email = user.email;
+      const student = user.students?.find((s) => s.id === event.studentId);
+      const chatName = student?.name;
       navigate("/classroom", {
-        state: { roomId, userName, email, fromMeeting: false },
+        state: { roomId, userName, email, fromMeeting: false, chatName },
       });
     }
   };

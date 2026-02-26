@@ -15,6 +15,8 @@ import ForgotPassword from './components/login/forgotPassword';
 import ResetPassword from './components/login/resetPassword';
 import GlobalNotificationHandler from './components/GlobalNotificationHandler';
 import FilePreviewModal from './components/FilePreviewModal';
+import { UploadProvider } from './context/UploadContext';
+import UploadStatusBar from './components/UploadStatusBar';
 import HelpCenter from './components/help-center/HelpCenter';
 import Settings from './components/settings/Settings';
 import { useSelector } from 'react-redux';
@@ -37,7 +39,9 @@ function App() {
   }, [darkMode]);
 
   return (
+    <UploadProvider>
     <div className="bg-brand-light dark:bg-brand-dark min-h-screen">
+      <UploadStatusBar />
       <Router>
         <GlobalNotificationHandler />
         <FilePreviewModal />
@@ -146,6 +150,7 @@ function App() {
         </Routes>
       </Router>
     </div>
+    </UploadProvider>
   );
 }
 

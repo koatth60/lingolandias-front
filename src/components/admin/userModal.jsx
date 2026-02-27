@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Swal from "sweetalert2";
 import { FiUserPlus, FiUser, FiMail, FiLock, FiX } from "react-icons/fi";
+import { useTheme } from "../../context/ThemeContext";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -36,6 +37,7 @@ const onSelectBlur = (e) => {
 };
 
 const UserModal = ({ show, handleClose }) => {
+  const { theme } = useTheme();
   const [name, setName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -185,6 +187,7 @@ const UserModal = ({ show, handleClose }) => {
               value={role}
               onChange={(e) => setRole(e.target.value)}
               className={selectCls}
+              style={{ colorScheme: theme === "dark" ? "dark" : "light" }}
               onFocus={onSelectFocus}
               onBlur={onSelectBlur}
             >
@@ -198,6 +201,7 @@ const UserModal = ({ show, handleClose }) => {
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
               className={selectCls}
+              style={{ colorScheme: theme === "dark" ? "dark" : "light" }}
               onFocus={onSelectFocus}
               onBlur={onSelectBlur}
             >

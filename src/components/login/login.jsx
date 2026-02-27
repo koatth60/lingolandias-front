@@ -70,6 +70,15 @@ const Login = () => {
       if (action.payload?.token) {
         navigate("/home");
         window.location.reload();
+      } else if (action.payload?.networkError) {
+        Swal.fire({
+          title: "Connection Error",
+          text: "We couldn't reach the server. Please check your internet connection and try again. If the problem continues, your network or ISP may be blocking the connection.",
+          icon: "error",
+          confirmButtonText: "Ok",
+          background: '#1a1a2e',
+          color: '#fff',
+        });
       } else {
         Swal.fire({
           title: "Login Failed",

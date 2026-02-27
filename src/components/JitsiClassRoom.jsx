@@ -82,7 +82,8 @@ const JitsiClassRoom = () => {
       desktopSharingFirefoxDisabled: false,
       desktopSharingSources: ["screen", "window", "tab"],
       testing: { mobileDesktopSharingEnabled: true },
-      toolbarButtons: ["microphone", "camera", "desktop", "hangup"],
+      startWithTileView: true,
+      toolbarButtons: ["microphone", "camera", "desktop", "tileview", "hangup"],
       customToolbarButtons: [
         { icon: CHAT_ICON, id: "lingo-chat", text: "Chat" },
         ...(user.role === "teacher" || user.role === "admin"
@@ -197,6 +198,7 @@ const JitsiClassRoom = () => {
                 height="100dvh"
                 externalMessages={chatMessages}
                 onSendMessage={sendMessageToJitsi}
+                onClose={closeChat}
               />
             ) : (
               <ChatWindow
@@ -207,7 +209,10 @@ const JitsiClassRoom = () => {
                 meeting={true}
                 isChatOpen={isChatOpen}
                 setIsChatOpen={setIsChatOpen}
-                setShowChat={setShowChat}
+                setShowChat={(val) => {
+                  showChatRef.current = !!val;
+                  setShowChat(val);
+                }}
               />
             )}
             {/* Floating close pill — mobile only */}

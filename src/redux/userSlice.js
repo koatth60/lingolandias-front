@@ -5,21 +5,26 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
 // Async action to log in a user
-export const loginUser = createAsyncThunk("user/loginUser", async (data) => {
-  const response = await fetch(`${BACKEND_URL}/auth/login`, {
-    method: "POST",
-    body: JSON.stringify(data),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+export const loginUser = createAsyncThunk("user/loginUser", async (data, { rejectWithValue }) => {
+  try {
+    const response = await fetch(`${BACKEND_URL}/auth/login`, {
+      method: "POST",
+      body: JSON.stringify(data),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-  const result = await response.json();
-  if (result.token) {
-    localStorage.setItem("token", result.token);
+    const result = await response.json();
+    if (result.token) {
+      localStorage.setItem("token", result.token);
+    }
+
+    return result;
+  } catch {
+    // Network failure: server unreachable, SSL error, ISP blocking, etc.
+    return rejectWithValue({ networkError: true });
   }
-
-  return result;
 });
 
 // Async action to update user information
@@ -93,13 +98,39 @@ export const updateUserSettings = createAsyncThunk(
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update user settings");
+        return rejectWithValue("Failed to update settings");
       }
 
       const updatedSettings = await response.json();
       return updatedSettings;
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue("Cannot connect to the server. Please check your connection.");
+    }
+  }
+);
+
+export const changePassword = createAsyncThunk(
+  "user/changePassword",
+  async (passwordData, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/auth/change-password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(passwordData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(result.message || "Failed to change password");
+      }
+
+      return result;
+    } catch {
+      return rejectWithValue("Cannot connect to the server. Please check your connection.");
     }
   }
 );
@@ -229,6 +260,33 @@ const userSlice = createSlice({
         }
       }
     },
+    // Adds an assigned student + their schedules to the teacher's Redux state
+    addStudentToTeacher: (state, action) => {
+      if (!state.userInfo?.user) return;
+      const { student, schedules } = action.payload;
+      if (!Array.isArray(state.userInfo.user.students)) {
+        state.userInfo.user.students = [];
+      }
+      if (!state.userInfo.user.students.find(s => s.id === student.id)) {
+        state.userInfo.user.students.push(student);
+      }
+      if (!Array.isArray(state.userInfo.user.teacherSchedules)) {
+        state.userInfo.user.teacherSchedules = [];
+      }
+      schedules.forEach(e => {
+        state.userInfo.user.teacherSchedules.push({
+          ...e,
+          startTime: e.startTime || e.start,
+          endTime: e.endTime || e.end,
+          initialDateTime: e.initialDateTime || e.startTime || e.start,
+        });
+      });
+    },
+    // Sets (or clears) the teacher reference on a student's Redux state
+    setStudentTeacher: (state, action) => {
+      if (!state.userInfo?.user) return;
+      state.userInfo.user.teacher = action.payload;
+    },
     logout: (state) => {
       state.userInfo = null;
       localStorage.removeItem("token");
@@ -240,6 +298,7 @@ const userSlice = createSlice({
       // Handle login actions
       .addCase(loginUser.pending, (state) => {
         state.status = "loading";
+        state.error = null;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.status = "succeeded";
@@ -247,7 +306,9 @@ const userSlice = createSlice({
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.status = "failed";
-        state.error = action.error.message;
+        state.error = action.payload?.networkError
+          ? "Cannot connect to the server. Please check your connection."
+          : (action.error.message || "Login failed");
       })
 
       // Handle update user actions
@@ -335,6 +396,8 @@ export const {
   addStudentSchedule,
   removeStudentSchedules,
   updateStudentSchedule,
+  addStudentToTeacher,
+  setStudentTeacher,
 } = userSlice.actions;
 
 export default userSlice.reducer;

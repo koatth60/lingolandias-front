@@ -17,7 +17,16 @@ import {
   fetchMessagesForTeacher,
   fetchUnreadCountsForStudent,
 } from "../../redux/chatSlice";
-import { addStudentSchedule, removeStudentSchedules, updateStudentSchedule, setStudentSchedules } from "../../redux/userSlice";
+import {
+  addStudentSchedule,
+  removeStudentSchedules,
+  updateStudentSchedule,
+  setStudentSchedules,
+  addStudentToTeacher,
+  setStudentTeacher,
+  removeStudent,
+  removeTeacherSchedules,
+} from "../../redux/userSlice";
 import { io } from "socket.io-client";
 import { meetingRooms, teacherChats } from "../../constants";
 import EditEventModal from "./EditEventModal";
@@ -71,18 +80,19 @@ const Schedule = () => {
     }
   }, [user, events]);
 
-  // On mount: students fetch their fresh schedules from the server so any changes
-  // made while the tab was closed are applied immediately (no logout required).
+  // On mount: students fetch their full profile (teacher + schedules) so any
+  // changes made while the tab was closed are applied immediately.
   useEffect(() => {
     if (user.role === 'user' && user.id) {
-      fetch(`${BACKEND_URL}/users/student-schedules/${user.id}`)
+      fetch(`${BACKEND_URL}/users/student-profile/${user.id}`)
         .then((res) => res.json())
-        .then((schedules) => {
-          if (Array.isArray(schedules)) {
-            dispatch(setStudentSchedules(schedules));
+        .then((data) => {
+          if (Array.isArray(data.studentSchedules)) {
+            dispatch(setStudentSchedules(data.studentSchedules));
           }
+          dispatch(setStudentTeacher(data.teacher ?? null));
         })
-        .catch((err) => console.error('Failed to refresh student schedules:', err));
+        .catch((err) => console.error('Failed to refresh student profile:', err));
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -111,13 +121,36 @@ const Schedule = () => {
         }
       };
 
+      const handleStudentAssigned = ({ teacherId, studentId, schedules, student, teacher }) => {
+        if (user.role === 'teacher' && user.id === teacherId) {
+          dispatch(addStudentToTeacher({ student, schedules }));
+        } else if (user.role === 'user' && user.id === studentId) {
+          dispatch(setStudentTeacher(teacher));
+          schedules.forEach(s => dispatch(addStudentSchedule(s)));
+        }
+      };
+
+      const handleStudentRemoved = ({ teacherId, studentIds, deletedScheduleIds }) => {
+        if (user.role === 'teacher' && user.id === teacherId) {
+          studentIds.forEach(id => dispatch(removeStudent(id)));
+          dispatch(removeTeacherSchedules(deletedScheduleIds));
+        } else if (user.role === 'user' && studentIds.includes(user.id)) {
+          dispatch(setStudentTeacher(null));
+          dispatch(removeStudentSchedules(deletedScheduleIds));
+        }
+      };
+
       socket.on("newChat", handleNewChat);
       socket.on("scheduleUpdated", handleScheduleUpdated);
+      socket.on("studentAssigned", handleStudentAssigned);
+      socket.on("studentRemoved", handleStudentRemoved);
 
       return () => {
         if (socket) {
           socket.off("newChat", handleNewChat);
           socket.off("scheduleUpdated", handleScheduleUpdated);
+          socket.off("studentAssigned", handleStudentAssigned);
+          socket.off("studentRemoved", handleStudentRemoved);
           socket.disconnect();
         }
       };

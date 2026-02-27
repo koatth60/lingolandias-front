@@ -265,6 +265,11 @@ const ResetPassword = () => {
     <PageShell>
       <div className="w-full max-w-md login-animate-slide-up">
         <div className="rounded-3xl p-8 border border-white/10" style={glassCard}>
+          {/* Top accent */}
+          <div
+            className="h-px mb-6 opacity-30"
+            style={{ background: 'linear-gradient(90deg, transparent, #9E2FD0, #F6B82E, transparent)' }}
+          />
           {/* Header */}
           <div className="mb-6 text-center">
             <h1 className="text-2xl font-extrabold text-white tracking-tight mb-1">
@@ -274,12 +279,6 @@ const ResetPassword = () => {
               Hello <span className="font-semibold text-gray-300">{user.name}</span>, let&apos;s get you a new password
             </p>
           </div>
-
-          {/* Divider */}
-          <div
-            className="h-px mb-6 opacity-30"
-            style={{ background: 'linear-gradient(90deg, transparent, #9E2FD0, #F6B82E, transparent)' }}
-          />
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* New password */}

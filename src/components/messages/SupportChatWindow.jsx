@@ -8,6 +8,7 @@ import axios from "axios";
 import EmojiPicker from "emoji-picker-react";
 import MessageOptionsCard from "./MessageOptionsCard";
 import useDeleteMessage from "../../hooks/useDeleteMessage";
+import useMessageFormatter from "../../hooks/useMessageFormatter";
 import { fetchUnreadMessages } from "../../redux/messageSlice";
 import useNotificationSound from "../../hooks/useNotificationSound";
 import notificationSound from "../../assets/sounds/notification.wav";
@@ -34,6 +35,8 @@ const SupportChatWindow = () => {
 
   const { handleDeleteMessage, toggleOptionsMenu, openMessageId } =
     useDeleteMessage(setChatMessages, socket, SUPPORT_ROOM, "deleteSupportChat", "supportChatDeleted");
+
+  const { formatMessageWithLinks } = useMessageFormatter(() => {});
 
   // Fetch history
   const fetchMessages = async () => {
@@ -288,7 +291,7 @@ const SupportChatWindow = () => {
                               <span className="text-[9px] font-bold tracking-wider uppercase">Admin</span>
                             </div>
                           )}
-                          <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{msg.message}</p>
+                          <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{formatMessageWithLinks(msg.message, true)}</p>
                         </div>
                       </div>
                     ) : (
@@ -320,11 +323,11 @@ const SupportChatWindow = () => {
                               background: "linear-gradient(135deg, #F6B82E, #d4950a)",
                               boxShadow: "0 3px 10px rgba(246,184,46,0.30)",
                             }}>
-                            <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{msg.message}</p>
+                            <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{formatMessageWithLinks(msg.message, true)}</p>
                           </div>
                         ) : (
                           <div className="px-3.5 py-2 rounded-2xl rounded-bl-sm text-sm leading-relaxed shadow-sm bg-white dark:bg-white/[0.07] text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-white/10">
-                            <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{msg.message}</p>
+                            <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{formatMessageWithLinks(msg.message, false)}</p>
                           </div>
                         )}
                       </div>

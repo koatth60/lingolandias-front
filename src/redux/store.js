@@ -1,10 +1,26 @@
-import { configureStore } from '@reduxjs/toolkit';
-import userReducer from '../redux/userSlice';
+import { configureStore, createListenerMiddleware } from '@reduxjs/toolkit';
+import { toast } from 'react-toastify';
+import userReducer, { updateUserSettings, logout } from '../redux/userSlice';
 import sidebarReducer from '../redux/sidebarSlice';
 import messageReducer from '../redux/messageSlice'; // Existing messages reducer
 import chatReducer from '../redux/chatSlice'; // New chat reducer
 import filePreviewReducer from './filePreviewSlice';
 import schedulesReducer from './schedulesSlice';
+
+// Intercept failed settings saves and notify the user
+const settingsListener = createListenerMiddleware();
+settingsListener.startListening({
+  actionCreator: updateUserSettings.rejected,
+  effect: (action, listenerApi) => {
+    const status = action.payload?.status;
+    if (status === 401 || status === 403) {
+      toast.error('Your session has expired. Please log in again.', { toastId: 'session-expired' });
+      listenerApi.dispatch(logout());
+    } else {
+      toast.error('Could not save settings. Please try again.', { toastId: 'settings-error' });
+    }
+  },
+});
 
 const saveState = (state) => {
   try {
@@ -40,6 +56,8 @@ const store = configureStore({
     schedules: schedulesReducer,
   },
   preloadedState: persistedState,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().prepend(settingsListener.middleware),
 });
 
 store.subscribe(() => {

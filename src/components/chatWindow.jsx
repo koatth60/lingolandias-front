@@ -208,8 +208,8 @@ const ChatWindow = ({
           {isChatOpen && !onBack && (
             <button
               onClick={() => {
-                setIsChatOpen(!isChatOpen);
-                setShowChat(!setShowChat);
+                setIsChatOpen(false);
+                setShowChat(false);
               }}
               className="flex-shrink-0 p-1.5 rounded-lg text-[#9E2FD0] dark:text-[#c084fc] hover:bg-[#9E2FD0]/10 transition-colors"
             >

@@ -130,7 +130,7 @@ const ChatList = ({
                   if (!editingEvent) {
                     Swal.fire({
                       title: "Edit Mode Enabled",
-                      text: "Select a calendar event to modify, then click a new time slot to move it.",
+                      text: "Click twice on a calendar event to modify it, then select a new time slot to move it.",
                       icon: "info",
                       confirmButtonText: "Got it!",
                       background: "#1a1a2e",

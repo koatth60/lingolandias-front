@@ -123,7 +123,7 @@ const Dashboard = () => {
     user?.role === "admin"
       ? { to: "/schedule", icon: FiVideo, text: "Meetings" }
       : { to: "/schedule", icon: FiCalendar, text: "My Schedule", unread: totalScheduleUnread },
-    { to: "/learning", icon: FiBookOpen, text: "Learning" },
+    // { to: "/learning", icon: FiBookOpen, text: "Learning" }, // Hidden — work in progress
     { to: "/messages", icon: FiMessageSquare, text: "Messages", unread: totalUnread },
     ...(user?.role === "teacher" || user?.role === "admin"
       ? [{ to: "/support", icon: FiRadio, text: "Updates & Support", unread: supportUnreadCount, accent: true }]

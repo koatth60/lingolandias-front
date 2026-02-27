@@ -153,7 +153,7 @@ const LoginForm = ({
               style={{ background: 'rgba(239,68,68,0.08)', borderColor: 'rgba(239,68,68,0.25)' }}
             >
               <span className="text-red-400 shrink-0 mt-0.5">⚠</span>
-              <span>{userError || "Those credentials don't look right. Please try again."}</span>
+              <span>{typeof userError === 'string' ? userError : "Those credentials don't look right. Please try again."}</span>
             </div>
           )}
         </form>

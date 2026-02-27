@@ -80,14 +80,14 @@ function App() {
               </RequireAuth>
             }
           />
-          <Route
+          {/* <Route
             path="/learning"
             element={
               <RequireAuth>
                 <Learning />
               </RequireAuth>
             }
-          />
+          /> */}
           <Route
             path="/schedule"
             element={

@@ -19,53 +19,24 @@ export const fetchMessagesForTeacher = createAsyncThunk(
         return { lastMessages: {}, unreadCounts: {} };
       }
 
-      const results = await Promise.all(
-        user.students.map(async (student) => {
-          try {
-            const response = await axios.get(
-              `${BACKEND_URL}/chat/messages/${student.id}`,
-              { params: { email: user.email } }
-            );
+      const rooms = user.students.map((s) => s.id).join(",");
+      const response = await axios.get(`${BACKEND_URL}/chat/teacher-summary`, {
+        params: { rooms, email: user.email },
+      });
 
-            const messages = response.data || [];
-            const unreadCount = messages.filter(
-              (msg) => msg.unread && msg.email !== user.email
-            ).length;
+      const { lastMessages, unreadCounts } = response.data;
 
-            const lastMessage = messages.length > 0 ? messages[0] : null;
+      // Resolve file URLs to readable names for the chat list preview
+      const resolvedMessages = {};
+      for (const [room, msg] of Object.entries(lastMessages)) {
+        if (msg && msg.isFile) {
+          resolvedMessages[room] = { ...msg, content: extractFileName(msg.content) };
+        } else {
+          resolvedMessages[room] = msg;
+        }
+      }
 
-            let processedMessage = null;
-            if (lastMessage) {
-              const userUrl = lastMessage.userUrl;
-              const isFile = Boolean(userUrl);
-
-              processedMessage = {
-                content: isFile ? extractFileName(userUrl) : lastMessage.message,
-                timestamp: lastMessage.timestamp,
-                type: isFile ? "file" : "text",
-                sender: lastMessage.email,
-              };
-            }
-
-            return {
-              room: student.id,
-              lastMessage: processedMessage,
-              unreadCount,
-            };
-          } catch (error) {
-            console.error(`Error fetching messages for student ${student.id}:`, error);
-            return { room: student.id, lastMessage: null, unreadCount: 0 };
-          }
-        })
-      );
-
-      return results.reduce(
-        (acc, curr) => ({
-          lastMessages: { ...acc.lastMessages, [curr.room]: curr.lastMessage },
-          unreadCounts: { ...acc.unreadCounts, [curr.room]: curr.unreadCount },
-        }),
-        { lastMessages: {}, unreadCounts: {} }
-      );
+      return { lastMessages: resolvedMessages, unreadCounts };
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
     }

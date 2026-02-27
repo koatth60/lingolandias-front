@@ -1,12 +1,22 @@
 import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import {
-  FiMoon, FiBell, FiBellOff, FiUser, FiEye, FiDroplet, FiType,
-  FiShield, FiLogOut, FiGlobe, FiInfo, FiX, FiSun, FiCheck,
+  FiMoon, FiBell, FiBellOff, FiUser, FiEye,
+  FiShield, FiLogOut, FiGlobe, FiSun, FiCheck,
 } from "react-icons/fi";
+import { toast } from "react-toastify";
 import Dashboard from "../../sections/dashboard";
 import Navbar from "../navbar";
-import { updateUserSettings } from "../../redux/userSlice";
+import { updateUserSettings, logout } from "../../redux/userSlice";
+import ChangePasswordModal from "./ChangePasswordModal";
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = window.atob(base64);
+  return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)));
+}
 
 const glassCard = {
   border: "1px solid rgba(158,47,208,0.15)",
@@ -71,16 +81,14 @@ const BrandSelect = ({ value, onChange, children }) => (
 
 const Settings = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { userInfo } = useSelector((state) => state.user);
   const [activeTab, setActiveTab] = useState("appearance");
-  const [showBanner, setShowBanner] = useState(true);
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
   const darkMode = userInfo?.user?.settings?.darkMode || false;
   const notificationSound = userInfo?.user?.settings?.notificationSound !== false;
-  const [accentColor, setAccentColor] = useState("#9E2FD0");
-  const [fontSize, setFontSize] = useState("medium");
-  const [classReminders, setClassReminders] = useState(true);
-  const [messageNotifications, setMessageNotifications] = useState(true);
+  const classReminders = userInfo?.user?.settings?.classReminders === true;
   const [language, setLanguage] = useState("en");
 
   const handleDarkModeToggle = () => {
@@ -89,6 +97,75 @@ const Settings = () => {
 
   const handleNotificationSoundToggle = () => {
     dispatch(updateUserSettings({ notificationSound: !notificationSound }));
+  };
+
+  const handleClassRemindersToggle = async () => {
+    const newValue = !classReminders;
+
+    if (newValue) {
+      if (!("Notification" in window) || !("serviceWorker" in navigator)) {
+        toast.error("Your browser does not support push notifications.");
+        return;
+      }
+
+      const permission = await Notification.requestPermission();
+      if (permission !== "granted") {
+        toast.error("Please allow notifications in your browser to enable class reminders.");
+        return;
+      }
+
+      try {
+        const registration = await navigator.serviceWorker.register("/sw.js");
+        await navigator.serviceWorker.ready;
+
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/push/vapid-public-key`);
+        const { publicKey } = await res.json();
+
+        const subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(publicKey),
+        });
+
+        await fetch(`${import.meta.env.VITE_BACKEND_URL}/push/subscribe`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(subscription),
+        });
+
+        dispatch(updateUserSettings({ classReminders: true }));
+        toast.success("Class reminders enabled!");
+      } catch {
+        toast.error("Failed to enable notifications. Please try again.");
+      }
+    } else {
+      try {
+        const registration = await navigator.serviceWorker.getRegistration("/sw.js");
+        if (registration) {
+          const subscription = await registration.pushManager.getSubscription();
+          if (subscription) await subscription.unsubscribe();
+        }
+
+        await fetch(`${import.meta.env.VITE_BACKEND_URL}/push/unsubscribe`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+
+        dispatch(updateUserSettings({ classReminders: false }));
+        toast.success("Class reminders disabled.");
+      } catch {
+        toast.error("Failed to disable notifications.");
+      }
+    }
+  };
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/login");
   };
 
   const accentForTab = {
@@ -109,22 +186,6 @@ const Settings = () => {
             <SettingRow icon={darkMode ? FiMoon : FiSun} label="Dark Mode">
               <BrandToggle checked={darkMode} onChange={handleDarkModeToggle} />
             </SettingRow>
-            <SettingRow icon={FiDroplet} label="Accent Color">
-              <input
-                type="color"
-                value={accentColor}
-                onChange={(e) => setAccentColor(e.target.value)}
-                className="w-8 h-8 rounded-lg cursor-pointer"
-                style={{ border: "none", padding: 0, background: "none" }}
-              />
-            </SettingRow>
-            <SettingRow icon={FiType} label="Font Size">
-              <BrandSelect value={fontSize} onChange={(e) => setFontSize(e.target.value)}>
-                <option value="small">Small</option>
-                <option value="medium">Medium</option>
-                <option value="large">Large</option>
-              </BrandSelect>
-            </SettingRow>
           </div>
         );
 
@@ -139,10 +200,7 @@ const Settings = () => {
               <BrandToggle checked={notificationSound} onChange={handleNotificationSoundToggle} />
             </SettingRow>
             <SettingRow icon={FiBell} label="Class Reminders">
-              <BrandToggle checked={classReminders} onChange={() => setClassReminders((p) => !p)} />
-            </SettingRow>
-            <SettingRow icon={FiBell} label="New Messages">
-              <BrandToggle checked={messageNotifications} onChange={() => setMessageNotifications((p) => !p)} />
+              <BrandToggle checked={classReminders} onChange={handleClassRemindersToggle} />
             </SettingRow>
           </div>
         );
@@ -164,7 +222,8 @@ const Settings = () => {
 
             <div className="py-3 border-b border-black/5 dark:border-white/5">
               <button
-                className="w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-150"
+                onClick={() => setShowChangePassword(true)}
+                className="w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-150 hover:opacity-80"
                 style={{ background: "rgba(158,47,208,0.05)", border: "1px solid rgba(158,47,208,0.10)" }}
               >
                 <div
@@ -179,7 +238,8 @@ const Settings = () => {
 
             <div className="pt-3">
               <button
-                className="w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-150"
+                onClick={handleLogout}
+                className="w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-150 hover:opacity-80"
                 style={{ background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.12)" }}
               >
                 <div
@@ -200,6 +260,7 @@ const Settings = () => {
   };
 
   return (
+    <>
     <div className="flex w-full relative min-h-screen">
       {/* Page backgrounds */}
       <div className="absolute inset-0 pointer-events-none dark:hidden"
@@ -220,25 +281,6 @@ const Settings = () => {
         <Navbar header="Settings" />
 
         <div className="px-3 sm:px-6 md:px-8 py-5 sm:py-8 flex flex-col gap-5 sm:gap-8 max-w-4xl mx-auto w-full">
-
-          {/* ── Demo banner ── */}
-          {showBanner && (
-            <div className="relative rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(246,184,46,0.28)" }}>
-              <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(246,184,46,0.07)" }} />
-              <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(246,184,46,0.06)" }} />
-              <div className="relative z-10 flex items-start sm:items-center justify-between gap-3 p-4">
-                <div className="flex items-start sm:items-center gap-3">
-                  <FiInfo size={15} style={{ color: "#F6B82E" }} className="flex-shrink-0 mt-0.5 sm:mt-0" />
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    This page is for demonstration purposes only. Settings are not yet fully functional.
-                  </p>
-                </div>
-                <button onClick={() => setShowBanner(false)} className="flex-shrink-0 transition-opacity hover:opacity-60">
-                  <FiX size={15} style={{ color: "#F6B82E" }} />
-                </button>
-              </div>
-            </div>
-          )}
 
           {/* ── Page header ── */}
           <div>
@@ -306,6 +348,11 @@ const Settings = () => {
         </div>
       </div>
     </div>
+
+    {showChangePassword && (
+      <ChangePasswordModal onClose={() => setShowChangePassword(false)} />
+    )}
+    </>
   );
 };
 

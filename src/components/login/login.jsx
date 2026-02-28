@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -58,6 +59,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const userStatus = useSelector((state) => state.user.status);
   const userError = useSelector((state) => state.user.error);
 
@@ -72,19 +74,19 @@ const Login = () => {
         window.location.reload();
       } else if (action.payload?.networkError) {
         Swal.fire({
-          title: "Connection Error",
-          text: "We couldn't reach the server. Please check your internet connection and try again. If the problem continues, your network or ISP may be blocking the connection.",
+          title: t("login.connectionError"),
+          text: t("login.connectionErrorText"),
           icon: "error",
-          confirmButtonText: "Ok",
+          confirmButtonText: t("login.ok"),
           background: '#1a1a2e',
           color: '#fff',
         });
       } else {
         Swal.fire({
-          title: "Login Failed",
-          text: 'Wrong credentials. If you cannot remember your password, please click on the "Forgot Password" link below the login form.',
+          title: t("login.loginFailed"),
+          text: t("login.loginFailedText"),
           icon: "error",
-          confirmButtonText: "Ok",
+          confirmButtonText: t("login.ok"),
           background: '#1a1a2e',
           color: '#fff',
         });

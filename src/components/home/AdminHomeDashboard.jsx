@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import { useTranslation } from "react-i18next";
 import { setSchedulesData } from "../../redux/schedulesSlice";
 import { FiGlobe, FiVideo } from "react-icons/fi";
 import AdminStats from "./AdminStats";
@@ -23,6 +24,7 @@ const AdminHomeDashboard = () => {
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const admin = useSelector((state) => state.user.userInfo.user);
   const { allSchedules, allUsers } = useSelector((state) => state.schedules);
 
@@ -85,7 +87,7 @@ const AdminHomeDashboard = () => {
               animation: "spin 0.8s linear infinite",
             }}
           />
-          <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Loading dashboard…</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{t("adminHome.loading")}</p>
         </div>
       </main>
     );
@@ -109,12 +111,12 @@ const AdminHomeDashboard = () => {
           />
           <div className="relative z-10 px-4 sm:px-10 py-6 sm:py-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
             <div>
-              <p className="text-[10px] font-bold tracking-widest text-[#9E2FD0] uppercase mb-2">Admin Panel</p>
+              <p className="text-[10px] font-bold tracking-widest text-[#9E2FD0] uppercase mb-2">{t("adminHome.adminPanel")}</p>
               <h1 className="text-3xl sm:text-4xl font-extrabold login-gradient-text mb-2">
-                Admin Dashboard
+                {t("adminHome.adminDashboard")}
               </h1>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Today is <span className="font-semibold text-gray-700 dark:text-gray-300">{getTodayDayName()}</span> — showing classes scheduled for today.
+                {t("adminHome.todayClasses", { day: getTodayDayName() })}
               </p>
             </div>
             <button
@@ -126,7 +128,7 @@ const AdminHomeDashboard = () => {
               }}
             >
               <FiVideo size={16} />
-              Class Recordings
+              {t("adminHome.classRecordings")}
             </button>
           </div>
         </section>
@@ -144,7 +146,7 @@ const AdminHomeDashboard = () => {
         <section>
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
             <FiGlobe className="text-[#9E2FD0]" size={20} />
-            <h2 className="text-xl font-bold text-gray-800 dark:text-white">Today's Classes</h2>
+            <h2 className="text-xl font-bold text-gray-800 dark:text-white">{t("adminHome.todaysClasses")}</h2>
             <span
               className="px-2.5 py-0.5 rounded-full text-xs font-bold text-white"
               style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 2px 8px rgba(158,47,208,0.35)" }}
@@ -179,10 +181,10 @@ const AdminHomeDashboard = () => {
               <div className="relative z-10">
                 <div className="text-5xl mb-4">📚</div>
                 <h3 className="text-lg font-bold text-gray-700 dark:text-gray-300 mb-1">
-                  No classes scheduled for {getTodayDayName()}
+                  {t("adminHome.noClasses", { day: getTodayDayName() })}
                 </h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Check the schedule to add sessions.
+                  {t("adminHome.checkSchedule")}
                 </p>
               </div>
             </div>

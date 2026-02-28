@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import Swal from "sweetalert2";
+import { useTranslation } from "react-i18next";
 import { Calendar, dayjsLocalizer, Navigate } from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./studentAssignment.css";
 import dayjs from "dayjs";
 import { FiUserCheck, FiCalendar, FiClock, FiX, FiCheckCircle, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 
-const CalendarToolbar = ({ label, onNavigate, onView, view }) => (
+const CalendarToolbar = ({ label, onNavigate, onView, view }) => {
+  const { t } = useTranslation();
+  return (
   <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-[#13102a] border-b border-gray-200 dark:border-white/[0.08] flex-wrap gap-3">
     {/* Navigation */}
     <div className="flex items-center gap-2">
@@ -22,7 +25,7 @@ const CalendarToolbar = ({ label, onNavigate, onView, view }) => (
         onClick={() => onNavigate(Navigate.TODAY)}
         className="px-4 h-9 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:border-purple-400 hover:text-purple-600 dark:hover:text-purple-400 transition-all"
       >
-        Today
+        {t("common.today")}
       </button>
       <button
         onClick={() => onNavigate(Navigate.NEXT)}
@@ -54,7 +57,8 @@ const CalendarToolbar = ({ label, onNavigate, onView, view }) => (
       ))}
     </div>
   </div>
-);
+  );
+};
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -113,6 +117,7 @@ const UserRow = ({ person, selected, accentColor, onClick }) => (
 
 // eslint-disable-next-line react/prop-types
 const StudentAssignment = ({ teachers, students }) => {
+  const { t } = useTranslation();
   const [selectedTeacher, setSelectedTeacher] = useState(null);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -214,10 +219,10 @@ const StudentAssignment = ({ teachers, students }) => {
       })
       .then(() => {
         Swal.fire({
-          title: "Student Assigned!",
-          text: `${selectedStudent.name} ${selectedStudent.lastName} has been assigned to ${selectedTeacher.name} ${selectedTeacher.lastName}.`,
+          title: t("common.success"),
+          text: t("admin.assignSuccess"),
           icon: "success",
-          confirmButtonText: "Great!",
+          confirmButtonText: "Ok",
           confirmButtonColor: "#9E2FD0",
           timer: 3000,
           timerProgressBar: true,
@@ -242,7 +247,7 @@ const StudentAssignment = ({ teachers, students }) => {
     <section>
       <div className="flex items-center gap-2 mb-5">
         <FiUserCheck size={17} style={{ color: "#9E2FD0" }} />
-        <h2 className="text-lg font-extrabold text-gray-800 dark:text-white">Assign Student to Teacher</h2>
+        <h2 className="text-lg font-extrabold text-gray-800 dark:text-white">{t("admin.assignTitle")}</h2>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -255,11 +260,11 @@ const StudentAssignment = ({ teachers, students }) => {
           <div className="relative z-10 p-4">
             <div className="flex items-center gap-2 mb-3">
               <span className="w-5 h-5 rounded-full bg-[#26D9A1] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">1</span>
-              <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200">Select a Student</h3>
+              <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200">{t("admin.selectStudentLabel")}</h3>
             </div>
             <div className="max-h-60 overflow-y-auto custom-scrollbar">
               {studentsWithoutTeacher.length === 0 ? (
-                <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-6">No unassigned students.</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-6">{t("admin.noUnassigned")}</p>
               ) : (
                 studentsWithoutTeacher.map((student) => (
                   <UserRow
@@ -283,7 +288,7 @@ const StudentAssignment = ({ teachers, students }) => {
           <div className="relative z-10 p-4">
             <div className="flex items-center gap-2 mb-3">
               <span className="w-5 h-5 rounded-full bg-[#9E2FD0] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">2</span>
-              <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200">Select a Teacher</h3>
+              <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200">{t("admin.selectTeacherLabel")}</h3>
             </div>
             <div className="max-h-60 overflow-y-auto custom-scrollbar">
               {teachers.map((teacher) => (
@@ -307,7 +312,7 @@ const StudentAssignment = ({ teachers, students }) => {
           <div className="relative z-10 p-4 flex flex-col h-full">
             <div className="flex items-center gap-2 mb-3">
               <span className="w-5 h-5 rounded-full bg-[#F6B82E] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">3</span>
-              <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200">Set Schedule</h3>
+              <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200">{t("admin.setSchedule")}</h3>
             </div>
 
             <button
@@ -316,12 +321,12 @@ const StudentAssignment = ({ teachers, students }) => {
               className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-white text-sm font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
               style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 4px 14px rgba(158,47,208,0.30)" }}
             >
-              <FiCalendar size={14} /> View Availability
+              <FiCalendar size={14} /> {t("admin.viewAvailability")}
             </button>
 
             {events.length > 0 && (
               <div className="mt-4 flex-1">
-                <p className="text-xs font-bold text-gray-600 dark:text-gray-300 mb-2">Scheduled Classes</p>
+                <p className="text-xs font-bold text-gray-600 dark:text-gray-300 mb-2">{t("admin.scheduledClasses")}</p>
                 <ul className="space-y-1.5 max-h-28 overflow-y-auto custom-scrollbar">
                   {events.map((event, index) => (
                     <li
@@ -343,7 +348,7 @@ const StudentAssignment = ({ teachers, students }) => {
               className="w-full mt-auto pt-3 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-white text-sm font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
               style={{ background: "linear-gradient(135deg, #26D9A1, #1fa07a)", boxShadow: "0 4px 14px rgba(38,217,161,0.28)" }}
             >
-              <FiUserCheck size={14} /> Assign Student
+              <FiUserCheck size={14} /> {t("admin.assignStudent")}
             </button>
           </div>
         </div>
@@ -377,10 +382,10 @@ const StudentAssignment = ({ teachers, students }) => {
                 </div>
                 <div>
                   <h3 className="text-base font-extrabold text-gray-900 dark:text-white leading-tight">
-                    {selectedTeacher?.name} {selectedTeacher?.lastName}&apos;s Schedule
+                    {t("admin.teacherSchedule", { name: `${selectedTeacher?.name} ${selectedTeacher?.lastName}` })}
                   </h3>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    Use the arrows to navigate months · Switch between Month and Week views
+                    {t("admin.calendarHint")}
                   </p>
                 </div>
               </div>
@@ -451,7 +456,7 @@ const StudentAssignment = ({ teachers, students }) => {
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-base font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
                   <FiClock size={15} style={{ color: "#F6B82E" }} />
-                  Add Class Time
+                  {t("addEvent.addClassTime")}
                 </h3>
                 <button
                   onClick={() => setEventModalOpen(false)}
@@ -465,7 +470,7 @@ const StudentAssignment = ({ teachers, students }) => {
               </p>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">Start Time (HH:MM)</label>
+                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">{t("addEvent.startTime")}</label>
                   <div className="relative">
                     <FiClock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={13} />
                     <input
@@ -479,7 +484,7 @@ const StudentAssignment = ({ teachers, students }) => {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">End Time (HH:MM)</label>
+                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">{t("addEvent.endTime")}</label>
                   <div className="relative">
                     <FiClock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={13} />
                     <input
@@ -498,7 +503,7 @@ const StudentAssignment = ({ teachers, students }) => {
                   className="w-full py-3 rounded-xl text-white text-sm font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
                   style={{ background: "linear-gradient(135deg, #F6B82E, #d4981a)", boxShadow: "0 4px 14px rgba(246,184,46,0.28)" }}
                 >
-                  <FiClock size={14} /> Add Event
+                  <FiClock size={14} /> {t("addEvent.add")}
                 </button>
               </div>
             </div>

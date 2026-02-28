@@ -3,6 +3,7 @@ import Dashboard from "../../sections/dashboard";
 import Navbar from "../navbar";
 import UserModal from "./userModal";
 import DeleteUserModal from "./deleteUserModal";
+import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import StudentAssignment from "./studentAssignment";
 import RemoveStudent from "./RemoveStudent";
@@ -17,6 +18,7 @@ const glassCard = {
 };
 
 const Admin = () => {
+  const { t } = useTranslation();
   const user = useSelector((state) => state.user.userInfo.user);
   const [showUserModal, setShowUserModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -37,9 +39,9 @@ const Admin = () => {
   const allStudents = users.filter((u) => u.role === "user");
 
   const stats = [
-    { label: "Teachers", value: teachers.length, color: "#9E2FD0", icon: FiBookOpen },
-    { label: "All Students", value: allStudents.length, color: "#26D9A1", icon: FiUsers },
-    { label: "Unassigned", value: students.length, color: "#F6B82E", icon: FiGrid },
+    { label: t("admin.teachers"), value: teachers.length, color: "#9E2FD0", icon: FiBookOpen },
+    { label: t("admin.allStudents"), value: allStudents.length, color: "#26D9A1", icon: FiUsers },
+    { label: t("admin.unassigned"), value: students.length, color: "#F6B82E", icon: FiGrid },
   ];
 
   return (
@@ -60,7 +62,7 @@ const Admin = () => {
       <Dashboard />
 
       <div className="w-full relative z-10 flex flex-col min-h-screen overflow-y-auto">
-        <Navbar header="Admin Panel" />
+        <Navbar header={t("adminHome.adminPanel")} />
 
         <div className="px-3 sm:px-4 md:px-8 py-4 sm:py-6 flex flex-col gap-5 sm:gap-8">
 
@@ -68,10 +70,10 @@ const Admin = () => {
           <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
             <div>
               <h2 className="text-xl sm:text-2xl font-extrabold login-gradient-text mb-1">
-                Hello {user.name}, welcome to the Admin Interface
+                {t("admin.hello", { name: user.name })}
               </h2>
               <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md">
-                Manage users, assign students to teachers, and oversee all platform activity.
+                {t("admin.subtitle")}
               </p>
             </div>
             <div className="flex gap-2 sm:gap-3 flex-shrink-0 flex-wrap">
@@ -80,14 +82,14 @@ const Admin = () => {
                 className="flex items-center gap-2 text-white font-bold text-sm px-4 sm:px-5 py-2.5 rounded-xl transition-all hover:scale-[1.03] active:scale-[0.97]"
                 style={{ background: "linear-gradient(135deg, #26D9A1, #1fa07a)", boxShadow: "0 4px 14px rgba(38,217,161,0.35)" }}
               >
-                <FiUserPlus size={15} /> Create User
+                <FiUserPlus size={15} /> {t("admin.createUser")}
               </button>
               <button
                 onClick={toggleDeleteModal}
                 className="flex items-center gap-2 text-white font-bold text-sm px-4 sm:px-5 py-2.5 rounded-xl transition-all hover:scale-[1.03] active:scale-[0.97]"
                 style={{ background: "linear-gradient(135deg, #ef4444, #dc2626)", boxShadow: "0 4px 14px rgba(239,68,68,0.30)" }}
               >
-                <FiUserX size={15} /> Delete User
+                <FiUserX size={15} /> {t("admin.deleteUser")}
               </button>
             </div>
           </div>

@@ -1,35 +1,17 @@
 import { useNavigate } from "react-router-dom";
 import { FiBarChart2, FiUsers, FiSettings } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
 
-const ACTIONS = [
-  {
-    icon: FiBarChart2,
-    title: "View Analytics",
-    description: "Access detailed platform analytics and reports",
-    gradient: "linear-gradient(135deg, #9E2FD0, #7b22a8)",
-    shadow: "rgba(158,47,208,0.35)",
-    to: null,
-  },
-  {
-    icon: FiUsers,
-    title: "Manage Users",
-    description: "Add, edit or remove users and teachers",
-    gradient: "linear-gradient(135deg, #26D9A1, #1fa07a)",
-    shadow: "rgba(38,217,161,0.35)",
-    to: "/admin",
-  },
-  {
-    icon: FiSettings,
-    title: "Platform Settings",
-    description: "Configure platform settings and preferences",
-    gradient: "linear-gradient(135deg, #F6B82E, #d4981a)",
-    shadow: "rgba(246,184,46,0.35)",
-    to: "/settings",
-  },
+const ACTIONS_CONFIG = [
+  { icon: FiBarChart2, titleKey: "quickActions.analytics", descKey: "quickActions.analyticsDesc", gradient: "linear-gradient(135deg, #9E2FD0, #7b22a8)", shadow: "rgba(158,47,208,0.35)", to: null },
+  { icon: FiUsers, titleKey: "quickActions.manageUsers", descKey: "quickActions.manageUsersDesc", gradient: "linear-gradient(135deg, #26D9A1, #1fa07a)", shadow: "rgba(38,217,161,0.35)", to: "/admin" },
+  { icon: FiSettings, titleKey: "quickActions.platformSettings", descKey: "quickActions.platformSettingsDesc", gradient: "linear-gradient(135deg, #F6B82E, #d4981a)", shadow: "rgba(246,184,46,0.35)", to: "/settings" },
 ];
 
 const QuickActions = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const ACTIONS = ACTIONS_CONFIG.map((a) => ({ ...a, title: t(a.titleKey), description: t(a.descKey) }));
 
   return (
     <section>
@@ -38,7 +20,7 @@ const QuickActions = () => {
           className="inline-block w-1 h-4 rounded-full flex-shrink-0"
           style={{ background: "linear-gradient(to bottom, #9E2FD0, #F6B82E)" }}
         />
-        Quick Actions
+        {t("quickActions.title")}
       </h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
         {ACTIONS.map(({ icon: Icon, title, description, gradient, shadow, to }) => (

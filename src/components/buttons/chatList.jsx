@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import ChatWindow from "../chatWindow";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchMessagesForTeacher } from "../../redux/chatSlice";
+import { useTranslation } from "react-i18next";
 import {
   FiEdit,
   FiUsers,
@@ -23,6 +24,7 @@ const ChatList = ({
   editingEvent,
   loading,
 }) => {
+  const { t, i18n } = useTranslation();
   const lastMessagesByRoom = useSelector(
     (state) => state.chat.lastMessagesByRoom
   );
@@ -43,9 +45,9 @@ const ChatList = ({
         minute: "2-digit",
       });
     } else if (messageDate >= yesterday) {
-      return "Yesterday";
+      return t("common.yesterday");
     } else {
-      return messageDate.toLocaleDateString("en-US", {
+      return messageDate.toLocaleDateString(i18n.language, {
         month: "short",
         day: "numeric",
       });
@@ -112,11 +114,12 @@ const ChatList = ({
               <FiMessageSquare size={14} className="text-white" />
             </div>
             <span className="text-sm font-extrabold login-gradient-text whitespace-nowrap">
-              Messages
+              {t("chatList.messages")}
             </span>
           </div>
 
           <Dropdown
+            buttonText={t("common.actions")}
             buttonClassName="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold text-white rounded-lg transition-opacity hover:opacity-85"
             buttonStyle={{
               background: "linear-gradient(135deg, #9E2FD0, #7b22a8)",
@@ -129,10 +132,10 @@ const ChatList = ({
                   setEditingEvent((prev) => !prev);
                   if (!editingEvent) {
                     Swal.fire({
-                      title: "Edit Mode Enabled",
-                      text: "Click twice on a calendar event to modify it, then select a new time slot to move it.",
+                      title: t("chatList.editModeTitle"),
+                      text: t("chatList.editModeText"),
                       icon: "info",
-                      confirmButtonText: "Got it!",
+                      confirmButtonText: t("chatList.editModeConfirm"),
                       background: "#1a1a2e",
                       color: "#fff",
                       confirmButtonColor: "#9E2FD0",
@@ -144,11 +147,11 @@ const ChatList = ({
               >
                 {editingEvent ? (
                   <>
-                    <FiXCircle className="mr-2" /> Cancel Edit Mode
+                    <FiXCircle className="mr-2" /> {t("chatList.cancelEdit")}
                   </>
                 ) : (
                   <>
-                    <FiEdit className="mr-2" /> Edit Calendar
+                    <FiEdit className="mr-2" /> {t("chatList.editCalendar")}
                   </>
                 )}
               </button>
@@ -159,7 +162,7 @@ const ChatList = ({
                 className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-[#9E2FD0]/5 dark:hover:bg-white/5 flex items-center"
                 role="menuitem"
               >
-                <FiUsers className="mr-2" /> Group Class
+                <FiUsers className="mr-2" /> {t("chatList.groupClass")}
               </button>
             )}
             {!loading &&
@@ -247,14 +250,14 @@ const ChatList = ({
                         {lastMessage ? (
                           lastMessage.type === "file" ? (
                             <span className="text-[#9E2FD0] font-medium">
-                              📎 File Attachment
+                              📎 {t("chatList.fileAttachment")}
                             </span>
                           ) : (
                             lastMessage.content
                           )
                         ) : (
                           <span className="italic text-gray-400 dark:text-gray-600">
-                            No messages yet
+                            {t("chatList.noMessages")}
                           </span>
                         )}
                       </p>

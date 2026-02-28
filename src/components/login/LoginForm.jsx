@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import PropTypes from 'prop-types';
+import { useTranslation } from "react-i18next";
 import { FiMail, FiLock, FiArrowRight } from 'react-icons/fi';
 
 const LoginForm = ({
@@ -11,6 +12,8 @@ const LoginForm = ({
   userStatus,
   userError,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <div
       className="w-full md:w-auto md:min-w-[390px] max-w-md login-animate-slide-up"
@@ -28,10 +31,10 @@ const LoginForm = ({
         {/* Card header */}
         <div className="mb-4 md:mb-7 text-center">
           <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight mb-1">
-            Welcome back
+            {t("login.welcomeBack")}
           </h1>
           <p className="text-gray-500 text-xs sm:text-sm">
-            Sign in to continue your language journey
+            {t("login.signInSubtitle")}
           </p>
         </div>
 
@@ -45,7 +48,7 @@ const LoginForm = ({
           {/* Email Input */}
           <div className="group">
             <label className="block text-gray-400 text-xs font-semibold uppercase tracking-widest mb-2">
-              Email
+              {t("login.email")}
             </label>
             <div className="relative">
               <FiMail
@@ -61,7 +64,7 @@ const LoginForm = ({
                 onFocus={(e) => { e.target.style.borderColor = 'rgba(158,47,208,0.7)'; e.target.style.background = 'rgba(158,47,208,0.08)'; }}
                 onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.1)'; e.target.style.background = 'rgba(255,255,255,0.05)'; }}
                 type="email"
-                placeholder="you@example.com"
+                placeholder={t("login.emailPlaceholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="email"
@@ -73,7 +76,7 @@ const LoginForm = ({
           {/* Password Input */}
           <div className="group">
             <label className="block text-gray-400 text-xs font-semibold uppercase tracking-widest mb-2">
-              Password
+              {t("login.password")}
             </label>
             <div className="relative">
               <FiLock
@@ -89,7 +92,7 @@ const LoginForm = ({
                 onFocus={(e) => { e.target.style.borderColor = 'rgba(158,47,208,0.7)'; e.target.style.background = 'rgba(158,47,208,0.08)'; }}
                 onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.1)'; e.target.style.background = 'rgba(255,255,255,0.05)'; }}
                 type="password"
-                placeholder="••••••••"
+                placeholder={t("login.passwordPlaceholder")}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="current-password"
@@ -105,13 +108,13 @@ const LoginForm = ({
                 type="checkbox"
                 className="w-4 h-4 rounded border-white/20 bg-white/5 text-purple-500 focus:ring-purple-500/30 focus:ring-offset-0"
               />
-              <span className="text-xs group-hover:text-gray-300 transition-colors duration-200">Remember me</span>
+              <span className="text-xs group-hover:text-gray-300 transition-colors duration-200">{t("login.rememberMe")}</span>
             </label>
             <Link
               to="/forgotpassword"
               className="text-xs text-purple-400 hover:text-orange-400 transition-colors duration-200 font-medium"
             >
-              Forgot password?
+              {t("login.forgotPassword")}
             </Link>
           </div>
 
@@ -135,11 +138,11 @@ const LoginForm = ({
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
-                  Unlocking your world…
+                  {t("login.unlocking")}
                 </>
               ) : (
                 <>
-                  Sign In
+                  {t("login.signIn")}
                   <FiArrowRight className="group-hover:translate-x-1 transition-transform duration-200" size={15} />
                 </>
               )}
@@ -153,7 +156,7 @@ const LoginForm = ({
               style={{ background: 'rgba(239,68,68,0.08)', borderColor: 'rgba(239,68,68,0.25)' }}
             >
               <span className="text-red-400 shrink-0 mt-0.5">⚠</span>
-              <span>{typeof userError === 'string' ? userError : "Those credentials don't look right. Please try again."}</span>
+              <span>{typeof userError === 'string' ? userError : t("login.credentialsError")}</span>
             </div>
           )}
         </form>

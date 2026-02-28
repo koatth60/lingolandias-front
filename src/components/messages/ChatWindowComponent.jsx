@@ -1,5 +1,6 @@
 // ChatWindowComponent.jsx
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import send from "../../assets/logos/send.png";
 import { BsEmojiSmile, BsThreeDots } from "react-icons/bs";
 import { FiVideo, FiChevronLeft } from "react-icons/fi";
@@ -26,6 +27,7 @@ const ChatWindowComponent = ({
   socket,
   onBackClick,
 }) => {
+  const { t, i18n } = useTranslation();
   const scrollContainerRef = useRef(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -72,10 +74,10 @@ const ChatWindowComponent = ({
     const d = new Date(ts);
     const today = new Date();
     const yest = new Date(); yest.setDate(today.getDate() - 1);
-    const t = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    if (d.toDateString() === today.toDateString()) return t;
-    if (d.toDateString() === yest.toDateString()) return `Yesterday ${t}`;
-    return `${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })} ${t}`;
+    const time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    if (d.toDateString() === today.toDateString()) return time;
+    if (d.toDateString() === yest.toDateString()) return `${t("common.yesterday")} ${time}`;
+    return `${d.toLocaleDateString(i18n.language, { month: "short", day: "numeric" })} ${time}`;
   };
 
   const getInitials = (name) => {
@@ -213,9 +215,9 @@ const ChatWindowComponent = ({
               </button>
             )}
           </div>
-          <span className="text-[11px] font-medium 
+          <span className="text-[11px] font-medium
                          text-emerald-600 dark:text-emerald-400">
-            ● Active now
+            ● {t("chatWindow.activeNow")}
           </span>
         </div>
 
@@ -246,7 +248,7 @@ const ChatWindowComponent = ({
                 <FaComments className="text-purple-400 dark:text-purple-400" size={24} />
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                No messages yet — say hi!
+                {t("chatWindow.noMessages")}
               </p>
             </div>
           )}
@@ -391,7 +393,7 @@ const ChatWindowComponent = ({
           </button>
 
           <textarea
-            placeholder="Type a message…"
+            placeholder={t("chatWindow.typePlaceholder")}
             value={message}
             onChange={handleInput}
             onClick={() => dispatch(fetchUnreadMessages(user.id))}

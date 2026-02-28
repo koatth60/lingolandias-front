@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import Swal from "sweetalert2";
+import { useTranslation } from "react-i18next";
 import { removeStudent } from "../../redux/userSlice";
 import { FiUserMinus, FiCheckCircle } from "react-icons/fi";
 
@@ -41,6 +42,7 @@ const UserRow = ({ person, selected, accentColor, onClick }) => (
 );
 
 const RemoveStudent = ({ teachers }) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const [selectedTeacher, setSelectedTeacher] = useState(null);
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -77,7 +79,7 @@ const RemoveStudent = ({ teachers }) => {
         return Promise.all([studentsResponse.json(), chatResponse.json()]);
       })
       .then(([studentsData, chatData]) => {
-        Swal.fire({ title: "Success!", text: "Student and their chats removed successfully.", icon: "success", confirmButtonText: "Ok" });
+        Swal.fire({ title: t("common.success"), text: t("admin.removeSuccess"), icon: "success", confirmButtonText: "Ok" });
         console.log("Students removed:", studentsData.message);
         console.log(`Chats deleted: ${chatData.chatsDeleted}, Archived chats deleted: ${chatData.archivedChatsDeleted}`);
         if (selectedStudent) dispatch(removeStudent(selectedStudent));
@@ -85,7 +87,7 @@ const RemoveStudent = ({ teachers }) => {
       })
       .catch((error) => {
         console.error("Error in removal process:", error);
-        Swal.fire({ title: "Error!", text: error.message, icon: "error", confirmButtonText: "Ok" });
+        Swal.fire({ title: t("common.error"), text: error.message, icon: "error", confirmButtonText: "Ok" });
       });
   };
 
@@ -93,7 +95,7 @@ const RemoveStudent = ({ teachers }) => {
     <section>
       <div className="flex items-center gap-2 mb-5">
         <FiUserMinus size={17} style={{ color: "#ef4444" }} />
-        <h2 className="text-lg font-extrabold text-gray-800 dark:text-white">Remove Student from Teacher</h2>
+        <h2 className="text-lg font-extrabold text-gray-800 dark:text-white">{t("admin.removeTitle")}</h2>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -106,7 +108,7 @@ const RemoveStudent = ({ teachers }) => {
           <div className="relative z-10 p-4">
             <div className="flex items-center gap-2 mb-3">
               <span className="w-5 h-5 rounded-full bg-[#9E2FD0] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">1</span>
-              <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200">Select a Teacher</h3>
+              <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200">{t("admin.selectTeacherLabel")}</h3>
             </div>
             <div className="max-h-60 overflow-y-auto custom-scrollbar">
               {teachers.map((teacher) => (
@@ -130,13 +132,13 @@ const RemoveStudent = ({ teachers }) => {
           <div className="relative z-10 p-4">
             <div className="flex items-center gap-2 mb-3">
               <span className="w-5 h-5 rounded-full bg-[#ef4444] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">2</span>
-              <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200">Select Student to Remove</h3>
+              <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200">{t("admin.selectStudentToRemove")}</h3>
             </div>
             <div className="max-h-60 overflow-y-auto custom-scrollbar">
               {!selectedTeacher ? (
-                <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-8">Select a teacher first.</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-8">{t("admin.selectTeacherFirst")}</p>
               ) : !selectedTeacher.students || selectedTeacher.students.length === 0 ? (
-                <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-8">No students assigned to this teacher.</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-8">{t("admin.noStudentsTeacher")}</p>
               ) : (
                 selectedTeacher.students.map((student) => (
                   <UserRow
@@ -165,7 +167,7 @@ const RemoveStudent = ({ teachers }) => {
           }}
         >
           <FiUserMinus size={15} />
-          Remove Selected Student
+          {t("admin.removeSelectedStudent")}
         </button>
       </div>
     </section>

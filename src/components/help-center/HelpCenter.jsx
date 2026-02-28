@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 import {
   FiChevronDown, FiMail, FiHelpCircle, FiMessageCircle,
   FiSend, FiCheckCircle, FiAlertCircle,
@@ -69,6 +70,7 @@ const FaqItem = ({ question, answer, index }) => {
 };
 
 const HelpCenter = () => {
+  const { t } = useTranslation();
   const userInfo = useSelector((state) => state.user.userInfo);
   const user = userInfo?.user;
 
@@ -80,48 +82,44 @@ const HelpCenter = () => {
 
   const faqs = [
     {
-      question: "How do I reset my password?",
+      question: t("helpCenter.faqItems.q1"),
       answer: (
         <div>
-          <p>To reset your password, follow these steps:</p>
+          <p>{t("helpCenter.faqItems.a1_intro")}</p>
           <ol className="list-decimal list-inside mt-2 space-y-1">
-            <li>Go to the login page and click on the <strong>"Forgot Password?"</strong> link.</li>
-            <li>Enter the email address associated with your account.</li>
-            <li>You will receive an email with a link to reset your password.</li>
-            <li>Click the link and follow the instructions to create a new password.</li>
+            <li>{t("helpCenter.faqItems.a1_step1")}</li>
+            <li>{t("helpCenter.faqItems.a1_step2")}</li>
+            <li>{t("helpCenter.faqItems.a1_step3")}</li>
+            <li>{t("helpCenter.faqItems.a1_step4")}</li>
           </ol>
-          <p className="mt-2">You can also change your password at any time from <strong>Settings → Account → Change Password</strong>.</p>
+          <p className="mt-2">{t("helpCenter.faqItems.a1_footer")}</p>
         </div>
       ),
     },
     {
-      question: "How do I join a class?",
+      question: t("helpCenter.faqItems.q2"),
       answer: (
         <div>
-          <p>There are two ways to join your class:</p>
+          <p>{t("helpCenter.faqItems.a2_intro")}</p>
           <ol className="list-decimal list-inside mt-2 space-y-2">
-            <li>
-              <strong>From the Home screen:</strong> When your class is about to start, a <strong>"Join Class"</strong> button will appear on your dashboard. Click it to enter the virtual classroom instantly.
-            </li>
-            <li>
-              <strong>From your Schedule:</strong> Go to the <strong>Schedule</strong> page, find your upcoming class, and click on your <strong>teacher's name</strong>. This will take you directly into the class session.
-            </li>
+            <li>{t("helpCenter.faqItems.a2_step1")}</li>
+            <li>{t("helpCenter.faqItems.a2_step2")}</li>
           </ol>
-          <p className="mt-2">Make sure your camera and microphone are allowed in your browser before joining.</p>
+          <p className="mt-2">{t("helpCenter.faqItems.a2_footer")}</p>
         </div>
       ),
     },
     {
-      question: "How do I activate class reminders?",
+      question: t("helpCenter.faqItems.q3"),
       answer: (
         <div>
-          <p>Class reminders send you a push notification <strong>10 minutes before</strong> each scheduled class. To activate them:</p>
+          <p>{t("helpCenter.faqItems.a3_intro")}</p>
           <ol className="list-decimal list-inside mt-2 space-y-1">
-            <li>Go to <strong>Settings → Notifications</strong>.</li>
-            <li>Toggle on <strong>Class Reminders</strong>.</li>
-            <li>When your browser asks for permission to send notifications, click <strong>Allow</strong>.</li>
+            <li>{t("helpCenter.faqItems.a3_step1")}</li>
+            <li>{t("helpCenter.faqItems.a3_step2")}</li>
+            <li>{t("helpCenter.faqItems.a3_step3")}</li>
           </ol>
-          <p className="mt-2">If you previously blocked notifications, you will need to allow them in your browser settings first, then toggle the reminder off and back on to re-register.</p>
+          <p className="mt-2">{t("helpCenter.faqItems.a3_footer")}</p>
         </div>
       ),
     },
@@ -131,7 +129,7 @@ const HelpCenter = () => {
     e.preventDefault();
     setFormError("");
     if (!subject.trim() || !message.trim()) {
-      setFormError("Please fill in both the subject and message.");
+      setFormError(t("helpCenter.fillBoth"));
       return;
     }
 
@@ -147,7 +145,7 @@ const HelpCenter = () => {
           name: user?.name || "",
           lastName: user?.lastName || "",
           email: user?.email || "",
-          language: user?.language || "Not specified",
+          language: user?.language || t("common.notSpecified"),
           subject: subject.trim(),
           message: message.trim(),
         }),
@@ -158,7 +156,7 @@ const HelpCenter = () => {
       setSubject("");
       setMessage("");
     } catch {
-      setFormError("Something went wrong. Please try again or email us directly at agata@lingolandias.net");
+      setFormError(t("helpCenter.error"));
     } finally {
       setSending(false);
     }
@@ -193,7 +191,7 @@ const HelpCenter = () => {
       <Dashboard />
 
       <div className="w-full min-w-0 relative z-10 flex flex-col min-h-screen overflow-x-hidden">
-        <Navbar header="Help Center" />
+        <Navbar header={t("nav.helpCenter")} />
 
         <div className="px-3 sm:px-6 md:px-8 py-5 sm:py-8 flex flex-col gap-6 sm:gap-10 max-w-4xl mx-auto w-full">
 
@@ -204,13 +202,13 @@ const HelpCenter = () => {
               style={{ background: "rgba(158,47,208,0.10)", border: "1px solid rgba(158,47,208,0.25)", color: "#9E2FD0" }}
             >
               <FiHelpCircle size={11} />
-              Support
+              {t("helpCenter.support")}
             </div>
             <h1 className="text-3xl sm:text-5xl font-extrabold login-gradient-text mb-3">
-              Lingolandias Help Center
+              {t("helpCenter.title")}
             </h1>
             <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-              Your success is our priority. Find the help you need below.
+              {t("helpCenter.subtitle")}
             </p>
             <div className="h-px mt-5 mx-auto max-w-xs opacity-40"
               style={{ background: "linear-gradient(90deg, transparent, #9E2FD0, #F6B82E, #26D9A1, transparent)" }} />
@@ -225,7 +223,7 @@ const HelpCenter = () => {
               <div className="flex items-center gap-2 mb-5">
                 <FiMessageCircle size={16} style={{ color: "#9E2FD0" }} />
                 <h2 className="text-base sm:text-lg font-extrabold text-gray-700 dark:text-white">
-                  Frequently Asked Questions
+                  {t("helpCenter.faq")}
                 </h2>
               </div>
               <div className="space-y-3">
@@ -251,11 +249,11 @@ const HelpCenter = () => {
                   <FiMail size={15} style={{ color: "#26D9A1" }} />
                 </div>
                 <h2 className="text-base sm:text-lg font-extrabold text-gray-700 dark:text-white">
-                  Contact Support
+                  {t("helpCenter.contactSupport")}
                 </h2>
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-5 ml-10">
-                Our team will get back to you as soon as possible.
+                {t("helpCenter.teamReply")}
               </p>
 
               {sent ? (
@@ -264,14 +262,14 @@ const HelpCenter = () => {
                   style={{ background: "rgba(38,217,161,0.06)", border: "1px solid rgba(38,217,161,0.20)" }}
                 >
                   <FiCheckCircle size={32} style={{ color: "#26D9A1" }} />
-                  <p className="text-sm font-semibold text-gray-700 dark:text-white">Message sent!</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">We'll get back to you at <strong>{user?.email}</strong>.</p>
+                  <p className="text-sm font-semibold text-gray-700 dark:text-white">{t("helpCenter.sent")}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{t("helpCenter.sentSubtitle", { email: user?.email })}</p>
                   <button
                     onClick={() => setSent(false)}
                     className="mt-2 text-xs font-semibold px-4 py-2 rounded-lg transition-all hover:opacity-80"
                     style={{ background: "rgba(38,217,161,0.12)", color: "#26D9A1", border: "1px solid rgba(38,217,161,0.25)" }}
                   >
-                    Send another message
+                    {t("helpCenter.sendAnother")}
                   </button>
                 </div>
               ) : (
@@ -279,7 +277,7 @@ const HelpCenter = () => {
                   {/* Read-only user info row */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                      <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 block">Name</label>
+                      <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 block">{t("helpCenter.name")}</label>
                       <input
                         type="text"
                         readOnly
@@ -289,7 +287,7 @@ const HelpCenter = () => {
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 block">Email</label>
+                      <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 block">{t("helpCenter.email")}</label>
                       <input
                         type="text"
                         readOnly
@@ -299,11 +297,11 @@ const HelpCenter = () => {
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 block">Language</label>
+                      <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 block">{t("helpCenter.language")}</label>
                       <input
                         type="text"
                         readOnly
-                        value={user?.language || "Not specified"}
+                        value={user?.language || t("common.notSpecified")}
                         className="dark:text-white text-gray-500"
                         style={{ ...inputStyle, opacity: 0.8, cursor: "default" }}
                       />
@@ -312,10 +310,10 @@ const HelpCenter = () => {
 
                   {/* Subject */}
                   <div>
-                    <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 block">Subject</label>
+                    <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 block">{t("helpCenter.subject")}</label>
                     <input
                       type="text"
-                      placeholder="What do you need help with?"
+                      placeholder={t("helpCenter.subjectPlaceholder")}
                       value={subject}
                       onChange={(e) => setSubject(e.target.value)}
                       className="dark:text-white text-gray-700 placeholder-gray-400 focus:border-[#9E2FD0]"
@@ -325,10 +323,10 @@ const HelpCenter = () => {
 
                   {/* Message */}
                   <div>
-                    <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 block">Message</label>
+                    <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 block">{t("helpCenter.message")}</label>
                     <textarea
                       rows={5}
-                      placeholder="Describe your issue in detail..."
+                      placeholder={t("helpCenter.messagePlaceholder")}
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       className="dark:text-white text-gray-800 placeholder-gray-400 focus:border-[#9E2FD0] resize-none"
@@ -351,7 +349,7 @@ const HelpCenter = () => {
                     style={{ background: "linear-gradient(135deg, #9E2FD0, #7a20a8)", boxShadow: "0 4px 20px rgba(158,47,208,0.35)" }}
                   >
                     <FiSend size={14} />
-                    {sending ? "Sending…" : "Send Message"}
+                    {sending ? t("helpCenter.sending") : t("helpCenter.send")}
                   </button>
                 </form>
               )}

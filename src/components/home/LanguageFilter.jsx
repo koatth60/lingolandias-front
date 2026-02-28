@@ -1,11 +1,15 @@
+import { useTranslation } from "react-i18next";
+
 const FILTERS = [
-  { id: "all", label: "All Languages", emoji: "🌍" },
-  { id: "english", label: "English", emoji: "🇺🇸" },
-  { id: "spanish", label: "Spanish", emoji: "🇪🇸" },
-  { id: "polish", label: "Polish", emoji: "🇵🇱" },
+  { id: "all", labelKey: "languageFilter.all", emoji: "🌍" },
+  { id: "english", labelKey: "languageFilter.english", emoji: "🇺🇸" },
+  { id: "spanish", labelKey: "languageFilter.spanish", emoji: "🇪🇸" },
+  { id: "polish", labelKey: "languageFilter.polish", emoji: "🇵🇱" },
 ];
 
-const LanguageFilter = ({ activeSection, setActiveSection }) => (
+const LanguageFilter = ({ activeSection, setActiveSection }) => {
+  const { t } = useTranslation();
+  return (
   <div className="flex flex-wrap gap-2 mb-6">
     {FILTERS.map((filter) => (
       <button
@@ -28,10 +32,11 @@ const LanguageFilter = ({ activeSection, setActiveSection }) => (
         }
       >
         <span>{filter.emoji}</span>
-        {filter.label}
+        {t(filter.labelKey)}
       </button>
     ))}
   </div>
-);
+  );
+};
 
 export default LanguageFilter;

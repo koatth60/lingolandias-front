@@ -2,27 +2,28 @@ import { useState } from "react";
 import PropTypes from "prop-types";
 import { FaComments, FaUsers, FaUserFriends } from "react-icons/fa";
 import { FiSearch } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
 
 const TYPE_META = {
   teacher: {
     wrap: "bg-[#9E2FD0]/10 dark:bg-[#9E2FD0]/15",
     icon: "text-[#9E2FD0]",
     dot:  "bg-[#9E2FD0]",
-    chip: "Teachers",
+    chipKey: "messagesExtra.chipTeacher",
     chipStyle: "bg-[#9E2FD0]/10 text-[#9E2FD0] dark:bg-[#9E2FD0]/20",
   },
   group: {
     wrap: "bg-[#F6B82E]/10 dark:bg-[#F6B82E]/15",
     icon: "text-[#F6B82E]",
     dot:  "bg-[#F6B82E]",
-    chip: "My Group",
+    chipKey: "messagesExtra.chipGroup",
     chipStyle: "bg-[#F6B82E]/10 text-[#d4a017] dark:bg-[#F6B82E]/15 dark:text-[#F6B82E]",
   },
   general: {
     wrap: "bg-[#26D9A1]/10 dark:bg-[#26D9A1]/15",
     icon: "text-[#26D9A1]",
     dot:  "bg-[#26D9A1]",
-    chip: "General",
+    chipKey: "messagesExtra.chipGeneral",
     chipStyle: "bg-[#26D9A1]/10 text-[#1aad82] dark:bg-[#26D9A1]/15 dark:text-[#26D9A1]",
   },
 };
@@ -34,6 +35,7 @@ const ChatIcon = ({ type }) => {
 };
 
 const ChatListComponent = ({ chats, onChatSelect, newMessage, setNewMessage, socket }) => {
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
 
   const filtered = chats.filter((c) =>
@@ -43,8 +45,8 @@ const ChatListComponent = ({ chats, onChatSelect, newMessage, setNewMessage, soc
   const getMeta = (type) => TYPE_META[type] ?? TYPE_META.general;
 
   const getStatusText = (chat) => {
-    if (chat.type === "group") return "Active group";
-    return chat.online ? "Active now" : "Last seen recently";
+    if (chat.type === "group") return t("messages.activeGroup");
+    return chat.online ? t("messages.activeNow") : t("messages.lastSeenRecently");
   };
 
   return (
@@ -56,7 +58,7 @@ const ChatListComponent = ({ chats, onChatSelect, newMessage, setNewMessage, soc
           {/* Purple accent bar */}
           <span className="w-1 h-5 rounded-full bg-[#9E2FD0]" />
           <h2 className="text-sm font-semibold text-gray-700 dark:text-white">
-            Chats
+            {t("messagesExtra.chatsHeader")}
           </h2>
           <span className="ml-auto text-xs font-semibold px-2 py-0.5 rounded-full bg-[#9E2FD0]/10 dark:bg-[#9E2FD0]/20 text-[#9E2FD0]">
             {chats.length}
@@ -73,7 +75,7 @@ const ChatListComponent = ({ chats, onChatSelect, newMessage, setNewMessage, soc
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search…"
+            placeholder={t("messages.search")}
             className="w-full text-xs py-2 pl-8 pr-3 rounded-xl
                        bg-gray-50 dark:bg-[#1e1b35]
                        border border-gray-200 dark:border-white/5
@@ -89,7 +91,7 @@ const ChatListComponent = ({ chats, onChatSelect, newMessage, setNewMessage, soc
         {filtered.length === 0 && (
           <li className="flex flex-col items-center gap-2 py-12 text-gray-400 dark:text-gray-600">
             <FaComments size={28} className="opacity-30" />
-            <span className="text-xs">No conversations found</span>
+            <span className="text-xs">{t("messages.noConversations")}</span>
           </li>
         )}
 
@@ -131,7 +133,7 @@ const ChatListComponent = ({ chats, onChatSelect, newMessage, setNewMessage, soc
                 </div>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <span className={`inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-md ${meta.chipStyle}`}>
-                    {meta.chip}
+                    {t(meta.chipKey)}
                   </span>
                   <span className="text-[10px] text-gray-400 dark:text-gray-600 truncate">
                     {getStatusText(chat)}

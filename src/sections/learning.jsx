@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import Dashboard from "./dashboard";
 import Navbar from "../components/navbar";
 import CoursesCard from "../components/coursesCard";
@@ -6,9 +7,10 @@ import { FiInfo, FiBookOpen, FiVideo, FiX } from "react-icons/fi";
 
 const Learning = () => {
   const [showBanner, setShowBanner] = useState(true);
+  const { t } = useTranslation();
 
   const languageCourses = {
-    title: "Interactive Language Courses",
+    title: t("learning.coursesTitle"),
     courses: [
       {
         id: 1,
@@ -41,7 +43,7 @@ const Learning = () => {
   };
 
   const ebooks = {
-    title: "Cultural & Language E-books",
+    title: t("learning.ebooksTitle"),
     courses: [
       {
         id: 1,
@@ -91,7 +93,7 @@ const Learning = () => {
       <Dashboard />
 
       <div className="w-full min-w-0 relative z-10 flex flex-col min-h-screen overflow-x-hidden">
-        <Navbar header="Learning Center" />
+        <Navbar header={t("learning.title")} />
 
         <div className="px-3 sm:px-6 md:px-8 py-5 sm:py-8 flex flex-col gap-8 sm:gap-12">
 
@@ -107,7 +109,7 @@ const Learning = () => {
                 <div className="flex items-start sm:items-center gap-3">
                   <FiInfo size={16} style={{ color: "#F6B82E" }} className="flex-shrink-0 mt-0.5 sm:mt-0" />
                   <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    This page is for demonstration purposes only. All course materials and images are placeholders.
+                    {t("learning.demoNotice")}
                   </p>
                 </div>
                 <button onClick={() => setShowBanner(false)} className="flex-shrink-0 transition-opacity hover:opacity-60">
@@ -119,12 +121,12 @@ const Learning = () => {
 
           {/* ── Hero ── */}
           <div className="text-center py-4 sm:py-8">
-            <p className="text-[10px] font-bold tracking-widest text-[#9E2FD0] uppercase mb-3">Learning Center</p>
+            <p className="text-[10px] font-bold tracking-widest text-[#9E2FD0] uppercase mb-3">{t("learning.heroBadge")}</p>
             <h1 className="text-3xl sm:text-5xl font-extrabold login-gradient-text mb-3 sm:mb-4">
-              Unlock Your Potential
+              {t("learning.heroTitle")}
             </h1>
             <p className="text-base sm:text-lg text-gray-500 dark:text-gray-400 max-w-lg mx-auto">
-              Dive into our world of languages and cultures.
+              {t("learning.heroSubtitle")}
             </p>
             <div className="h-px mt-6 mx-auto max-w-xs opacity-40"
               style={{ background: "linear-gradient(90deg, transparent, #9E2FD0, #F6B82E, #26D9A1, transparent)" }} />

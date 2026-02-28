@@ -1,9 +1,10 @@
 import { FiUsers, FiBookOpen } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
 
 const LANG_CONFIG = {
-  english: { label: "English Students", code: "EN", color: "#9E2FD0", glow: "rgba(158,47,208,0.10)", border: "rgba(158,47,208,0.22)" },
-  spanish: { label: "Spanish Students", code: "ES", color: "#26D9A1", glow: "rgba(38,217,161,0.10)", border: "rgba(38,217,161,0.22)" },
-  polish:  { label: "Polish Students",  code: "PL", color: "#F6B82E", glow: "rgba(246,184,46,0.10)",  border: "rgba(246,184,46,0.22)"  },
+  english: { labelKey: "admin.englishStudents", code: "EN", color: "#9E2FD0", glow: "rgba(158,47,208,0.10)", border: "rgba(158,47,208,0.22)" },
+  spanish: { labelKey: "admin.spanishStudents", code: "ES", color: "#26D9A1", glow: "rgba(38,217,161,0.10)", border: "rgba(38,217,161,0.22)" },
+  polish:  { labelKey: "admin.polishStudents",  code: "PL", color: "#F6B82E", glow: "rgba(246,184,46,0.10)",  border: "rgba(246,184,46,0.22)"  },
 };
 
 const StudentRow = ({ student }) => (
@@ -32,6 +33,7 @@ const StudentRow = ({ student }) => (
 );
 
 const LangColumn = ({ lang, students }) => {
+  const { t } = useTranslation();
   const cfg = LANG_CONFIG[lang];
   return (
     <div
@@ -55,9 +57,9 @@ const LangColumn = ({ lang, students }) => {
             {cfg.code}
           </div>
           <div className="min-w-0">
-            <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200 leading-tight">{cfg.label}</h3>
+            <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200 leading-tight">{t(cfg.labelKey)}</h3>
             <p className="text-xs font-medium" style={{ color: cfg.color }}>
-              {students.length} {students.length === 1 ? "student" : "students"}
+              {students.length} {students.length === 1 ? t("admin.studentSingular") : t("admin.studentPlural")}
             </p>
           </div>
         </div>
@@ -70,7 +72,7 @@ const LangColumn = ({ lang, students }) => {
           {students.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 gap-2">
               <FiUsers size={22} className="text-gray-400 dark:text-gray-600" />
-              <p className="text-xs text-gray-400 dark:text-gray-500">No students yet</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500">{t("admin.noStudentsYet")}</p>
             </div>
           ) : (
             students.map((student) => <StudentRow key={student.id} student={student} />)
@@ -82,6 +84,7 @@ const LangColumn = ({ lang, students }) => {
 };
 
 const DisplayAllStudents = ({ students }) => {
+  const { t } = useTranslation();
   const englishStudents = students.filter((s) => s.language === "english");
   const spanishStudents = students.filter((s) => s.language === "spanish");
   const polishStudents  = students.filter((s) => s.language === "polish");
@@ -90,7 +93,7 @@ const DisplayAllStudents = ({ students }) => {
     <section>
       <div className="flex items-center gap-2 mb-5">
         <FiBookOpen size={17} style={{ color: "#9E2FD0" }} />
-        <h2 className="text-lg font-extrabold text-gray-800 dark:text-white">All Students by Language</h2>
+        <h2 className="text-lg font-extrabold text-gray-800 dark:text-white">{t("admin.allStudentsByLang")}</h2>
         <span
           className="ml-1 px-2 py-0.5 rounded-full text-xs font-bold text-white"
           style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 import { useDispatch, useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 import { BsEmojiSmile, BsThreeDots } from "react-icons/bs";
 import { FiSend, FiRadio } from "react-icons/fi";
 import { HiShieldCheck } from "react-icons/hi2";
@@ -17,6 +18,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const SUPPORT_ROOM = "uuid-support";
 
 const SupportChatWindow = () => {
+  const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.userInfo?.user);
   const soundEnabled = user?.settings?.notificationSound !== false;
@@ -133,10 +135,10 @@ const SupportChatWindow = () => {
     const today = new Date();
     const yest = new Date();
     yest.setDate(today.getDate() - 1);
-    const t = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    if (d.toDateString() === today.toDateString()) return t;
-    if (d.toDateString() === yest.toDateString()) return `Yesterday ${t}`;
-    return `${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })} ${t}`;
+    const time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    if (d.toDateString() === today.toDateString()) return time;
+    if (d.toDateString() === yest.toDateString()) return `${t("common.yesterday")} ${time}`;
+    return `${d.toLocaleDateString(i18n.language, { month: "short", day: "numeric" })} ${time}`;
   };
 
   const getInitials = (name) => {
@@ -184,10 +186,10 @@ const SupportChatWindow = () => {
           <div className="flex-1 min-w-0">
             <p className="text-sm font-extrabold truncate"
               style={{ background: "linear-gradient(90deg, #F6B82E, #26D9A1)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-              Updates & Support
+              {t("supportChat.title")}
             </p>
             <p className="text-[10px] font-semibold" style={{ color: "#26D9A1" }}>
-              ● Staff channel — teachers & admins
+              ● {t("supportChat.staffChannel")}
             </p>
           </div>
 
@@ -208,7 +210,7 @@ const SupportChatWindow = () => {
                 <FiRadio size={24} style={{ color: "#F6B82E" }} />
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 text-center max-w-[200px]">
-                No updates yet. Admins will post announcements and support answers here.
+                {t("supportChat.noUpdates")}
               </p>
             </div>
           )}
@@ -288,7 +290,7 @@ const SupportChatWindow = () => {
                           {user?.role === "admin" && (
                             <div className="flex items-center gap-1 mb-1 opacity-80">
                               <HiShieldCheck size={11} />
-                              <span className="text-[9px] font-bold tracking-wider uppercase">Admin</span>
+                              <span className="text-[9px] font-bold tracking-wider uppercase">{t("supportChat.adminBadge")}</span>
                             </div>
                           )}
                           <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{formatMessageWithLinks(msg.message, true)}</p>
@@ -311,7 +313,7 @@ const SupportChatWindow = () => {
                                   boxShadow: "0 0 8px rgba(246,184,46,0.25)",
                                   letterSpacing: "0.05em",
                                 }}>
-                                <HiShieldCheck size={10} /> Admin
+                                <HiShieldCheck size={10} /> {t("supportChat.adminBadge")}
                               </span>
                             )}
                           </div>
@@ -349,7 +351,7 @@ const SupportChatWindow = () => {
           </button>
           <textarea
             ref={textareaRef}
-            placeholder={user?.role === "admin" ? "Post an update or answer…" : "Ask a question or share feedback…"}
+            placeholder={user?.role === "admin" ? t("supportChat.placeholderAdmin") : t("supportChat.placeholderUser")}
             value={message}
             onChange={handleInput}
             onKeyDown={handleKeyDown}

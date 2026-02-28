@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FiLock, FiEye, FiEyeOff, FiX } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import { changePassword } from "../../redux/userSlice";
 
@@ -41,6 +42,7 @@ const PasswordField = ({ label, value, onChange, fieldKey, placeholder, show, on
 );
 
 const ChangePasswordModal = ({ onClose }) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const userId = useSelector((state) => state.user.userInfo?.user?.id);
 
@@ -58,11 +60,11 @@ const ChangePasswordModal = ({ onClose }) => {
     setError("");
 
     if (newPassword !== confirmPassword) {
-      setError("New passwords do not match.");
+      setError(t("changePassword.mismatch"));
       return;
     }
     if (newPassword.length < 6) {
-      setError("New password must be at least 6 characters.");
+      setError(t("changePasswordExtra.minLength"));
       return;
     }
 
@@ -71,7 +73,7 @@ const ChangePasswordModal = ({ onClose }) => {
     setLoading(false);
 
     if (changePassword.fulfilled.match(result)) {
-      toast.success("Password changed successfully.");
+      toast.success(t("changePassword.success"));
       onClose();
     } else {
       setError(result.payload || "Something went wrong. Please try again.");
@@ -109,8 +111,8 @@ const ChangePasswordModal = ({ onClose }) => {
           {/* Header */}
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h2 className="text-gray-800 dark:text-white font-extrabold text-lg">Change Password</h2>
-              <p className="text-gray-500 dark:text-gray-500 text-xs mt-0.5">Update your account password</p>
+              <h2 className="text-gray-800 dark:text-white font-extrabold text-lg">{t("changePasswordExtra.updatePassword")}</h2>
+              <p className="text-gray-500 dark:text-gray-500 text-xs mt-0.5">{t("changePasswordExtra.updateSubtitle")}</p>
             </div>
             <button
               onClick={onClose}
@@ -129,29 +131,29 @@ const ChangePasswordModal = ({ onClose }) => {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <PasswordField
-              label="Current Password"
+              label={t("changePassword.currentPassword")}
               value={currentPassword}
               onChange={setCurrentPassword}
               fieldKey="current"
-              placeholder="Enter current password"
+              placeholder={t("changePasswordExtra.currentPlaceholder")}
               show={show.current}
               onToggleShow={toggleShow}
             />
             <PasswordField
-              label="New Password"
+              label={t("changePassword.newPassword")}
               value={newPassword}
               onChange={setNewPassword}
               fieldKey="new"
-              placeholder="Enter new password"
+              placeholder={t("changePasswordExtra.newPlaceholder")}
               show={show.new}
               onToggleShow={toggleShow}
             />
             <PasswordField
-              label="Confirm New Password"
+              label={t("changePassword.confirmPassword")}
               value={confirmPassword}
               onChange={setConfirmPassword}
               fieldKey="confirm"
-              placeholder="Confirm new password"
+              placeholder={t("changePasswordExtra.confirmPlaceholder")}
               show={show.confirm}
               onToggleShow={toggleShow}
             />
@@ -179,7 +181,7 @@ const ChangePasswordModal = ({ onClose }) => {
                   hover:border-[#9E2FD0]/30 dark:hover:border-white/20
                   bg-white/60 dark:bg-transparent"
               >
-                Cancel
+                {t("changePassword.cancel")}
               </button>
               <button
                 type="submit"
@@ -196,9 +198,9 @@ const ChangePasswordModal = ({ onClose }) => {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
-                    Saving…
+                    {t("changePassword.saving")}
                   </span>
-                ) : "Update Password"}
+                ) : t("changePasswordExtra.updatePassword")}
               </button>
             </div>
           </form>

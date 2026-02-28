@@ -1,8 +1,10 @@
 import { useState, useRef } from "react";
 import PropTypes from "prop-types";
 import { FiCamera, FiUpload, FiX, FiCheck } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
 
 const Modal = ({ isOpen, onClose, onSave }) => {
+  const { t } = useTranslation();
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [dragging, setDragging] = useState(false);
@@ -76,7 +78,7 @@ const Modal = ({ isOpen, onClose, onSave }) => {
                 <FiCamera size={15} className="text-white" />
               </div>
               <h2 className="text-base font-extrabold text-gray-800 dark:text-white">
-                Upload Photo
+                {t("uploadModal.title")}
               </h2>
             </div>
             <button
@@ -120,7 +122,7 @@ const Modal = ({ isOpen, onClose, onSave }) => {
                   style={{ background: "rgba(0,0,0,0.45)", backdropFilter: "blur(2px)" }}
                 >
                   <FiUpload size={22} className="text-white" />
-                  <span className="text-white text-xs font-semibold">Change photo</span>
+                  <span className="text-white text-xs font-semibold">{t("uploadModal.changePhoto")}</span>
                 </button>
               </>
             ) : (
@@ -132,10 +134,10 @@ const Modal = ({ isOpen, onClose, onSave }) => {
                   <FiUpload size={22} style={{ color: "#9E2FD0" }} />
                 </div>
                 <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                  {dragging ? "Drop it here!" : "Click or drag to upload"}
+                  {dragging ? t("uploadModal.dropHere") : t("uploadModal.clickOrDrag")}
                 </p>
                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                  JPG, PNG, GIF — max 5 MB
+                  {t("uploadModal.fileHint")}
                 </p>
               </>
             )}
@@ -160,7 +162,7 @@ const Modal = ({ isOpen, onClose, onSave }) => {
                 color: "#9E2FD0",
               }}
             >
-              Cancel
+              {t("uploadModal.cancel")}
             </button>
             <button
               onClick={handleSave}
@@ -174,7 +176,7 @@ const Modal = ({ isOpen, onClose, onSave }) => {
               }}
             >
               <FiCheck size={15} />
-              Save Photo
+              {t("uploadModal.save")}
             </button>
           </div>
         </div>

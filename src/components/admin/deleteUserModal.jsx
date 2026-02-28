@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Swal from "sweetalert2";
 import { FiUserX, FiMail, FiAlertTriangle, FiX } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -16,6 +17,7 @@ const onBlur = (e) => {
 };
 
 const DeleteUserModal = ({ show, handleClose }) => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
 
   const handleDeleteUser = async (e) => {
@@ -28,9 +30,9 @@ const DeleteUserModal = ({ show, handleClose }) => {
       });
       const data = await response.json();
       if (data.error) {
-        Swal.fire({ title: "Error!", text: data.error, icon: "error", confirmButtonText: "Ok" });
+        Swal.fire({ title: t("common.error"), text: data.error, icon: "error", confirmButtonText: "Ok" });
       } else {
-        Swal.fire({ title: "Deleted!", text: "User deleted successfully.", icon: "success", confirmButtonText: "Ok" }).then(() => {
+        Swal.fire({ title: t("common.success"), text: t("admin.removeSuccess"), icon: "success", confirmButtonText: "Ok" }).then(() => {
           window.location.reload();
         });
       }
@@ -78,8 +80,8 @@ const DeleteUserModal = ({ show, handleClose }) => {
               <FiUserX size={17} style={{ color: "#ef4444" }} />
             </div>
             <div>
-              <h2 className="text-lg font-extrabold text-gray-800 dark:text-white leading-tight">Delete User</h2>
-              <p className="text-xs text-gray-400 dark:text-gray-500">This action is irreversible</p>
+              <h2 className="text-lg font-extrabold text-gray-800 dark:text-white leading-tight">{t("deleteModal.title")}</h2>
+              <p className="text-xs text-gray-400 dark:text-gray-500">{t("deleteModal.subtitle")}</p>
             </div>
             <button
               onClick={handleClose}
@@ -102,7 +104,7 @@ const DeleteUserModal = ({ show, handleClose }) => {
           >
             <FiAlertTriangle size={15} style={{ color: "#ef4444" }} className="flex-shrink-0 mt-0.5" />
             <p className="text-xs leading-relaxed text-red-700 dark:text-red-300">
-              Enter the email address of the user you wish to delete. All associated data will be permanently removed.
+              {t("deleteModal.warning")}
             </p>
           </div>
 
@@ -112,7 +114,7 @@ const DeleteUserModal = ({ show, handleClose }) => {
               <FiMail className="absolute left-4 top-1/2 -translate-y-1/2" size={14} style={{ color: "#9ca3af" }} />
               <input
                 type="email"
-                placeholder="user@example.com"
+                placeholder={t("deleteModal.placeholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className={
@@ -134,7 +136,7 @@ const DeleteUserModal = ({ show, handleClose }) => {
                 onClick={handleClose}
                 className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-white/6 border border-gray-200 dark:border-white/10"
               >
-                Cancel
+                {t("deleteModal.cancel")}
               </button>
               <button
                 type="submit"
@@ -143,7 +145,7 @@ const DeleteUserModal = ({ show, handleClose }) => {
                 style={{ background: "linear-gradient(135deg, #ef4444, #dc2626)", boxShadow: "0 4px 20px rgba(239,68,68,0.28)" }}
               >
                 <FiUserX size={14} />
-                Delete User
+                {t("deleteModal.delete")}
               </button>
             </div>
           </form>

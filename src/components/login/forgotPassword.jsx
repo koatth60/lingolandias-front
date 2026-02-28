@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FiMail, FiCheckCircle, FiArrowLeft, FiArrowRight } from 'react-icons/fi';
 import Footer from './Footer';
 
@@ -46,6 +47,7 @@ const FloatingChars = () => (
 );
 
 const ForgotPassword = () => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState({ type: 'idle', message: '' });
   const [isLoading, setIsLoading] = useState(false);
@@ -56,12 +58,12 @@ const ForgotPassword = () => {
     e.preventDefault();
 
     if (!validateEmail(email)) {
-      setStatus({ type: 'error', message: 'Please enter a valid email address' });
+      setStatus({ type: 'error', message: t('forgotPassword.invalidEmail') });
       return;
     }
 
     setIsLoading(true);
-    setStatus({ type: 'loading', message: 'Sending reset link...' });
+    setStatus({ type: 'loading', message: t('forgotPassword.sending') });
 
     try {
       const response = await fetch(`${BACKEND_URL}/auth/forgot-password`, {
@@ -73,19 +75,19 @@ const ForgotPassword = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to send reset link');
+        throw new Error(data.message || t('forgotPassword.failed'));
       }
 
       setStatus({
         type: 'success',
-        message: `If an account exists for ${email}, you'll receive password reset instructions shortly.`,
+        message: t('forgotPassword.successText', { email }),
       });
       setEmail('');
     } catch (error) {
       console.error('Password reset error:', error);
       setStatus({
         type: 'error',
-        message: error.message || 'Failed to send reset link. Please try again.',
+        message: error.message || t('forgotPassword.failed'),
       });
     } finally {
       setIsLoading(false);
@@ -162,7 +164,7 @@ const ForgotPassword = () => {
             <FiCheckCircle size={28} style={{ color: '#26D9A1' }} />
           </div>
 
-          <h2 className="text-xl font-extrabold text-white mb-3">Reset Link Sent!</h2>
+          <h2 className="text-xl font-extrabold text-white mb-3">{t('forgotPassword.successTitle')}</h2>
           <p className="text-gray-400 text-sm leading-relaxed mb-8">{status.message}</p>
 
           <a
@@ -174,7 +176,7 @@ const ForgotPassword = () => {
             }}
           >
             <FiArrowLeft size={15} />
-            Return to Login
+            {t('forgotPassword.returnToLogin')}
           </a>
         </div>
       </div>
@@ -194,10 +196,10 @@ const ForgotPassword = () => {
         {/* Card header */}
         <div className="mb-6 text-center">
           <h1 className="text-2xl font-extrabold text-white tracking-tight mb-1">
-            Password Recovery
+            {t('forgotPassword.title')}
           </h1>
           <p className="text-gray-500 text-sm">
-            Enter your email and we&apos;ll send you a reset link
+            {t('forgotPassword.subtitle')}
           </p>
         </div>
 
@@ -211,7 +213,7 @@ const ForgotPassword = () => {
           {/* Email input */}
           <div className="group">
             <label className="block text-gray-400 text-xs font-semibold uppercase tracking-widest mb-2">
-              Email Address
+              {t('forgotPassword.emailLabel')}
             </label>
             <div className="relative">
               <FiMail
@@ -220,7 +222,7 @@ const ForgotPassword = () => {
               />
               <input
                 type="email"
-                placeholder="you@example.com"
+                placeholder={t('forgotPassword.emailPlaceholder')}
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
@@ -284,12 +286,12 @@ const ForgotPassword = () => {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
-                  Sending reset link…
+                  {t('forgotPassword.sending')}
                 </>
               ) : (
                 <>
                   <FiMail size={15} />
-                  Send Reset Link
+                  {t('forgotPassword.sendButton')}
                   <FiArrowRight className="group-hover:translate-x-1 transition-transform duration-200" size={15} />
                 </>
               )}
@@ -298,12 +300,11 @@ const ForgotPassword = () => {
 
           {/* Back to login */}
           <p className="text-center text-sm text-gray-500 pt-1">
-            Remember your password?{' '}
             <a
               href="/login"
               className="text-purple-400 hover:text-orange-400 transition-colors duration-200 font-medium"
             >
-              Sign in here
+              {t('forgotPassword.rememberPassword')}
             </a>
           </p>
         </form>

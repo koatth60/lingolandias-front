@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { FiVideo, FiTrash2, FiExternalLink, FiX, FiUsers, FiRefreshCw } from "react-icons/fi";
 import Swal from "sweetalert2";
+import { useTranslation } from "react-i18next";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -25,7 +26,7 @@ const formatDate = (iso) => {
 const formatFilename = (filename) =>
   decodeURIComponent(filename).replace(/^\d+-/, "");
 
-const RecordingCard = ({ rec, onDelete, deleting }) => (
+const RecordingCard = ({ rec, onDelete, deleting, t }) => (
   <div
     className="flex items-center justify-between gap-3 p-4 rounded-xl transition-all"
     style={{
@@ -62,7 +63,7 @@ const RecordingCard = ({ rec, onDelete, deleting }) => (
         style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}
       >
         <FiExternalLink size={12} />
-        View
+        {t("recordings.view")}
       </a>
       <button
         onClick={() => onDelete(rec.key, rec.filename)}
@@ -71,7 +72,7 @@ const RecordingCard = ({ rec, onDelete, deleting }) => (
         style={{ background: "linear-gradient(135deg, #ef4444, #dc2626)" }}
       >
         <FiTrash2 size={12} />
-        {deleting === rec.key ? "…" : "Delete"}
+        {deleting === rec.key ? "…" : t("recordings.delete")}
       </button>
     </div>
   </div>
@@ -82,6 +83,7 @@ const RecordingsModal = ({ onClose }) => {
   const [loading, setLoading] = useState(true);
   const [activeTeacher, setActiveTeacher] = useState(null);
   const [deleting, setDeleting] = useState(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     fetchRecordings();
@@ -106,12 +108,12 @@ const RecordingsModal = ({ onClose }) => {
 
   const handleDelete = async (key, filename) => {
     const result = await Swal.fire({
-      title: "Delete Recording?",
-      text: `"${formatFilename(filename)}" will be permanently deleted.`,
+      title: t("recordings.deleteTitle"),
+      text: t("recordings.deleteText", { filename: formatFilename(filename) }),
       icon: "warning",
       showCancelButton: true,
-      confirmButtonText: "Delete",
-      cancelButtonText: "Cancel",
+      confirmButtonText: t("recordings.delete"),
+      cancelButtonText: t("recordings.cancel"),
       background: "#1a1a2e",
       color: "#fff",
       confirmButtonColor: "#ef4444",
@@ -179,9 +181,9 @@ const RecordingsModal = ({ onClose }) => {
               <FiVideo className="text-white" size={17} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white">Class Recordings</h2>
+              <h2 className="text-lg font-bold text-white">{t("recordings.title")}</h2>
               <p className="text-xs text-gray-400">
-                {loading ? "Loading…" : `${totalCount} recording${totalCount !== 1 ? "s" : ""} saved`}
+                {loading ? t("common.loading") : t("recordings.count", { count: totalCount })}
               </p>
             </div>
           </div>
@@ -189,7 +191,7 @@ const RecordingsModal = ({ onClose }) => {
             <button
               onClick={fetchRecordings}
               className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all"
-              title="Refresh"
+              title={t("recordings.refresh")}
             >
               <FiRefreshCw size={16} />
             </button>
@@ -279,15 +281,15 @@ const RecordingsModal = ({ onClose }) => {
             ) : allTabs.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-gray-500">
                 <div className="text-5xl mb-4">🎥</div>
-                <p className="font-semibold text-gray-400">No recordings yet</p>
+                <p className="font-semibold text-gray-400">{t("recordings.noRecordings")}</p>
                 <p className="text-sm mt-1 text-gray-500">
-                  Recordings will appear here after class sessions.
+                  {t("recordings.noRecordingsText")}
                 </p>
               </div>
             ) : currentRecordings.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-gray-500">
                 <div className="text-4xl mb-3">📭</div>
-                <p className="text-sm">No recordings for this teacher.</p>
+                <p className="text-sm">{t("recordings.noRecordingsTeacher")}</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -297,6 +299,7 @@ const RecordingsModal = ({ onClose }) => {
                     rec={rec}
                     onDelete={handleDelete}
                     deleting={deleting}
+                    t={t}
                   />
                 ))}
               </div>

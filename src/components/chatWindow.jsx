@@ -1,5 +1,6 @@
 import { useRef, useLayoutEffect, useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useTranslation } from "react-i18next";
 import EmojiPicker from "emoji-picker-react";
 import { BsEmojiSmile, BsPaperclip, BsThreeDots } from "react-icons/bs";
 import { FiX, FiArrowLeft, FiMessageSquare, FiSend, FiDownload, FiEye, FiBell, FiBellOff } from "react-icons/fi";
@@ -28,6 +29,7 @@ const ChatWindow = ({
   meeting = false,
   onNewMessage,
 }) => {
+  const { t, i18n } = useTranslation();
   const user = useSelector((state) => state.user.userInfo.user);
   const teacher = useSelector((state) => state.user.userInfo.user.teacher);
   const dispatch = useDispatch();
@@ -234,7 +236,7 @@ const ChatWindow = ({
               {user.role === "user"
                 ? teacher
                   ? teacher.name
-                  : "No teacher yet"
+                  : t("chatWindow.noTeacher")
                 : studentName}
             </span>
             {user.role === "user" && teacher && (
@@ -244,7 +246,7 @@ const ChatWindow = ({
                   backgroundColor:
                     teacher?.online === "online" ? "#26D9A1" : "#ef4444",
                 }}
-                title={teacher?.online === "online" ? "Online" : "Offline"}
+                title={teacher?.online === "online" ? t("chatWindow.online") : t("chatWindow.offline")}
               />
             )}
           </div>
@@ -252,7 +254,7 @@ const ChatWindow = ({
           {/* Sound toggle */}
           <button
             onClick={handleToggleSound}
-            title={soundEnabled ? "Mute notification sounds" : "Unmute notification sounds"}
+            title={soundEnabled ? t("chatWindow.muteSound") : t("chatWindow.unmuteSound")}
             className="flex-shrink-0 p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
           >
             {soundEnabled ? <FiBell size={16} /> : <FiBellOff size={16} />}
@@ -279,7 +281,7 @@ const ChatWindow = ({
                     d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.124-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.124-1.283.356-1.857m0 0a3.001 3.001 0 015.644 0M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                Group Class
+                {t("chatList.groupClass")}
               </button>
             </Dropdown>
           )}
@@ -302,7 +304,7 @@ const ChatWindow = ({
                          bg-white dark:bg-white/5
                          hover:bg-[rgba(158,47,208,0.06)] dark:hover:bg-white/10"
             >
-              Load more messages
+              {t("chatWindow.loadMore")}
             </button>
           </div>
         )}
@@ -400,7 +402,7 @@ const ChatWindow = ({
               style={{ background: "linear-gradient(90deg, #9E2FD0, #F6B82E, #26D9A1)" }} />
             <div className="relative z-10 p-5">
               <h3 className="text-sm font-extrabold text-gray-800 dark:text-white mb-4 text-center">
-                File Options
+                {t("chatWindow.fileOptions")}
               </h3>
               <div className="flex flex-col gap-2">
                 <button
@@ -408,14 +410,14 @@ const ChatWindow = ({
                   className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-white text-sm font-semibold transition-all hover:opacity-90"
                   style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 3px 12px rgba(158,47,208,0.3)" }}
                 >
-                  <FiEye size={14} /> Preview
+                  <FiEye size={14} /> {t("chatWindow.preview")}
                 </button>
                 <button
                   onClick={handleDownload}
                   className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-white text-sm font-semibold transition-all hover:opacity-90"
                   style={{ background: "linear-gradient(135deg, #26D9A1, #1fa07a)", boxShadow: "0 3px 12px rgba(38,217,161,0.3)" }}
                 >
-                  <FiDownload size={14} /> Download
+                  <FiDownload size={14} /> {t("chatWindow.download")}
                 </button>
                 <button
                   onClick={handleCloseModal}
@@ -425,7 +427,7 @@ const ChatWindow = ({
                              border border-gray-200 dark:border-white/10
                              hover:bg-gray-200 dark:hover:bg-white/12"
                 >
-                  Cancel
+                  {t("common.cancel")}
                 </button>
               </div>
             </div>
@@ -447,11 +449,11 @@ const ChatWindow = ({
                 <FiX size={14} />
               </button>
             </div>
-            <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">Ready to send.</p>
+            <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">{t("chatWindow.readyToSend")}</p>
           </div>
         )}
         {uploading && (
-          <p className="text-xs text-[#9E2FD0] mb-2 font-medium">Uploading...</p>
+          <p className="text-xs text-[#9E2FD0] mb-2 font-medium">{t("chatWindow.uploading")}</p>
         )}
         {error && <p className="text-xs text-red-500 mb-2">{error}</p>}
 
@@ -463,7 +465,7 @@ const ChatWindow = ({
                         transition-colors duration-200">
           <textarea
             ref={textareaRef}
-            placeholder="Type a message..."
+            placeholder={t("chatWindow.typePlaceholder")}
             value={message}
             onChange={handleInput}
             onKeyDown={handleKeyDown}

@@ -8,7 +8,7 @@ const Support = () => {
   return (
     <div className="flex w-full relative h-screen">
       <Dashboard />
-      <div className="w-full flex flex-col min-w-0">
+      <div className="w-full relative z-10 flex flex-col min-w-0">
         <Navbar header={t("support.title")} />
         <section className="flex-1 min-h-0">
           <SupportChatWindow />

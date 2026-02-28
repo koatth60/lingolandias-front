@@ -316,7 +316,8 @@
   },
   "messages": {
     "title": "Wiadomości",
-    "selectChat": "Wybierz czat, aby rozpocząć rozmowę",
+    "selectChat": "Wybierz rozmowę z lewej strony, aby zacząć",
+    "emptyTitle": "Twoje Wiadomości",
     "search": "Szukaj…",
     "noConversations": "Nie znaleziono rozmów",
     "activeGroup": "Aktywna grupa",

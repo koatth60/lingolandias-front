@@ -316,7 +316,8 @@
   },
   "messages": {
     "title": "Messages",
-    "selectChat": "Select a chat to start chatting",
+    "selectChat": "Pick a conversation from the left to get started",
+    "emptyTitle": "Your Messages",
     "search": "Search…",
     "noConversations": "No conversations found",
     "activeGroup": "Active group",

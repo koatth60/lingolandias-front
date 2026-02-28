@@ -10,12 +10,12 @@ const Trello = () => {
 
   return (
     <ErrorBoundary>
-      <div className="flex w-full min-h-screen bg-gray-100 dark:bg-brand-dark">
+      <div className="flex w-full relative min-h-screen">
         {/* Dashboard lateral */}
         <Dashboard />
-        
+
         {/* Contenido principal - SIN overflow aquí */}
-        <div className="flex-1 flex flex-col min-h-screen">
+        <div className="flex-1 relative z-10 flex flex-col min-h-screen">
           {/* Navbar */}
           <Navbar header={header} />
           

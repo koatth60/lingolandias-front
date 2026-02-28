@@ -10,10 +10,10 @@ const Home = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="flex w-full min-h-screen bg-white dark:bg-brand-dark">
+    <div className="flex w-full relative min-h-screen">
       <Dashboard />
 
-      <div className="w-full min-w-0 overflow-x-hidden">
+      <div className="w-full min-w-0 relative z-10 flex flex-col min-h-screen overflow-x-hidden">
         <Navbar header={t("home.pageTitle")} />
         
         {/* Contenido principal */}

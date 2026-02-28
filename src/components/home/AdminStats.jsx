@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { FiUsers, FiBook, FiUserCheck } from "react-icons/fi";
 
 const STAT_COLORS = [
@@ -13,20 +14,21 @@ const AdminStats = ({
   unassignedStudentsCount = 0,
   totalUsers = 0,
 }) => {
+  const { t } = useTranslation();
   const teacherPercentage = totalUsers > 0 ? Math.round((teachersCount / totalUsers) * 100) : 0;
   const studentPercentage = totalUsers > 0 ? Math.round((studentsCount / totalUsers) * 100) : 0;
 
   const stats = [
-    { label: "Total Users",       value: totalUsers,               icon: <FiUsers size={16} />,    sub: `${totalUsers} registered` },
-    { label: "Teachers",          value: teachersCount,            icon: <FiUserCheck size={16} />, sub: `${teacherPercentage}% of total` },
-    { label: "Students",          value: studentsCount,            icon: <FiUsers size={16} />,    sub: `${studentPercentage}% of total` },
+    { label: t("adminStats.totalUsers"), value: totalUsers, icon: <FiUsers size={16} />, sub: t("adminStats.registered", { count: totalUsers }) },
+    { label: t("adminStats.teachers"), value: teachersCount, icon: <FiUserCheck size={16} />, sub: t("adminStats.ofTotal", { pct: teacherPercentage }) },
+    { label: t("adminStats.students"), value: studentsCount, icon: <FiUsers size={16} />, sub: t("adminStats.ofTotal", { pct: studentPercentage }) },
     {
-      label: "Unassigned",
+      label: t("adminStats.unassigned"),
       value: unassignedStudentsCount,
       icon: <FiBook size={16} />,
       sub: studentsCount > 0
-        ? `${Math.round((unassignedStudentsCount / studentsCount) * 100)}% of students`
-        : "0% of students",
+        ? t("adminStats.ofStudents", { pct: Math.round((unassignedStudentsCount / studentsCount) * 100) })
+        : t("adminStats.ofStudents", { pct: 0 }),
     },
   ];
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { FiLock, FiCheckCircle, FiArrowRight } from "react-icons/fi";
 import Footer from "./Footer";
 
@@ -99,6 +100,7 @@ const glassCard = {
 };
 
 const ResetPassword = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
   const [password, setPassword] = useState("");
@@ -132,7 +134,7 @@ const ResetPassword = () => {
     setError("");
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError(t("resetPassword.passwordMismatch"));
       return;
     }
 
@@ -249,7 +251,7 @@ const ResetPassword = () => {
             >
               <FiCheckCircle size={28} style={{ color: '#26D9A1' }} />
             </div>
-            <h2 className="text-xl font-extrabold text-white mb-3">Password Updated!</h2>
+            <h2 className="text-xl font-extrabold text-white mb-3">{t("resetPassword.success")}</h2>
             <p className="text-gray-400 text-sm">
               Redirecting you to login in{' '}
               <span className="font-medium" style={{ color: '#9E2FD0' }}>3 seconds</span>…
@@ -273,7 +275,7 @@ const ResetPassword = () => {
           {/* Header */}
           <div className="mb-6 text-center">
             <h1 className="text-2xl font-extrabold text-white tracking-tight mb-1">
-              Reset Your Password
+              {t("resetPassword.title")}
             </h1>
             <p className="text-gray-500 text-sm">
               Hello <span className="font-semibold text-gray-300">{user.name}</span>, let&apos;s get you a new password
@@ -284,7 +286,7 @@ const ResetPassword = () => {
             {/* New password */}
             <div className="group">
               <label className="block text-gray-400 text-xs font-semibold uppercase tracking-widest mb-2">
-                New Password
+                {t("resetPassword.newPassword")}
               </label>
               <div className="relative">
                 <FiLock
@@ -327,7 +329,7 @@ const ResetPassword = () => {
             {/* Confirm password */}
             <div className="group">
               <label className="block text-gray-400 text-xs font-semibold uppercase tracking-widest mb-2">
-                Confirm Password
+                {t("resetPassword.confirmPassword")}
               </label>
               <div className="relative">
                 <FiLock
@@ -396,11 +398,11 @@ const ResetPassword = () => {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
-                    Updating password…
+                    {t("resetPassword.resetting")}
                   </>
                 ) : (
                   <>
-                    Reset Password
+                    {t("resetPassword.resetButton")}
                     <FiArrowRight className="group-hover:translate-x-1 transition-transform duration-200" size={15} />
                   </>
                 )}
@@ -412,7 +414,7 @@ const ResetPassword = () => {
                 href="/login"
                 className="text-purple-400 hover:text-orange-400 transition-colors duration-200 font-medium"
               >
-                Back to Login
+                {t("forgotPassword.returnToLogin")}
               </a>
             </p>
           </form>

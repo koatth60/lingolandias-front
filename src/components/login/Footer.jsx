@@ -1,17 +1,15 @@
 import { FiFacebook, FiInstagram, FiTwitter } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
 
 const Footer = () => {
+  const { t } = useTranslation();
   return (
     <footer className="bg-[#161625] py-6 border-t border-purple-500/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center gap-y-4 md:flex-row md:justify-between">
           {/* Branding */}
           <div className="text-sm text-gray-400">
-            <span>© {new Date().getFullYear()} </span>
-            <span className="font-semibold bg-gradient-to-r from-purple-400 to-orange-400 bg-clip-text text-transparent">
-              Lingolandias
-            </span>
-            <span>. All Rights Reserved.</span>
+            {t("footer.rights", { year: new Date().getFullYear() })}
           </div>
           
           {/* Social icons */}

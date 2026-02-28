@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
+import { useTranslation } from "react-i18next";
 import Swal from "sweetalert2";
 import RemoveStudentModal from "./RemoveStudentModal";
 import AddEventModal from "./AddEventModal";
@@ -9,6 +10,7 @@ import { FiUserPlus, FiUserMinus, FiCalendar, FiMail, FiChevronRight } from "rea
 
 const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -60,8 +62,8 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
 
         if (removeStudentResponse.ok && chatResponse.ok) {
           Swal.fire({
-            title: "Success!",
-            text: "Student and their chats removed successfully.",
+            title: t("common.success"),
+            text: t("teacherPanel.removeStudentSuccess"),
             icon: "success",
             background: '#1a1a2e',
             color: '#fff',
@@ -78,8 +80,8 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
           });
         } else {
           Swal.fire({
-            title: "Error!",
-            text: "Error removing student or chats.",
+            title: t("common.error"),
+            text: t("teacherPanel.removeStudentError"),
             icon: "error",
             background: '#1a1a2e',
             color: '#fff',
@@ -101,8 +103,8 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
 
         if (response.ok) {
           Swal.fire({
-            title: "Success!",
-            text: "Selected events removed successfully.",
+            title: t("common.success"),
+            text: t("teacherPanel.removeEventsSuccess"),
             icon: "success",
             background: '#1a1a2e',
             color: '#fff',
@@ -123,8 +125,8 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
           });
         } else {
           Swal.fire({
-            title: "Error!",
-            text: "Error removing events.",
+            title: t("common.error"),
+            text: t("teacherPanel.removeEventsError"),
             icon: "error",
             background: '#1a1a2e',
             color: '#fff',
@@ -135,8 +137,8 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
     } catch (error) {
       console.error("Error:", error);
       Swal.fire({
-        title: "Error!",
-        text: "An unexpected error occurred.",
+        title: t("common.error"),
+        text: t("teacherPanel.unexpectedError"),
         icon: "error",
         background: '#1a1a2e',
         color: '#fff',
@@ -159,8 +161,8 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
 
       if (response.ok) {
         Swal.fire({
-          title: "Success!",
-          text: "Event added successfully.",
+          title: t("common.success"),
+          text: t("teacherPanel.addEventSuccess"),
           icon: "success",
           background: '#1a1a2e',
           color: '#fff',
@@ -184,8 +186,8 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
         });
       } else {
         Swal.fire({
-          title: "Error!",
-          text: "Error adding event.",
+          title: t("common.error"),
+          text: t("teacherPanel.addEventError"),
           icon: "error",
           background: '#1a1a2e',
           color: '#fff',
@@ -195,8 +197,8 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
     } catch (error) {
       console.error("Error:", error);
       Swal.fire({
-        title: "Error!",
-        text: "An unexpected error occurred.",
+        title: t("common.error"),
+        text: t("teacherPanel.unexpectedError"),
         icon: "error",
         background: '#1a1a2e',
         color: '#fff',
@@ -223,7 +225,7 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
       {/* Content */}
       <div className="relative z-10 p-6">
         <h3 className="text-xl font-bold bg-gradient-to-r from-[#9E2FD0] to-[#F6B82E] bg-clip-text text-transparent dark:text-white mb-6">
-          Teacher Panel
+          {t("teacherPanel.title")}
         </h3>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -231,7 +233,7 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
           <div>
             <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
               <FiUserPlus className="text-[#9E2FD0]" size={16} />
-              Students
+              {t("teacherPanel.students")}
             </h4>
             <div className="max-h-80 overflow-y-auto pr-2 custom-scrollbar space-y-2">
               {students.map((student) => {
@@ -281,12 +283,12 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
                     {/* Student stats */}
                     <div className="mt-3 flex items-center gap-4 text-xs">
                       <span className="text-gray-500 dark:text-gray-400">
-                        Events: <span className="font-semibold text-[#9E2FD0]">
+                        {t("teacherPanel.eventsLabel")}: <span className="font-semibold text-[#9E2FD0]">
                           {events.filter(e => e.studentId === student.id).length}
                         </span>
                       </span>
                       <span className="text-gray-500 dark:text-gray-400">
-                        Status: <span className="font-semibold text-[#26D9A1]">Active</span>
+                        {t("teacherPanel.statusLabel")}: <span className="font-semibold text-[#26D9A1]">{t("teacherPanel.active")}</span>
                       </span>
                     </div>
                   </div>
@@ -299,7 +301,7 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
           <div>
             <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
               <FiCalendar className="text-[#F6B82E]" size={16} />
-              Actions
+              {t("teacherPanel.actions")}
             </h4>
             
             {selectedStudent ? (
@@ -316,8 +318,8 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
                   <div className="relative flex items-center gap-3">
                     <FiCalendar size={24} className="text-white" />
                     <div>
-                      <p className="font-semibold text-white">Add Class</p>
-                      <p className="text-sm text-white/80">Schedule a new class</p>
+                      <p className="font-semibold text-white">{t("teacherPanel.addClass")}</p>
+                      <p className="text-sm text-white/80">{t("teacherPanel.addClassDesc")}</p>
                     </div>
                   </div>
                 </button>
@@ -334,8 +336,8 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
                   <div className="relative flex items-center gap-3">
                     <FiUserMinus size={24} className="text-white" />
                     <div>
-                      <p className="font-semibold text-white">Remove Class/Student</p>
-                      <p className="text-sm text-white/80">Manage student relationship</p>
+                      <p className="font-semibold text-white">{t("teacherPanel.removeClass")}</p>
+                      <p className="text-sm text-white/80">{t("teacherPanel.removeClassDesc")}</p>
                     </div>
                   </div>
                 </button>
@@ -343,12 +345,12 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
                 {/* Selected student info */}
                 <div className="mt-4 p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-200 dark:border-[#9E2FD0]/20">
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Selected: <span className="font-semibold text-[#9E2FD0]">
+                    {t("teacherPanel.selectedLabel")}: <span className="font-semibold text-[#9E2FD0]">
                       {selectedStudent.name} {selectedStudent.lastName}
                     </span>
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                    Total events: {selectedStudent.events?.length || 0}
+                    {t("teacherPanel.totalEventsLabel")}: {selectedStudent.events?.length || 0}
                   </p>
                 </div>
               </div>
@@ -356,7 +358,7 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
               <div className="flex flex-col items-center justify-center h-64 text-center p-6 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-200 dark:border-[#9E2FD0]/20">
                 <FiUserPlus size={40} className="text-gray-400 mb-3" />
                 <p className="text-gray-500 dark:text-gray-400">
-                  Select a student to see available actions
+                  {t("teacherPanel.selectStudent")}
                 </p>
               </div>
             )}

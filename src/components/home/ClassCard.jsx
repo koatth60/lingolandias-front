@@ -1,6 +1,9 @@
 import { FiVideo, FiMessageSquare } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
 
-const ClassCard = ({ classItem, onJoinClass, onViewChat }) => (
+const ClassCard = ({ classItem, onJoinClass, onViewChat }) => {
+  const { t } = useTranslation();
+  return (
   <div
     className="relative rounded-2xl overflow-hidden transition-transform duration-200 hover:-translate-y-1 shadow-sm dark:shadow-none"
     style={{ border: "1px solid rgba(158,47,208,0.18)" }}
@@ -42,7 +45,7 @@ const ClassCard = ({ classItem, onJoinClass, onViewChat }) => (
           </div>
         </div>
         <div>
-          <p className="text-[10px] font-bold tracking-widest text-[#9E2FD0] uppercase">Teacher</p>
+          <p className="text-[10px] font-bold tracking-widest text-[#9E2FD0] uppercase">{t("classCard.teacher")}</p>
           <p className="text-sm font-bold text-gray-800 dark:text-white">{classItem.teacherName}</p>
         </div>
       </div>
@@ -66,7 +69,7 @@ const ClassCard = ({ classItem, onJoinClass, onViewChat }) => (
           </div>
         </div>
         <div>
-          <p className="text-[10px] font-bold tracking-widest text-[#9E2FD0] uppercase">Student</p>
+          <p className="text-[10px] font-bold tracking-widest text-[#9E2FD0] uppercase">{t("classCard.student")}</p>
           <p className="text-sm font-bold text-gray-800 dark:text-white">{classItem.studentName}</p>
         </div>
       </div>
@@ -78,18 +81,19 @@ const ClassCard = ({ classItem, onJoinClass, onViewChat }) => (
           className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-white text-xs font-bold transition-opacity hover:opacity-85"
           style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 3px 10px rgba(158,47,208,0.35)" }}
         >
-          <FiVideo size={13} /> Join Class
+          <FiVideo size={13} /> {t("classCard.joinClass")}
         </button>
         <button
           onClick={() => onViewChat(classItem.id)}
           className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 transition-all hover:bg-[#9E2FD0]/8 dark:hover:bg-white/5"
           style={{ border: "1px solid rgba(158,47,208,0.20)" }}
         >
-          <FiMessageSquare size={13} /> View Chat
+          <FiMessageSquare size={13} /> {t("classCard.viewChat")}
         </button>
       </div>
     </div>
   </div>
-);
+  );
+};
 
 export default ClassCard;

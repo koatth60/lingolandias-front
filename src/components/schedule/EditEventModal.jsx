@@ -1,6 +1,7 @@
 import React from 'react';
 import { Calendar } from 'react-big-calendar';
 import { FiCheck, FiX, FiEdit2 } from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
 
 const EditEventModal = ({
   isModalOpen,
@@ -15,6 +16,7 @@ const EditEventModal = ({
   setIsModalOpen,
   setEditingEvent,
 }) => {
+  const { t } = useTranslation();
   if (!isModalOpen) return null;
 
   return (
@@ -41,7 +43,7 @@ const EditEventModal = ({
           {/* Header */}
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold bg-gradient-to-r from-[#9E2FD0] to-[#F6B82E] bg-clip-text text-transparent dark:text-white">
-              Edit Calendar
+              {t("editEvent.title")}
             </h2>
             <button
               onClick={() => {
@@ -104,7 +106,7 @@ const EditEventModal = ({
                   <div className="flex items-center gap-2 mb-6">
                     <FiEdit2 className="text-[#9E2FD0]" size={20} />
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                      Edit Event
+                      {t("editEvent.editEvent")}
                     </h3>
                   </div>
 
@@ -112,7 +114,7 @@ const EditEventModal = ({
                     <div className="space-y-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Start Time (HH:MM)
+                          {t("editEvent.startTime")}
                         </label>
                         <input
                           type="text"
@@ -126,7 +128,7 @@ const EditEventModal = ({
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          End Time (HH:MM)
+                          {t("editEvent.endTime")}
                         </label>
                         <input
                           type="text"
@@ -150,7 +152,7 @@ const EditEventModal = ({
                         }}
                       >
                         <FiCheck className="inline mr-2" size={16} />
-                        Update
+                        {t("editEvent.update")}
                       </button>
                       <button
                         type="button"
@@ -158,7 +160,7 @@ const EditEventModal = ({
                         className="flex-1 py-3 px-4 rounded-xl bg-gray-200 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-white/10 transition-all font-medium"
                       >
                         <FiX className="inline mr-2" size={16} />
-                        Cancel
+                        {t("editEvent.cancel")}
                       </button>
                     </div>
                   </form>
@@ -176,7 +178,7 @@ const EditEventModal = ({
             className="w-full mt-4 py-3 px-4 rounded-xl bg-gray-200 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-white/10 transition-all font-medium flex items-center justify-center gap-2"
           >
             <FiX size={16} />
-            Close Calendar
+            {t("editEvent.closeCalendar")}
           </button>
         </div>
       </div>

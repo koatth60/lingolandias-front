@@ -1,6 +1,7 @@
 // navbar.jsx
 import { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useTranslation } from "react-i18next";
 import avatar from "../assets/logos/avatar.jpg";
 import { useLogout } from "../hooks/customHooks";
 import { logout } from "../redux/userSlice";
@@ -12,6 +13,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const Navbar = ({ header }) => {
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const user = useSelector((state) => state.user.userInfo.user);
   const isSidebarOpen = useSelector((state) => state.sidebar.isSidebarOpen);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -228,16 +230,16 @@ const Navbar = ({ header }) => {
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{user?.email}</p>
                     <div className="flex items-center gap-1.5 mt-1.5">
                       <div className="w-1.5 h-1.5 rounded-full bg-[#26D9A1]" style={{ boxShadow: '0 0 4px rgba(38,217,161,0.8)' }} />
-                      <span className="text-xs text-[#26D9A1] font-medium">Online</span>
+                      <span className="text-xs text-[#26D9A1] font-medium">{t("navbar.online")}</span>
                     </div>
                   </div>
 
                   {/* Menu items */}
                   <div className="py-1.5">
                     {[
-                      { href: '/profile', label: 'Profile', icon: FiUser },
-                      { href: '/settings', label: 'Settings', icon: FiSettings },
-                      { href: '/help-center', label: 'Help Center', icon: FiHelpCircle },
+                      { href: '/profile', label: t("navbar.profile"), icon: FiUser },
+                      { href: '/settings', label: t("navbar.settings"), icon: FiSettings },
+                      { href: '/help-center', label: t("navbar.helpCenter"), icon: FiHelpCircle },
                     ].map(({ href, label, icon: Icon }, i) => (
                       <a
                         key={href}
@@ -262,7 +264,7 @@ const Navbar = ({ header }) => {
                       style={{ animation: 'navbarItemFadeIn 0.2s ease-out 270ms both' }}
                     >
                       <FiLogOut size={14} className="flex-shrink-0 opacity-80" />
-                      Logout
+                      {t("navbar.logout")}
                     </button>
                   </div>
                 </div>

@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import Login from './components/login/login';
 import Home from './sections/home';
 import Profile from './sections/profile';
@@ -26,6 +27,8 @@ import 'react-toastify/dist/ReactToastify.css';
 function App() {
   const { userInfo } = useSelector((state) => state.user);
   const darkMode = userInfo?.user?.settings?.darkMode;
+  const savedLanguage = userInfo?.user?.settings?.language;
+  const { i18n } = useTranslation();
 
   // Apply dark class to <html> so Tailwind dark: selectors work everywhere,
   // including portal-rendered modals and native browser UI on all browsers/OS.
@@ -37,6 +40,14 @@ function App() {
       html.classList.remove('dark');
     }
   }, [darkMode]);
+
+  // Sync language from user settings to i18n on login/reload
+  useEffect(() => {
+    if (savedLanguage && savedLanguage !== i18n.language) {
+      i18n.changeLanguage(savedLanguage);
+      localStorage.setItem('language', savedLanguage);
+    }
+  }, [savedLanguage]);
 
   return (
     <UploadProvider>

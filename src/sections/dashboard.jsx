@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 import { toggleSidebar } from "../redux/sidebarSlice";
 import {
   FiHome, FiCalendar, FiBookOpen, FiMessageSquare, FiUser,
@@ -32,6 +33,7 @@ const SIDEBAR_CHARS = [
 
 const Dashboard = () => {
   const location = useLocation();
+  const { t } = useTranslation();
   const [activeLink, setActiveLink] = useState("");
 
   const dispatch = useDispatch();
@@ -119,23 +121,23 @@ const Dashboard = () => {
   const totalScheduleUnread = getScheduleUnreads();
 
   const navLinks = [
-    { to: "/home", icon: FiHome, text: "Dashboard" },
+    { to: "/home", icon: FiHome, text: t("nav.dashboard") },
     user?.role === "admin"
-      ? { to: "/schedule", icon: FiVideo, text: "Meetings" }
-      : { to: "/schedule", icon: FiCalendar, text: "My Schedule", unread: totalScheduleUnread },
-    // { to: "/learning", icon: FiBookOpen, text: "Learning" }, // Hidden — work in progress
-    { to: "/messages", icon: FiMessageSquare, text: "Messages", unread: totalUnread },
+      ? { to: "/schedule", icon: FiVideo, text: t("nav.meetings") }
+      : { to: "/schedule", icon: FiCalendar, text: t("nav.schedule"), unread: totalScheduleUnread },
+    // { to: "/learning", icon: FiBookOpen, text: t("nav.learning") }, // Hidden — work in progress
+    { to: "/messages", icon: FiMessageSquare, text: t("nav.messages"), unread: totalUnread },
     ...(user?.role === "teacher" || user?.role === "admin"
-      ? [{ to: "/support", icon: FiRadio, text: "Updates & Support", unread: supportUnreadCount, accent: true }]
+      ? [{ to: "/support", icon: FiRadio, text: t("nav.support"), unread: supportUnreadCount, accent: true }]
       : []),
     // { to: "/trello", icon: FiGrid, text: "Trello" }, // Hidden — work in progress
   ];
 
   const bottomLinks = [
-    { to: "/profile", icon: FiUser, text: "Profile" },
-    ...(user?.role === "admin" ? [{ to: "/admin", icon: FiUsers, text: "Admin" }] : []),
-    { to: "/settings", icon: FiSettings, text: "Settings" },
-    { to: "/help-center", icon: FiHelpCircle, text: "Help Center" },
+    { to: "/profile", icon: FiUser, text: t("nav.profile") },
+    ...(user?.role === "admin" ? [{ to: "/admin", icon: FiUsers, text: t("nav.admin") }] : []),
+    { to: "/settings", icon: FiSettings, text: t("nav.settings") },
+    { to: "/help-center", icon: FiHelpCircle, text: t("nav.helpCenter") },
   ];
 
   return (
@@ -433,7 +435,7 @@ const Dashboard = () => {
                 >
                   <FiLogOut size={18} className="flex-shrink-0" />
                   {isSidebarOpen && (
-                    <span className="text-sm font-medium truncate">Logout</span>
+                    <span className="text-sm font-medium truncate">{t("nav.logout")}</span>
                   )}
                 </button>
               </div>

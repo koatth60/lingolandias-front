@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 import ChatListComponent from "../components/messages/ChatListComponent";
 import ChatWindowComponent from "../components/messages/ChatWindowComponent";
 import { io } from "socket.io-client";
@@ -12,6 +13,7 @@ import useMessagesSection from "../hooks/useMessagesSection";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const Messages = () => {
+  const { t } = useTranslation();
   const user = useSelector((state) => state.user.userInfo.user);
   const { unreadCounts } = useSelector((state) => state.messages);
   const [selectedChat, setSelectedChat] = useState(null);
@@ -66,7 +68,7 @@ const Messages = () => {
     if (user.students && user.students.length > 0) {
       chats.push({
         id: user.id,
-        name: `Group Chat - ${user.name}`,
+        name: t("chatList.groupChat", { name: user.name }),
         online: "online",
         type: "group",
       });
@@ -77,7 +79,7 @@ const Messages = () => {
     if (user.teacher) {
       chats.push({
         id: user.teacher.id,
-        name: `Group Chat - ${user.teacher.name}`,
+        name: t("chatList.groupChat", { name: user.teacher.name }),
         online: "online",
         type: "group",
       });
@@ -89,23 +91,25 @@ const Messages = () => {
     }
   }
 
-  const userLanguage = user.role === 'admin' ? '' : (user.language ? user.language.charAt(0).toUpperCase() + user.language.slice(1) : ''); 
+  const userLanguage = user.role === 'admin' ? '' : (user.language ? user.language.charAt(0).toUpperCase() + user.language.slice(1) : '');
   const isAdmin = user.role === 'admin';
 
   const updatedChats = chats.map((chat) => {
     let roomKey = "";
-    const chatLanguage = chat.name.split(" - ")[1];
+    // Use the stored language field if available, otherwise fall back to parsing the name
+    const chatLanguage = chat.language || chat.name.split(" - ")[1];
 
     if (chat.type === "general" && (isAdmin || chatLanguage === userLanguage)) {
-      roomKey = `general${chatLanguage}Room`; 
+      roomKey = `general${chatLanguage}Room`;
     } else if (chat.type === "teacher" && (isAdmin || chatLanguage === userLanguage)) {
-      roomKey = `teachers${chatLanguage}Room`; 
+      roomKey = `teachers${chatLanguage}Room`;
     } else if (chat.type === "group") {
-      roomKey = `randomRoom`; 
+      roomKey = `randomRoom`;
     }
 
     return {
       ...chat,
+      name: chat.nameKey ? t(chat.nameKey) : chat.name,
       unreadCount: unreadCounts[roomKey] || 0,
     };
   });
@@ -114,7 +118,7 @@ const Messages = () => {
     <div className="flex w-full relative h-screen">
       <Dashboard />
       <div className="w-full flex flex-col">
-        <Navbar header="Messages Page" />
+        <Navbar header={t("messages.title")} />
 
         <section className="flex-grow min-h-0">
           <div className={`w-full h-full ${showChatList ? 'hidden lg:flex' : 'flex'}`}>
@@ -146,7 +150,7 @@ const Messages = () => {
                 </>
               ) : (
                 <div className="lg:flex items-center justify-center h-full hidden bg-gray-50 dark:bg-brand-dark">
-                  <p className="text-gray-500 dark:text-gray-400">Select a chat to start chatting</p>
+                  <p className="text-gray-500 dark:text-gray-400">{t("messages.selectChat")}</p>
                 </div>
               )}
             </section>

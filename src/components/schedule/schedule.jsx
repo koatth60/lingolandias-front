@@ -1,5 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Calendar, dayjsLocalizer } from "react-big-calendar";
 import Dashboard from "../../sections/dashboard";
 import Navbar from "../navbar";
@@ -9,6 +10,8 @@ import useFormattedEvents from "../../hooks/useFormattedEvents";
 import useEventEdit from "../../hooks/useEventEdit";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import dayjs from "dayjs";
+import "dayjs/locale/es";
+import "dayjs/locale/pl";
 import { useEffect, useState } from "react";
 import PerfectScrollbar from "react-perfect-scrollbar";
 import "react-perfect-scrollbar/dist/css/styles.css";
@@ -37,8 +40,9 @@ import AdminMeetingRooms from "./AdminMeetingRooms";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const Schedule = () => {
+  const { t, i18n } = useTranslation();
   const user = useSelector((state) => state.user.userInfo.user);
-  const header = user.role === "admin" ? "Meeting Rooms" : "My Schedule";
+  const header = user.role === "admin" ? t("schedule.meetingRooms") : t("schedule.mySchedule");
   const isChatVisible =
     (user.role === "teacher" && user.students && user.students.length > 0) ||
     (user.role === "user" && user.teacher);
@@ -156,6 +160,10 @@ const Schedule = () => {
       };
     }
   }, [user, dispatch]);
+
+  useEffect(() => {
+    dayjs.locale(i18n.language);
+  }, [i18n.language]);
 
   const localizer = dayjsLocalizer(dayjs);
 
@@ -335,12 +343,12 @@ const Schedule = () => {
                         <span className="text-3xl">📅</span>
                       </div>
                       <h2 className="text-xl font-bold text-gray-700 dark:text-gray-200 mb-2">
-                        {user.role === "teacher" ? "No students assigned yet" : "No teacher assigned yet"}
+                        {user.role === "teacher" ? t("schedule.noStudents") : t("schedule.noTeacher")}
                       </h2>
                       <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
                         {user.role === "teacher"
-                          ? "Contact an administrator to get students assigned to you."
-                          : "Contact an administrator to get a teacher assigned to you."}
+                          ? t("schedule.contactAdmin")
+                          : t("schedule.contactAdminStudent")}
                       </p>
                     </div>
                   </div>

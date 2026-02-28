@@ -7,6 +7,7 @@ import { updateUser, uploadAvatar } from "../redux/userSlice";
 import avatar from "../assets/logos/avatar.jpg";
 import { v4 as uuidv4 } from "uuid";
 import { FiUser, FiBookOpen, FiAward, FiCamera, FiEdit2, FiSave } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
 
 const inputBase =
   "w-full mt-1 rounded-xl py-2.5 px-3.5 text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#9E2FD0]/20 focus:border-[#9E2FD0]/50 transition-colors border border-gray-200 dark:border-[#9E2FD0]/25 bg-white dark:bg-[#252545]";
@@ -15,7 +16,8 @@ const inputReadOnly =
 
 const Profile = () => {
   const user = useSelector((state) => state.user.userInfo.user);
-  const header = "User Profile";
+  const { t } = useTranslation();
+  const header = t("profile.header");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -160,10 +162,10 @@ const Profile = () => {
             <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center px-6 py-5 gap-4">
               <div>
                 <h2 className="text-2xl font-extrabold login-gradient-text">
-                  Hello, {name}
+                  {t("profile.hello", { name })}
                 </h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-md">
-                  This is your profile page. You can see the progress you&apos;ve made and manage your personal information.
+                  {t("profile.subtitle")}
                 </p>
               </div>
               {!isEditMode ? (
@@ -177,7 +179,7 @@ const Profile = () => {
                   }}
                 >
                   <FiEdit2 size={15} />
-                  Edit Profile
+                  {t("profile.editProfile")}
                 </button>
               ) : (
                 <button
@@ -190,7 +192,7 @@ const Profile = () => {
                   }}
                 >
                   <FiSave size={15} />
-                  Save Changes
+                  {t("profile.saveChanges")}
                 </button>
               )}
             </div>
@@ -279,13 +281,13 @@ const Profile = () => {
                     {user.role === "user" && (
                       <>
                         <h4 className="text-xs font-bold tracking-widest text-[#9E2FD0] dark:text-[#c084fc] uppercase mb-4">
-                          My Learning
+                          {t("profile.myLearning")}
                         </h4>
                         <div className="space-y-3">
                           {[
-                            { icon: FiUser, label: "My Teacher", value: teacherAssigned || "Not Assigned", color: "#9E2FD0" },
-                            { icon: FiBookOpen, label: "Language", value: user.language ? user.language.charAt(0).toUpperCase() + user.language.slice(1) : "N/A", color: "#26D9A1" },
-                            { icon: FiAward, label: "Current Level", value: "Beginner", color: "#F6B82E" },
+                            { icon: FiUser, label: t("profile.myTeacher"), value: teacherAssigned || t("profile.notAssigned"), color: "#9E2FD0" },
+                            { icon: FiBookOpen, label: t("profile.language"), value: user.language ? user.language.charAt(0).toUpperCase() + user.language.slice(1) : "N/A", color: "#26D9A1" },
+                            { icon: FiAward, label: t("profile.currentLevel"), value: t("profile.beginner"), color: "#F6B82E" },
                           ].map(({ icon: Icon, label, value, color }) => (
                             <div
                               key={label}
@@ -311,7 +313,7 @@ const Profile = () => {
                     {user.role === "teacher" && (
                       <>
                         <h4 className="text-xs font-bold tracking-widest text-[#9E2FD0] dark:text-[#c084fc] uppercase mb-4">
-                          My Students
+                          {t("profile.myStudents")}
                         </h4>
                         <div className="space-y-2 max-h-72 overflow-y-auto custom-scrollbar">
                           {user.students && user.students.length > 0 ? (
@@ -336,7 +338,7 @@ const Profile = () => {
                             ))
                           ) : (
                             <p className="text-sm text-gray-400 dark:text-gray-500 italic text-center py-4">
-                              No students assigned yet.
+                              {t("profile.noStudents")}
                             </p>
                           )}
                         </div>
@@ -375,7 +377,7 @@ const Profile = () => {
                     >
                       <FiUser size={14} className="text-white" />
                     </div>
-                    <span className="text-sm font-extrabold login-gradient-text">My Account</span>
+                    <span className="text-sm font-extrabold login-gradient-text">{t("profile.myAccount")}</span>
                   </div>
                   {isEditMode && (
                     <button
@@ -387,7 +389,7 @@ const Profile = () => {
                         boxShadow: "0 2px 8px rgba(38,217,161,0.35)",
                       }}
                     >
-                      <FiSave size={13} /> Save
+                      <FiSave size={13} /> {t("profile.save")}
                     </button>
                   )}
                 </div>
@@ -397,23 +399,23 @@ const Profile = () => {
                   <form>
                     {/* Section: User Information */}
                     <p className="text-[11px] font-bold tracking-widest text-[#9E2FD0] dark:text-[#c084fc] uppercase mb-4">
-                      User Information
+                      {t("profile.userInformation")}
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                       <div>
-                        <label htmlFor="name" className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Name</label>
+                        <label htmlFor="name" className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t("profile.name")}</label>
                         <input type="text" id="name" name="name" value={name || ""} onChange={(e) => setName(e.target.value)} className={isEditMode ? inputBase : inputReadOnly} readOnly={!isEditMode} />
                       </div>
                       <div>
-                        <label htmlFor="lastName" className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Last Name</label>
+                        <label htmlFor="lastName" className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t("profile.lastName")}</label>
                         <input type="text" id="lastName" name="lastName" value={lastName || ""} onChange={(e) => setLastName(e.target.value)} className={isEditMode ? inputBase : inputReadOnly} readOnly={!isEditMode} />
                       </div>
                       <div>
-                        <label htmlFor="phone" className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Phone</label>
+                        <label htmlFor="phone" className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t("profile.phone")}</label>
                         <input type="number" id="phone" name="phone" value={phone || ""} onChange={(e) => setPhone(e.target.value)} className={isEditMode ? inputBase : inputReadOnly} readOnly={!isEditMode} />
                       </div>
                       <div>
-                        <label htmlFor="email" className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Email</label>
+                        <label htmlFor="email" className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t("profile.email")}</label>
                         <input type="email" id="email" name="email" value={email || ""} readOnly className={inputReadOnly} />
                       </div>
                     </div>
@@ -423,23 +425,23 @@ const Profile = () => {
 
                     {/* Section: Contact Information */}
                     <p className="text-[11px] font-bold tracking-widest text-[#9E2FD0] dark:text-[#c084fc] uppercase mb-4">
-                      Contact Information
+                      {t("profile.contactInformation")}
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                       <div className="sm:col-span-2">
-                        <label htmlFor="address" className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Address</label>
+                        <label htmlFor="address" className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t("profile.address")}</label>
                         <input type="text" id="address" name="address" value={address || ""} onChange={(e) => setAddress(e.target.value)} className={isEditMode ? inputBase : inputReadOnly} readOnly={!isEditMode} />
                       </div>
                       <div>
-                        <label htmlFor="city" className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">City</label>
+                        <label htmlFor="city" className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t("profile.city")}</label>
                         <input type="text" id="city" name="city" value={city || ""} onChange={(e) => setCity(e.target.value)} className={isEditMode ? inputBase : inputReadOnly} readOnly={!isEditMode} />
                       </div>
                       <div>
-                        <label htmlFor="country" className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Country</label>
+                        <label htmlFor="country" className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t("profile.country")}</label>
                         <input type="text" id="country" name="country" value={country || ""} onChange={(e) => setCountry(e.target.value)} className={isEditMode ? inputBase : inputReadOnly} readOnly={!isEditMode} />
                       </div>
                       <div>
-                        <label htmlFor="postal-code" className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Postal Code</label>
+                        <label htmlFor="postal-code" className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t("profile.postalCode")}</label>
                         <input type="number" id="postal-code" name="postal-code" value={postal || ""} onChange={(e) => setPostal(e.target.value)} className={isEditMode ? inputBase : inputReadOnly} readOnly={!isEditMode} />
                       </div>
                     </div>
@@ -449,10 +451,10 @@ const Profile = () => {
 
                     {/* Section: About Me */}
                     <p className="text-[11px] font-bold tracking-widest text-[#9E2FD0] dark:text-[#c084fc] uppercase mb-4">
-                      About Me
+                      {t("profile.aboutMe")}
                     </p>
                     <div>
-                      <label htmlFor="biography" className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Biography</label>
+                      <label htmlFor="biography" className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t("profile.biography")}</label>
                       <textarea
                         id="biography"
                         name="biography"

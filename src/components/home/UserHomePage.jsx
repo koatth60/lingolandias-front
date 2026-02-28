@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 import { FiCalendar, FiMessageSquare, FiBookOpen, FiArrowRight, FiHelpCircle } from "react-icons/fi";
 import { InfoCard } from "./InfoCard";
 import { UpcomingClass } from "./UpcomingClass";
@@ -30,56 +31,24 @@ const LANGUAGE_TIPS = [
   { lang: "Polish",   word: "Nauka",         meaning: "Learning",       sentence: "Nauka języka to podróż bez końca." },
 ];
 
-const QUICK_NAV = [
-  {
-    icon: FiCalendar,
-    label: "Schedule",
-    description: "View your upcoming classes and sessions",
-    href: "/schedule",
-    gradient: "linear-gradient(135deg, #9E2FD0, #7b22a8)",
-    shadow: "rgba(158,47,208,0.35)",
-  },
-  {
-    icon: FiMessageSquare,
-    label: "Messages",
-    description: "Chat with your teacher or students",
-    href: "/messages",
-    gradient: "linear-gradient(135deg, #26D9A1, #1fa07a)",
-    shadow: "rgba(38,217,161,0.35)",
-  },
-  {
-    icon: FiBookOpen,
-    label: "Learning",
-    description: "Access your learning materials and activities",
-    href: "/learning",
-    gradient: "linear-gradient(135deg, #F6B82E, #d4981a)",
-    shadow: "rgba(246,184,46,0.35)",
-  },
+const QUICK_NAV_CONFIG = [
+  { icon: FiCalendar, labelKey: "home.schedule", descKey: "home.scheduleDesc", href: "/schedule", gradient: "linear-gradient(135deg, #9E2FD0, #7b22a8)", shadow: "rgba(158,47,208,0.35)" },
+  { icon: FiMessageSquare, labelKey: "home.messages", descKey: "home.messagesDesc", href: "/messages", gradient: "linear-gradient(135deg, #26D9A1, #1fa07a)", shadow: "rgba(38,217,161,0.35)" },
+  { icon: FiBookOpen, labelKey: "home.learning", descKey: "home.learningDesc", href: "/learning", gradient: "linear-gradient(135deg, #F6B82E, #d4981a)", shadow: "rgba(246,184,46,0.35)" },
 ];
 
-const FAQ_ITEMS = [
-  {
-    question: "How long will it take?",
-    answer: "Our tailored approach ensures you start communicating effectively as soon as possible by setting achievable goals together.",
-  },
-  {
-    question: "Why do I lack freedom in speaking?",
-    answer: "We identify and address the root causes of hesitation, guaranteeing a significant boost in your speaking confidence.",
-  },
-  {
-    question: "Will we learn grammar?",
-    answer: "Absolutely. Our innovative methods integrate grammar seamlessly, so you'll learn the rules without tedious drills.",
-  },
-  {
-    question: "What if we can't attend classes?",
-    answer: "Flexibility is key. You can reschedule up to 24 hours before your class, and we're always understanding in emergencies.",
-  },
+const FAQ_KEYS = [
+  { qKey: "home.faqItems.q1", aKey: "home.faqItems.a1" },
+  { qKey: "home.faqItems.q2", aKey: "home.faqItems.a2" },
+  { qKey: "home.faqItems.q3", aKey: "home.faqItems.a3" },
+  { qKey: "home.faqItems.q4", aKey: "home.faqItems.a4" },
 ];
 
 const UserHomePage = () => {
   const user = useSelector((state) => state.user.userInfo.user);
   const nextClasses = getNextClasses(user);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // Advances once per calendar day (UTC epoch days), cycles through the full tips array
   const tip = LANGUAGE_TIPS[Math.floor(Date.now() / 86400000) % LANGUAGE_TIPS.length];
@@ -111,22 +80,22 @@ const UserHomePage = () => {
               className="w-2 h-2 rounded-full bg-[#26D9A1] flex-shrink-0"
               style={{ boxShadow: "0 0 6px rgba(38,217,161,0.8)", animation: "loginPulseOrb 2.5s ease-in-out infinite" }}
             />
-            <span className="text-xs font-bold tracking-widest text-[#26D9A1] uppercase">Online</span>
+            <span className="text-xs font-bold tracking-widest text-[#26D9A1] uppercase">{t("home.online")}</span>
           </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold login-gradient-text mb-3">
-            Welcome back, {user.name}!
+            {t("home.welcomeBack", { name: user.name })}
           </h1>
           <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-xl">
-            Your journey to fluency continues. Every session brings you one step closer to your goals.
+            {t("home.subtitle")}
           </p>
         </div>
       </section>
 
       {/* ── Quick navigation ── */}
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {QUICK_NAV.map(({ icon: Icon, label, description, href, gradient, shadow }) => (
+        {QUICK_NAV_CONFIG.map(({ icon: Icon, labelKey, descKey, href, gradient, shadow }) => (
           <a
-            key={label}
+            key={labelKey}
             href={href}
             className="group relative rounded-2xl p-5 flex items-start gap-4 transition-transform duration-200 hover:-translate-y-1 shadow-sm dark:shadow-none"
             style={{ border: "1px solid rgba(158,47,208,0.15)" }}
@@ -143,8 +112,8 @@ const UserHomePage = () => {
               <Icon size={18} className="text-white" />
             </div>
             <div className="relative z-10 flex-1 min-w-0">
-              <p className="font-bold text-gray-800 dark:text-white text-sm">{label}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">{description}</p>
+              <p className="font-bold text-gray-800 dark:text-white text-sm">{t(labelKey)}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">{t(descKey)}</p>
             </div>
             <FiArrowRight
               size={14}
@@ -170,7 +139,7 @@ const UserHomePage = () => {
           <div className="relative z-10 px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center gap-5">
             <div className="flex-shrink-0">
               <p className="text-[10px] font-bold tracking-widest text-[#9E2FD0] uppercase mb-1">
-                Word of the Day · {tip.lang}
+                {t("home.wordOfDay", { lang: tip.lang })}
               </p>
               <p className="text-2xl font-extrabold text-gray-900 dark:text-white">{tip.word}</p>
               <p className="text-sm font-semibold text-[#26D9A1] mt-0.5">{tip.meaning}</p>
@@ -191,11 +160,11 @@ const UserHomePage = () => {
           <h2 className="text-base font-bold text-gray-800 dark:text-white tracking-tight mb-4 flex items-center gap-2">
             <span className="inline-block w-1 h-4 rounded-full flex-shrink-0" style={{ background: "linear-gradient(to bottom, #9E2FD0, #F6B82E)" }} />
             <FiHelpCircle size={15} className="text-[#9E2FD0]" />
-            Frequently Asked Questions
+            {t("home.faq")}
           </h2>
           <div className="grid md:grid-cols-2 gap-4">
-            {FAQ_ITEMS.map((faq) => (
-              <InfoCard key={faq.question} question={faq.question} answer={faq.answer} />
+            {FAQ_KEYS.map(({ qKey, aKey }) => (
+              <InfoCard key={qKey} question={t(qKey)} answer={t(aKey)} />
             ))}
           </div>
         </section>
@@ -205,7 +174,7 @@ const UserHomePage = () => {
           <h2 className="text-base font-bold text-gray-800 dark:text-white tracking-tight mb-4 flex items-center gap-2">
             <span className="inline-block w-1 h-4 rounded-full flex-shrink-0" style={{ background: "linear-gradient(to bottom, #26D9A1, #9E2FD0)" }} />
             <FiCalendar size={15} className="text-[#26D9A1]" />
-            Next Sessions
+            {t("home.nextSessions")}
           </h2>
           <div className="space-y-3">
             {nextClasses.length === 0 && (
@@ -219,7 +188,7 @@ const UserHomePage = () => {
                   style={{ background: "linear-gradient(135deg, rgba(13,10,30,0.90), rgba(26,26,46,0.88))" }}
                 />
                 <p className="relative z-10 text-sm text-gray-500 dark:text-gray-400">
-                  No upcoming sessions scheduled.
+                  {t("home.noSessions")}
                 </p>
               </div>
             )}

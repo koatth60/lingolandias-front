@@ -1,7 +1,14 @@
 import { FiChevronLeft, FiChevronRight, FiCalendar } from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
 
 const CustomToolbar = ({ label, onNavigate, onView, view }) => {
+  const { t } = useTranslation();
   const views = ['week', 'day', 'agenda'];
+  const viewLabels = {
+    week: t('toolbar.week'),
+    day: t('toolbar.day'),
+    agenda: t('toolbar.agenda'),
+  };
 
   return (
     <div className="relative overflow-hidden">
@@ -35,7 +42,7 @@ const CustomToolbar = ({ label, onNavigate, onView, view }) => {
               <FiCalendar size={14} className="text-white" />
             </div>
             <span className="text-sm font-extrabold login-gradient-text whitespace-nowrap">
-              Classes Schedule
+              {t('toolbar.classesSchedule')}
             </span>
           </div>
 
@@ -45,7 +52,7 @@ const CustomToolbar = ({ label, onNavigate, onView, view }) => {
               onClick={() => onNavigate('TODAY')}
               className="px-2.5 py-1.5 text-xs font-semibold rounded-lg transition-colors text-[#9E2FD0] dark:text-[#c084fc] bg-[#9E2FD0]/8 dark:bg-[#9E2FD0]/15 hover:bg-[#9E2FD0]/15 dark:hover:bg-[#9E2FD0]/25 border border-[#9E2FD0]/20 dark:border-[#9E2FD0]/30"
             >
-              Today
+              {t('common.today')}
             </button>
             <button
               onClick={() => onNavigate('PREV')}
@@ -83,7 +90,7 @@ const CustomToolbar = ({ label, onNavigate, onView, view }) => {
                 boxShadow: '0 2px 10px rgba(158,47,208,0.45)',
               } : {}}
             >
-              {v}
+              {viewLabels[v]}
             </button>
           ))}
         </div>

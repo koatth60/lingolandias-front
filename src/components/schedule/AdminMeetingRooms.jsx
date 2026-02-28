@@ -1,15 +1,14 @@
 import { useState } from "react";
 import { FiVideo, FiUsers, FiGlobe, FiArrowRight, FiRadio } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
 import { meetingRooms } from "../../constants";
 
 const ROOMS = [
   {
     key: meetingRooms.english,
-    label: "English Room",
+    langKey: "english",
     language: "English",
     code: "EN",
-    tagline: "British & American English",
-    description: "Coordinate lessons, share resources and host live sessions with the English teaching team.",
     color: "#9E2FD0",
     colorAlt: "#7b22a8",
     shadow: "rgba(158,47,208,0.35)",
@@ -18,11 +17,9 @@ const ROOMS = [
   },
   {
     key: meetingRooms.spanish,
-    label: "Spanish Room",
+    langKey: "spanish",
     language: "Español",
     code: "ES",
-    tagline: "Latin & Castilian Spanish",
-    description: "Sync with the Spanish department, plan group activities and run real-time class reviews.",
     color: "#26D9A1",
     colorAlt: "#1fa07a",
     shadow: "rgba(38,217,161,0.30)",
@@ -31,11 +28,9 @@ const ROOMS = [
   },
   {
     key: meetingRooms.polish,
-    label: "Polish Room",
+    langKey: "polish",
     language: "Polski",
     code: "PL",
-    tagline: "Central European Linguistics",
-    description: "Bring the Polish teaching staff together for curriculum alignment and collaborative planning.",
     color: "#F6B82E",
     colorAlt: "#c8940f",
     shadow: "rgba(246,184,46,0.28)",
@@ -45,6 +40,7 @@ const ROOMS = [
 ];
 
 const AdminMeetingRooms = ({ onJoinMeeting }) => {
+  const { t } = useTranslation();
   const [hoveredKey, setHoveredKey] = useState(null);
 
   return (
@@ -65,15 +61,14 @@ const AdminMeetingRooms = ({ onJoinMeeting }) => {
             style={{ background: "#26D9A1" }}
           />
           <FiRadio size={10} />
-          Live Rooms Available
+          {t("adminRooms.liveRooms")}
         </div>
 
         <h2 className="text-2xl sm:text-3xl font-extrabold login-gradient-text mb-3">
-          Teacher Meeting Rooms
+          {t("adminRooms.title")}
         </h2>
         <p className="text-gray-500 dark:text-gray-300 text-sm leading-relaxed">
-          Join any active language department room to monitor sessions, coordinate with teachers,
-          or facilitate live classes across all language tracks.
+          {t("adminRooms.subtitle")}
         </p>
 
         {/* Gradient rule */}
@@ -160,13 +155,13 @@ const AdminMeetingRooms = ({ onJoinMeeting }) => {
                     className="text-base font-extrabold leading-tight"
                     style={{ color: room.color }}
                   >
-                    {room.label}
+                    {t(`adminRooms.${room.langKey}.label`)}
                   </h3>
                   <p
                     className="text-xs font-medium mt-0.5"
                     style={{ color: room.color, opacity: 0.65 }}
                   >
-                    {room.tagline}
+                    {t(`adminRooms.${room.langKey}.tagline`)}
                   </p>
                 </div>
 
@@ -175,7 +170,7 @@ const AdminMeetingRooms = ({ onJoinMeeting }) => {
                   className="text-xs leading-relaxed flex-1"
                   style={{ color: "#9ca3af" }}
                 >
-                  {room.description}
+                  {t(`adminRooms.${room.langKey}.desc`)}
                 </p>
 
                 {/* Divider */}
@@ -190,11 +185,11 @@ const AdminMeetingRooms = ({ onJoinMeeting }) => {
                   <div className="flex items-center gap-3" style={{ color: "#9ca3af" }}>
                     <span className="flex items-center gap-1 text-[10px]">
                       <FiUsers size={11} />
-                      Teachers
+                      {t("adminRooms.teachers")}
                     </span>
                     <span className="flex items-center gap-1 text-[10px]">
                       <FiGlobe size={11} />
-                      Live
+                      {t("adminRooms.live")}
                     </span>
                   </div>
 
@@ -208,7 +203,7 @@ const AdminMeetingRooms = ({ onJoinMeeting }) => {
                     }}
                   >
                     <FiVideo size={12} />
-                    Join Room
+                    {t("adminRooms.joinRoom")}
                     <FiArrowRight
                       size={11}
                       className="group-hover:translate-x-0.5 transition-transform duration-150"
@@ -237,12 +232,12 @@ const AdminMeetingRooms = ({ onJoinMeeting }) => {
             <FiVideo size={13} style={{ color: "#9E2FD0" }} />
           </div>
           <span className="text-xs leading-snug">
-            Joining a room starts a live video session with all connected teachers in that department.
+            {t("adminRooms.stripText")}
           </span>
         </div>
         <div className="ml-auto flex items-center gap-1.5 text-xs font-semibold" style={{ color: "#9E2FD0" }}>
           <FiUsers size={12} />
-          3 active departments
+          {t("adminRooms.activeDepts")}
         </div>
       </div>
     </div>

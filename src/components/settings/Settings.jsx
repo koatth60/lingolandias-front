@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   FiMoon, FiBell, FiBellOff, FiUser, FiEye,
-  FiShield, FiLogOut, FiGlobe, FiSun, FiCheck,
+  FiShield, FiLogOut, FiGlobe, FiSun, FiCheck, FiChevronDown,
 } from "react-icons/fi";
 import { toast } from "react-toastify";
 import Dashboard from "../../sections/dashboard";
@@ -23,27 +24,6 @@ const glassCard = {
   boxShadow: "0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(158,47,208,0.06)",
 };
 
-const TABS = [
-  { id: "appearance",    label: "Appearance",   icon: FiEye  },
-  { id: "notifications", label: "Notifications", icon: FiBell },
-  { id: "account",       label: "Account",       icon: FiUser },
-];
-
-const SettingRow = ({ icon: Icon, label, children }) => (
-  <div className="flex items-center justify-between gap-4 py-4 border-b border-black/5 dark:border-white/5 last:border-0">
-    <div className="flex items-center gap-3 min-w-0">
-      <div
-        className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-        style={{ background: "rgba(158,47,208,0.08)", border: "1px solid rgba(158,47,208,0.15)" }}
-      >
-        <Icon size={14} style={{ color: "#9E2FD0" }} />
-      </div>
-      <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 truncate">{label}</span>
-    </div>
-    <div className="flex-shrink-0">{children}</div>
-  </div>
-);
-
 const BrandToggle = ({ checked, onChange }) => (
   <div
     className="relative w-11 h-6 cursor-pointer rounded-full transition-colors duration-200"
@@ -62,26 +42,107 @@ const BrandToggle = ({ checked, onChange }) => (
   </div>
 );
 
-const BrandSelect = ({ value, onChange, children }) => (
-  <select
-    value={value}
-    onChange={onChange}
-    className="text-sm rounded-xl outline-none border transition-all duration-200 appearance-none px-3 py-2 text-gray-700 dark:text-gray-200"
-    style={{
-      background: "rgba(158,47,208,0.06)",
-      borderColor: "rgba(158,47,208,0.20)",
-      minWidth: "120px",
-    }}
-    onFocus={(e) => { e.target.style.borderColor = "rgba(158,47,208,0.6)"; }}
-    onBlur={(e) => { e.target.style.borderColor = "rgba(158,47,208,0.20)"; }}
+const LangOption = ({ value: val, label, flag, selected, onSelect }) => (
+  <button
+    type="button"
+    onClick={() => onSelect(val)}
+    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors duration-150"
+    style={
+      selected
+        ? { background: "rgba(158,47,208,0.12)", color: "#9E2FD0", fontWeight: 700 }
+        : { color: "inherit" }
+    }
+    onMouseEnter={(e) => { if (!selected) e.currentTarget.style.background = "rgba(158,47,208,0.06)"; }}
+    onMouseLeave={(e) => { if (!selected) e.currentTarget.style.background = ""; }}
   >
-    {children}
-  </select>
+    <span className="text-lg leading-none">{flag}</span>
+    <span>{label}</span>
+    {selected && <FiCheck size={13} className="ml-auto text-[#9E2FD0]" />}
+  </button>
 );
+
+const BrandSelect = ({ value, onChange }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  const OPTIONS = [
+    { value: "en", label: "English",  flag: "🇬🇧" },
+    { value: "es", label: "Español",  flag: "🇪🇸" },
+    { value: "pl", label: "Polski",   flag: "🇵🇱" },
+  ];
+
+  const selected = OPTIONS.find((o) => o.value === value) || OPTIONS[0];
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const handleSelect = (val) => {
+    onChange(val);
+    setOpen(false);
+  };
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen((p) => !p)}
+        className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200"
+        style={{
+          background: "rgba(158,47,208,0.08)",
+          border: `1px solid ${open ? "rgba(158,47,208,0.6)" : "rgba(158,47,208,0.22)"}`,
+          minWidth: "130px",
+          color: "inherit",
+        }}
+      >
+        <span className="text-base leading-none">{selected.flag}</span>
+        <span className="flex-1 text-left text-gray-700 dark:text-gray-200">{selected.label}</span>
+        <FiChevronDown
+          size={13}
+          className={`text-[#9E2FD0] transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {open && (
+        <div
+          className="absolute right-0 mt-1.5 rounded-xl overflow-hidden z-50"
+          style={{
+            minWidth: "100%",
+            border: "1px solid rgba(158,47,208,0.22)",
+            boxShadow: "0 12px 32px rgba(0,0,0,0.18)",
+          }}
+        >
+          {/* Light bg */}
+          <div className="absolute inset-0 dark:hidden bg-white" />
+          {/* Dark bg */}
+          <div className="absolute inset-0 hidden dark:block" style={{ background: "#1a1a2e" }} />
+          {/* top accent */}
+          <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#9E2FD0] via-[#F6B82E] to-[#26D9A1]" />
+
+          <div className="relative z-10 py-1 pt-2">
+            {OPTIONS.map((opt) => (
+              <LangOption
+                key={opt.value}
+                {...opt}
+                selected={opt.value === value}
+                onSelect={handleSelect}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const Settings = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
   const { userInfo } = useSelector((state) => state.user);
   const [activeTab, setActiveTab] = useState("appearance");
   const [showChangePassword, setShowChangePassword] = useState(false);
@@ -89,7 +150,28 @@ const Settings = () => {
   const darkMode = userInfo?.user?.settings?.darkMode || false;
   const notificationSound = userInfo?.user?.settings?.notificationSound !== false;
   const classReminders = userInfo?.user?.settings?.classReminders === true;
-  const [language, setLanguage] = useState("en");
+  const language = userInfo?.user?.settings?.language || i18n.language || "en";
+
+  const TABS = [
+    { id: "appearance",    label: t("settings.appearance"),   icon: FiEye  },
+    { id: "notifications", label: t("settings.notifications"), icon: FiBell },
+    { id: "account",       label: t("settings.account"),       icon: FiUser },
+  ];
+
+  const SettingRow = ({ icon: Icon, label, children }) => (
+    <div className="flex items-center justify-between gap-4 py-4 border-b border-black/5 dark:border-white/5 last:border-0">
+      <div className="flex items-center gap-3 min-w-0">
+        <div
+          className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+          style={{ background: "rgba(158,47,208,0.08)", border: "1px solid rgba(158,47,208,0.15)" }}
+        >
+          <Icon size={14} style={{ color: "#9E2FD0" }} />
+        </div>
+        <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 truncate">{label}</span>
+      </div>
+      <div className="flex-shrink-0">{children}</div>
+    </div>
+  );
 
   const handleDarkModeToggle = () => {
     dispatch(updateUserSettings({ darkMode: !darkMode }));
@@ -99,18 +181,24 @@ const Settings = () => {
     dispatch(updateUserSettings({ notificationSound: !notificationSound }));
   };
 
+  const handleLanguageChange = (newLang) => {
+    i18n.changeLanguage(newLang);
+    localStorage.setItem("language", newLang);
+    dispatch(updateUserSettings({ language: newLang }));
+  };
+
   const handleClassRemindersToggle = async () => {
     const newValue = !classReminders;
 
     if (newValue) {
       if (!("Notification" in window) || !("serviceWorker" in navigator)) {
-        toast.error("Your browser does not support push notifications.");
+        toast.error(t("settings.browserNoSupport"));
         return;
       }
 
       const permission = await Notification.requestPermission();
       if (permission !== "granted") {
-        toast.error("Please allow notifications in your browser to enable class reminders.");
+        toast.error(t("settings.allowNotifications"));
         return;
       }
 
@@ -136,9 +224,9 @@ const Settings = () => {
         });
 
         dispatch(updateUserSettings({ classReminders: true }));
-        toast.success("Class reminders enabled!");
+        toast.success(t("settings.remindersEnabled"));
       } catch {
-        toast.error("Failed to enable notifications. Please try again.");
+        toast.error(t("settings.remindersFailed"));
       }
     } else {
       try {
@@ -156,9 +244,9 @@ const Settings = () => {
         });
 
         dispatch(updateUserSettings({ classReminders: false }));
-        toast.success("Class reminders disabled.");
+        toast.success(t("settings.remindersDisabled"));
       } catch {
-        toast.error("Failed to disable notifications.");
+        toast.error(t("settings.remindersDisableFailed"));
       }
     }
   };
@@ -181,9 +269,9 @@ const Settings = () => {
           <div>
             <div className="flex items-center gap-2 mb-5">
               <FiEye size={15} style={{ color: "#9E2FD0" }} />
-              <h2 className="text-base font-extrabold text-gray-800 dark:text-white">Appearance</h2>
+              <h2 className="text-base font-extrabold text-gray-800 dark:text-white">{t("settings.appearance")}</h2>
             </div>
-            <SettingRow icon={darkMode ? FiMoon : FiSun} label="Dark Mode">
+            <SettingRow icon={darkMode ? FiMoon : FiSun} label={t("settings.darkMode")}>
               <BrandToggle checked={darkMode} onChange={handleDarkModeToggle} />
             </SettingRow>
           </div>
@@ -194,12 +282,12 @@ const Settings = () => {
           <div>
             <div className="flex items-center gap-2 mb-5">
               <FiBell size={15} style={{ color: "#26D9A1" }} />
-              <h2 className="text-base font-extrabold text-gray-800 dark:text-white">Notifications</h2>
+              <h2 className="text-base font-extrabold text-gray-800 dark:text-white">{t("settings.notifications")}</h2>
             </div>
-            <SettingRow icon={notificationSound ? FiBell : FiBellOff} label="Notification Sound">
+            <SettingRow icon={notificationSound ? FiBell : FiBellOff} label={t("settings.notificationSound")}>
               <BrandToggle checked={notificationSound} onChange={handleNotificationSoundToggle} />
             </SettingRow>
-            <SettingRow icon={FiBell} label="Class Reminders">
+            <SettingRow icon={FiBell} label={t("settings.classReminders")}>
               <BrandToggle checked={classReminders} onChange={handleClassRemindersToggle} />
             </SettingRow>
           </div>
@@ -210,14 +298,10 @@ const Settings = () => {
           <div>
             <div className="flex items-center gap-2 mb-5">
               <FiUser size={15} style={{ color: "#F6B82E" }} />
-              <h2 className="text-base font-extrabold text-gray-800 dark:text-white">Account</h2>
+              <h2 className="text-base font-extrabold text-gray-800 dark:text-white">{t("settings.account")}</h2>
             </div>
-            <SettingRow icon={FiGlobe} label="Language">
-              <BrandSelect value={language} onChange={(e) => setLanguage(e.target.value)}>
-                <option value="en">English</option>
-                <option value="es">Español</option>
-                <option value="fr">Français</option>
-              </BrandSelect>
+            <SettingRow icon={FiGlobe} label={t("settings.language")}>
+              <BrandSelect value={language} onChange={handleLanguageChange} />
             </SettingRow>
 
             <div className="py-3 border-b border-black/5 dark:border-white/5">
@@ -232,7 +316,7 @@ const Settings = () => {
                 >
                   <FiShield size={14} style={{ color: "#9E2FD0" }} />
                 </div>
-                <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">Change Password</span>
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t("settings.changePassword")}</span>
               </button>
             </div>
 
@@ -248,7 +332,7 @@ const Settings = () => {
                 >
                   <FiLogOut size={14} style={{ color: "#ef4444" }} />
                 </div>
-                <span className="text-sm font-semibold" style={{ color: "#ef4444" }}>Logout</span>
+                <span className="text-sm font-semibold" style={{ color: "#ef4444" }}>{t("settings.logout")}</span>
               </button>
             </div>
           </div>
@@ -278,15 +362,15 @@ const Settings = () => {
       <Dashboard />
 
       <div className="w-full min-w-0 relative z-10 flex flex-col min-h-screen overflow-x-hidden">
-        <Navbar header="Settings" />
+        <Navbar header={t("settings.title")} />
 
         <div className="px-3 sm:px-6 md:px-8 py-5 sm:py-8 flex flex-col gap-5 sm:gap-8 max-w-4xl mx-auto w-full">
 
           {/* ── Page header ── */}
           <div>
-            <p className="text-[10px] font-bold tracking-widest text-[#9E2FD0] uppercase mb-1">Preferences</p>
-            <h1 className="text-2xl sm:text-3xl font-extrabold login-gradient-text">Settings</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage your platform preferences</p>
+            <p className="text-[10px] font-bold tracking-widest text-[#9E2FD0] uppercase mb-1">{t("settings.preferences")}</p>
+            <h1 className="text-2xl sm:text-3xl font-extrabold login-gradient-text">{t("settings.title")}</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t("settings.subtitle")}</p>
           </div>
 
           {/* ── Layout ── */}

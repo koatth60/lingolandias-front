@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
+import "dayjs/locale/es";
+import "dayjs/locale/pl";
 import { FiCalendar, FiMessageSquare, FiBookOpen, FiArrowRight, FiHelpCircle } from "react-icons/fi";
 import { InfoCard } from "./InfoCard";
 import { UpcomingClass } from "./UpcomingClass";
@@ -48,7 +50,7 @@ const UserHomePage = () => {
   const user = useSelector((state) => state.user.userInfo.user);
   const nextClasses = getNextClasses(user);
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   // Advances once per calendar day (UTC epoch days), cycles through the full tips array
   const tip = LANGUAGE_TIPS[Math.floor(Date.now() / 86400000) % LANGUAGE_TIPS.length];
@@ -206,7 +208,7 @@ const UserHomePage = () => {
                       ? classSession.studentName
                       : classSession.teacherName
                   }
-                  date={displayDate.format("MMM D")}
+                  date={displayDate.locale(i18n.language).format("D MMM")}
                   onJoin={() => handleJoinClass({ user, classSession, navigate })}
                 />
               );

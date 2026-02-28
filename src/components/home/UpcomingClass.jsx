@@ -1,7 +1,10 @@
 import PropTypes from 'prop-types';
 import { FiCalendar, FiUser, FiArrowRight } from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
 
-export const UpcomingClass = ({ time, teacher, date, onJoin }) => (
+export const UpcomingClass = ({ time, teacher, date, onJoin }) => {
+  const { t } = useTranslation();
+  return (
   <div
     className="relative rounded-xl overflow-hidden transition-all duration-200 hover:-translate-y-0.5 shadow-sm dark:shadow-none"
     style={{ border: '1px solid rgba(158,47,208,0.15)' }}
@@ -35,11 +38,12 @@ export const UpcomingClass = ({ time, teacher, date, onJoin }) => (
         className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white text-xs font-bold transition-opacity hover:opacity-85"
         style={{ background: 'linear-gradient(135deg, #9E2FD0, #7b22a8)', boxShadow: '0 3px 10px rgba(158,47,208,0.35)' }}
       >
-        Join <FiArrowRight size={12} />
+        {t("upcomingClass.join")} <FiArrowRight size={12} />
       </button>
     </div>
   </div>
-);
+  );
+};
 
 UpcomingClass.propTypes = {
   time: PropTypes.string.isRequired,

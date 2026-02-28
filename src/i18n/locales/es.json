@@ -4,7 +4,7 @@
     "schedule": "Mi Horario",
     "meetings": "Reuniones",
     "messages": "Mensajes",
-    "support": "Actualizaciones y Soporte",
+    "support": "Soporte",
     "profile": "Perfil",
     "admin": "Admin",
     "settings": "Configuración",
@@ -36,7 +36,10 @@
     "connectionErrorText": "No pudimos conectarnos al servidor. Por favor, verifica tu conexión a internet e inténtalo de nuevo. Si el problema continúa, tu red o proveedor podría estar bloqueando la conexión.",
     "loginFailed": "Error de Inicio de Sesión",
     "loginFailedText": "Credenciales incorrectas. Si no recuerdas tu contraseña, haz clic en el enlace \"¿Olvidaste tu contraseña?\" debajo del formulario.",
-    "ok": "Aceptar"
+    "ok": "Aceptar",
+    "heroTitle": "Tu Mundo de",
+    "heroHighlight": "Idiomas",
+    "heroSubtitle": "Únete a miles de estudiantes que aprenden nuevos idiomas cada día"
   },
   "forgotPassword": {
     "title": "Recuperación de Contraseña",
@@ -367,7 +370,7 @@
     }
   },
   "support": {
-    "title": "Actualizaciones y Soporte"
+    "title": "Soporte"
   },
   "learning": {
     "title": "Centro de Aprendizaje",
@@ -483,7 +486,7 @@
     "teacherPolish": "Chat de Profesores - Polaco"
   },
   "supportChat": {
-    "title": "Actualizaciones y Soporte",
+    "title": "Soporte",
     "staffChannel": "Canal de personal — profesores y administradores",
     "noUpdates": "Sin actualizaciones aún. Los administradores publicarán anuncios y respuestas de soporte aquí.",
     "adminBadge": "Admin",

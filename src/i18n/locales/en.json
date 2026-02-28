@@ -4,7 +4,7 @@
     "schedule": "My Schedule",
     "meetings": "Meetings",
     "messages": "Messages",
-    "support": "Updates & Support",
+    "support": "Support",
     "profile": "Profile",
     "admin": "Admin",
     "settings": "Settings",
@@ -36,7 +36,10 @@
     "connectionErrorText": "We couldn't reach the server. Please check your internet connection and try again. If the problem continues, your network or ISP may be blocking the connection.",
     "loginFailed": "Login Failed",
     "loginFailedText": "Wrong credentials. If you cannot remember your password, please click on the \"Forgot Password\" link below the login form.",
-    "ok": "Ok"
+    "ok": "Ok",
+    "heroTitle": "Your World of",
+    "heroHighlight": "Languages",
+    "heroSubtitle": "Join thousands of learners mastering new languages every day"
   },
   "forgotPassword": {
     "title": "Password Recovery",
@@ -367,7 +370,7 @@
     }
   },
   "support": {
-    "title": "Updates & Support"
+    "title": "Support"
   },
   "learning": {
     "title": "Learning Center",
@@ -483,7 +486,7 @@
     "teacherPolish": "Teachers Chat - Polish"
   },
   "supportChat": {
-    "title": "Updates & Support",
+    "title": "Support",
     "staffChannel": "Staff channel — teachers & admins",
     "noUpdates": "No updates yet. Admins will post announcements and support answers here.",
     "adminBadge": "Admin",

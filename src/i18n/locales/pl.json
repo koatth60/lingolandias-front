@@ -4,7 +4,7 @@
     "schedule": "Mój Harmonogram",
     "meetings": "Spotkania",
     "messages": "Wiadomości",
-    "support": "Aktualizacje i Wsparcie",
+    "support": "Wsparcie",
     "profile": "Profil",
     "admin": "Admin",
     "settings": "Ustawienia",
@@ -36,7 +36,10 @@
     "connectionErrorText": "Nie udało się połączyć z serwerem. Sprawdź swoje połączenie internetowe i spróbuj ponownie. Jeśli problem nadal występuje, Twoja sieć lub dostawca może blokować połączenie.",
     "loginFailed": "Logowanie Nieudane",
     "loginFailedText": "Nieprawidłowe dane logowania. Jeśli nie pamiętasz hasła, kliknij link \"Zapomniałeś hasła?\" poniżej formularza.",
-    "ok": "OK"
+    "ok": "OK",
+    "heroTitle": "Twój Świat",
+    "heroHighlight": "Języków",
+    "heroSubtitle": "Dołącz do tysięcy uczących się, którzy opanowują nowe języki każdego dnia"
   },
   "forgotPassword": {
     "title": "Odzyskiwanie Hasła",
@@ -367,7 +370,7 @@
     }
   },
   "support": {
-    "title": "Aktualizacje i Wsparcie"
+    "title": "Wsparcie"
   },
   "learning": {
     "title": "Centrum Nauki",
@@ -483,7 +486,7 @@
     "teacherPolish": "Czat Nauczycieli - Polski"
   },
   "supportChat": {
-    "title": "Aktualizacje i Wsparcie",
+    "title": "Wsparcie",
     "staffChannel": "Kanał personelu — nauczyciele i administratorzy",
     "noUpdates": "Brak aktualizacji. Administratorzy będą tu publikować ogłoszenia i odpowiedzi wsparcia.",
     "adminBadge": "Admin",

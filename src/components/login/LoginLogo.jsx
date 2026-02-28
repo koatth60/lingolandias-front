@@ -1,4 +1,5 @@
 import logo from "/src/assets/logos/logo3.png";
+import { useTranslation } from "react-i18next";
 
 const LANGUAGE_BADGES = [
   { flag: '🇬🇧', lang: 'English' },
@@ -9,7 +10,9 @@ const LANGUAGE_BADGES = [
   { flag: '🇨🇳', lang: '中文' },
 ];
 
-const AnimatedLogo = () => (
+const AnimatedLogo = () => {
+  const { t } = useTranslation();
+  return (
   <div
     className="w-full md:w-1/2 max-w-xl flex flex-col items-center justify-center px-2 sm:px-4 md:px-8 login-animate-slide-up"
     style={{ animationDelay: '0.1s' }}
@@ -81,11 +84,11 @@ const AnimatedLogo = () => (
       style={{ animationDelay: '0.3s' }}
     >
       <h2 className="text-lg sm:text-xl md:text-3xl font-extrabold text-white mb-1 md:mb-2 tracking-tight">
-        Your World of{' '}
-        <span className="login-gradient-text">Languages</span>
+        {t("login.heroTitle")}{' '}
+        <span className="login-gradient-text">{t("login.heroHighlight")}</span>
       </h2>
       <p className="hidden sm:block text-gray-400 text-sm md:text-base max-w-xs mx-auto leading-relaxed">
-        Join thousands of learners mastering new languages every day
+        {t("login.heroSubtitle")}
       </p>
     </div>
 
@@ -105,6 +108,7 @@ const AnimatedLogo = () => (
       ))}
     </div>
   </div>
-);
+  );
+};
 
 export default AnimatedLogo;

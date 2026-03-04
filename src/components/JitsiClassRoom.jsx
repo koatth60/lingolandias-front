@@ -66,6 +66,25 @@ const JitsiClassRoom = () => {
     setIsChatOpen(false);
   };
 
+  const TURN_SERVERS = [
+    { urls: "stun:jitsi.srv570363.hstgr.cloud:3478" },
+    {
+      urls: "turn:jitsi.srv570363.hstgr.cloud:3478",
+      username: "sincelejana",
+      credential: "asdkASDIORNVM345Fasdegf23",
+    },
+    {
+      urls: "turn:jitsi.srv570363.hstgr.cloud:3478?transport=tcp",
+      username: "sincelejana",
+      credential: "asdkASDIORNVM345Fasdegf23",
+    },
+    {
+      urls: "turns:jitsi.srv570363.hstgr.cloud:5349",
+      username: "sincelejana",
+      credential: "asdkASDIORNVM345Fasdegf23",
+    },
+  ];
+
   const options = {
     configOverwrite: {
       startWithAudioMuted: false,
@@ -78,18 +97,19 @@ const JitsiClassRoom = () => {
           "modules/statistics/CallStats.js": "error",
         },
       },
-      desktopSharingChromeDisabled: false,
-      desktopSharingFirefoxDisabled: false,
-      desktopSharingSources: ["screen", "window", "tab"],
-      testing: { mobileDesktopSharingEnabled: true },
       startWithTileView: true,
-      toolbarButtons: ["microphone", "camera", "desktop", "tileview", "hangup"],
       customToolbarButtons: [
         { icon: CHAT_ICON, id: "lingo-chat", text: "Chat" },
         ...(user.role === "teacher" || user.role === "admin"
           ? [{ icon: RECORD_ICON, id: "lingo-record", text: "Record" }]
           : []),
       ],
+      useStunTurn: true,
+      p2p: {
+        enabled: true,
+        stunServers: TURN_SERVERS,
+      },
+      iceServers: TURN_SERVERS,
     },
     interfaceConfigOverwrite: {
       DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
@@ -193,8 +213,8 @@ const JitsiClassRoom = () => {
               <CallChatWindow
                 username={userName}
                 email={email}
-                room={fromMessage ? (chatRoomId || roomId) : roomId}
-                chatName={fromMessage ? chatName : undefined}
+                room={chatRoomId || roomId}
+                chatName={chatName}
                 height="100dvh"
                 externalMessages={chatMessages}
                 onSendMessage={sendMessageToJitsi}
@@ -204,7 +224,7 @@ const JitsiClassRoom = () => {
               <ChatWindow
                 username={userName}
                 email={email}
-                room={roomId}
+                room={chatRoomId || roomId}
                 height="100dvh"
                 meeting={true}
                 isChatOpen={isChatOpen}

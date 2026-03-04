@@ -89,6 +89,7 @@ const Messages = () => {
     userUrl: user.avatarUrl,
     room: selectedChat.id,
     studentName: selectedChat.name,
+    chatType: selectedChat.type,
     newMessage,
     userId: user.id,
     setNewMessage,

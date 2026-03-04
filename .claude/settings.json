@@ -1,9 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm install:*)",
-      "Bash(xargs grep -l \"settings\\\\|language\")",
-      "Bash(grep -v \"import\\\\|//\")"
+      "*"
     ]
   }
 }

@@ -21,6 +21,7 @@ const ChatWindowComponent = ({
   username,
   room,
   studentName,
+  chatType,
   email,
   userUrl,
   userId,
@@ -134,7 +135,7 @@ const ChatWindowComponent = ({
     });
   };
 
-  const isGeneralChat = studentName.includes("General Chat ");
+  const isGeneralChat = chatType === "general" || chatType === "teacher";
 
   return (
     <div className="w-full h-full flex flex-col relative overflow-hidden

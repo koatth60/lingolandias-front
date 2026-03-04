@@ -184,7 +184,7 @@ const Schedule = () => {
       const student = user.students?.find((s) => s.id === event.studentId);
       const chatName = student?.name;
       navigate("/classroom", {
-        state: { roomId, userName, email, fromMeeting: false, chatName },
+        state: { roomId, chatRoomId: user.id, userName, email, fromMeeting: false, chatName },
       });
     }
   };
@@ -194,10 +194,11 @@ const Schedule = () => {
     const email = user.email;
     let roomId = "";
 
+    let chatName = "";
     if (roomName) {
-      if (roomName === meetingRooms.english) roomId = teacherChats.english.id;
-      else if (roomName === meetingRooms.spanish) roomId = teacherChats.spanish.id;
-      else if (roomName === meetingRooms.polish) roomId = teacherChats.polish.id;
+      if (roomName === meetingRooms.english) { roomId = teacherChats.english.id; chatName = teacherChats.english.name; }
+      else if (roomName === meetingRooms.spanish) { roomId = teacherChats.spanish.id; chatName = teacherChats.spanish.name; }
+      else if (roomName === meetingRooms.polish) { roomId = teacherChats.polish.id; chatName = teacherChats.polish.name; }
     } else {
       if (user.role === "teacher") {
         roomId = user.id;
@@ -207,7 +208,7 @@ const Schedule = () => {
     }
 
     navigate("/classroom", {
-      state: { roomId, userName, email, fromMeeting: true },
+      state: { roomId, userName, email, fromMeeting: true, chatName },
     });
   };
 

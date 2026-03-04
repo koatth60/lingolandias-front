@@ -1,335 +1,305 @@
-// components/Trello/TrelloDashboard.jsx
-import { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
-import { getTrelloToken, startTrelloAuth, checkForTokenInUrl } from "../../data/trelloAuth";
-import { getTrelloBoards, getTrelloLists, createTrelloCard, getTrelloCards } from "../../data/trelloCards";
-import TrelloBoardCard from "./TrelloBoardCard";
-import TrelloListView from "./TrelloListView";
-import CreateCardForm from "./CreateCardForm";
-import ListModal from "./ListModal";
+import { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
+import { getBoards, createBoard, deleteBoard } from '../../data/trelloApi';
+import TrelloBoard from './TrelloBoard';
+import { BACKGROUND_PRESETS, FONT_OPTIONS, getBgStyle } from './trelloConfig';
 
-const TrelloDashboard = () => {
-  const user = useSelector((state) => state.user.userInfo.user);
-  const userEmail = user?.email || "";
-  
-  // Estados
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  
-  const [boards, setBoards] = useState([]);
-  const [selectedBoard, setSelectedBoard] = useState("");
-  const [boardLists, setBoardLists] = useState([]);
-  const [listCards, setListCards] = useState({});
-  
-  const [selectedList, setSelectedList] = useState("");
-  const [cardName, setCardName] = useState("");
-  const [cardDesc, setCardDesc] = useState("");
-  const [creatingCard, setCreatingCard] = useState(false);
-  const [selectedListDetails, setSelectedListDetails] = useState(null);
+export { BACKGROUND_PRESETS, FONT_OPTIONS, getBgStyle };
 
-  // Efectos y funciones principales (las mismas que antes)
-  useEffect(() => {
-    if (userEmail) checkInitialToken();
-  }, [userEmail]);
+// ─── Background Picker ────────────────────────────────────────────────────────
+const BgPicker = ({ value, onChange }) => {
+  const [tab, setTab] = useState('preset'); // 'preset' | 'image'
+  const [imgUrl, setImgUrl] = useState('');
 
-  useEffect(() => {
-    const checkInterval = setInterval(async () => {
-      const result = await checkForTokenInUrl();
-      if (result.success) {
-        setSuccess("✅ Connected to Trello!");
-        clearInterval(checkInterval);
-        loadUserBoards();
-      }
-    }, 1000);
-    setTimeout(() => clearInterval(checkInterval), 30000);
-    return () => clearInterval(checkInterval);
-  }, []);
-
-  const checkInitialToken = async () => {
-    setLoading(true);
-    try {
-      const token = await getTrelloToken(userEmail);
-      if (token) await loadUserBoards();
-    } catch (error) {
-      console.log("No token found");
-    } finally {
-      setLoading(false);
-    }
+  const applyImage = () => {
+    if (imgUrl.trim()) { onChange(imgUrl.trim()); }
   };
 
-  const loadUserBoards = async () => {
-    if (!userEmail) return;
-    setLoading(true);
-    setError("");
-    try {
-      const userBoards = await getTrelloBoards(userEmail);
-      setBoards(userBoards);
-      if (userBoards.length === 0) {
-        setError("No boards found. Create a board in Trello first.");
-      }
-    } catch (error) {
-      setError("Error loading boards. Please reconnect to Trello.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadFullBoard = async (boardId) => {
-    if (!userEmail || !boardId) return;
-    setLoading(true);
-    setError("");
-    try {
-      const lists = await getTrelloLists(boardId, userEmail);
-      setBoardLists(lists);
-      
-      const allCards = {};
-      const cardPromises = lists.map(async (list) => {
-        try {
-          const cards = await getTrelloCards(list.id, userEmail);
-          allCards[list.id] = cards;
-          return { listId: list.id, cards };
-        } catch (err) {
-          allCards[list.id] = [];
-          return { listId: list.id, cards: [] };
-        }
-      });
-      
-      await Promise.all(cardPromises);
-      setListCards(allCards);
-    } catch (error) {
-      setError("Error loading board data: " + error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleBoardSelect = async (boardId) => {
-    setSelectedBoard(boardId);
-    setSelectedList("");
-    setCardName("");
-    setCardDesc("");
-    setBoardLists([]);
-    setListCards({});
-    setSelectedListDetails(null);
-    await loadFullBoard(boardId);
-  };
-
-  const handleConnectTrello = async () => {
-    if (!userEmail) {
-      setError("Please log in first");
-      return;
-    }
-    setLoading(true);
-    setError("");
-    setSuccess("");
-    try {
-      const token = await startTrelloAuth(userEmail);
-      if (token) {
-        setSuccess("✅ Connected to Trello successfully!");
-        setTimeout(() => loadUserBoards(), 500);
-      } else {
-        setError("No token provided. Please try again.");
-      }
-    } catch (error) {
-      setError("Error connecting to Trello: " + error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCreateCard = async (e) => {
-    e.preventDefault();
-    if (!selectedList || !cardName.trim() || !userEmail) {
-      setError("Please select a list and enter card name");
-      return;
-    }
-    setCreatingCard(true);
-    setError("");
-    setSuccess("");
-    try {
-      await createTrelloCard(selectedList, {
-        name: cardName,
-        description: cardDesc
-      }, userEmail);
-      setSuccess("✅ Card created successfully!");
-      setCardName("");
-      setCardDesc("");
-      if (selectedList) {
-        const refreshedCards = await getTrelloCards(selectedList, userEmail);
-        setListCards(prev => ({ ...prev, [selectedList]: refreshedCards }));
-      }
-    } catch (error) {
-      setError("Error creating card: " + (error.message || "Please try again"));
-    } finally {
-      setCreatingCard(false);
-    }
-  };
-
-  const openListModal = (list) => {
-    setSelectedListDetails(list);
-  };
-
-  const closeListModal = () => {
-    setSelectedListDetails(null);
-  };
-
-  const refreshList = async (listId) => {
-    if (!userEmail || !listId) return;
-    try {
-      const refreshedCards = await getTrelloCards(listId, userEmail);
-      setListCards(prev => ({ ...prev, [listId]: refreshedCards }));
-      setSuccess(`✅ List refreshed (${refreshedCards.length} cards)`);
-    } catch (error) {
-      console.error("Error refreshing list:", error);
-    }
-  };
-
-  const scrollToForm = () => {
-    document.getElementById('create-card-form')?.scrollIntoView({ 
-      behavior: 'smooth',
-      block: 'start'
-    });
-  };
-
-  const handleAddCard = (listId) => {
-    setSelectedList(listId);
-    scrollToForm();
-  };
-
-  const handleCardClick = (url) => {
-    window.open(url, '_blank');
-  };
-
-return (
-  <div className="w-full max-w-7xl mx-auto px-4 py-8">
-    {/* Header "Trello Integration" - SOLO mostrar si NO HAY boards */}
-    {boards.length === 0 && (
-      <h1 className="text-3xl font-bold mb-8 text-gray-900 dark:text-white">Trello Integration</h1>
-    )}
-    
-    {/* Status Messages */}
-    {error && (
-      <div className="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded mb-4">
-        {error}
-      </div>
-    )}
-    {success && (
-      <div className="bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 rounded mb-4">
-        {success}
-      </div>
-    )}
-    
-    {/* Connect Button - SOLO mostrar si NO HAY boards */}
-    {boards.length === 0 && !loading && (
-      <div className="bg-white dark:bg-brand-dark-secondary rounded-xl shadow-lg p-6 mb-8 border border-gray-200 dark:border-gray-800">
-        <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Connect Trello</h2>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">Connect your Trello account to manage boards and cards</p>
-          </div>
+  return (
+    <div>
+      <div className="flex gap-1 mb-2">
+        {['preset', 'image'].map((t) => (
           <button
-            onClick={handleConnectTrello}
-            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 dark:from-blue-700 dark:to-blue-800 dark:hover:from-blue-600 dark:hover:to-blue-700 text-white font-medium py-3 px-8 rounded-lg transition-all shadow-md hover:shadow-lg"
+            key={t}
+            type="button"
+            onClick={() => setTab(t)}
+            className={`px-3 py-1 rounded-lg text-xs font-medium transition ${
+              tab === t
+                ? 'bg-[#9E2FD0] text-white'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+            }`}
           >
-            Connect Trello
+            {t === 'preset' ? 'Colors & Gradients' : 'Image URL'}
           </button>
-        </div>
+        ))}
       </div>
-    )}
-    
-    {/* Boards Section - SOLO mostrar si HAY boards */}
-    {boards.length > 0 && (
-      <div className="mb-12">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-2xl font-bold text-gray-800 dark:text-white">Your Trello Boards</h3>
-          {/* <button onClick={loadUserBoards} className="text-sm bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg">
-            Refresh Boards
-          </button> */}
+
+      {tab === 'preset' ? (
+        <div className="grid grid-cols-9 gap-1.5">
+          {BACKGROUND_PRESETS.map((bg) => {
+            const isActive = value === bg.value;
+            return (
+              <button
+                key={bg.value}
+                type="button"
+                title={bg.label}
+                onClick={() => onChange(bg.value)}
+                className="h-7 w-7 rounded-lg transition-transform hover:scale-110 relative"
+                style={{
+                  ...getBgStyle(bg.value),
+                  boxShadow: isActive ? '0 0 0 2px white, 0 0 0 4px #9E2FD0' : 'none',
+                }}
+              >
+                {isActive && (
+                  <span className="absolute inset-0 flex items-center justify-center text-white text-xs">✓</span>
+                )}
+              </button>
+            );
+          })}
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {boards.map((board) => (
-            <TrelloBoardCard
-              key={board.id}
-              board={board}
-              isSelected={selectedBoard === board.id}
-              onClick={handleBoardSelect}
+      ) : (
+        <div className="space-y-2">
+          <input
+            type="url"
+            value={imgUrl}
+            onChange={(e) => setImgUrl(e.target.value)}
+            placeholder="https://images.unsplash.com/..."
+            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#9E2FD0]"
+          />
+          <button
+            type="button"
+            onClick={applyImage}
+            className="w-full py-2 text-sm rounded-lg bg-[#9E2FD0] hover:bg-[#8a27b5] text-white transition"
+          >
+            Apply image
+          </button>
+          {value?.startsWith('http') && (
+            <div
+              className="h-16 rounded-lg border border-gray-200 dark:border-gray-600"
+              style={{ background: `url(${value}) center/cover no-repeat` }}
             />
-          ))}
+          )}
         </div>
-      </div>
-    )}
-    
-    {/* Board View - Listas */}
-    {selectedBoard && boardLists.length > 0 && (
-      <>
-        <div className="mb-12">
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h3 className="text-2xl font-bold text-gray-800 dark:text-white">Board View</h3>
-              <p className="text-gray-600 dark:text-gray-400 mt-1">All lists and cards in this board</p>
-            </div>
-            <button
-              onClick={() => loadFullBoard(selectedBoard)}
-              className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 dark:from-green-600 dark:to-green-700 dark:hover:from-green-500 dark:hover:to-green-600 text-white font-medium px-5 py-2.5 rounded-lg transition-all shadow-md hover:shadow-lg flex items-center"
+      )}
+    </div>
+  );
+};
+
+// ─── Create Board Modal ────────────────────────────────────────────────────────
+const CreateBoardModal = ({ onClose, onCreated, userId }) => {
+  const [name, setName] = useState('');
+  const [background, setBackground] = useState('linear-gradient(135deg,#667eea 0%,#764ba2 100%)');
+  const [fontFamily, setFontFamily] = useState('Inter, sans-serif');
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    setSaving(true);
+    try {
+      const board = await createBoard({ name: name.trim(), background, fontFamily, userId });
+      onCreated(board);
+      onClose();
+    } catch (err) {
+      toast.error('Failed to create board: ' + (err?.response?.data?.message || err.message));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+      <div className="bg-white dark:bg-[#1a1a2e] rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-gray-200 dark:border-[#9E2FD0]/30">
+        {/* Preview */}
+        <div
+          className="h-28 flex items-end justify-start px-5 pb-4 transition-all duration-300"
+          style={{ ...getBgStyle(background), fontFamily }}
+        >
+          <h3 className="text-xl font-bold text-white drop-shadow-md">{name || 'Board preview'}</h3>
+        </div>
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Board name</label>
+            <input
+              autoFocus
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="My awesome board"
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#9E2FD0]"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Background</label>
+            <BgPicker value={background} onChange={setBackground} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Font style</label>
+            <select
+              value={fontFamily}
+              onChange={(e) => setFontFamily(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#9E2FD0]"
             >
-              Refresh Board
+              {FONT_OPTIONS.map((f) => (
+                <option key={f.value} value={f.value}>{f.label}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex gap-3 pt-1">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={!name.trim() || saving}
+              className="flex-1 py-2.5 rounded-lg bg-[#9E2FD0] hover:bg-[#8a27b5] text-white font-medium transition disabled:opacity-50"
+            >
+              {saving ? 'Creating...' : 'Create board'}
             </button>
           </div>
-          
-          {/* Listas en vista horizontal */}
-          <div className="flex gap-6 overflow-x-auto pb-6 px-2">
-            {boardLists.map((list) => (
-              <TrelloListView
-                key={list.id}
-                list={list}
-                cards={listCards[list.id] || []}
-                onViewAll={openListModal}
-                onRefresh={refreshList}
-                onAddCard={handleAddCard}
-                onCardClick={handleCardClick}
-              />
-            ))}
-          </div>
-        </div>
-        
-        {/* Formulario para crear tarjetas */}
-        <CreateCardForm
-          boardLists={boardLists}
-          listCards={listCards}
-          selectedList={selectedList}
-          setSelectedList={setSelectedList}
-          cardName={cardName}
-          setCardName={setCardName}
-          cardDesc={cardDesc}
-          setCardDesc={setCardDesc}
-          creatingCard={creatingCard}
-          onSubmit={handleCreateCard}
-          onScrollToForm={scrollToForm}
-        />
-      </>
-    )}
-    
-    {/* Modal para lista */}
-    <ListModal
-      listDetails={selectedListDetails}
-      cards={selectedListDetails ? listCards[selectedListDetails.id] || [] : []}
-      onClose={closeListModal}
-      onRefresh={refreshList}
-      onSelectList={setSelectedList}
-      onScrollToForm={scrollToForm}
-    />
-    
-    {/* Loading State */}
-    {loading && !boards.length && (
-      <div className="text-center py-16">
-        <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-600 dark:border-blue-500 border-t-transparent"></div>
-        <p className="mt-4 text-gray-600 dark:text-gray-400 text-lg">Loading your Trello data...</p>
+        </form>
       </div>
-    )}
-  </div>
-);
+    </div>
+  );
+};
+
+// ─── Dashboard ────────────────────────────────────────────────────────────────
+const TrelloDashboard = () => {
+  const user = useSelector((state) => state.user.userInfo.user);
+  const userId = user?.id;
+  const [boards, setBoards] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreate, setShowCreate] = useState(false);
+  const [activeBoard, setActiveBoard] = useState(null);
+
+  useEffect(() => {
+    if (userId) loadBoards();
+  }, [userId]);
+
+  const loadBoards = async () => {
+    setLoading(true);
+    try {
+      setBoards(await getBoards(userId));
+    } catch (err) {
+      toast.error('Failed to load boards: ' + (err?.response?.data?.message || err.message));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteBoard = async (boardId) => {
+    if (!window.confirm('Delete this board and all its contents? This cannot be undone.')) return;
+    try {
+      await deleteBoard(boardId);
+      setBoards((prev) => prev.filter((b) => b.id !== boardId));
+      if (activeBoard?.id === boardId) setActiveBoard(null);
+    } catch (err) {
+      toast.error('Failed to delete board: ' + (err?.response?.data?.message || err.message));
+    }
+  };
+
+  if (activeBoard) {
+    return (
+      <TrelloBoard
+        board={activeBoard}
+        onBack={() => setActiveBoard(null)}
+        onBoardUpdated={(updated) => {
+          setBoards((prev) => prev.map((b) => (b.id === updated.id ? updated : b)));
+          setActiveBoard(updated);
+        }}
+      />
+    );
+  }
+
+  return (
+    <div className="w-full max-w-7xl mx-auto">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Trello 2.0</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Your personal workspace</p>
+        </div>
+        <button
+          onClick={() => setShowCreate(true)}
+          className="flex items-center gap-2 bg-[#9E2FD0] hover:bg-[#8a27b5] text-white font-medium px-5 py-2.5 rounded-xl shadow transition"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+          </svg>
+          New board
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-20">
+          <div className="h-10 w-10 rounded-full border-4 border-[#9E2FD0] border-t-transparent animate-spin" />
+        </div>
+      ) : boards.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-24 text-center">
+          <div className="text-6xl mb-6">📋</div>
+          <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-2">No boards yet</h2>
+          <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-sm">
+            Create your first board to organize tasks, lessons, and student progress.
+          </p>
+          <button
+            onClick={() => setShowCreate(true)}
+            className="bg-[#9E2FD0] hover:bg-[#8a27b5] text-white font-medium px-8 py-3 rounded-xl transition shadow-lg"
+          >
+            Create first board
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+          {boards.map((board) => (
+            <div
+              key={board.id}
+              className="relative group rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 h-36"
+              style={{ ...getBgStyle(board.background), fontFamily: board.fontFamily }}
+              onClick={() => setActiveBoard(board)}
+            >
+              <div className="absolute inset-0 bg-black/10 group-hover:bg-black/25 transition-all duration-300" />
+              <div className="absolute inset-0 p-4 flex flex-col justify-between">
+                <h3 className="text-white font-bold text-lg leading-tight line-clamp-2 drop-shadow-md">
+                  {board.name}
+                </h3>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleDeleteBoard(board.id); }}
+                  className="self-end opacity-0 group-hover:opacity-100 transition-all duration-200 bg-black/30 hover:bg-red-500/80 text-white rounded-lg p-1.5 backdrop-blur-sm"
+                  title="Delete board"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          ))}
+
+          <button
+            onClick={() => setShowCreate(true)}
+            className="rounded-2xl h-36 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-[#9E2FD0] dark:hover:border-[#9E2FD0] text-gray-400 dark:text-gray-600 hover:text-[#9E2FD0] transition-all duration-200 flex flex-col items-center justify-center gap-2"
+          >
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 4v16m8-8H4" />
+            </svg>
+            <span className="text-sm font-medium">New board</span>
+          </button>
+        </div>
+      )}
+
+      {showCreate && (
+        <CreateBoardModal
+          userId={userId}
+          onClose={() => setShowCreate(false)}
+          onCreated={(b) => setBoards((prev) => [...prev, b])}
+        />
+      )}
+    </div>
+  );
 };
 
 export default TrelloDashboard;

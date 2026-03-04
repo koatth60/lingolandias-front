@@ -8,7 +8,7 @@ import {
   FiHome, FiCalendar, FiBookOpen, FiMessageSquare, FiUser,
   FiSettings, FiHelpCircle, FiUsers, FiChevronLeft, FiVideo,
   FiRadio,
-  /* FiGrid — Trello hidden for now */ FiLogOut
+  FiGrid, FiLogOut
 } from "react-icons/fi";
 import { fetchUnreadMessages } from "../redux/messageSlice";
 import { io } from "socket.io-client";
@@ -130,12 +130,14 @@ const Dashboard = () => {
     ...(user?.role === "teacher" || user?.role === "admin"
       ? [{ to: "/support", icon: FiRadio, text: t("nav.support"), unread: supportUnreadCount, accent: true }]
       : []),
-    // { to: "/trello", icon: FiGrid, text: "Trello" }, // Hidden — work in progress
+    ...(user?.role === 'teacher' || user?.role === 'admin'
+      ? [{ to: '/trello', icon: FiGrid, text: 'Trello 2.0' }]
+      : []),
   ];
 
   const bottomLinks = [
     { to: "/profile", icon: FiUser, text: t("nav.profile") },
-    ...(user?.role === "admin" ? [{ to: "/admin", icon: FiUsers, text: t("nav.admin") }] : []),
+    ...(user?.role === "admin" ? [{ to: "/admin", icon: FiUsers, text: t("nav.admin") }, { to: "/admin-trello", icon: FiGrid, text: "Trello Admin" }] : []),
     { to: "/settings", icon: FiSettings, text: t("nav.settings") },
     { to: "/help-center", icon: FiHelpCircle, text: t("nav.helpCenter") },
   ];

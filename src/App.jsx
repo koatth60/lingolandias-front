@@ -20,6 +20,8 @@ const HelpCenter   = lazy(() => import('./components/help-center/HelpCenter'));
 const Settings     = lazy(() => import('./components/settings/Settings'));
 const ForgotPassword = lazy(() => import('./components/login/forgotPassword'));
 const ResetPassword  = lazy(() => import('./components/login/resetPassword'));
+const Trello       = lazy(() => import('./sections/trello'));
+const AdminTrello  = lazy(() => import('./sections/adminTrello'));
 import { useSelector } from 'react-redux';
 import { ToastContainer, Slide } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -124,15 +126,22 @@ function App() {
               </RequireAuth>
             }
           />
-          {/* Trello route hidden — work in progress
-           <Route
+          <Route
             path="/trello"
             element={
               <RequireAuth>
-                 <Trello  />
+                <Trello />
               </RequireAuth>
             }
-          /> */}
+          />
+          <Route
+            path="/admin-trello"
+            element={
+              <RequireAuth role="admin">
+                <AdminTrello />
+              </RequireAuth>
+            }
+          />
           <Route
             path="/help-center"
             element={

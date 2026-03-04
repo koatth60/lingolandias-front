@@ -1,4 +1,5 @@
 import logo from "/src/assets/logos/logo3.png";
+const logoWebP = "/logos/logo3.webp"; // public/ — stable URL matches <link rel="preload">
 import { useTranslation } from "react-i18next";
 
 const LANGUAGE_BADGES = [
@@ -51,11 +52,15 @@ const AnimatedLogo = () => {
       />
 
       {/* Logo — fills the explicit container */}
-      <img
-        src={logo}
-        alt="Lingolandias Logo"
-        className="relative w-full h-full object-contain login-animate-float login-animate-glow transition-transform duration-500 group-hover:scale-105"
-      />
+      <picture>
+        <source srcSet={logoWebP} type="image/webp" />
+        <img
+          src={logo}
+          alt="Lingolandias Logo"
+          fetchPriority="high"
+          className="relative w-full h-full object-contain login-animate-float login-animate-glow transition-transform duration-500 group-hover:scale-105"
+        />
+      </picture>
 
       {/* Pulsing accent dot — top right */}
       <span

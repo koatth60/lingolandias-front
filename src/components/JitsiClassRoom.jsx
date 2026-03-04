@@ -97,6 +97,7 @@ const JitsiClassRoom = () => {
           "modules/statistics/CallStats.js": "error",
         },
       },
+      hideConferenceSubject: true,
       startWithTileView: true,
       customToolbarButtons: [
         { icon: CHAT_ICON, id: "lingo-chat", text: "Chat" },

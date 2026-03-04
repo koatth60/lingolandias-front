@@ -1,25 +1,25 @@
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import Login from './components/login/login';
-import Home from './sections/home';
-import Profile from './sections/profile';
-import Admin from './components/admin/admin';
-import Learning from './sections/learning';
-import Shchedule from './components/schedule/schedule';
 import RequireAuth from './components/requireAuth';
-import JitsiClassRoom from './components/JitsiClassRoom';
-import Messages from './sections/messages';
-import Support from './sections/support';
-// import Trello from './sections/trello'; // Hidden — work in progress
-import ForgotPassword from './components/login/forgotPassword';
-import ResetPassword from './components/login/resetPassword';
 import GlobalNotificationHandler from './components/GlobalNotificationHandler';
 import FilePreviewModal from './components/FilePreviewModal';
 import { UploadProvider } from './context/UploadContext';
 import UploadStatusBar from './components/UploadStatusBar';
-import HelpCenter from './components/help-center/HelpCenter';
-import Settings from './components/settings/Settings';
+
+// Lazy-load all post-login routes — keeps initial bundle small
+const Home         = lazy(() => import('./sections/home'));
+const Profile      = lazy(() => import('./sections/profile'));
+const Admin        = lazy(() => import('./components/admin/admin'));
+const Shchedule    = lazy(() => import('./components/schedule/schedule'));
+const JitsiClassRoom = lazy(() => import('./components/JitsiClassRoom'));
+const Messages     = lazy(() => import('./sections/messages'));
+const Support      = lazy(() => import('./sections/support'));
+const HelpCenter   = lazy(() => import('./components/help-center/HelpCenter'));
+const Settings     = lazy(() => import('./components/settings/Settings'));
+const ForgotPassword = lazy(() => import('./components/login/forgotPassword'));
+const ResetPassword  = lazy(() => import('./components/login/resetPassword'));
 import { useSelector } from 'react-redux';
 import { ToastContainer, Slide } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -64,6 +64,7 @@ function App() {
           newestOnTop
           theme="light"
         />
+        <Suspense fallback={null}>
         <Routes>
           <Route path="/" element={<Navigate to="/home" />} />
           <Route path="/login" element={<Login />} />
@@ -159,6 +160,7 @@ function App() {
            <Route path="/forgotpassword" element={<ForgotPassword />} />
            <Route path="/reset-password" element={<ResetPassword />} />
         </Routes>
+        </Suspense>
       </Router>
     </div>
     </UploadProvider>

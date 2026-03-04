@@ -97,8 +97,16 @@ const useRecording = ({ userName, roomId, role, email, studentName }) => {
         audio: true,
       });
 
-      // 2. Capture the teacher's own microphone
-      const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // 2. Capture the teacher's own microphone (echo cancellation prevents
+      //    the other participant's voice — already in tab audio — from being
+      //    picked up again via the speakers and double-recorded)
+      const micStream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      });
 
       // 3. Mix tab audio + mic audio into a single audio track
       const audioContext = new AudioContext();

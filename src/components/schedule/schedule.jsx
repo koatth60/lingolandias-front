@@ -184,7 +184,7 @@ const Schedule = () => {
       const student = user.students?.find((s) => s.id === event.studentId);
       const chatName = student?.name;
       navigate("/classroom", {
-        state: { roomId, chatRoomId: user.id, userName, email, fromMeeting: false, chatName },
+        state: { roomId, chatRoomId: event.studentId, userName, email, fromMeeting: false, chatName },
       });
     }
   };
@@ -208,7 +208,7 @@ const Schedule = () => {
     }
 
     navigate("/classroom", {
-      state: { roomId, userName, email, fromMeeting: true, chatName },
+      state: { roomId, chatRoomId: user.role === "user" ? user.id : roomId, userName, email, fromMeeting: true, chatName },
     });
   };
 

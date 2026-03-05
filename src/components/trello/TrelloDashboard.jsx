@@ -3,39 +3,44 @@ import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { getBoards, createBoard, deleteBoard } from '../../data/trelloApi';
 import TrelloBoard from './TrelloBoard';
-import { BACKGROUND_PRESETS, FONT_OPTIONS, getBgStyle } from './trelloConfig';
+import { BACKGROUND_PRESETS, FONT_OPTIONS, PHOTO_PRESETS, getBgStyle } from './trelloConfig';
 
 export { BACKGROUND_PRESETS, FONT_OPTIONS, getBgStyle };
 
 // ─── Background Picker ────────────────────────────────────────────────────────
+const UNSPLASH = (id, w, h) =>
+  `https://images.unsplash.com/photo-${id}?w=${w}&h=${h}&fit=crop&q=80&auto=format`;
+
 const BgPicker = ({ value, onChange }) => {
-  const [tab, setTab] = useState('preset'); // 'preset' | 'image'
+  const [tab, setTab] = useState('preset'); // 'preset' | 'photos' | 'image'
   const [imgUrl, setImgUrl] = useState('');
 
-  const applyImage = () => {
-    if (imgUrl.trim()) { onChange(imgUrl.trim()); }
-  };
+  const TABS = [
+    { key: 'preset', label: 'Colors' },
+    { key: 'photos', label: 'Photos' },
+    { key: 'image',  label: 'URL' },
+  ];
 
   return (
     <div>
       <div className="flex gap-1 mb-2">
-        {['preset', 'image'].map((t) => (
+        {TABS.map((t) => (
           <button
-            key={t}
+            key={t.key}
             type="button"
-            onClick={() => setTab(t)}
+            onClick={() => setTab(t.key)}
             className={`px-3 py-1 rounded-lg text-xs font-medium transition ${
-              tab === t
+              tab === t.key
                 ? 'bg-[#9E2FD0] text-white'
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
           >
-            {t === 'preset' ? 'Colors & Gradients' : 'Image URL'}
+            {t.label}
           </button>
         ))}
       </div>
 
-      {tab === 'preset' ? (
+      {tab === 'preset' && (
         <div className="grid grid-cols-9 gap-1.5">
           {BACKGROUND_PRESETS.map((bg) => {
             const isActive = value === bg.value;
@@ -58,7 +63,45 @@ const BgPicker = ({ value, onChange }) => {
             );
           })}
         </div>
-      ) : (
+      )}
+
+      {tab === 'photos' && (
+        <div className="grid grid-cols-4 gap-1.5">
+          {PHOTO_PRESETS.map((photo) => {
+            const fullUrl = UNSPLASH(photo.id, 1920, 1080);
+            const thumbUrl = UNSPLASH(photo.id, 160, 90);
+            const isActive = value === fullUrl;
+            return (
+              <button
+                key={photo.id}
+                type="button"
+                title={photo.label}
+                onClick={() => onChange(fullUrl)}
+                className="relative rounded-lg overflow-hidden transition-transform hover:scale-105"
+                style={{
+                  height: '52px',
+                  boxShadow: isActive ? '0 0 0 2px white, 0 0 0 4px #9E2FD0' : 'none',
+                }}
+              >
+                <img
+                  src={thumbUrl}
+                  alt={photo.label}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+                {isActive && (
+                  <span className="absolute inset-0 flex items-center justify-center bg-black/30 text-white text-sm">✓</span>
+                )}
+                <span className="absolute bottom-0 left-0 right-0 text-[9px] text-white font-medium px-1 py-0.5 bg-black/40 truncate">
+                  {photo.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {tab === 'image' && (
         <div className="space-y-2">
           <input
             type="url"
@@ -69,7 +112,7 @@ const BgPicker = ({ value, onChange }) => {
           />
           <button
             type="button"
-            onClick={applyImage}
+            onClick={() => { if (imgUrl.trim()) onChange(imgUrl.trim()); }}
             className="w-full py-2 text-sm rounded-lg bg-[#9E2FD0] hover:bg-[#8a27b5] text-white transition"
           >
             Apply image

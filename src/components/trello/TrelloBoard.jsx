@@ -6,18 +6,23 @@ import {
   updateBoard,
 } from '../../data/trelloApi';
 import TrelloCardDetail from './TrelloCardDetail';
-import { FONT_OPTIONS, BACKGROUND_PRESETS, getBgStyle } from './trelloConfig';
+import { FONT_OPTIONS, BACKGROUND_PRESETS, PHOTO_PRESETS, getBgStyle } from './trelloConfig';
 
-const LABELS = [
-  { color: '#61BD4F', name: 'Green' },
-  { color: '#F2D600', name: 'Yellow' },
-  { color: '#FF9F1A', name: 'Orange' },
-  { color: '#EB5A46', name: 'Red' },
-  { color: '#C377E0', name: 'Purple' },
-  { color: '#0079BF', name: 'Blue' },
-];
+const UNSPLASH = (id, w, h) =>
+  `https://images.unsplash.com/photo-${id}?w=${w}&h=${h}&fit=crop&q=80&auto=format`;
+
+const parseCardLabels = (v) => {
+  if (!v) return [];
+  try { return JSON.parse(v); } catch { return []; }
+};
 
 // ─── BoardSettingsModal ───────────────────────────────────────────────────────
+const TABS = [
+  { key: 'preset', label: 'Colors' },
+  { key: 'photos', label: 'Photos' },
+  { key: 'image',  label: 'URL' },
+];
+
 const BgPickerInline = ({ value, onChange }) => {
   const [tab, setTab] = useState('preset');
   const [imgUrl, setImgUrl] = useState('');
@@ -25,15 +30,16 @@ const BgPickerInline = ({ value, onChange }) => {
   return (
     <div>
       <div className="flex gap-1 mb-2">
-        {['preset', 'image'].map((t) => (
-          <button key={t} type="button" onClick={() => setTab(t)}
-            className={`px-3 py-1 rounded-lg text-xs font-medium transition ${tab === t ? 'bg-[#9E2FD0] text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
+        {TABS.map((t) => (
+          <button key={t.key} type="button" onClick={() => setTab(t.key)}
+            className={`px-3 py-1 rounded-lg text-xs font-medium transition ${tab === t.key ? 'bg-[#9E2FD0] text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
           >
-            {t === 'preset' ? 'Colors & Gradients' : 'Image URL'}
+            {t.label}
           </button>
         ))}
       </div>
-      {tab === 'preset' ? (
+
+      {tab === 'preset' && (
         <div className="grid grid-cols-9 gap-1.5">
           {BACKGROUND_PRESETS.map((bg) => {
             const isActive = value === bg.value;
@@ -47,7 +53,29 @@ const BgPickerInline = ({ value, onChange }) => {
             );
           })}
         </div>
-      ) : (
+      )}
+
+      {tab === 'photos' && (
+        <div className="grid grid-cols-4 gap-1.5">
+          {PHOTO_PRESETS.map((photo) => {
+            const fullUrl = UNSPLASH(photo.id, 1920, 1080);
+            const thumbUrl = UNSPLASH(photo.id, 160, 90);
+            const isActive = value === fullUrl;
+            return (
+              <button key={photo.id} type="button" title={photo.label} onClick={() => onChange(fullUrl)}
+                className="relative rounded-lg overflow-hidden transition-transform hover:scale-105"
+                style={{ height: '52px', boxShadow: isActive ? '0 0 0 2px white, 0 0 0 4px #9E2FD0' : 'none' }}
+              >
+                <img src={thumbUrl} alt={photo.label} className="w-full h-full object-cover" loading="lazy" />
+                {isActive && <span className="absolute inset-0 flex items-center justify-center bg-black/30 text-white text-sm">✓</span>}
+                <span className="absolute bottom-0 left-0 right-0 text-[9px] text-white font-medium px-1 py-0.5 bg-black/40 truncate">{photo.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {tab === 'image' && (
         <div className="space-y-2">
           <input type="url" value={imgUrl} onChange={(e) => setImgUrl(e.target.value)}
             placeholder="https://images.unsplash.com/..."
@@ -227,13 +255,22 @@ const TrelloListColumn = ({
             onClick={() => onCardClick(card, list)}
             className="bg-white rounded-xl border border-gray-100 p-3 cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-150 group"
           >
-            {card.label && (
-              <div
-                className="h-2 w-12 rounded-full mb-2"
-                style={{ backgroundColor: card.label }}
-                title={LABELS.find((l) => l.color === card.label)?.name || ''}
-              />
-            )}
+            {(() => {
+              const cardLabels = parseCardLabels(card.label);
+              return cardLabels.length > 0 ? (
+                <div className="flex flex-wrap gap-1 mb-2">
+                  {cardLabels.map((lbl) => (
+                    <span
+                      key={lbl.name}
+                      className="px-2 py-0.5 rounded-full text-[10px] font-bold text-white leading-tight"
+                      style={{ backgroundColor: lbl.color }}
+                    >
+                      {lbl.name}
+                    </span>
+                  ))}
+                </div>
+              ) : null;
+            })()}
             <p className="text-sm text-gray-800 font-medium line-clamp-3">{card.name}</p>
             {card.description && (
               <p

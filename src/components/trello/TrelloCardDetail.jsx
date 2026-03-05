@@ -4,16 +4,26 @@ import { FONT_OPTIONS } from './trelloConfig';
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const LABELS = [
-  { color: '#61BD4F', name: 'Green' },
-  { color: '#F2D600', name: 'Yellow' },
-  { color: '#FF9F1A', name: 'Orange' },
-  { color: '#EB5A46', name: 'Red' },
-  { color: '#C377E0', name: 'Purple' },
-  { color: '#0079BF', name: 'Blue' },
-  { color: '#00C2E0', name: 'Cyan' },
-  { color: '#51E898', name: 'Lime' },
-  { color: '#FF78CB', name: 'Pink' },
-  { color: '#344563', name: 'Dark' },
+  { name: 'Grammar',        color: '#0079BF' },
+  { name: 'Vocabulary',     color: '#61BD4F' },
+  { name: 'Speaking',       color: '#FF9F1A' },
+  { name: 'Listening',      color: '#9E2FD0' },
+  { name: 'Reading',        color: '#00C2E0' },
+  { name: 'Writing',        color: '#EB5A46' },
+  { name: 'Pronunciation',  color: '#F6B82E' },
+  { name: 'Culture',        color: '#344563' },
+  { name: 'Translation',    color: '#C377E0' },
+  { name: 'Conversation',   color: '#51E898' },
+  { name: 'Homework',       color: '#FF78CB' },
+  { name: 'Exam Prep',      color: '#B04632' },
+  { name: 'Beginner',       color: '#5AAC44' },
+  { name: 'Intermediate',   color: '#CD8B00' },
+  { name: 'Advanced',       color: '#E91E8C' },
+  { name: 'Review',         color: '#026AA7' },
+  { name: 'Important',      color: '#CF513D' },
+  { name: 'Fun Activity',   color: '#26D9A1' },
+  { name: 'History',        color: '#6B3A2A' },
+  { name: 'Literature',     color: '#4A1D96' },
 ];
 
 const FONT_SIZES = ['12px','14px','16px','18px','20px','24px','28px','32px'];
@@ -342,30 +352,78 @@ const Checklist = ({ items, onChange }) => {
 
 // ─── LABELS PICKER ────────────────────────────────────────────────────────────
 const LabelsPicker = ({ selected, onChange }) => {
-  const toggle = (color) => {
-    if (selected.includes(color)) onChange(selected.filter((c) => c !== color));
-    else onChange([...selected, color]);
+  const [customName, setCustomName] = useState('');
+  const [customColor, setCustomColor] = useState('#9E2FD0');
+
+  const isSelected = (name) => selected.some((s) => s.name === name);
+
+  const toggle = (label) => {
+    if (isSelected(label.name)) onChange(selected.filter((s) => s.name !== label.name));
+    else onChange([...selected, label]);
   };
+
+  const addCustom = () => {
+    const name = customName.trim();
+    if (!name) return;
+    if (!isSelected(name)) onChange([...selected, { name, color: customColor }]);
+    setCustomName('');
+  };
+
   return (
-    <div className="flex flex-wrap gap-1.5">
-      {LABELS.map((l) => {
-        const active = selected.includes(l.color);
-        return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-1.5">
+        {LABELS.map((l) => {
+          const active = isSelected(l.name);
+          return (
+            <button
+              key={l.name}
+              onClick={() => toggle(l)}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-white transition-all"
+              style={{
+                backgroundColor: l.color,
+                opacity: active ? 1 : 0.4,
+                boxShadow: active ? '0 0 0 2px white, 0 0 0 4px ' + l.color : 'none',
+              }}
+            >
+              {active && (
+                <svg className="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+              )}
+              {l.name}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Custom label */}
+      <div className="pt-2 border-t border-gray-100 dark:border-gray-700">
+        <p className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Custom label</p>
+        <div className="flex gap-2 items-center">
+          <input
+            type="color"
+            value={customColor}
+            onChange={(e) => setCustomColor(e.target.value)}
+            className="w-8 h-8 rounded border border-gray-300 dark:border-gray-600 cursor-pointer p-0.5 bg-white dark:bg-gray-800"
+            title="Pick color"
+          />
+          <input
+            type="text"
+            value={customName}
+            onChange={(e) => setCustomName(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') addCustom(); }}
+            placeholder="e.g. Phonetics, Idioms..."
+            className="flex-1 px-2.5 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#9E2FD0]"
+          />
           <button
-            key={l.color}
-            onClick={() => toggle(l.color)}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-white transition-all"
-            style={{
-              backgroundColor: l.color,
-              opacity: active ? 1 : 0.35,
-              boxShadow: active ? '0 0 0 2px white, 0 0 0 4px ' + l.color : 'none',
-            }}
+            onClick={addCustom}
+            disabled={!customName.trim()}
+            className="px-3 py-1.5 text-xs bg-[#9E2FD0] hover:bg-[#8a27b5] text-white rounded-lg transition disabled:opacity-40"
           >
-            {active && <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}
-            {l.name}
+            Add
           </button>
-        );
-      })}
+        </div>
+      </div>
     </div>
   );
 };
@@ -393,8 +451,11 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
   const [dueDate, setDueDate] = useState(card.dueDate ? new Date(card.dueDate).toISOString().split('T')[0] : '');
   const [dueDone, setDueDone] = useState(false);
 
-  // Multi-label: stored comma-separated in card.label
-  const parseLabels = (v) => v ? v.split(',').filter(Boolean) : [];
+  // Multi-label: stored as JSON array [{name, color}]
+  const parseLabels = (v) => {
+    if (!v) return [];
+    try { return JSON.parse(v); } catch { return []; }
+  };
   const [labels, setLabels] = useState(parseLabels(card.label));
 
   // Checklist
@@ -408,6 +469,9 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
   // Title style
   const [titleStyle, setTitleStyle] = useState(parseJSON(card.titleStyle, {}));
   const updateTitleStyle = (key, val) => setTitleStyle((prev) => ({ ...prev, [key]: val }));
+
+  // Description edit mode
+  const [editingDescription, setEditingDescription] = useState(false);
 
   // Sidebar panel state
   const [activePanel, setActivePanel] = useState(null); // 'labels'|'checklist'|'dates'|'move'
@@ -427,7 +491,7 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
       name,
       description: desc || null,
       dueDate: dueDate || null,
-      label: labels.join(',') || null,
+      label: labels.length ? JSON.stringify(labels) : null,
       checklist: checklist.length ? JSON.stringify(checklist) : null,
       comments: comments.length ? JSON.stringify(comments) : null,
       titleStyle: Object.keys(titleStyle).length ? JSON.stringify(titleStyle) : null,
@@ -596,20 +660,17 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
           {/* Active labels strip */}
           {labels.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-3 ml-8">
-              {labels.map((c) => {
-                const lbl = LABELS.find((l) => l.color === c);
-                return (
-                  <span
-                    key={c}
-                    className="px-3 py-1 rounded-full text-xs font-bold text-white cursor-pointer hover:opacity-80 transition"
-                    style={{ backgroundColor: c }}
-                    onClick={() => setActivePanel(activePanel === 'labels' ? null : 'labels')}
-                    title={lbl?.name}
-                  >
-                    {lbl?.name || ''}
-                  </span>
-                );
-              })}
+              {labels.map((lbl) => (
+                <span
+                  key={lbl.name}
+                  className="px-3 py-1 rounded-full text-xs font-bold text-white cursor-pointer hover:opacity-80 transition"
+                  style={{ backgroundColor: lbl.color }}
+                  onClick={() => setActivePanel(activePanel === 'labels' ? null : 'labels')}
+                  title={lbl.name}
+                >
+                  {lbl.name}
+                </span>
+              ))}
             </div>
           )}
 
@@ -650,13 +711,54 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h7" />
                   </svg>
                   <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200">Description</h3>
+                  {!editingDescription && (
+                    <button
+                      onClick={() => setEditingDescription(true)}
+                      className="ml-auto text-xs px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                    >
+                      Edit
+                    </button>
+                  )}
                 </div>
-                <RichEditor
-                  ref={richEditorRef}
-                  html={description}
-                  onChange={setDescription}
-                  placeholder="Add a more detailed description... Select text to format it."
-                />
+
+                {editingDescription ? (
+                  <div className="space-y-2">
+                    <RichEditor
+                      ref={richEditorRef}
+                      html={description}
+                      onChange={setDescription}
+                      placeholder="Add a more detailed description..."
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setEditingDescription(false)}
+                        className="px-3 py-1.5 text-xs bg-[#9E2FD0] hover:bg-[#8a27b5] text-white rounded-lg transition font-medium"
+                      >
+                        Done
+                      </button>
+                      <button
+                        onClick={() => { setDescription(card.description || ''); setEditingDescription(false); }}
+                        className="px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white rounded-lg transition"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : description && description !== '<br>' ? (
+                  <div
+                    className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/30 rounded-lg px-2 py-1.5 -mx-2 transition-colors trello-description"
+                    dangerouslySetInnerHTML={{ __html: description }}
+                    onClick={() => setEditingDescription(true)}
+                    title="Click to edit"
+                  />
+                ) : (
+                  <button
+                    onClick={() => setEditingDescription(true)}
+                    className="w-full text-left px-3 py-2.5 text-sm text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700/50 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition"
+                  >
+                    Add a more detailed description...
+                  </button>
+                )}
               </section>
 
               {/* Checklist (when added) */}

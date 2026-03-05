@@ -34,6 +34,25 @@ export const FONT_OPTIONS = [
   { label: 'Georgia', value: 'Georgia, serif' },
 ];
 
+export const PHOTO_PRESETS = [
+  { label: 'Mountains',       id: '1506905925346-21bda4d32df4' },
+  { label: 'Aurora',          id: '1531366936337-7c912a4589a7' },
+  { label: 'Forest Path',     id: '1448375240586-882707db888b' },
+  { label: 'Night Sky',       id: '1519681393784-d120267933ba' },
+  { label: 'Ocean Wave',      id: '1505118380757-91f5f5632de0' },
+  { label: 'Desert Dunes',    id: '1509316785289-025f5b846b35' },
+  { label: 'City Lights',     id: '1477959858617-67f85cf4f1df' },
+  { label: 'Misty Lake',      id: '1477346611705-65d1883cee1e' },
+  { label: 'Abstract Purple', id: '1557682250-33bd709cbe85' },
+  { label: 'Abstract Blue',   id: '1557682224-5b8590cd9ec5' },
+  { label: 'Colorful Smoke',  id: '1541701494587-cb58502866ab' },
+  { label: 'Neon Lights',     id: '1533134242443-d4fd215305ad' },
+  { label: 'Flower Field',    id: '1490750967868-88df5691cc59' },
+  { label: 'Snowy Peaks',     id: '1464822759023-fed622ff2c3b' },
+  { label: 'Tropical Beach',  id: '1507525428034-b723cf961d3e' },
+  { label: 'Autumn Forest',   id: '1507003211169-0a1dd7228f2d' },
+];
+
 // Convert stored background string to CSS background property
 export const getBgStyle = (bg) => {
   if (!bg) return { background: '#0079BF' };

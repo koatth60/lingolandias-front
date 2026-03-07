@@ -208,7 +208,7 @@ const Schedule = () => {
     }
 
     navigate("/classroom", {
-      state: { roomId, chatRoomId: user.role === "user" ? user.id : roomId, userName, email, fromMeeting: true, chatName },
+      state: { roomId, chatRoomId: roomId, userName, email, fromMeeting: true, chatName, chatType: roomName ? "teacher" : "group" },
     });
   };
 

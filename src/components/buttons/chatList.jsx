@@ -246,7 +246,15 @@ const ChatList = ({
                       )}
                     </div>
                     <div className="flex items-center justify-between mt-0.5 gap-1">
-                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate flex items-center gap-1">
+                        {lastMessage?.sender === user.email && (
+                          <span
+                            className="text-[10px] flex-shrink-0 leading-none"
+                            style={{ color: lastMessage.unread === false ? "#26D9A1" : "rgba(156,163,175,0.6)" }}
+                          >
+                            {lastMessage.unread === false ? "✓✓" : "✓"}
+                          </span>
+                        )}
                         {lastMessage ? (
                           lastMessage.type === "file" ? (
                             <span className="text-[#9E2FD0] font-medium">

@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import send from "../../assets/logos/send.png";
 import { BsEmojiSmile, BsThreeDots } from "react-icons/bs";
-import { FiVideo, FiChevronLeft } from "react-icons/fi";
+import { FiVideo, FiChevronLeft, FiEdit2, FiX } from "react-icons/fi";
 import { FaComments } from "react-icons/fa";
 import PerfectScrollbar from "react-perfect-scrollbar";
 import "react-perfect-scrollbar/dist/css/styles.css";
@@ -39,23 +39,59 @@ const ChatWindowComponent = ({
   );
 
   const [message, setMessage] = useState("");
+  const [editingMsg, setEditingMsg] = useState(null);
   const { showEmojiPicker, setShowEmojiPicker, handleInput, handleEmojiClick } =
     useChatInputHandler(message, setMessage);
 
-  const handleSendMessage = () => {
-    if (!message.trim()) return;
-    sendMessage(message);
+  const { handleDeleteMessage, toggleOptionsMenu, openMessageId } =
+    useDeleteMessage(setChatMessages, socket, room);
+
+  const handleEditMessage = (msg) => {
+    setEditingMsg(msg);
+    toggleOptionsMenu(openMessageId);
+  };
+
+  const clearEditing = () => {
+    setEditingMsg(null);
     setMessage("");
-    const ta = document.querySelector("textarea");
-    if (ta) ta.style.height = "auto";
+  };
+
+  useEffect(() => {
+    if (editingMsg) setMessage(editingMsg.message);
+  }, [editingMsg]);
+
+  useEffect(() => {
+    if (socket && room) {
+      socket.on("globalChatEdited", ({ messageId, newMessage }) => {
+        setChatMessages((prev) =>
+          prev.map((m) => m.id === messageId ? { ...m, message: newMessage } : m)
+        );
+      });
+      return () => { socket.off("globalChatEdited"); };
+    }
+  }, [socket, room]);
+
+  const handleSendMessage = () => {
+    if (editingMsg) {
+      if (!message.trim()) return;
+      socket.emit("editGlobalChat", { messageId: editingMsg.id, room, newMessage: message.trim() });
+      setChatMessages((prev) =>
+        prev.map((m) => m.id === editingMsg.id ? { ...m, message: message.trim() } : m)
+      );
+      setMessage("");
+      setEditingMsg(null);
+    } else {
+      if (!message.trim()) return;
+      sendMessage(message);
+      setMessage("");
+      const ta = document.querySelector("textarea");
+      if (ta) ta.style.height = "auto";
+    }
   };
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSendMessage(); }
   };
-
-  const { handleDeleteMessage, handleEditMessage, toggleOptionsMenu, openMessageId } =
-    useDeleteMessage(setChatMessages, socket, room);
 
   const { readMessages } = useChatWindow();
 
@@ -121,8 +157,6 @@ const ChatWindowComponent = ({
   };
 
   const handleJoinGeneralClass = () => {
-    // Use the chat's own UUID as the Jitsi room name so everyone in this chat
-    // lands in the same meeting and the in-call chat shows the same messages.
     navigate("/classroom", {
       state: {
         roomId: room,
@@ -131,11 +165,12 @@ const ChatWindowComponent = ({
         email: user.email,
         fromMessage: true,
         chatName: studentName,
+        chatType,
       },
     });
   };
 
-  const isGeneralChat = chatType === "general" || chatType === "teacher";
+  const isGeneralChat = chatType === "general" || chatType === "teacher" || chatType === "group";
 
   return (
     <div className="w-full h-full flex flex-col relative overflow-hidden
@@ -376,6 +411,17 @@ const ChatWindowComponent = ({
                       bg-white dark:bg-black/40 backdrop-blur-xl
                       border-t border-gray-200 dark:border-white/10
                       transition-colors duration-300">
+        {editingMsg && (
+          <div className="flex items-center justify-between gap-2 px-3 py-1.5 mb-2 rounded-lg bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20">
+            <div className="flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400">
+              <FiEdit2 size={12} />
+              <span>Editing message</span>
+            </div>
+            <button onClick={clearEditing} className="text-blue-400 hover:text-blue-600 flex-shrink-0">
+              <FiX size={14} />
+            </button>
+          </div>
+        )}
         <div className="flex items-end gap-2
                         bg-gray-50 dark:bg-black/40 
                         rounded-2xl px-3 py-2

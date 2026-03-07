@@ -148,13 +148,17 @@ const Navbar = ({ header }) => {
           </div>
         </div>
 
-        {/* Center — theme toggle */}
-        <div className="absolute left-1/2 transform -translate-x-1/2">
+        {/* Center — theme toggle (hidden on mobile, shown centered on md+) */}
+        <div className="hidden md:block absolute left-1/2 transform -translate-x-1/2">
           <ThemeToggleButton />
         </div>
 
         {/* Right — user menu */}
         <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
+          {/* Theme toggle on mobile/tablet — sits next to avatar */}
+          <div className="md:hidden">
+            <ThemeToggleButton />
+          </div>
 
           {/* User menu */}
           <div className="relative" ref={dropdownRef}>

@@ -18,6 +18,7 @@ import { updateUserStatus } from "../redux/userSlice";
 import logo from "../assets/logos/logo3.png";
 import { useLogout } from "../hooks/customHooks";
 import { logout } from "../redux/userSlice";
+import useAuthExpiry from "../hooks/useAuthExpiry";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -45,6 +46,8 @@ const Dashboard = () => {
   const { totalUnread, unreadCounts } = useSelector((state) => state.messages);
   const supportUnreadCount = unreadCounts?.supportRoom || 0;
 
+  useAuthExpiry(user?.id);
+
   useEffect(() => {
     setActiveLink(location.pathname);
   }, [location]);
@@ -69,12 +72,14 @@ const Dashboard = () => {
       socket = io(`${BACKEND_URL}`);
       socket.on("userStatus", (data) => {
         const { id, online, name } = data;
-        toast(
-          <div>
-            <b>{name}</b> is now {online}
-          </div>,
-          { theme: "light" }
-        );
+        if (id !== user.id) {
+          toast(
+            <div>
+              <b>{name}</b> is now {online}
+            </div>,
+            { theme: "light" }
+          );
+        }
         dispatch(updateUserStatus({ id, online }));
       });
       socket.on("newUnreadGlobalMessage", () => {

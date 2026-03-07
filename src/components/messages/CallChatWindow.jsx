@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 import { BsEmojiSmile, BsThreeDots } from "react-icons/bs";
-import { FiSend, FiMessageSquare } from "react-icons/fi";
+import { FiSend, FiMessageSquare, FiEdit2, FiX } from "react-icons/fi";
 import { FaComments } from "react-icons/fa";
 import axios from "axios";
 import EmojiPicker from "emoji-picker-react";
@@ -24,11 +24,26 @@ const CallChatWindow = ({
   const [message, setMessage] = useState("");
   const [chatMessages, setChatMessages] = useState([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [editingMsg, setEditingMsg] = useState(null);
 
   const scrollContainerRef = useRef(null);
   const textareaRef = useRef(null);
-  const { handleDeleteMessage, handleEditMessage, toggleOptionsMenu, openMessageId } =
+  const { handleDeleteMessage, toggleOptionsMenu, openMessageId } =
     useDeleteMessage(setChatMessages, socket, room);
+
+  const handleEditMessage = (msg) => {
+    setEditingMsg(msg);
+    toggleOptionsMenu(openMessageId);
+  };
+
+  const clearEditing = () => {
+    setEditingMsg(null);
+    setMessage("");
+  };
+
+  useEffect(() => {
+    if (editingMsg) setMessage(editingMsg.message);
+  }, [editingMsg]);
 
   const fetchMessages = async () => {
     try {
@@ -46,7 +61,15 @@ const CallChatWindow = ({
       socket.on("globalChatDeleted", (data) => {
         setChatMessages((prev) => prev.filter((msg) => msg.id !== data.messageId));
       });
-      return () => socket.off("globalChatDeleted");
+      socket.on("globalChatEdited", ({ messageId, newMessage }) => {
+        setChatMessages((prev) =>
+          prev.map((m) => m.id === messageId ? { ...m, message: newMessage } : m)
+        );
+      });
+      return () => {
+        socket.off("globalChatDeleted");
+        socket.off("globalChatEdited");
+      };
     }
   }, [socket, room]);
 
@@ -71,6 +94,17 @@ const CallChatWindow = ({
   }, [chatMessages]);
 
   const sendMessage = () => {
+    if (editingMsg) {
+      if (!message.trim() || !socket) return;
+      socket.emit("editGlobalChat", { messageId: editingMsg.id, room, newMessage: message.trim() });
+      setChatMessages((prev) =>
+        prev.map((m) => m.id === editingMsg.id ? { ...m, message: message.trim() } : m)
+      );
+      setMessage("");
+      setEditingMsg(null);
+      if (textareaRef.current) textareaRef.current.style.height = "32px";
+      return;
+    }
     if (message.trim() && room && socket) {
       const messageData = {
         username,
@@ -282,6 +316,17 @@ const CallChatWindow = ({
 
       {/* ── Input ── */}
       <div className="relative flex-shrink-0 p-3 bg-white dark:bg-[#0f0d24] border-t border-gray-100 dark:border-[rgba(158,47,208,0.12)]">
+        {editingMsg && (
+          <div className="flex items-center justify-between gap-2 px-3 py-1.5 mb-2 rounded-lg bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20">
+            <div className="flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400">
+              <FiEdit2 size={12} />
+              <span>Editing message</span>
+            </div>
+            <button onClick={clearEditing} className="text-blue-400 hover:text-blue-600 flex-shrink-0">
+              <FiX size={14} />
+            </button>
+          </div>
+        )}
         <div className="flex items-end gap-2 bg-gray-50 dark:bg-white/5 rounded-xl px-3 py-2 border border-gray-200 dark:border-white/10 focus-within:border-[rgba(158,47,208,0.5)] dark:focus-within:border-[rgba(158,47,208,0.4)] transition-colors">
           <button onClick={() => setShowEmojiPicker((p) => !p)}
             className="flex-shrink-0 text-gray-400 hover:text-[#F6B82E] transition-colors self-end mb-0.5">

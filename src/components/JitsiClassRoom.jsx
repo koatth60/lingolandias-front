@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { JitsiMeeting } from "@jitsi/react-sdk";
 import { useLocation, useNavigate } from "react-router-dom";
 import ChatWindow from "./chatWindow";
+import CallChatWindow from "./messages/CallChatWindow";
 import { useSelector } from "react-redux";
 import useRecording from "../hooks/useRecording";
 
@@ -15,7 +16,7 @@ const RECORD_ICON = `data:image/svg+xml;base64,${btoa(
 
 const JitsiClassRoom = () => {
   const location = useLocation();
-  const { userName, roomId, chatRoomId, chatName, email } = location.state || {};
+  const { userName, roomId, chatRoomId, chatName, email, chatType } = location.state || {};
   const domain = "jitsi.srv570363.hstgr.cloud";
 
   const user = useSelector((state) => state.user.userInfo.user);
@@ -26,7 +27,6 @@ const JitsiClassRoom = () => {
   const navigate = useNavigate();
   const [showChat, setShowChat] = useState(false);
   const [loading,  setLoading]  = useState(true);
-
   const {
     isRecording,
     isRecordingRef,
@@ -194,15 +194,24 @@ const JitsiClassRoom = () => {
       >
         {showChat && (
           <div className="relative w-full h-full chat-slide-in">
-            <ChatWindow
-              username={userName}
-              email={email}
-              room={chatRoomId || roomId}
-              studentName={chatName}
-              height="100%"
-              meeting={true}
-              onBack={closeChat}
-            />
+            {chatType === "group" || chatType === "teacher" || chatType === "general" ? (
+              <CallChatWindow
+                username={userName}
+                email={email}
+                room={chatRoomId || roomId}
+                chatName={chatName}
+              />
+            ) : (
+              <ChatWindow
+                username={userName}
+                email={email}
+                room={chatRoomId || roomId}
+                studentName={chatName}
+                height="100%"
+                meeting={true}
+                onBack={closeChat}
+              />
+            )}
             {/* Floating close pill — mobile only */}
             <button
               onClick={closeChat}

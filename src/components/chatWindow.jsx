@@ -1,9 +1,10 @@
 import { useRef, useLayoutEffect, useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
+import Swal from "sweetalert2";
 import EmojiPicker from "emoji-picker-react";
 import { BsEmojiSmile, BsPaperclip, BsThreeDots } from "react-icons/bs";
-import { FiX, FiArrowLeft, FiMessageSquare, FiSend, FiDownload, FiEye, FiBell, FiBellOff } from "react-icons/fi";
+import { FiX, FiArrowLeft, FiMessageSquare, FiSend, FiDownload, FiEye, FiBell, FiBellOff, FiTrash2, FiEdit2 } from "react-icons/fi";
 import { updateUserSettings } from "../redux/userSlice";
 import useDeleteMessage from "../hooks/useDeleteMessage";
 import useSocketManager from "../hooks/useSocketManager";
@@ -29,7 +30,7 @@ const ChatWindow = ({
   meeting = false,
   onNewMessage,
 }) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const user = useSelector((state) => state.user.userInfo.user);
   const teacher = useSelector((state) => state.user.userInfo.user.teacher);
   const dispatch = useDispatch();
@@ -88,6 +89,20 @@ const ChatWindow = ({
   const { formatMessageWithLinks, formatTimestamp, renderFileMessage } =
     useMessageFormatter(handleFileClick);
 
+  const [editingMsg, setEditingMsg] = useState(null);
+
+  const handleSend = (msg, setMsg, reset) => {
+    if (editingMsg) {
+      if (!msg.trim()) return;
+      socket.emit("editNormalChat", { messageId: editingMsg.id, room, newMessage: msg.trim() });
+      setChatMessages((prev) => prev.map((m) => m.id === editingMsg.id ? { ...m, message: msg.trim() } : m));
+      setMsg("");
+      setEditingMsg(null);
+    } else {
+      sendMessage(msg, setMsg, reset);
+    }
+  };
+
   const {
     message,
     setMessage,
@@ -97,16 +112,45 @@ const ChatWindow = ({
     handleKeyDown,
     handleEmojiClick,
     resetTextarea,
-  } = useChatInput((message, setMessage, resetTextarea) =>
-    sendMessage(message, setMessage, resetTextarea)
-  );
+  } = useChatInput(handleSend);
 
   const {
     handleDeleteNormalMessage,
-    handleEditMessage,
     toggleOptionsMenu,
     openMessageId,
   } = useDeleteMessage(setChatMessages, socket, room);
+
+  const handleEditMessage = (msg) => {
+    setEditingMsg(msg);
+    toggleOptionsMenu(openMessageId);
+  };
+
+  const clearEditing = () => {
+    setEditingMsg(null);
+    setMessage("");
+  };
+
+  const handleClearConversation = () => {
+    Swal.fire({
+      title: "Clear Conversation?",
+      text: "All messages will be permanently deleted and cannot be recovered.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, clear all",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#e53e3e",
+      background: "#1a1a2e",
+      color: "#fff",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        socket.emit("clearNormalChat", { room });
+      }
+    });
+  };
+
+  useEffect(() => {
+    if (editingMsg) setMessage(editingMsg.message);
+  }, [editingMsg]);
 
   const isArchivedFetch = useRef(false);
   const prevScrollHeight = useRef(null);
@@ -260,6 +304,15 @@ const ChatWindow = ({
             {soundEnabled ? <FiBell size={16} /> : <FiBellOff size={16} />}
           </button>
 
+          {/* Clear conversation */}
+          <button
+            onClick={handleClearConversation}
+            title="Clear conversation"
+            className="flex-shrink-0 p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+          >
+            <FiTrash2 size={16} />
+          </button>
+
           {/* Student dropdown */}
           {user.role === "user" && (
             <Dropdown>
@@ -369,12 +422,21 @@ const ChatWindow = ({
                         ? renderFileMessage(msg.message, isSender)
                         : formatMessageWithLinks(msg.message, isSender)}
                     </div>
+                    {isSender && (
+                      <span
+                        className="absolute bottom-1 right-2.5 text-[10px] leading-none"
+                        style={{ color: msg.unread === false ? "#26D9A1" : "rgba(255,255,255,0.35)" }}
+                      >
+                        {msg.unread === false ? "✓✓" : "✓"}
+                      </span>
+                    )}
                     {openMessageId === msg.id && (
                       <div className="absolute top-full mt-1 left-0 z-10">
                         <MessageOptionsCard
                           onEdit={() => handleEditMessage(msg)}
                           onDelete={() => handleDeleteNormalMessage(msg.id)}
                         />
+
                       </div>
                     )}
                   </div>
@@ -439,6 +501,17 @@ const ChatWindow = ({
       <div className="relative flex-shrink-0 p-3
                       bg-white dark:bg-[#0f0d24]
                       border-t border-gray-100 dark:border-[rgba(158,47,208,0.12)]">
+        {editingMsg && (
+          <div className="flex items-center justify-between gap-2 px-3 py-1.5 mb-2 rounded-lg bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20">
+            <div className="flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400">
+              <FiEdit2 size={12} />
+              <span>Editing message</span>
+            </div>
+            <button onClick={clearEditing} className="text-blue-400 hover:text-blue-600 flex-shrink-0">
+              <FiX size={14} />
+            </button>
+          </div>
+        )}
         {file && (
           <div className="p-2.5 mb-3 rounded-xl
                           bg-gray-50 dark:bg-white/5
@@ -503,7 +576,7 @@ const ChatWindow = ({
             onClick={
               file
                 ? uploadFile
-                : () => sendMessage(message, setMessage, resetTextarea)
+                : () => handleSend(message, setMessage, resetTextarea)
             }
             className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:opacity-90 active:scale-95 disabled:opacity-30"
             style={{

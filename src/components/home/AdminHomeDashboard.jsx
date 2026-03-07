@@ -13,7 +13,7 @@ import RecordingsModal from "./RecordingsModal";
 
 import { getTodayDayName } from "../../data/dateUtils";
 import { filterUsers } from "../../data/userUtils";
-import { fetchAllSchedules, getTodaysSchedules, organizeClassesByLanguage } from "../../data/scheduleUtils";
+import { getTodaysSchedules, organizeClassesByLanguage } from "../../data/scheduleUtils";
 import { getFilteredClasses } from "../../data/filterClasses";
 
 const AdminHomeDashboard = () => {
@@ -34,10 +34,9 @@ const AdminHomeDashboard = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const usersResponse = await fetch(`${BACKEND_URL}/users`);
-        const usersData = await usersResponse.json();
-        const scheduleData = await fetchAllSchedules(BACKEND_URL, usersData);
-        dispatch(setSchedulesData({ schedules: scheduleData, users: usersData }));
+        const res = await fetch(`${BACKEND_URL}/users/admin-dashboard`);
+        const { users, schedules } = await res.json();
+        dispatch(setSchedulesData({ schedules, users }));
       } catch (error) {
         console.error("Error:", error);
       } finally {

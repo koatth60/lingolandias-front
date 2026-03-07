@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { toast } from 'react-toastify';
+import Swal from 'sweetalert2';
 import { FONT_OPTIONS } from './trelloConfig';
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
@@ -454,9 +455,33 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
   // Multi-label: stored as JSON array [{name, color}]
   const parseLabels = (v) => {
     if (!v) return [];
-    try { return JSON.parse(v); } catch { return []; }
+    try {
+      const parsed = JSON.parse(v);
+      if (Array.isArray(parsed)) return parsed;
+      // Single object format (legacy) → wrap in array
+      if (parsed && typeof parsed === 'object' && parsed.name) return [parsed];
+      // Quoted string format
+      if (typeof parsed === 'string' && parsed.trim()) return [{ name: parsed.trim(), color: '#0079BF' }];
+      return [];
+    } catch {
+      // Plain unquoted string (legacy)
+      return v.trim() ? [{ name: v.trim(), color: '#0079BF' }] : [];
+    }
   };
   const [labels, setLabels] = useState(parseLabels(card.label));
+
+  // Re-sync labels when the saved card.label prop changes (e.g. after a successful save)
+  useEffect(() => {
+    setLabels(parseLabels(card.label));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [card.label]);
+
+  // Lock body scroll while modal is open
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, []);
 
   // Checklist
   const parseJSON = (v, fallback) => { try { return v ? JSON.parse(v) : fallback; } catch { return fallback; } };
@@ -534,7 +559,18 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
   };
 
   const handleDelete = async () => {
-    if (!window.confirm('Delete this card?')) return;
+    const result = await Swal.fire({
+      title: 'Delete card?',
+      text: 'This card will be permanently deleted.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#e53e3e',
+      background: '#1a1a2e',
+      color: '#fff',
+    });
+    if (!result.isConfirmed) return;
     try {
       await onDeleted(card.id);
     } catch (err) {
@@ -543,8 +579,8 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={(e) => { if (e.target === e.currentTarget) handleClose(); }}>
-      <div className="bg-white dark:bg-[#1e2a3a] rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div className="absolute inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-2 sm:p-6" onClick={(e) => { if (e.target === e.currentTarget) handleClose(); }}>
+      <div className="bg-white dark:bg-[#1e2a3a] rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] flex flex-col border border-gray-200 dark:border-gray-700 overflow-hidden">
 
         {/* ── HEADER ─────────────────────────────────────────────── */}
         <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex-shrink-0">

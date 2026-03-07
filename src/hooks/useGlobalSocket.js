@@ -12,7 +12,17 @@ const useGlobalSocket = () => {
 
   useEffect(() => {
     if (user) {
+      const handleConnect = () => {
+        socket.emit('registerUser', { userId: user.id });
+      };
+
       socket.connect();
+      // If already connected (reconnect scenario), register immediately
+      if (socket.connected) {
+        socket.emit('registerUser', { userId: user.id });
+      }
+
+      socket.on('connect', handleConnect);
 
       const handleNewChat = () => {
         if (user.role === "teacher") {
@@ -25,6 +35,7 @@ const useGlobalSocket = () => {
       socket.on("newChat", handleNewChat);
 
       return () => {
+        socket.off('connect', handleConnect);
         socket.off("newChat", handleNewChat);
       };
     } else if (socket.connected) {

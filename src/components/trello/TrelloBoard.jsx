@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-toastify';
+import Swal from 'sweetalert2';
 import {
   getLists, createList, updateList, deleteList,
   createCard, updateCard, deleteCard, moveCard,
@@ -379,7 +380,18 @@ const TrelloBoard = ({ board, onBack, onBoardUpdated }) => {
   };
 
   const handleDeleteList = async (listId) => {
-    if (!window.confirm('Delete this list and all its cards?')) return;
+    const result = await Swal.fire({
+      title: 'Delete list?',
+      text: 'All cards in this list will be permanently deleted.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#e53e3e',
+      background: '#1a1a2e',
+      color: '#fff',
+    });
+    if (!result.isConfirmed) return;
     try {
       await deleteList(listId);
       setLists((prev) => prev.filter((l) => l.id !== listId));
@@ -472,7 +484,7 @@ const TrelloBoard = ({ board, onBack, onBoardUpdated }) => {
   };
 
   return (
-    <div className="flex flex-col h-full min-h-screen" style={bgStyle}>
+    <div className="relative flex flex-col h-full min-h-screen overflow-hidden" style={bgStyle}>
       {/* Board header */}
       <div className="flex items-center gap-3 px-6 py-3" style={{ backgroundColor: 'rgba(0,0,0,0.18)', backdropFilter: 'blur(4px)' }}>
         <button

@@ -39,22 +39,37 @@ const useSocketManager = (room, username, email, onNewMessage) => {
   useEffect(() => {
     if (socket && room) {
       socket.on("normalChatDeleted", (data) => {
-        setChatMessages((prevMessages) =>
-          prevMessages.filter((msg) => msg.id !== data.messageId)
+        setChatMessages((prev) => prev.filter((msg) => msg.id !== data.messageId));
+      });
+      socket.on("normalChatEdited", ({ messageId, newMessage }) => {
+        setChatMessages((prev) =>
+          prev.map((msg) => msg.id === messageId ? { ...msg, message: newMessage } : msg)
+        );
+      });
+      socket.on("normalChatCleared", () => {
+        setChatMessages([]);
+      });
+      socket.on("chatMessagesRead", () => {
+        setChatMessages((prev) =>
+          prev.map((msg) => msg.email === email ? { ...msg, unread: false } : msg)
         );
       });
 
       return () => {
         socket.off("normalChatDeleted");
+        socket.off("normalChatEdited");
+        socket.off("normalChatCleared");
+        socket.off("chatMessagesRead");
       };
     }
-  }, [socket, room]);
+  }, [socket, room, email]);
 
   useEffect(() => {
     if (username && room) {
       const initializeChat = async () => {
         await fetchMessages();
         await readChat(room, email);
+        socket.emit("notifyRead", { room });
       };
       initializeChat();
 

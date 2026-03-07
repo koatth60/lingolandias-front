@@ -26,15 +26,14 @@ const useMessageFormatter = (onFileClick) => {
     const yesterday = new Date();
     yesterday.setDate(today.getDate() - 1);
 
+    const time = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
     if (date.toDateString() === today.toDateString()) {
-      return `${date.toLocaleTimeString()}`;
+      return time;
     } else if (date.toDateString() === yesterday.toDateString()) {
-      return `Yesterday at ${date.toLocaleTimeString()}`;
+      return `Yesterday ${time}`;
     } else {
-      return `${date.toLocaleDateString("en-US", {
-        month: "long",
-        day: "numeric",
-      })} at ${date.toLocaleTimeString()}`;
+      return `${date.toLocaleDateString([], { month: "short", day: "numeric" })} ${time}`;
     }
   };
 

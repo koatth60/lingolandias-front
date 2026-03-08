@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Swal from "sweetalert2";
 import { useTranslation } from "react-i18next";
@@ -6,7 +6,7 @@ import { Calendar, dayjsLocalizer, Navigate } from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./studentAssignment.css";
 import dayjs from "dayjs";
-import { FiUserCheck, FiCalendar, FiClock, FiX, FiCheckCircle, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { FiUserCheck, FiCalendar, FiClock, FiX, FiCheckCircle, FiChevronLeft, FiChevronRight, FiSearch } from "react-icons/fi";
 
 const CalendarToolbar = ({ label, onNavigate, onView, view }) => {
   const { t } = useTranslation();
@@ -116,7 +116,7 @@ const UserRow = ({ person, selected, accentColor, onClick }) => (
 );
 
 // eslint-disable-next-line react/prop-types
-const StudentAssignment = ({ teachers, students }) => {
+const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
   const { t } = useTranslation();
   const [selectedTeacher, setSelectedTeacher] = useState(null);
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -127,9 +127,48 @@ const StudentAssignment = ({ teachers, students }) => {
   const [eventDetails, setEventDetails] = useState({ start: "", end: "" });
   const [teachersEvents, setTeachersEvents] = useState([]);
 
-  const localizer = dayjsLocalizer(dayjs);
+  // Unassigned students — fetched server-side with search
+  const [unassignedStudents, setUnassignedStudents] = useState([]);
+  const [studentTotal, setStudentTotal] = useState(0);
+  const [studentPage, setStudentPage] = useState(1);
+  const [studentSearch, setStudentSearch] = useState("");
+  const [loadingStudents, setLoadingStudents] = useState(false);
+  const [loadingMoreStudents, setLoadingMoreStudents] = useState(false);
+  const searchRef = useRef(studentSearch);
 
-  const studentsWithoutTeacher = students.filter((student) => student.teacher === null);
+  const fetchUnassigned = async (search, page, append = false) => {
+    if (page === 1) setLoadingStudents(true); else setLoadingMoreStudents(true);
+    try {
+      const params = new URLSearchParams({ page: String(page), limit: "20", unassignedOnly: "true" });
+      if (search?.trim()) params.set("search", search.trim());
+      const res = await fetch(`${BACKEND_URL}/users/students/paginated?${params}`);
+      const data = await res.json();
+      setUnassignedStudents((prev) => append ? [...prev, ...data.data] : data.data);
+      setStudentTotal(data.total);
+      setStudentPage(page);
+    } catch (err) {
+      console.error("Error fetching unassigned students:", err);
+    } finally {
+      setLoadingStudents(false);
+      setLoadingMoreStudents(false);
+    }
+  };
+
+  // Initial load + refresh
+  useEffect(() => {
+    searchRef.current = "";
+    setStudentSearch("");
+    fetchUnassigned("", 1);
+  }, [refreshKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Debounced search
+  useEffect(() => {
+    searchRef.current = studentSearch;
+    const timer = setTimeout(() => fetchUnassigned(studentSearch, 1), 350);
+    return () => clearTimeout(timer);
+  }, [studentSearch]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const localizer = dayjsLocalizer(dayjs);
 
   const handleCalendarOpen = () => {
     if (selectedTeacher?.teacherSchedules?.length > 0) {
@@ -226,7 +265,12 @@ const StudentAssignment = ({ teachers, students }) => {
           confirmButtonColor: "#9E2FD0",
           timer: 3000,
           timerProgressBar: true,
-        }).then(() => window.location.reload());
+        }).then(() => {
+          setSelectedStudent(null);
+          setSelectedTeacher(null);
+          setEvents([]);
+          onRefresh?.();
+        });
       })
       .catch((error) => { console.error("Error:", error); });
   };
@@ -262,19 +306,50 @@ const StudentAssignment = ({ teachers, students }) => {
               <span className="w-5 h-5 rounded-full bg-[#26D9A1] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">1</span>
               <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200">{t("admin.selectStudentLabel")}</h3>
             </div>
-            <div className="max-h-60 overflow-y-auto custom-scrollbar">
-              {studentsWithoutTeacher.length === 0 ? (
+
+            {/* Search */}
+            <div className="relative mb-3">
+              <FiSearch size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder={t("admin.searchStudents")}
+                value={studentSearch}
+                onChange={(e) => setStudentSearch(e.target.value)}
+                className="w-full pl-7 pr-3 py-2 rounded-lg text-xs outline-none border transition-colors duration-200
+                           bg-white dark:bg-white/5 border-gray-200 dark:border-white/10
+                           text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500
+                           focus:border-emerald-400"
+              />
+            </div>
+
+            <div className="max-h-52 overflow-y-auto custom-scrollbar">
+              {loadingStudents ? (
+                <div className="flex items-center justify-center py-6">
+                  <div className="w-4 h-4 rounded-full border-2 border-t-transparent animate-spin border-emerald-400" />
+                </div>
+              ) : unassignedStudents.length === 0 ? (
                 <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-6">{t("admin.noUnassigned")}</p>
               ) : (
-                studentsWithoutTeacher.map((student) => (
-                  <UserRow
-                    key={student.id}
-                    person={student}
-                    selected={selectedStudent?.id === student.id}
-                    accentColor="#26D9A1"
-                    onClick={() => setSelectedStudent(student)}
-                  />
-                ))
+                <>
+                  {unassignedStudents.map((student) => (
+                    <UserRow
+                      key={student.id}
+                      person={student}
+                      selected={selectedStudent?.id === student.id}
+                      accentColor="#26D9A1"
+                      onClick={() => setSelectedStudent(student)}
+                    />
+                  ))}
+                  {unassignedStudents.length < studentTotal && (
+                    <button
+                      onClick={() => fetchUnassigned(searchRef.current, studentPage + 1, true)}
+                      disabled={loadingMoreStudents}
+                      className="w-full mt-1 py-1.5 rounded-lg text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-colors disabled:opacity-50"
+                    >
+                      {loadingMoreStudents ? "…" : `${t("admin.loadMore")} (${studentTotal - unassignedStudents.length})`}
+                    </button>
+                  )}
+                </>
               )}
             </div>
           </div>

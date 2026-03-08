@@ -19,6 +19,8 @@ import useGlobalChat from "../../hooks/useGlobalChat.js";
 import useChatInputHandler from "../../hooks/useChatInputHandler.js";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const IMAGE_EXTS = ["jpg", "jpeg", "png", "gif", "webp"];
+const isImageUrl = (url) => IMAGE_EXTS.includes(url.split("?")[0].split(".").pop().toLowerCase());
 
 const ChatWindowComponent = ({
   username,
@@ -190,8 +192,9 @@ const ChatWindowComponent = ({
         <img
           src={fileUrl}
           alt="shared"
-          className="max-w-[220px] max-h-[200px] rounded-xl object-cover cursor-pointer hover:opacity-90 transition-opacity"
+          className="block w-full max-h-64 object-cover cursor-pointer select-none hover:opacity-95 transition-opacity"
           onClick={() => window.open(fileUrl, "_blank")}
+          draggable={false}
         />
       );
     }
@@ -218,12 +221,23 @@ const ChatWindowComponent = ({
 
   const { readMessages } = useChatWindow();
 
+  // Mark as read when opening the chat — await so fetch runs AFTER the PATCH
   useEffect(() => {
-    if (user?.id && room) {
-      readMessages(userId, room);
+    if (!user?.id || !room) return;
+    (async () => {
+      await readMessages(userId, room);
       dispatch(fetchUnreadMessages(user.id));
-    }
+    })();
   }, [room, user?.id, dispatch, userId, readMessages]);
+
+  // Mark as read whenever new messages arrive while the chat is open
+  useEffect(() => {
+    if (!user?.id || !room || chatMessages.length === 0) return;
+    (async () => {
+      await readMessages(userId, room);
+      dispatch(fetchUnreadMessages(user.id));
+    })();
+  }, [chatMessages.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (scrollContainerRef.current)
@@ -426,10 +440,13 @@ const ChatWindowComponent = ({
               const prev = chatMessages[index - 1];
               const showTimestamp = index === 0 || new Date(msg.timestamp) - new Date(prev.timestamp) > 3 * 60 * 1000;
               const isSender = msg.email === email;
+              const hasContent = msg.fileUrl || msg.message?.trim();
+              if (!hasContent) return null;
               const isFirstFromUser = index === 0 || msg.email !== prev.email;
               const showUsername = !isSender && isFirstFromUser;
               const initials = getInitials(msg.username);
               const avatarColor = generateColor(msg.username);
+              const isImageOnly = !!(msg.fileUrl && !msg.message?.trim() && isImageUrl(msg.fileUrl));
 
               return (
                 <div key={index}>
@@ -490,11 +507,17 @@ const ChatWindowComponent = ({
                           )}
                         </div>
                         {/* Bubble */}
-                        <div className="px-4 py-2.5 rounded-2xl rounded-br-sm text-white text-sm leading-relaxed shadow-lg"
-                          style={{ background: "linear-gradient(135deg, #9E2FD0 0%, #7b22a8 100%)" }}>
+                        <div
+                          className={`relative rounded-2xl rounded-br-sm shadow-lg ${
+                            isImageOnly ? "overflow-hidden" : "px-4 py-2.5 text-white text-sm leading-relaxed"
+                          }`}
+                          style={isImageOnly
+                            ? { boxShadow: "0 3px 12px rgba(0,0,0,0.22)" }
+                            : { background: "linear-gradient(135deg, #9E2FD0 0%, #7b22a8 100%)" }}
+                        >
                           {msg.fileUrl && renderFile(msg.fileUrl, true)}
-                          {msg.message && (
-                            <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                          {msg.message?.trim() && (
+                            <p className="text-white" style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
                               {formatMessageWithLinks(msg.message)}
                             </p>
                           )}
@@ -507,11 +530,15 @@ const ChatWindowComponent = ({
                             {msg.username}
                           </p>
                         )}
-                        <div className="px-4 py-2.5 rounded-2xl rounded-bl-sm text-sm leading-relaxed
-                                      bg-white dark:bg-white/5 text-gray-800 dark:text-gray-100
-                                      border border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none">
+                        <div
+                          className={`relative rounded-2xl rounded-bl-sm ${
+                            isImageOnly
+                              ? "overflow-hidden shadow-sm"
+                              : "px-4 py-2.5 text-sm leading-relaxed bg-white dark:bg-white/5 text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none"
+                          }`}
+                        >
                           {msg.fileUrl && renderFile(msg.fileUrl, false)}
-                          {msg.message && (
+                          {msg.message?.trim() && (
                             <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
                               {formatMessageWithLinks(msg.message)}
                             </p>

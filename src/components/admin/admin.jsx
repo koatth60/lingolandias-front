@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Dashboard from "../../sections/dashboard";
 import Navbar from "../layout/navbar";
 import UserModal from "./userModal";
@@ -22,26 +22,30 @@ const Admin = () => {
   const user = useSelector((state) => state.user.userInfo.user);
   const [showUserModal, setShowUserModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [users, setUsers] = useState([]);
+  const [adminStats, setAdminStats] = useState({ teacherCount: 0, studentCount: 0, unassignedCount: 0 });
+  const [teachers, setTeachers] = useState([]);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const toggleUserModal = () => setShowUserModal(!showUserModal);
   const toggleDeleteModal = () => setShowDeleteModal(!showDeleteModal);
+  const refresh = useCallback(() => setRefreshKey((k) => k + 1), []);
 
   useEffect(() => {
-    fetch(`${BACKEND_URL}/users`)
-      .then((res) => res.json())
-      .then((data) => setUsers(data))
-      .catch((error) => console.error("Error fetching users:", error));
-  }, []);
-
-  const teachers = users.filter((u) => u.role === "teacher");
-  const students = users.filter((u) => u.role === "user" && u.teacher === null);
-  const allStudents = users.filter((u) => u.role === "user");
+    Promise.all([
+      fetch(`${BACKEND_URL}/users/admin-stats`).then((r) => r.json()),
+      fetch(`${BACKEND_URL}/users/teachers`).then((r) => r.json()),
+    ])
+      .then(([stats, teacherList]) => {
+        setAdminStats(stats);
+        setTeachers(Array.isArray(teacherList) ? teacherList : []);
+      })
+      .catch((err) => console.error("Error fetching admin data:", err));
+  }, [refreshKey]);
 
   const stats = [
-    { label: t("admin.teachers"), value: teachers.length, color: "#9E2FD0", icon: FiBookOpen },
-    { label: t("admin.allStudents"), value: allStudents.length, color: "#26D9A1", icon: FiUsers },
-    { label: t("admin.unassigned"), value: students.length, color: "#F6B82E", icon: FiGrid },
+    { label: t("admin.teachers"), value: adminStats.teacherCount, color: "#9E2FD0", icon: FiBookOpen },
+    { label: t("admin.allStudents"), value: adminStats.studentCount, color: "#26D9A1", icon: FiUsers },
+    { label: t("admin.unassigned"), value: adminStats.unassignedCount, color: "#F6B82E", icon: FiGrid },
   ];
 
   return (
@@ -121,7 +125,7 @@ const Admin = () => {
             <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.65)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
             <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#9E2FD0] via-[#F6B82E] to-[#26D9A1] opacity-70" />
             <div className="relative z-10 p-4 sm:p-6">
-              <StudentAssignment teachers={teachers} students={students} />
+              <StudentAssignment teachers={teachers} onRefresh={refresh} refreshKey={refreshKey} />
             </div>
           </div>
 
@@ -131,7 +135,7 @@ const Admin = () => {
             <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.65)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
             <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, #ef4444, #f97316, transparent)" }} />
             <div className="relative z-10 p-4 sm:p-6">
-              <RemoveStudent teachers={teachers} students={students} />
+              <RemoveStudent teachers={teachers} onRefresh={refresh} />
             </div>
           </div>
 
@@ -141,15 +145,15 @@ const Admin = () => {
             <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.65)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
             <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, #26D9A1, #9E2FD0, transparent)" }} />
             <div className="relative z-10 p-4 sm:p-6">
-              <DisplayAllStudents students={allStudents} />
+              <DisplayAllStudents refreshKey={refreshKey} />
             </div>
           </div>
 
         </div>
       </div>
 
-      <UserModal show={showUserModal} handleClose={toggleUserModal} />
-      <DeleteUserModal show={showDeleteModal} handleClose={toggleDeleteModal} />
+      <UserModal show={showUserModal} handleClose={toggleUserModal} onCreated={refresh} />
+      <DeleteUserModal show={showDeleteModal} handleClose={toggleDeleteModal} onDeleted={refresh} />
     </div>
   );
 };

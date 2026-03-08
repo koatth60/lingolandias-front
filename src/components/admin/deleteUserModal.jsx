@@ -16,7 +16,7 @@ const onBlur = (e) => {
   e.target.style.background = "";
 };
 
-const DeleteUserModal = ({ show, handleClose }) => {
+const DeleteUserModal = ({ show, handleClose, onDeleted }) => {
   const { t } = useTranslation();
   const [email, setEmail] = useState("");
 
@@ -33,7 +33,8 @@ const DeleteUserModal = ({ show, handleClose }) => {
         Swal.fire({ title: t("common.error"), text: data.error, icon: "error", confirmButtonText: "Ok" });
       } else {
         Swal.fire({ title: t("common.success"), text: t("admin.removeSuccess"), icon: "success", confirmButtonText: "Ok" }).then(() => {
-          window.location.reload();
+          handleClose();
+          onDeleted?.();
         });
       }
     } catch (error) {}

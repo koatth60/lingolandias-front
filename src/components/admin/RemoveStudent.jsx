@@ -41,7 +41,7 @@ const UserRow = ({ person, selected, accentColor, onClick }) => (
   </div>
 );
 
-const RemoveStudent = ({ teachers }) => {
+const RemoveStudent = ({ teachers, onRefresh }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const [selectedTeacher, setSelectedTeacher] = useState(null);
@@ -76,14 +76,14 @@ const RemoveStudent = ({ teachers }) => {
           const errorText = await chatResponse.text();
           throw new Error(`Failed to delete chats: ${errorText || "An error occurred"}`);
         }
-        return Promise.all([studentsResponse.json(), chatResponse.json()]);
+        return Promise.resolve();
       })
-      .then(([studentsData, chatData]) => {
+      .then(() => {
         Swal.fire({ title: t("common.success"), text: t("admin.removeSuccess"), icon: "success", confirmButtonText: "Ok" });
-        console.log("Students removed:", studentsData.message);
-        console.log(`Chats deleted: ${chatData.chatsDeleted}, Archived chats deleted: ${chatData.archivedChatsDeleted}`);
         if (selectedStudent) dispatch(removeStudent(selectedStudent));
         setSelectedStudent(null);
+        setSelectedTeacher(null);
+        onRefresh?.();
       })
       .catch((error) => {
         console.error("Error in removal process:", error);

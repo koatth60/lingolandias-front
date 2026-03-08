@@ -100,7 +100,7 @@ const CustomSelect = ({ value, onChange, placeholder, options }) => {
   );
 };
 
-const UserModal = ({ show, handleClose }) => {
+const UserModal = ({ show, handleClose, onCreated }) => {
   const { t } = useTranslation();
   const [name, setName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -122,7 +122,8 @@ const UserModal = ({ show, handleClose }) => {
         Swal.fire({ title: t("common.error"), text: data.error, icon: "error", confirmButtonText: "Ok" });
       } else {
         Swal.fire({ title: t("common.success"), text: t("admin.assignSuccess"), icon: "success", confirmButtonText: "Ok" }).then(() => {
-          window.location.reload();
+          handleClose();
+          onCreated?.();
         });
       }
     } catch (error) {}

@@ -1,5 +1,8 @@
-import { FiUsers, FiBookOpen } from "react-icons/fi";
+import { useEffect, useRef, useState } from "react";
+import { FiUsers, FiBookOpen, FiSearch, FiX } from "react-icons/fi";
 import { useTranslation } from "react-i18next";
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const LANG_CONFIG = {
   english: { labelKey: "admin.englishStudents", code: "EN", color: "#9E2FD0", glow: "rgba(158,47,208,0.10)", border: "rgba(158,47,208,0.22)" },
@@ -32,20 +35,54 @@ const StudentRow = ({ student }) => (
   </div>
 );
 
-const LangColumn = ({ lang, students }) => {
+const LangColumn = ({ lang, search, refreshKey }) => {
   const { t } = useTranslation();
   const cfg = LANG_CONFIG[lang];
+  const [students, setStudents] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const currentSearch = useRef(search);
+
+  const fetchPage = async (newSearch, newPage, append = false) => {
+    if (newPage === 1) setLoading(true); else setLoadingMore(true);
+    try {
+      const params = new URLSearchParams({ page: String(newPage), limit: "20", language: lang });
+      if (newSearch?.trim()) params.set("search", newSearch.trim());
+      const res = await fetch(`${BACKEND_URL}/users/students/paginated?${params}`);
+      const data = await res.json();
+      setStudents((prev) => append ? [...prev, ...data.data] : data.data);
+      setTotal(data.total);
+      setPage(newPage);
+    } catch (err) {
+      console.error("Error fetching students:", err);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  // On search change or refreshKey — reset to page 1
+  useEffect(() => {
+    currentSearch.current = search;
+    fetchPage(search, 1, false);
+  }, [search, lang, refreshKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleLoadMore = () => {
+    fetchPage(currentSearch.current, page + 1, true);
+  };
+
+  const hasMore = students.length < total;
+
   return (
     <div
       className="relative rounded-2xl overflow-hidden flex flex-col"
       style={{ border: `1px solid ${cfg.border}` }}
     >
-      {/* Colored top bar */}
       <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: `linear-gradient(90deg, ${cfg.color}, transparent)` }} />
-
-      {/* Glass bg */}
       <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(248,248,250,0.85)" }} />
-      <div className="absolute inset-0 hidden dark:block" style={{ background: `rgba(13,10,30,0.55)` }} />
+      <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.55)" }} />
 
       <div className="relative z-10 p-4 flex flex-col h-full">
         {/* Header */}
@@ -59,17 +96,20 @@ const LangColumn = ({ lang, students }) => {
           <div className="min-w-0">
             <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200 leading-tight">{t(cfg.labelKey)}</h3>
             <p className="text-xs font-medium" style={{ color: cfg.color }}>
-              {students.length} {students.length === 1 ? t("admin.studentSingular") : t("admin.studentPlural")}
+              {total} {total === 1 ? t("admin.studentSingular") : t("admin.studentPlural")}
             </p>
           </div>
         </div>
 
-        {/* Divider */}
         <div className="h-px mb-3 opacity-30" style={{ background: `linear-gradient(90deg, ${cfg.color}, transparent)` }} />
 
         {/* Student list */}
-        <div className="flex-1 overflow-y-auto max-h-64 custom-scrollbar space-y-1">
-          {students.length === 0 ? (
+        <div className="overflow-y-auto custom-scrollbar space-y-1" style={{ maxHeight: "288px" }}>
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="w-5 h-5 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: `${cfg.color} transparent transparent transparent` }} />
+            </div>
+          ) : students.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 gap-2">
               <FiUsers size={22} className="text-gray-400 dark:text-gray-600" />
               <p className="text-xs text-gray-400 dark:text-gray-500">{t("admin.noStudentsYet")}</p>
@@ -78,34 +118,66 @@ const LangColumn = ({ lang, students }) => {
             students.map((student) => <StudentRow key={student.id} student={student} />)
           )}
         </div>
+
+        {/* Load more */}
+        {hasMore && !loading && (
+          <button
+            onClick={handleLoadMore}
+            disabled={loadingMore}
+            className="mt-3 w-full py-2 rounded-xl text-xs font-bold transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+            style={{ background: cfg.glow, border: `1px solid ${cfg.border}`, color: cfg.color }}
+          >
+            {loadingMore ? "…" : `${t("admin.loadMore")} (${total - students.length})`}
+          </button>
+        )}
       </div>
     </div>
   );
 };
 
-const DisplayAllStudents = ({ students }) => {
+const DisplayAllStudents = ({ refreshKey }) => {
   const { t } = useTranslation();
-  const englishStudents = students.filter((s) => s.language === "english");
-  const spanishStudents = students.filter((s) => s.language === "spanish");
-  const polishStudents  = students.filter((s) => s.language === "polish");
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 350);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   return (
     <section>
-      <div className="flex items-center gap-2 mb-5">
-        <FiBookOpen size={17} style={{ color: "#9E2FD0" }} />
-        <h2 className="text-lg font-extrabold text-gray-800 dark:text-white">{t("admin.allStudentsByLang")}</h2>
-        <span
-          className="ml-1 px-2 py-0.5 rounded-full text-xs font-bold text-white"
-          style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}
-        >
-          {students.length}
-        </span>
+      {/* Header + search */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-5">
+        <div className="flex items-center gap-2">
+          <FiBookOpen size={17} style={{ color: "#9E2FD0" }} />
+          <h2 className="text-lg font-extrabold text-gray-800 dark:text-white">{t("admin.allStudentsByLang")}</h2>
+        </div>
+        {/* Search bar */}
+        <div className="relative sm:ml-auto w-full sm:w-64">
+          <FiSearch size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder={t("admin.searchStudents")}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-8 pr-8 py-2 rounded-xl text-sm outline-none border transition-colors duration-200
+                       bg-white dark:bg-white/5 border-gray-200 dark:border-white/10
+                       text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500
+                       focus:border-purple-400 dark:focus:border-purple-500/50"
+          />
+          {search && (
+            <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-white">
+              <FiX size={13} />
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <LangColumn lang="english" students={englishStudents} />
-        <LangColumn lang="spanish" students={spanishStudents} />
-        <LangColumn lang="polish"  students={polishStudents}  />
+        <LangColumn lang="english" search={debouncedSearch} refreshKey={refreshKey} />
+        <LangColumn lang="spanish" search={debouncedSearch} refreshKey={refreshKey} />
+        <LangColumn lang="polish"  search={debouncedSearch} refreshKey={refreshKey} />
       </div>
     </section>
   );

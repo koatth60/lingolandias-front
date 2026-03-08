@@ -32,11 +32,19 @@ const useGlobalSocket = () => {
         }
       };
 
+      const handleChatMessagesRead = () => {
+        if (user.role === "teacher") {
+          dispatch(fetchMessagesForTeacher());
+        }
+      };
+
       socket.on("newChat", handleNewChat);
+      socket.on("chatMessagesRead", handleChatMessagesRead);
 
       return () => {
         socket.off('connect', handleConnect);
         socket.off("newChat", handleNewChat);
+        socket.off("chatMessagesRead", handleChatMessagesRead);
       };
     } else if (socket.connected) {
       socket.disconnect();

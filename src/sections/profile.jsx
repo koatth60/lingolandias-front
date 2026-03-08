@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Dashboard from "./dashboard";
-import Navbar from "../components/navbar";
+import Navbar from "../components/layout/navbar";
 import Modal from "../components/admin/modal";
 import { useSelector, useDispatch } from "react-redux";
 import { updateUser, uploadAvatar } from "../redux/userSlice";

@@ -1,4 +1,4 @@
-import { useUpload } from "../context/UploadContext";
+import { useUpload } from "../../context/UploadContext";
 
 const UploadStatusBar = () => {
   const { uploads } = useUpload();

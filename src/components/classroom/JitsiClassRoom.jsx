@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { JitsiMeeting } from "@jitsi/react-sdk";
 import { useLocation, useNavigate } from "react-router-dom";
-import ChatWindow from "./chatWindow";
-import CallChatWindow from "./messages/CallChatWindow";
+import ChatWindow from "../messages/chatWindow";
+import CallChatWindow from "../messages/CallChatWindow";
 import { useSelector } from "react-redux";
-import useRecording from "../hooks/useRecording";
+import useRecording from "../../hooks/useRecording";
 
 const CHAT_ICON = `data:image/svg+xml;base64,${btoa(
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg>'
@@ -14,10 +14,13 @@ const RECORD_ICON = `data:image/svg+xml;base64,${btoa(
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5" fill="white" stroke="none"/></svg>'
 )}`;
 
+const JITSI_DOMAIN = import.meta.env.VITE_JITSI_DOMAIN || "jitsi.lingolandias.com";
+const IS_MOBILE = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+
 const JitsiClassRoom = () => {
   const location = useLocation();
   const { userName, roomId, chatRoomId, chatName, email, chatType } = location.state || {};
-  const domain = "jitsi.srv570363.hstgr.cloud";
+  const domain = JITSI_DOMAIN;
 
   const user = useSelector((state) => state.user.userInfo.user);
 
@@ -53,19 +56,19 @@ const JitsiClassRoom = () => {
   };
 
   const TURN_SERVERS = [
-    { urls: "stun:jitsi.srv570363.hstgr.cloud:3478" },
+    { urls: `stun:${JITSI_DOMAIN}:3478` },
     {
-      urls: "turn:jitsi.srv570363.hstgr.cloud:3478",
+      urls: `turn:${JITSI_DOMAIN}:3478`,
       username: "sincelejana",
       credential: "asdkASDIORNVM345Fasdegf23",
     },
     {
-      urls: "turn:jitsi.srv570363.hstgr.cloud:3478?transport=tcp",
+      urls: `turn:${JITSI_DOMAIN}:3478?transport=tcp`,
       username: "sincelejana",
       credential: "asdkASDIORNVM345Fasdegf23",
     },
     {
-      urls: "turns:jitsi.srv570363.hstgr.cloud:5349",
+      urls: `turns:${JITSI_DOMAIN}:5349`,
       username: "sincelejana",
       credential: "asdkASDIORNVM345Fasdegf23",
     },
@@ -75,12 +78,17 @@ const JitsiClassRoom = () => {
     configOverwrite: {
       startWithAudioMuted: false,
       disableModeratorIndicator: true,
-      apiLogLevels: ["error"],
+      // Disable E2EE entirely — prevents Olm/WebAssembly initialization errors
+      e2ee: { enabled: false },
+      // Suppress all logs forwarded to the parent window
+      apiLogLevels: [],
       logging: {
-        defaultLogLevel: "error",
+        defaultLogLevel: "warn",
         loggers: {
-          "modules/RTC/TraceablePeerConnection.js": "error",
-          "modules/statistics/CallStats.js": "error",
+          "modules/RTC/TraceablePeerConnection.js": "warn",
+          "modules/statistics/CallStats.js": "warn",
+          "xmpp/StropheErrorHandler.js": "warn",
+          "app/index.web.js": "warn",
         },
       },
       hideConferenceSubject: true,
@@ -90,6 +98,13 @@ const JitsiClassRoom = () => {
         ...(user.role === "teacher" || user.role === "admin"
           ? [{ icon: RECORD_ICON, id: "lingo-record", text: "Record" }]
           : []),
+      ],
+      toolbarButtons: [
+        "microphone",
+        "camera",
+        ...(!IS_MOBILE ? ["desktop"] : []),
+        "tileview",
+        "hangup",
       ],
       useStunTurn: true,
       p2p: {
@@ -147,9 +162,17 @@ const JitsiClassRoom = () => {
 
             setLoading(false);
           }}
-          getIFrameRef={(iframeRef) => {
-            iframeRef.style.height = "100%";
-            iframeRef.style.width  = "100%";
+          getIFrameRef={(containerDiv) => {
+            containerDiv.style.height = "100%";
+            containerDiv.style.width  = "100%";
+            // El SDK pasa el div contenedor, no el iframe directamente.
+            // Buscamos el iframe real dentro y le ponemos display-capture
+            // antes de que termine de cargar la página de Jitsi.
+            const iframe = containerDiv.querySelector("iframe");
+            if (iframe) {
+              iframe.allow =
+                "camera *; microphone *; fullscreen *; display-capture *; screen-wake-lock *";
+            }
           }}
         />
 
@@ -200,6 +223,7 @@ const JitsiClassRoom = () => {
                 email={email}
                 room={chatRoomId || roomId}
                 chatName={chatName}
+                onClose={closeChat}
               />
             ) : (
               <ChatWindow

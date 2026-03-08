@@ -1,14 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
-import { BsEmojiSmile, BsThreeDots } from "react-icons/bs";
-import { FiSend, FiMessageSquare, FiEdit2, FiX } from "react-icons/fi";
-import { FaComments } from "react-icons/fa";
 import axios from "axios";
+import { BsEmojiSmile, BsThreeDots } from "react-icons/bs";
+import { FiSend, FiMessageSquare, FiEdit2, FiX, FiPaperclip, FiDownload, FiFile } from "react-icons/fi";
+import { FaComments } from "react-icons/fa";
 import EmojiPicker from "emoji-picker-react";
 import MessageOptionsCard from "./MessageOptionsCard";
 import useDeleteMessage from "../../hooks/useDeleteMessage";
-import { useSelector } from "react-redux";
-
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const CallChatWindow = ({
@@ -17,17 +15,22 @@ const CallChatWindow = ({
   chatName,
   email,
   userUrl,
+  onClose,
 }) => {
-  const user = useSelector((state) => state.user.userInfo?.user);
 
   const [socket, setSocket] = useState(null);
   const [message, setMessage] = useState("");
   const [chatMessages, setChatMessages] = useState([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [editingMsg, setEditingMsg] = useState(null);
+  const [typingUsers, setTypingUsers] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
 
   const scrollContainerRef = useRef(null);
   const textareaRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
+
   const { handleDeleteMessage, toggleOptionsMenu, openMessageId } =
     useDeleteMessage(setChatMessages, socket, room);
 
@@ -56,33 +59,43 @@ const CallChatWindow = ({
     }
   };
 
-  useEffect(() => {
-    if (socket && room) {
-      socket.on("globalChatDeleted", (data) => {
-        setChatMessages((prev) => prev.filter((msg) => msg.id !== data.messageId));
-      });
-      socket.on("globalChatEdited", ({ messageId, newMessage }) => {
-        setChatMessages((prev) =>
-          prev.map((m) => m.id === messageId ? { ...m, message: newMessage } : m)
-        );
-      });
-      return () => {
-        socket.off("globalChatDeleted");
-        socket.off("globalChatEdited");
-      };
-    }
-  }, [socket, room]);
-
+  // ── Socket setup ──
   useEffect(() => {
     if (username && room) {
       const socketInstance = io(`${BACKEND_URL}`);
       setSocket(socketInstance);
       fetchMessages();
       socketInstance.emit("join", { username, room });
+
       socketInstance.on("globalChat", (data) => {
         setChatMessages((prev) => [...prev, data]);
       });
-      return () => socketInstance.disconnect();
+
+      socketInstance.on("globalChatDeleted", (data) => {
+        setChatMessages((prev) => prev.filter((msg) => msg.id !== data.messageId));
+      });
+
+      socketInstance.on("globalChatEdited", ({ messageId, newMessage }) => {
+        setChatMessages((prev) =>
+          prev.map((m) => m.id === messageId ? { ...m, message: newMessage } : m)
+        );
+      });
+
+      // ── Typing listeners (room-scoped via own socket) ──
+      socketInstance.on("typing", ({ username: who }) => {
+        if (who && who !== username) {
+          setTypingUsers((prev) => prev.includes(who) ? prev : [...prev, who]);
+        }
+      });
+
+      socketInstance.on("stopTyping", () => {
+        setTypingUsers([]);
+      });
+
+      return () => {
+        clearTimeout(typingTimeoutRef.current);
+        socketInstance.disconnect();
+      };
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [username, room]);
@@ -92,6 +105,23 @@ const CallChatWindow = ({
       scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
     }
   }, [chatMessages]);
+
+  // ── Typing emit ──
+  const handleInput = (e) => {
+    setMessage(e.target.value);
+    const ta = textareaRef.current;
+    if (ta) {
+      ta.style.height = "32px";
+      ta.style.height = `${Math.min(ta.scrollHeight, 112)}px`;
+    }
+    if (socket && room) {
+      socket.emit("typing", { room, username });
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = setTimeout(() => {
+        socket.emit("stopTyping", { room });
+      }, 2000);
+    }
+  };
 
   const sendMessage = () => {
     if (editingMsg) {
@@ -106,19 +136,21 @@ const CallChatWindow = ({
       return;
     }
     if (message.trim() && room && socket) {
-      const messageData = {
+      socket.emit("globalChat", {
         username,
         room,
         email,
         message,
         timestamp: new Date(),
         ...(userUrl && { userUrl }),
-      };
-      socket.emit("globalChat", messageData);
+      });
       setMessage("");
-      if (textareaRef.current) {
-        textareaRef.current.style.height = "32px";
-      }
+      if (textareaRef.current) textareaRef.current.style.height = "32px";
+    }
+    // stop typing on send
+    if (socket && room) {
+      clearTimeout(typingTimeoutRef.current);
+      socket.emit("stopTyping", { room });
     }
   };
 
@@ -134,13 +166,67 @@ const CallChatWindow = ({
     setShowEmojiPicker(false);
   };
 
-  const handleInput = (e) => {
-    setMessage(e.target.value);
-    const ta = textareaRef.current;
-    if (ta) {
-      ta.style.height = "32px";
-      ta.style.height = `${Math.min(ta.scrollHeight, 112)}px`;
+  // ── File upload ──
+  const handleFileSelect = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !socket || !room) return;
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await axios.post(`${BACKEND_URL}/upload/chat-upload`, formData);
+      const fileUrl = res.data.url;
+      socket.emit("globalChat", {
+        username,
+        room,
+        email,
+        message: "",
+        userUrl: userUrl || null,
+        fileUrl,
+        timestamp: new Date(),
+      });
+    } catch (err) {
+      console.error("File upload failed:", err);
+    } finally {
+      setIsUploading(false);
+      e.target.value = "";
     }
+  };
+
+  // ── File render ──
+  const renderFile = (fileUrl, isSender) => {
+    const raw = fileUrl.split("?")[0];
+    const ext = raw.split(".").pop().toLowerCase();
+    const isImage = ["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(ext);
+    const isAudio = ["mp3", "wav", "ogg", "m4a"].includes(ext);
+    const fileName = raw.split("/").pop().replace(/^\d+-/, "");
+
+    if (isImage) {
+      return (
+        <img
+          src={fileUrl}
+          alt="shared"
+          className="max-w-[200px] max-h-[180px] rounded-xl object-cover cursor-pointer hover:opacity-90 transition-opacity"
+          onClick={() => window.open(fileUrl, "_blank")}
+        />
+      );
+    }
+    if (isAudio) {
+      return <audio src={fileUrl} controls className="max-w-[200px]" />;
+    }
+    return (
+      <a href={fileUrl} target="_blank" rel="noopener noreferrer"
+        className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition-colors ${
+          isSender
+            ? "border-white/20 hover:bg-white/10 text-white"
+            : "border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/5 text-gray-700 dark:text-gray-200"
+        }`}
+      >
+        <FiFile size={15} />
+        <span className="text-xs truncate max-w-[130px]">{fileName}</span>
+        <FiDownload size={13} className="flex-shrink-0" />
+      </a>
+    );
   };
 
   const formatTimestamp = (ts) => {
@@ -174,15 +260,10 @@ const CallChatWindow = ({
     while ((match = regex.exec(text)) !== null) {
       if (match.index > lastIndex) parts.push(text.slice(lastIndex, match.index));
       parts.push(
-        <a
-          key={match.index}
-          href={match[0]}
-          target="_blank"
-          rel="noopener noreferrer"
+        <a key={match.index} href={match[0]} target="_blank" rel="noopener noreferrer"
           className="underline break-all hover:opacity-80 transition-opacity"
           style={{ color: "inherit", textDecorationColor: "rgba(255,255,255,0.6)" }}
-          onClick={(e) => e.stopPropagation()}
-        >
+          onClick={(e) => e.stopPropagation()}>
           {match[0]}
         </a>
       );
@@ -214,15 +295,27 @@ const CallChatWindow = ({
             <p className="text-sm font-extrabold login-gradient-text truncate">{displayName}</p>
             <p className="text-[10px] font-medium" style={{ color: "#26D9A1" }}>● Live</p>
           </div>
+          {/* Close button */}
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="flex-shrink-0 p-1.5 rounded-lg
+                         text-gray-500 dark:text-gray-400
+                         hover:bg-red-50 dark:hover:bg-red-500/10
+                         hover:text-red-500 dark:hover:text-red-400
+                         transition-colors"
+              title="Close chat"
+            >
+              <FiX size={18} />
+            </button>
+          )}
         </div>
       </div>
 
       {/* ── Messages ── */}
-      <div
-        ref={scrollContainerRef}
+      <div ref={scrollContainerRef}
         className="flex-1 p-4 sm:p-5 bg-gray-50 dark:bg-black/20 overflow-y-auto"
-        style={{ minHeight: 0 }}
-      >
+        style={{ minHeight: 0 }}>
         {chatMessages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-40 gap-3">
             <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-500/20 border border-purple-200 dark:border-purple-500/30 flex items-center justify-center">
@@ -255,7 +348,7 @@ const CallChatWindow = ({
                 )}
 
                 <li className={`group flex items-end gap-2 ${isSender ? "justify-end" : "justify-start"}`}>
-                  {/* Avatar for others */}
+                  {/* Avatar */}
                   {!isSender && (
                     <div className="flex-shrink-0 w-7 self-end">
                       {isFirstFromUser ? (
@@ -274,7 +367,7 @@ const CallChatWindow = ({
 
                   {isSender ? (
                     <div className="flex items-end gap-1.5 max-w-[80%]">
-                      {/* Options button */}
+                      {/* Options */}
                       <div className="relative self-end mb-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button onClick={() => toggleOptionsMenu(msg.id)}
                           className="p-1.5 rounded-full text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-white/10 transition-colors">
@@ -292,7 +385,10 @@ const CallChatWindow = ({
                       {/* Bubble */}
                       <div className="px-3.5 py-2 rounded-2xl rounded-br-sm text-white text-sm leading-relaxed shadow-md"
                         style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 3px 10px rgba(158,47,208,0.30)" }}>
-                        <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{formatMessageWithLinks(msg.message)}</p>
+                        {msg.fileUrl && renderFile(msg.fileUrl, true)}
+                        {msg.message && (
+                          <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{formatMessageWithLinks(msg.message)}</p>
+                        )}
                       </div>
                     </div>
                   ) : (
@@ -303,7 +399,10 @@ const CallChatWindow = ({
                         </p>
                       )}
                       <div className="px-3.5 py-2 rounded-2xl rounded-bl-sm text-sm leading-relaxed bg-white dark:bg-white/[0.07] text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-white/10 shadow-sm">
-                        <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{formatMessageWithLinks(msg.message)}</p>
+                        {msg.fileUrl && renderFile(msg.fileUrl, false)}
+                        {msg.message && (
+                          <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{formatMessageWithLinks(msg.message)}</p>
+                        )}
                       </div>
                     </div>
                   )}
@@ -313,6 +412,20 @@ const CallChatWindow = ({
           })}
         </ul>
       </div>
+
+      {/* Typing indicator */}
+      {typingUsers.length > 0 && (
+        <div className="px-5 pb-1 flex-shrink-0 bg-gray-50 dark:bg-black/20">
+          <span className="text-[11px] text-gray-500 dark:text-gray-400 italic">
+            {typingUsers.join(", ")} {typingUsers.length === 1 ? "is" : "are"} typing
+            <span className="inline-flex gap-0.5 ml-1">
+              <span className="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-500 animate-bounce" style={{ animationDelay: "0ms" }} />
+              <span className="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-500 animate-bounce" style={{ animationDelay: "150ms" }} />
+              <span className="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-500 animate-bounce" style={{ animationDelay: "300ms" }} />
+            </span>
+          </span>
+        </div>
+      )}
 
       {/* ── Input ── */}
       <div className="relative flex-shrink-0 p-3 bg-white dark:bg-[#0f0d24] border-t border-gray-100 dark:border-[rgba(158,47,208,0.12)]">
@@ -328,10 +441,20 @@ const CallChatWindow = ({
           </div>
         )}
         <div className="flex items-end gap-2 bg-gray-50 dark:bg-white/5 rounded-xl px-3 py-2 border border-gray-200 dark:border-white/10 focus-within:border-[rgba(158,47,208,0.5)] dark:focus-within:border-[rgba(158,47,208,0.4)] transition-colors">
+          {/* Emoji */}
           <button onClick={() => setShowEmojiPicker((p) => !p)}
             className="flex-shrink-0 text-gray-400 hover:text-[#F6B82E] transition-colors self-end mb-0.5">
             <BsEmojiSmile size={18} />
           </button>
+          {/* File attach */}
+          <button onClick={() => fileInputRef.current?.click()} disabled={isUploading}
+            className="flex-shrink-0 text-gray-400 hover:text-purple-500 disabled:opacity-40 transition-colors self-end mb-0.5"
+            title="Attach file">
+            <FiPaperclip size={17} className={isUploading ? "animate-pulse" : ""} />
+          </button>
+          <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileSelect}
+            accept="image/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip" />
+          {/* Textarea */}
           <textarea
             ref={textareaRef}
             placeholder="Type a message…"
@@ -342,12 +465,10 @@ const CallChatWindow = ({
             className="flex-1 bg-transparent resize-none outline-none text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 leading-relaxed py-1"
             style={{ minHeight: "32px", maxHeight: "112px", overflowY: "hidden" }}
           />
-          <button
-            onClick={sendMessage}
-            disabled={!message.trim()}
+          {/* Send */}
+          <button onClick={sendMessage} disabled={!message.trim()}
             className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:opacity-90 active:scale-95 disabled:opacity-30 self-end"
-            style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 2px 8px rgba(158,47,208,0.35)" }}
-          >
+            style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 2px 8px rgba(158,47,208,0.35)" }}>
             <FiSend size={13} className="text-white" />
           </button>
         </div>

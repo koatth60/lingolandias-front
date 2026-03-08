@@ -36,7 +36,7 @@ const LANGUAGE_TIPS = [
 const QUICK_NAV_CONFIG = [
   { icon: FiCalendar, labelKey: "home.schedule", descKey: "home.scheduleDesc", href: "/schedule", gradient: "linear-gradient(135deg, #9E2FD0, #7b22a8)", shadow: "rgba(158,47,208,0.35)" },
   { icon: FiMessageSquare, labelKey: "home.messages", descKey: "home.messagesDesc", href: "/messages", gradient: "linear-gradient(135deg, #26D9A1, #1fa07a)", shadow: "rgba(38,217,161,0.35)" },
-  { icon: FiBookOpen, labelKey: "home.learning", descKey: "home.learningDesc", href: "/learning", gradient: "linear-gradient(135deg, #F6B82E, #d4981a)", shadow: "rgba(246,184,46,0.35)" },
+  { icon: FiBookOpen, labelKey: "home.learning", descKey: "home.learningDesc", href: null, gradient: "linear-gradient(135deg, #F6B82E, #d4981a)", shadow: "rgba(246,184,46,0.35)" },
 ];
 
 const FAQ_KEYS = [
@@ -98,8 +98,9 @@ const UserHomePage = () => {
         {QUICK_NAV_CONFIG.map(({ icon: Icon, labelKey, descKey, href, gradient, shadow }) => (
           <a
             key={labelKey}
-            href={href}
-            className="group relative rounded-2xl p-5 flex items-start gap-4 transition-transform duration-200 hover:-translate-y-1 shadow-sm dark:shadow-none"
+            href={href || undefined}
+            onClick={href ? undefined : (e) => e.preventDefault()}
+            className={`group relative rounded-2xl p-5 flex items-start gap-4 shadow-sm dark:shadow-none${href ? " transition-transform duration-200 hover:-translate-y-1" : " opacity-60 cursor-not-allowed"}`}
             style={{ border: "1px solid rgba(158,47,208,0.15)" }}
           >
             <div className="dark:hidden absolute inset-0 rounded-2xl bg-white" />

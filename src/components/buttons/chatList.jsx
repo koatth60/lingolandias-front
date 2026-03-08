@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import PropTypes from "prop-types";
-import ChatWindow from "../chatWindow";
+import ChatWindow from "../messages/chatWindow";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchMessagesForTeacher } from "../../redux/chatSlice";
 import { useTranslation } from "react-i18next";

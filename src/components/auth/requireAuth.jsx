@@ -3,8 +3,8 @@ import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
-import { logout } from '../redux/userSlice';
-import useGlobalSocket from '../hooks/useGlobalSocket';
+import { logout } from '../../redux/userSlice';
+import useGlobalSocket from '../../hooks/useGlobalSocket';
 
 const isTokenExpired = (token) => {
   try {

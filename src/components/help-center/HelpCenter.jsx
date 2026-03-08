@@ -6,7 +6,7 @@ import {
   FiSend, FiCheckCircle, FiAlertCircle,
 } from "react-icons/fi";
 import Dashboard from "../../sections/dashboard";
-import Navbar from "../navbar";
+import Navbar from "../layout/navbar";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 

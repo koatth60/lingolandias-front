@@ -8,20 +8,18 @@ import {
 } from "../redux/chatSlice";
 import useChatWindow from "./useChatWindow";
 import useNotificationSound from "./useNotificationSound";
-import notificationSound from "../assets/sounds/notification.wav";
+import { activeRoomRef } from "../state/activeRoom";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const useSocketManager = (room, username, email, onNewMessage) => {
   const [socket, setSocket] = useState(socketInstance);
   const [chatMessages, setChatMessages] = useState([]);
+  const [typingUser, setTypingUser] = useState(null);
   const user = useSelector((state) => state.user.userInfo.user);
   const dispatch = useDispatch();
   const { readChat } = useChatWindow();
-  const playSound = useNotificationSound(notificationSound);
-
-  // Ref so the socket handler always reads the latest value without needing
-  // to re-register the listener every time the setting changes.
+  const playSound = useNotificationSound();
   const soundEnabledRef = useRef(user?.settings?.notificationSound !== false);
   soundEnabledRef.current = user?.settings?.notificationSound !== false;
 
@@ -54,12 +52,20 @@ const useSocketManager = (room, username, email, onNewMessage) => {
           prev.map((msg) => msg.email === email ? { ...msg, unread: false } : msg)
         );
       });
+      socket.on("typing", ({ username: typingUsername }) => {
+        setTypingUser(typingUsername);
+      });
+      socket.on("stopTyping", () => {
+        setTypingUser(null);
+      });
 
       return () => {
         socket.off("normalChatDeleted");
         socket.off("normalChatEdited");
         socket.off("normalChatCleared");
         socket.off("chatMessagesRead");
+        socket.off("typing");
+        socket.off("stopTyping");
       };
     }
   }, [socket, room, email]);
@@ -74,11 +80,13 @@ const useSocketManager = (room, username, email, onNewMessage) => {
       initializeChat();
 
       socket.emit("join", { username, room });
+      activeRoomRef.current = room;
 
       const handleChatMessage = (data) => {
         if (data.email !== email) {
-          if (soundEnabledRef.current) playSound();
           onNewMessage?.();
+          socket.emit("notifyRead", { room });
+          if (soundEnabledRef.current) playSound();
         }
         readChat(room, email);
         setChatMessages((prevMessages) => [...prevMessages, data]);
@@ -87,13 +95,14 @@ const useSocketManager = (room, username, email, onNewMessage) => {
       socket.on("chat", handleChatMessage);
 
       return () => {
+        activeRoomRef.current = null;
         socket.off("chat", handleChatMessage);
         socket.emit("leave", { room });
       };
     }
-  }, [username, room, email, socket, fetchMessages, readChat, playSound]);
+  }, [username, room, email, socket, fetchMessages, readChat]);
 
-  return { socket, chatMessages, setChatMessages };
+  return { socket, chatMessages, setChatMessages, typingUser };
 };
 
 export default useSocketManager;

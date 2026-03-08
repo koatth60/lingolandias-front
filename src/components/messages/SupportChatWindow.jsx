@@ -12,7 +12,6 @@ import useDeleteMessage from "../../hooks/useDeleteMessage";
 import useMessageFormatter from "../../hooks/useMessageFormatter";
 import { fetchUnreadMessages } from "../../redux/messageSlice";
 import useNotificationSound from "../../hooks/useNotificationSound";
-import notificationSound from "../../assets/sounds/notification.wav";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const SUPPORT_ROOM = "uuid-support";
@@ -33,7 +32,7 @@ const SupportChatWindow = () => {
   const soundEnabledRef = useRef(soundEnabled);
   soundEnabledRef.current = soundEnabled;
 
-  const playSound = useNotificationSound(notificationSound);
+  const playSound = useNotificationSound();
 
   const { handleDeleteMessage, toggleOptionsMenu, openMessageId } =
     useDeleteMessage(setChatMessages, socket, SUPPORT_ROOM, "deleteSupportChat", "supportChatDeleted");
@@ -346,7 +345,8 @@ const SupportChatWindow = () => {
       <div className="relative flex-shrink-0 z-10 p-3 bg-white dark:bg-[#0f0c26] border-t border-gray-100 dark:border-[rgba(246,184,46,0.10)]">
         <div className="flex items-end gap-2 bg-gray-50 dark:bg-white/5 rounded-xl px-3 py-2 border border-gray-200 dark:border-white/10 focus-within:border-[rgba(246,184,46,0.5)] dark:focus-within:border-[rgba(246,184,46,0.4)] transition-colors">
           <button onClick={() => setShowEmojiPicker((p) => !p)}
-            className="flex-shrink-0 text-gray-400 hover:text-amber-500 transition-colors self-end mb-0.5">
+            className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg
+                       text-gray-400 hover:text-amber-500 transition-colors self-end">
             <BsEmojiSmile size={18} />
           </button>
           <textarea

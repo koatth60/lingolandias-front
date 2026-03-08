@@ -4,17 +4,17 @@ import { useTranslation } from "react-i18next";
 import Swal from "sweetalert2";
 import EmojiPicker from "emoji-picker-react";
 import { BsEmojiSmile, BsPaperclip, BsThreeDots } from "react-icons/bs";
-import { FiX, FiArrowLeft, FiMessageSquare, FiSend, FiDownload, FiEye, FiBell, FiBellOff, FiTrash2, FiEdit2 } from "react-icons/fi";
-import { updateUserSettings } from "../redux/userSlice";
-import useDeleteMessage from "../hooks/useDeleteMessage";
-import useSocketManager from "../hooks/useSocketManager";
-import useMessageHandler from "../hooks/useMessageHandler";
-import useMessageFormatter from "../hooks/useMessageFormatter.jsx";
-import useChatInput from "../hooks/useChatInput";
-import useArchivedMessages from "../hooks/useArchivedMessages";
-import MessageOptionsCard from "./messages/MessageOptionsCard";
-import { openFilePreview } from "../redux/filePreviewSlice";
-import Dropdown from "./schedule/Dropdown";
+import { FiX, FiArrowLeft, FiMessageSquare, FiSend, FiDownload, FiEye, FiBell, FiBellOff, FiTrash2, FiEdit2, FiArrowDown, FiCornerUpLeft } from "react-icons/fi";
+import { updateUserSettings } from "../../redux/userSlice";
+import useDeleteMessage from "../../hooks/useDeleteMessage";
+import useSocketManager from "../../hooks/useSocketManager";
+import useMessageHandler from "../../hooks/useMessageHandler";
+import useMessageFormatter from "../../hooks/useMessageFormatter.jsx";
+import useChatInput from "../../hooks/useChatInput";
+import useArchivedMessages from "../../hooks/useArchivedMessages";
+import MessageOptionsCard from "./MessageOptionsCard";
+import { openFilePreview } from "../../redux/filePreviewSlice";
+import Dropdown from "../schedule/Dropdown";
 
 const ChatWindow = ({
   username,
@@ -42,7 +42,7 @@ const ChatWindow = ({
   const fileInputRef = useRef(null);
   const textareaRef = useRef(null);
 
-  const { socket, chatMessages, setChatMessages } = useSocketManager(
+  const { socket, chatMessages, setChatMessages, typingUser } = useSocketManager(
     room,
     username,
     email,
@@ -70,6 +70,42 @@ const ChatWindow = ({
   };
 
   const [selectedFile, setSelectedFile] = useState(null);
+  const [replyTo, setReplyTo] = useState(null);
+  const [peerOnline, setPeerOnline] = useState(null);
+
+  // Scroll-to-bottom tracking
+  const isAtBottomRef = useRef(true);
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const [newMsgCount, setNewMsgCount] = useState(0);
+  const prevMsgCountRef = useRef(0);
+
+  // Typing emit debounce
+  const typingTimeoutRef = useRef(null);
+
+  // Track peer online status (for teacher role showing student's status)
+  useEffect(() => {
+    if (!socket) return;
+    const handler = ({ id, online }) => {
+      if (id === room) setPeerOnline(online);
+    };
+    socket.on("userStatus", handler);
+    return () => { socket.off("userStatus", handler); };
+  }, [socket, room]);
+
+  const handleScroll = () => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
+    isAtBottomRef.current = atBottom;
+    setShowScrollBtn(!atBottom);
+    if (atBottom) setNewMsgCount(0);
+  };
+
+  const scrollToBottom = () => {
+    const el = scrollContainerRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+    setNewMsgCount(0);
+  };
 
   const handleFileClick = (fileUrl) => setSelectedFile(fileUrl);
   const handleCloseModal = () => setSelectedFile(null);
@@ -86,7 +122,7 @@ const ChatWindow = ({
     }
   };
 
-  const { formatMessageWithLinks, formatTimestamp, renderFileMessage } =
+  const { formatMessageWithLinks, formatTimestamp, renderFileMessage, isImageUrl } =
     useMessageFormatter(handleFileClick);
 
   const [editingMsg, setEditingMsg] = useState(null);
@@ -99,7 +135,11 @@ const ChatWindow = ({
       setMsg("");
       setEditingMsg(null);
     } else {
-      sendMessage(msg, setMsg, reset);
+      sendMessage(msg, setMsg, reset, replyTo);
+      setReplyTo(null);
+      // Clear typing indicator the moment the message is sent
+      clearTimeout(typingTimeoutRef.current);
+      if (socket) socket.emit("stopTyping", { room });
     }
   };
 
@@ -113,6 +153,17 @@ const ChatWindow = ({
     handleEmojiClick,
     resetTextarea,
   } = useChatInput(handleSend);
+
+  const handleInputWithTyping = (e) => {
+    handleInput(e);
+    if (!file && socket) {
+      socket.emit("typing", { room, username });
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = setTimeout(() => {
+        socket.emit("stopTyping", { room });
+      }, 2000);
+    }
+  };
 
   const {
     handleDeleteNormalMessage,
@@ -172,8 +223,15 @@ const ChatWindow = ({
         scrollContainer.scrollHeight - prevScrollHeight.current;
       isArchivedFetch.current = false;
     } else {
-      scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      const newCount = allMessages.length - prevMsgCountRef.current;
+      if (isAtBottomRef.current) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+        setNewMsgCount(0);
+      } else if (newCount > 0) {
+        setNewMsgCount((prev) => prev + newCount);
+      }
     }
+    prevMsgCountRef.current = allMessages.length;
   }, [allMessages]);
 
   const resizeTextarea = () => {
@@ -293,6 +351,13 @@ const ChatWindow = ({
                 title={teacher?.online === "online" ? t("chatWindow.online") : t("chatWindow.offline")}
               />
             )}
+            {user.role !== "user" && peerOnline !== null && (
+              <span
+                className="w-2 h-2 rounded-full flex-shrink-0"
+                style={{ backgroundColor: peerOnline === "online" ? "#26D9A1" : "#ef4444" }}
+                title={peerOnline === "online" ? t("chatWindow.online") : t("chatWindow.offline")}
+              />
+            )}
           </div>
 
           {/* Sound toggle */}
@@ -344,6 +409,7 @@ const ChatWindow = ({
       {/* ── Message area ── */}
       <div
         ref={scrollContainerRef}
+        onScroll={handleScroll}
         className="flex-1 p-4 sm:p-5 bg-gray-50 dark:bg-black/20 overflow-y-auto"
         style={{ minHeight: 0 }}
       >
@@ -362,7 +428,7 @@ const ChatWindow = ({
           </div>
         )}
 
-        <ul className="space-y-3">
+        <ul>
           {allMessages.map((msg, index) => {
             const showTimestamp =
               index === 0 ||
@@ -371,9 +437,14 @@ const ChatWindow = ({
                 3 * 60 * 1000;
             const isSender = msg.email === email;
             const isFileMessage = msg.message.startsWith("http");
+            const isImageMessage = isFileMessage && isImageUrl(msg.message);
+            const isGrouped =
+              !showTimestamp &&
+              index > 0 &&
+              allMessages[index - 1].email === msg.email;
 
             return (
-              <div key={index}>
+              <div key={index} className={isGrouped ? "mt-1" : "mt-3"}>
                 {showTimestamp && (
                   <div className="flex items-center gap-3 my-4">
                     <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
@@ -387,28 +458,37 @@ const ChatWindow = ({
                   </div>
                 )}
                 <li
-                  className={`flex items-end gap-2 ${
+                  className={`group flex items-end gap-2 ${
                     isSender ? "justify-end" : "justify-start"
                   }`}
                 >
                   <div
-                    className={`relative max-w-[75%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed shadow-sm ${
-                      isSender
-                        ? "text-white rounded-br-sm"
-                        : "bg-white dark:bg-[rgba(255,255,255,0.08)] text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-white/10 rounded-bl-sm"
+                    className={`relative max-w-[75%] shadow-sm ${
+                      isImageMessage
+                        ? `overflow-hidden rounded-2xl ${isSender ? "rounded-br-sm" : "rounded-bl-sm"}`
+                        : `px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                            isSender
+                              ? "text-white rounded-br-sm"
+                              : "bg-white dark:bg-[rgba(255,255,255,0.08)] text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-white/10 rounded-bl-sm"
+                          }`
                     }`}
                     style={
-                      isSender
-                        ? {
-                            background:
-                              "linear-gradient(135deg, #9E2FD0, #7b22a8)",
-                            boxShadow: "0 3px 12px rgba(158,47,208,0.30)",
-                          }
+                      isImageMessage
+                        ? { boxShadow: "0 3px 12px rgba(0,0,0,0.18)" }
+                        : isSender
+                        ? { background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 3px 12px rgba(158,47,208,0.30)" }
                         : {}
                     }
                   >
+                    {/* Sender actions: reply + dots */}
                     {isSender && (
-                      <div className="absolute top-1/2 -left-9 transform -translate-y-1/2">
+                      <div className="absolute top-1/2 -left-16 transform -translate-y-1/2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => setReplyTo({ id: msg.id, message: msg.message, username: msg.username })}
+                          className="p-1.5 rounded-full text-gray-400 hover:text-[#9E2FD0] hover:bg-[rgba(158,47,208,0.08)] transition-colors"
+                        >
+                          <FiCornerUpLeft size={13} />
+                        </button>
                         <button
                           onClick={() => toggleOptionsMenu(msg.id)}
                           className="p-1.5 rounded-full text-gray-400 hover:text-[#9E2FD0] hover:bg-[rgba(158,47,208,0.08)] transition-colors"
@@ -417,6 +497,26 @@ const ChatWindow = ({
                         </button>
                       </div>
                     )}
+
+                    {/* Reply quote */}
+                    {msg.replyTo && (
+                      <div
+                        className={`mb-2 pl-2 border-l-2 rounded text-xs ${
+                          isSender
+                            ? "border-white/50 bg-white/10"
+                            : "border-[#9E2FD0]/60 bg-[#9E2FD0]/5 dark:bg-white/5"
+                        }`}
+                        style={{ padding: "4px 6px" }}
+                      >
+                        <p className={`font-semibold text-[10px] mb-0.5 ${isSender ? "text-white/80" : "text-[#9E2FD0] dark:text-purple-300"}`}>
+                          {msg.replyTo.username}
+                        </p>
+                        <p className={`line-clamp-2 text-[11px] ${isSender ? "text-white/70" : "text-gray-500 dark:text-gray-400"}`}>
+                          {msg.replyTo.message.startsWith("http") ? "📎 File" : msg.replyTo.message}
+                        </p>
+                      </div>
+                    )}
+
                     <div style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
                       {isFileMessage
                         ? renderFileMessage(msg.message, isSender)
@@ -424,8 +524,8 @@ const ChatWindow = ({
                     </div>
                     {isSender && (
                       <span
-                        className="absolute bottom-1 right-2.5 text-[10px] leading-none"
-                        style={{ color: msg.unread === false ? "#26D9A1" : "rgba(255,255,255,0.35)" }}
+                        className={`absolute bottom-1.5 right-2 text-[10px] leading-none ${isImageMessage ? "px-1 py-0.5 rounded bg-black/40" : ""}`}
+                        style={{ color: msg.unread === false ? "#26D9A1" : isImageMessage ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.35)" }}
                       >
                         {msg.unread === false ? "✓✓" : "✓"}
                       </span>
@@ -435,17 +535,62 @@ const ChatWindow = ({
                         <MessageOptionsCard
                           onEdit={() => handleEditMessage(msg)}
                           onDelete={() => handleDeleteNormalMessage(msg.id)}
+                          onClose={() => toggleOptionsMenu(msg.id)}
                         />
-
                       </div>
                     )}
                   </div>
+
+                  {/* Receiver reply button — appears on hover */}
+                  {!isSender && (
+                    <button
+                      onClick={() => setReplyTo({ id: msg.id, message: msg.message, username: msg.username })}
+                      className="flex-shrink-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-full text-gray-400 hover:text-[#9E2FD0] dark:hover:text-purple-400 hover:bg-gray-100 dark:hover:bg-white/10"
+                    >
+                      <FiCornerUpLeft size={13} />
+                    </button>
+                  )}
                 </li>
               </div>
             );
           })}
         </ul>
+
       </div>
+
+      {/* Typing indicator — always visible above input, never hidden by scroll */}
+      {typingUser && (
+        <div className="flex-shrink-0 flex items-center gap-2 px-4 py-1.5
+                        bg-gray-50 dark:bg-black/20
+                        border-t border-gray-100 dark:border-white/5">
+          <div className="flex gap-1 items-center">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#9E2FD0]/60 animate-bounce" style={{ animationDelay: "0ms" }} />
+            <span className="w-1.5 h-1.5 rounded-full bg-[#9E2FD0]/60 animate-bounce" style={{ animationDelay: "150ms" }} />
+            <span className="w-1.5 h-1.5 rounded-full bg-[#9E2FD0]/60 animate-bounce" style={{ animationDelay: "300ms" }} />
+          </div>
+          <span className="text-xs text-gray-400 dark:text-gray-500 italic">{typingUser} is typing…</span>
+        </div>
+      )}
+
+      {/* Scroll-to-bottom button */}
+      {showScrollBtn && (
+        <button
+          onClick={scrollToBottom}
+          className="absolute right-4 z-20 w-9 h-9 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110 active:scale-95"
+          style={{
+            bottom: "80px",
+            background: "linear-gradient(135deg, #9E2FD0, #7b22a8)",
+            boxShadow: "0 4px 12px rgba(158,47,208,0.4)",
+          }}
+        >
+          <FiArrowDown size={16} className="text-white" />
+          {newMsgCount > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center font-bold leading-none">
+              {newMsgCount > 9 ? "9+" : newMsgCount}
+            </span>
+          )}
+        </button>
+      )}
 
       {/* ── File preview modal ── */}
       {selectedFile && (
@@ -512,6 +657,22 @@ const ChatWindow = ({
             </button>
           </div>
         )}
+        {replyTo && !editingMsg && (
+          <div className="flex items-center justify-between gap-2 px-3 py-1.5 mb-2 rounded-lg bg-[#9E2FD0]/5 dark:bg-[#9E2FD0]/10 border border-[#9E2FD0]/20">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <FiCornerUpLeft size={12} className="text-[#9E2FD0] flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold text-[#9E2FD0] dark:text-purple-300">{replyTo.username}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                  {replyTo.message.startsWith("http") ? "📎 File" : replyTo.message}
+                </p>
+              </div>
+            </div>
+            <button onClick={() => setReplyTo(null)} className="text-gray-400 hover:text-gray-600 flex-shrink-0">
+              <FiX size={14} />
+            </button>
+          </div>
+        )}
         {file && (
           <div className="p-2.5 mb-3 rounded-xl
                           bg-gray-50 dark:bg-white/5
@@ -540,7 +701,7 @@ const ChatWindow = ({
             ref={textareaRef}
             placeholder={t("chatWindow.typePlaceholder")}
             value={message}
-            onChange={handleInput}
+            onChange={handleInputWithTyping}
             onKeyDown={handleKeyDown}
             className="flex-1 bg-transparent resize-none outline-none
                        text-sm text-gray-900 dark:text-white

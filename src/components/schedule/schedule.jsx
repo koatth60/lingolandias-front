@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Calendar, dayjsLocalizer } from "react-big-calendar";
 import Dashboard from "../../sections/dashboard";
-import Navbar from "../navbar";
-import ChatWindow from "../chatWindow";
+import Navbar from "../layout/navbar";
+import ChatWindow from "../messages/chatWindow";
 import MainChat from "../buttons/chatList";
 import useFormattedEvents from "../../hooks/useFormattedEvents";
 import useEventEdit from "../../hooks/useEventEdit";
@@ -15,7 +15,7 @@ import "dayjs/locale/pl";
 import { useEffect, useState } from "react";
 import PerfectScrollbar from "react-perfect-scrollbar";
 import "react-perfect-scrollbar/dist/css/styles.css";
-import CustomToolbar from "../customToolBar";
+import CustomToolbar from "./customToolBar";
 import {
   fetchMessagesForTeacher,
   fetchUnreadCountsForStudent,
@@ -193,23 +193,20 @@ const Schedule = () => {
     const userName = user.name;
     const email = user.email;
     let roomId = "";
-
     let chatName = "";
+
     if (roomName) {
       if (roomName === meetingRooms.english) { roomId = teacherChats.english.id; chatName = teacherChats.english.name; }
       else if (roomName === meetingRooms.spanish) { roomId = teacherChats.spanish.id; chatName = teacherChats.spanish.name; }
       else if (roomName === meetingRooms.polish) { roomId = teacherChats.polish.id; chatName = teacherChats.polish.name; }
     } else {
-      if (user.role === "teacher") {
-        roomId = user.id;
-      } else if (user.role === "user") {
-        roomId = user.teacher.id;
-      }
+      if (user.role === "teacher") { roomId = user.id; }
+      else if (user.role === "user") { roomId = user.teacher.id; }
     }
 
-    navigate("/classroom", {
-      state: { roomId, chatRoomId: roomId, userName, email, fromMeeting: true, chatName, chatType: roomName ? "teacher" : "group" },
-    });
+    const params = { roomId, chatRoomId: roomId, userName, email, fromMeeting: true, chatName, chatType: roomName ? "teacher" : "group" };
+
+    navigate("/classroom", { state: params });
   };
 
   return (

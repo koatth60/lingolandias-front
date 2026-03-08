@@ -2,18 +2,18 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import { useEffect, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import Login from './components/login/login';
-import RequireAuth from './components/requireAuth';
-import GlobalNotificationHandler from './components/GlobalNotificationHandler';
-import FilePreviewModal from './components/FilePreviewModal';
+import RequireAuth from './components/auth/requireAuth';
+import GlobalNotificationHandler from './components/common/GlobalNotificationHandler';
+import FilePreviewModal from './components/common/FilePreviewModal';
 import { UploadProvider } from './context/UploadContext';
-import UploadStatusBar from './components/UploadStatusBar';
+import UploadStatusBar from './components/common/UploadStatusBar';
 
 // Lazy-load all post-login routes — keeps initial bundle small
 const Home         = lazy(() => import('./sections/home'));
 const Profile      = lazy(() => import('./sections/profile'));
 const Admin        = lazy(() => import('./components/admin/admin'));
 const Shchedule    = lazy(() => import('./components/schedule/schedule'));
-const JitsiClassRoom = lazy(() => import('./components/JitsiClassRoom'));
+const JitsiClassRoom = lazy(() => import('./components/classroom/JitsiClassRoom'));
 const Messages     = lazy(() => import('./sections/messages'));
 const Support      = lazy(() => import('./sections/support'));
 const HelpCenter   = lazy(() => import('./components/help-center/HelpCenter'));

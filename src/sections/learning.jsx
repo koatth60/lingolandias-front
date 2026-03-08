@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import Dashboard from "./dashboard";
-import Navbar from "../components/navbar";
-import CoursesCard from "../components/coursesCard";
+import Navbar from "../components/layout/navbar";
+import CoursesCard from "../components/home/coursesCard";
 import { FiInfo, FiBookOpen, FiVideo, FiX } from "react-icons/fi";
 
 const Learning = () => {

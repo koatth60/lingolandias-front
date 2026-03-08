@@ -1,8 +1,21 @@
+import { useEffect, useRef } from "react";
 import { MdDelete, MdEdit } from "react-icons/md";
 
-const MessageOptionsCard = ({ onDelete, onEdit }) => {
+const MessageOptionsCard = ({ onDelete, onEdit, onClose }) => {
+  const cardRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (cardRef.current && !cardRef.current.contains(e.target)) {
+        onClose?.();
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onClose]);
+
   return (
-    <div className="msg-options-card msg-fade-in">
+    <div ref={cardRef} className="msg-options-card msg-fade-in">
       {onEdit && (
         <button
           onClick={onEdit}

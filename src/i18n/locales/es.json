@@ -1,7 +1,7 @@
 {
   "nav": {
     "dashboard": "Panel Principal",
-    "schedule": "Mi Horario",
+    "schedule": "Mi horario",
     "meetings": "Reuniones",
     "messages": "Mensajes",
     "support": "Soporte",
@@ -286,7 +286,7 @@
     "deleting": "Eliminando…"
   },
   "schedule": {
-    "mySchedule": "Mi Horario",
+    "mySchedule": "Mi horario",
     "meetingRooms": "Salas de Reunión",
     "noStudents": "No hay estudiantes asignados aún",
     "noTeacher": "No hay profesor asignado aún",

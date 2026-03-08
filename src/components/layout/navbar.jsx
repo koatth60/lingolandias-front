@@ -2,11 +2,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
-import avatar from "../assets/logos/avatar.jpg";
-import { useLogout } from "../hooks/customHooks";
-import { logout } from "../redux/userSlice";
-import { toggleSidebar } from "../redux/sidebarSlice";
-import ThemeToggleButton from "./buttons/ThemeToggleButton";
+import avatar from "../../assets/logos/avatar.jpg";
+import { useLogout } from "../../hooks/customHooks";
+import { logout } from "../../redux/userSlice";
+import { toggleSidebar } from "../../redux/sidebarSlice";
+import ThemeToggleButton from "../buttons/ThemeToggleButton";
 import { FiChevronDown, FiMenu, FiChevronLeft, FiUser, FiSettings, FiHelpCircle, FiLogOut } from "react-icons/fi";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;

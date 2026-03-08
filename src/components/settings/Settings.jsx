@@ -8,7 +8,7 @@ import {
 } from "react-icons/fi";
 import { toast } from "react-toastify";
 import Dashboard from "../../sections/dashboard";
-import Navbar from "../navbar";
+import Navbar from "../layout/navbar";
 import { updateUserSettings, logout } from "../../redux/userSlice";
 import ChangePasswordModal from "./ChangePasswordModal";
 

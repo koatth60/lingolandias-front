@@ -1,7 +1,7 @@
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import Dashboard from "./dashboard";
-import Navbar from "../components/navbar";
+import Navbar from "../components/layout/navbar";
 import UserHomePage from "../components/home/UserHomePage";
 import AdminHomeDashboard from "../components/home/AdminHomeDashboard";
 

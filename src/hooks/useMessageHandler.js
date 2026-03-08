@@ -7,10 +7,10 @@ const useMessageHandler = (socket, room, username, email) => {
   const [error, setError] = useState(null);
   const [file, setFile] = useState(null);
 
-  const sendMessage = (message, setMessage, resetTextarea) => {
+  const sendMessage = (message, setMessage, resetTextarea, replyTo = null) => {
     if (message.trim() && room && socket) {
       const timestamp = new Date();
-      socket.emit("chat", { username, email, room, message, timestamp });
+      socket.emit("chat", { username, email, room, message, timestamp, ...(replyTo && { replyTo }) });
       setMessage("");
       resetTextarea();
     }

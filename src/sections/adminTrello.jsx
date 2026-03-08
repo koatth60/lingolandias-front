@@ -1,7 +1,7 @@
 import Dashboard from "./dashboard";
-import Navbar from "../components/navbar";
+import Navbar from "../components/layout/navbar";
 import AdminTrelloPanel from "../components/trello/AdminTrelloPanel";
-import ErrorBoundary from "../components/ErrorBoundary";
+import ErrorBoundary from "../components/common/ErrorBoundary";
 
 const AdminTrello = () => {
   return (

@@ -5,7 +5,7 @@ import ChatListComponent from "../components/messages/ChatListComponent";
 import ChatWindowComponent from "../components/messages/ChatWindowComponent";
 import { io } from "socket.io-client";
 import Dashboard from "./dashboard";
-import Navbar from "../components/navbar";
+import Navbar from "../components/layout/navbar";
 import { teacherChats, generalChats } from '../data/roomData';
 import useMessagesSection from "../hooks/useMessagesSection";
 import { FiMessageSquare } from "react-icons/fi";
@@ -95,6 +95,7 @@ const Messages = () => {
     setNewMessage,
     socket,
     onBackClick: handleBackClick,
+    onClose: () => setSelectedChat(null),
   } : null;
 
   return (

@@ -49,49 +49,55 @@ const useMessageFormatter = (onFileClick) => {
     return fileName;
   };
 
-  const renderFileMessage = (fileUrl, isSender) => {
-    const fileExtension = fileUrl.split(".").pop().toLowerCase();
-    const fileName = cleanFileName(fileUrl);
+  const IMAGE_EXTS = ["jpg", "jpeg", "png", "gif", "webp"];
 
-    const fileElement = (
-      <div
-        onClick={() => onFileClick(fileUrl)}
-        className="cursor-pointer"
-      >
-        {["jpg", "jpeg", "png", "gif"].includes(fileExtension) ? (
-          <img
-            src={fileUrl}
-            alt="shared file"
-            className="max-w-full max-h-40"
-          />
-        ) : (
-          <span
-            className={`${
-              isSender ? "text-white underline" : "text-blue-600 underline"
-            }`}
-          >
-            {fileName}.{fileExtension}
-          </span>
-        )}
-      </div>
-    );
+  const isImageUrl = (url) => {
+    const ext = url.split(".").pop().split("?")[0].toLowerCase();
+    return IMAGE_EXTS.includes(ext);
+  };
+
+  const renderFileMessage = (fileUrl, isSender) => {
+    const fileExtension = fileUrl.split(".").pop().split("?")[0].toLowerCase();
+    const fileName = cleanFileName(fileUrl);
 
     if (["mp3", "wav", "ogg"].includes(fileExtension)) {
       return (
         <audio controls className="max-w-full">
           <source src={fileUrl} type={`audio/${fileExtension}`} />
-          Your browser does not support the audio element.
         </audio>
       );
-    } else {
-      return fileElement;
     }
+
+    if (IMAGE_EXTS.includes(fileExtension)) {
+      // Image rendered as a clean thumbnail — no extra wrapper needed here;
+      // the bubble container in chatWindow strips padding for image messages.
+      return (
+        <img
+          src={fileUrl}
+          alt="shared image"
+          onClick={() => onFileClick(fileUrl)}
+          className="block w-full max-h-64 object-cover cursor-pointer select-none"
+          draggable={false}
+        />
+      );
+    }
+
+    // Generic file link
+    return (
+      <span
+        onClick={() => onFileClick(fileUrl)}
+        className={`cursor-pointer underline break-all ${isSender ? "text-white/90" : "text-blue-600 dark:text-blue-400"}`}
+      >
+        📎 {fileName}.{fileExtension}
+      </span>
+    );
   };
 
   return {
     formatMessageWithLinks,
     formatTimestamp,
     renderFileMessage,
+    isImageUrl,
   };
 };
 

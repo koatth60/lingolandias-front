@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Dashboard from "../../sections/dashboard";
-import Navbar from "../navbar";
+import Navbar from "../layout/navbar";
 import UserModal from "./userModal";
 import DeleteUserModal from "./deleteUserModal";
 import { useTranslation } from "react-i18next";

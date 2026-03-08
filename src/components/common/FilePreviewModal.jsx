@@ -1,6 +1,6 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { closeFilePreview } from "../redux/filePreviewSlice";
+import { closeFilePreview } from "../../redux/filePreviewSlice";
 import { FiX } from "react-icons/fi";
 
 const FilePreviewModal = () => {

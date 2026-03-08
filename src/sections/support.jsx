@@ -1,5 +1,5 @@
 import Dashboard from "./dashboard";
-import Navbar from "../components/navbar";
+import Navbar from "../components/layout/navbar";
 import SupportChatWindow from "../components/messages/SupportChatWindow";
 import { useTranslation } from "react-i18next";
 

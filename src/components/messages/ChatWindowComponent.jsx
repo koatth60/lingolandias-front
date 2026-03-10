@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import axios from "axios";
 import send from "../../assets/logos/send.png";
 import { BsEmojiSmile, BsThreeDots } from "react-icons/bs";
-import { FiVideo, FiChevronLeft, FiEdit2, FiX, FiPaperclip, FiDownload, FiFile } from "react-icons/fi";
+import { FiVideo, FiChevronLeft, FiEdit2, FiX, FiPaperclip, FiDownload, FiFile, FiMusic, FiFileText } from "react-icons/fi";
 import { FaComments } from "react-icons/fa";
 import PerfectScrollbar from "react-perfect-scrollbar";
 import "react-perfect-scrollbar/dist/css/styles.css";
@@ -179,13 +179,37 @@ const ChatWindowComponent = ({
     }
   };
 
+  // ── File helpers ──
+  const getFileName = (url) => {
+    const raw = url.split("?")[0];
+    let full = raw.split("/").pop();
+    // Decode percent-encoded chars (%C3%A9 → é)
+    try { full = decodeURIComponent(full); } catch { /* keep as-is */ }
+    // Fix mojibake: S3 may store UTF-8 bytes as Latin-1 chars (Ã© → é)
+    try {
+      full = decodeURIComponent(
+        full.replace(/[^\x00-\x7F]/g, (c) => "%" + c.charCodeAt(0).toString(16).padStart(2, "0").toUpperCase())
+      );
+    } catch { /* keep as-is */ }
+    // Strip timestamp prefix e.g. "1741234567890-filename.mp3"
+    return full.replace(/^\d{10,13}-/, "") || full;
+  };
+
+  const EXT_COLORS = {
+    PDF: "#ef4444", DOC: "#2563eb", DOCX: "#2563eb",
+    XLS: "#16a34a", XLSX: "#16a34a", TXT: "#6b7280",
+    ZIP: "#d97706", RAR: "#d97706", CSV: "#16a34a",
+  };
+
   // ── File render ──
   const renderFile = (fileUrl, isSender) => {
     const raw = fileUrl.split("?")[0];
     const ext = raw.split(".").pop().toLowerCase();
+    const fileName = getFileName(fileUrl);
+
     const isImage = ["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(ext);
-    const isAudio = ["mp3", "wav", "ogg", "m4a"].includes(ext);
-    const fileName = raw.split("/").pop().replace(/^\d+-/, "");
+    const isAudio = ["mp3", "wav", "ogg", "m4a", "aac", "flac"].includes(ext);
+    const isVideo = ["mp4", "mov", "webm", "avi", "mkv"].includes(ext);
 
     if (isImage) {
       return (
@@ -198,23 +222,73 @@ const ChatWindowComponent = ({
         />
       );
     }
+
     if (isAudio) {
-      return <audio src={fileUrl} controls className="max-w-[220px]" />;
+      return (
+        <div
+          className="rounded-xl overflow-hidden min-w-[230px]"
+          style={{ background: "rgba(158,47,208,0.08)", border: "1px solid rgba(158,47,208,0.25)" }}
+        >
+          <div className="flex items-center gap-2.5 px-3 pt-2.5 pb-1.5">
+            <div
+              className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
+              style={{ background: "linear-gradient(135deg,#9E2FD0,#7b22a8)" }}
+            >
+              <FiMusic size={14} className="text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold truncate text-gray-800 dark:text-gray-100">
+                {fileName}
+              </p>
+              <p className="text-[10px] uppercase font-medium tracking-wide text-purple-600 dark:text-purple-400">
+                {ext} · Audio
+              </p>
+            </div>
+          </div>
+          <div className="px-3 pb-2.5">
+            <audio src={fileUrl} controls className="w-full" style={{ height: "32px", accentColor: "#9E2FD0" }} />
+          </div>
+        </div>
+      );
     }
+
+    if (isVideo) {
+      return (
+        <div className="rounded-xl overflow-hidden max-w-[300px]">
+          <video src={fileUrl} controls className="w-full max-h-48 object-contain bg-black" />
+          <div className="px-2.5 py-1.5 flex items-center gap-1.5" style={{ background: "rgba(158,47,208,0.06)" }}>
+            <FiVideo size={11} className="text-purple-500 dark:text-purple-400" />
+            <span className="text-[11px] truncate text-gray-700 dark:text-gray-300">{fileName}</span>
+          </div>
+        </div>
+      );
+    }
+
+    // Generic file download card (PDF, DOC, TXT, ZIP, etc.)
+    const extUpper = ext.toUpperCase();
+    const extColor = EXT_COLORS[extUpper] || "#9E2FD0";
+    const FileIconComp = ["doc", "docx", "txt", "pdf", "csv"].includes(ext) ? FiFileText : FiFile;
+
     return (
       <a
         href={fileUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition-colors ${
-          isSender
-            ? "border-white/20 hover:bg-white/10 text-white"
-            : "border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/5 text-gray-700 dark:text-gray-200"
-        }`}
+        className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all min-w-[200px] max-w-[280px] group/file no-underline"
+        style={{ background: "rgba(158,47,208,0.07)", border: "1px solid rgba(158,47,208,0.22)" }}
       >
-        <FiFile size={15} />
-        <span className="text-xs truncate max-w-[150px]">{fileName}</span>
-        <FiDownload size={13} className="flex-shrink-0" />
+        <div
+          className="flex-shrink-0 w-10 h-10 rounded-xl flex flex-col items-center justify-center shadow-sm"
+          style={{ background: extColor }}
+        >
+          <FileIconComp size={14} className="text-white mb-0.5" />
+          <span className="text-white font-black leading-none" style={{ fontSize: "8px" }}>{extUpper.slice(0, 4)}</span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-semibold truncate leading-snug text-gray-800 dark:text-gray-100">{fileName}</p>
+          <p className="text-[10px] uppercase font-medium tracking-wide mt-0.5 text-purple-600 dark:text-purple-400">{extUpper} file</p>
+        </div>
+        <FiDownload size={14} className="flex-shrink-0 transition-transform group-hover/file:translate-y-0.5 text-purple-500 dark:text-purple-400" />
       </a>
     );
   };
@@ -447,6 +521,8 @@ const ChatWindowComponent = ({
               const initials = getInitials(msg.username);
               const avatarColor = generateColor(msg.username);
               const isImageOnly = !!(msg.fileUrl && !msg.message?.trim() && isImageUrl(msg.fileUrl));
+              // Non-image file cards render their own styled container — no outer bubble needed
+              const isFileOnly = !!(msg.fileUrl && !msg.message?.trim() && !isImageUrl(msg.fileUrl));
 
               return (
                 <div key={index}>
@@ -508,11 +584,14 @@ const ChatWindowComponent = ({
                         </div>
                         {/* Bubble */}
                         <div
-                          className={`relative rounded-2xl rounded-br-sm shadow-lg ${
-                            isImageOnly ? "overflow-hidden" : "px-4 py-2.5 text-white text-sm leading-relaxed"
+                          className={`relative rounded-2xl rounded-br-sm ${
+                            isImageOnly ? "overflow-hidden shadow-lg"
+                            : isFileOnly ? ""
+                            : "px-4 py-2.5 text-white text-sm leading-relaxed shadow-lg"
                           }`}
                           style={isImageOnly
                             ? { boxShadow: "0 3px 12px rgba(0,0,0,0.22)" }
+                            : isFileOnly ? {}
                             : { background: "linear-gradient(135deg, #9E2FD0 0%, #7b22a8 100%)" }}
                         >
                           {msg.fileUrl && renderFile(msg.fileUrl, true)}
@@ -534,6 +613,8 @@ const ChatWindowComponent = ({
                           className={`relative rounded-2xl rounded-bl-sm ${
                             isImageOnly
                               ? "overflow-hidden shadow-sm"
+                              : isFileOnly
+                              ? ""
                               : "px-4 py-2.5 text-sm leading-relaxed bg-white dark:bg-white/5 text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none"
                           }`}
                         >

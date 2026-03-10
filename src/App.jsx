@@ -22,6 +22,7 @@ const ForgotPassword = lazy(() => import('./components/login/forgotPassword'));
 const ResetPassword  = lazy(() => import('./components/login/resetPassword'));
 const Trello       = lazy(() => import('./sections/trello'));
 const AdminTrello  = lazy(() => import('./sections/adminTrello'));
+const Analytics    = lazy(() => import('./sections/analytics'));
 import { useSelector } from 'react-redux';
 import { ToastContainer, Slide } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -139,6 +140,14 @@ function App() {
             element={
               <RequireAuth role="admin">
                 <AdminTrello />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/analytics"
+            element={
+              <RequireAuth role="admin">
+                <Analytics />
               </RequireAuth>
             }
           />

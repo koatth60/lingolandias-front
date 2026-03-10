@@ -436,7 +436,8 @@ const ChatWindow = ({
                 new Date(allMessages[index - 1].timestamp) >
                 3 * 60 * 1000;
             const isSender = msg.email === email;
-            const isFileMessage = msg.message.startsWith("http");
+            const FILE_EXTS = new Set(["jpg","jpeg","png","gif","webp","svg","mp3","wav","ogg","m4a","aac","flac","mp4","mov","webm","avi","mkv","pdf","doc","docx","xls","xlsx","ppt","pptx","txt","zip","rar","csv"]);
+            const isFileMessage = msg.message.startsWith("http") && FILE_EXTS.has(msg.message.split("?")[0].split(".").pop().toLowerCase());
             const isImageMessage = isFileMessage && isImageUrl(msg.message);
             const isGrouped =
               !showTimestamp &&
@@ -466,6 +467,8 @@ const ChatWindow = ({
                     className={`relative max-w-[75%] shadow-sm ${
                       isImageMessage
                         ? `overflow-hidden rounded-2xl ${isSender ? "rounded-br-sm" : "rounded-bl-sm"}`
+                        : isFileMessage
+                        ? ""
                         : `px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
                             isSender
                               ? "text-white rounded-br-sm"
@@ -475,6 +478,8 @@ const ChatWindow = ({
                     style={
                       isImageMessage
                         ? { boxShadow: "0 3px 12px rgba(0,0,0,0.18)" }
+                        : isFileMessage
+                        ? {}
                         : isSender
                         ? { background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 3px 12px rgba(158,47,208,0.30)" }
                         : {}

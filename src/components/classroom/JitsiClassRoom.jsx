@@ -15,7 +15,8 @@ const RECORD_ICON = `data:image/svg+xml;base64,${btoa(
 )}`;
 
 const JITSI_DOMAIN = import.meta.env.VITE_JITSI_DOMAIN || "jitsi.lingolandias.com";
-const IS_MOBILE = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+const BACKEND_URL  = import.meta.env.VITE_BACKEND_URL;
+const IS_MOBILE    = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
 
 const JitsiClassRoom = () => {
   const location = useLocation();
@@ -24,8 +25,11 @@ const JitsiClassRoom = () => {
 
   const user = useSelector((state) => state.user.userInfo.user);
 
-  const apiRef      = useRef(null);
-  const showChatRef = useRef(false);
+  const apiRef          = useRef(null);
+  const showChatRef     = useRef(false);
+  const sessionIdRef    = useRef(null);
+  const sessionStartRef = useRef(null);
+  const heartbeatRef    = useRef(null);
 
   const navigate = useNavigate();
   const [showChat, setShowChat] = useState(false);
@@ -45,10 +49,36 @@ const JitsiClassRoom = () => {
     }
   }, [userName]);
 
+  const endSession = () => {
+    if (!sessionIdRef.current) return;
+    const duration = sessionStartRef.current
+      ? Math.round((Date.now() - sessionStartRef.current) / 60000)
+      : 0;
+    const id = sessionIdRef.current;
+    sessionIdRef.current = null;
+    clearInterval(heartbeatRef.current);
+    fetch(`${BACKEND_URL}/class-sessions/end/${id}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ durationMinutes: duration }),
+    }).catch(() => {});
+  };
+
   const handleCallEnd = () => {
+    endSession();
     if (isRecordingRef.current) stopRecording();
     navigate(user.role === "admin" ? "/home" : "/schedule");
   };
+
+  // End session if tab is closed mid-class
+  useEffect(() => {
+    const onUnload = () => endSession();
+    window.addEventListener("beforeunload", onUnload);
+    return () => {
+      window.removeEventListener("beforeunload", onUnload);
+      endSession();
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const closeChat = () => {
     showChatRef.current = false;
@@ -159,6 +189,33 @@ const JitsiClassRoom = () => {
                 toggleRecording();
               }
             });
+
+            // Track class session — teachers only
+            if (user.role === "teacher") {
+              sessionStartRef.current = Date.now();
+              fetch(`${BACKEND_URL}/class-sessions/start`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  teacherId: user.id,
+                  teacherName: `${user.name} ${user.lastName}`,
+                  studentName: chatName || null,
+                  roomId,
+                }),
+              })
+                .then((r) => r.json())
+                .then(({ sessionId }) => {
+                  sessionIdRef.current = sessionId;
+                  heartbeatRef.current = setInterval(() => {
+                    if (sessionIdRef.current) {
+                      fetch(`${BACKEND_URL}/class-sessions/heartbeat/${sessionIdRef.current}`, {
+                        method: "POST",
+                      }).catch(() => {});
+                    }
+                  }, 60000);
+                })
+                .catch(() => {});
+            }
 
             setLoading(false);
           }}

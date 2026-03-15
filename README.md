@@ -6,25 +6,25 @@ A production language learning platform connecting students with teachers for **
 
 ## Overview
 
-Lingolandias Academy is a full-featured language learning platform with three user roles: **Admin**, **Teacher**, and **Student**. Admins assign classes to students, who can then join their sessions by clicking the teacher's name in the calendar. Students communicate with teachers via real-time chat. Teachers manage their schedule and interact with students. Admins oversee the entire platform.
+Lingolandias Academy is a full-featured language learning platform with three user roles: **Admin**, **Teacher**, and **Student**. Admins assign classes to students, who join their sessions by clicking the teacher's name in the calendar. Students communicate with teachers via real-time chat. Teachers manage their schedule and interact with students. Admins oversee the entire platform.
 
 ---
 
 ## Features
 
 ### Student
-- Browse teacher profiles and availability
-- View assigned classes in the calendar and join sessions by clicking the teacher's name
+- View assigned classes in the calendar
+- Join sessions by clicking the teacher's name
 - Real-time chat with teachers
 - View upcoming and past sessions
 
 ### Teacher
-- Set and manage availability on the calendar
-- Receive class bookings from students
+- View assigned sessions in the calendar
 - Live chat with students
-- Manage assigned sessions
+- Manage class schedule
 
 ### Admin
+- Assign classes to students and teachers
 - Full platform oversight
 - Manage users (students and teachers)
 - Monitor classes and activity
@@ -62,15 +62,8 @@ Lingolandias Academy is a full-featured language learning platform with three us
 git clone https://github.com/koatth60/lingolandias-front.git
 cd lingolandias-front
 npm install
-cp .env.example .env
+# Create a .env file with your API and socket URLs
 npm run dev
-```
-
-### Environment Variables
-
-```env
-VITE_API_URL=http://localhost:3000
-VITE_SOCKET_URL=http://localhost:3000
 ```
 
 ---

@@ -6,7 +6,7 @@ A production language learning platform connecting students with teachers for **
 
 ## Overview
 
-Lingolandias Academy is a full-featured language learning platform with three user roles: **Admin**, **Teacher**, and **Student**. Students browse and book live classes directly from an interactive calendar, communicate with teachers via real-time chat, and attend one-on-one sessions. Teachers manage their availability and interact with students. Admins oversee the entire platform.
+Lingolandias Academy is a full-featured language learning platform with three user roles: **Admin**, **Teacher**, and **Student**. Admins assign classes to students, who can then join their sessions by clicking the teacher's name in the calendar. Students communicate with teachers via real-time chat. Teachers manage their schedule and interact with students. Admins oversee the entire platform.
 
 ---
 
@@ -14,7 +14,7 @@ Lingolandias Academy is a full-featured language learning platform with three us
 
 ### Student
 - Browse teacher profiles and availability
-- Book one-on-one live classes via interactive calendar
+- View assigned classes in the calendar and join sessions by clicking the teacher's name
 - Real-time chat with teachers
 - View upcoming and past sessions
 

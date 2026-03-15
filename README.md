@@ -95,4 +95,4 @@ src/
 
 ## License
 
-MIT
+All rights reserved. This source code is publicly visible for portfolio purposes only and may not be used, copied, or distributed without explicit permission from the author.

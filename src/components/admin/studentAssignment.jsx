@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Swal from "sweetalert2";
 import { useTranslation } from "react-i18next";
@@ -168,7 +168,7 @@ const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
     return () => clearTimeout(timer);
   }, [studentSearch]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const localizer = dayjsLocalizer(dayjs);
+  const localizer = useMemo(() => dayjsLocalizer(dayjs), []);
 
   const handleCalendarOpen = () => {
     if (selectedTeacher?.teacherSchedules?.length > 0) {

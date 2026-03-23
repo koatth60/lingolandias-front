@@ -222,9 +222,6 @@ const JitsiClassRoom = () => {
           getIFrameRef={(containerDiv) => {
             containerDiv.style.height = "100%";
             containerDiv.style.width  = "100%";
-            // El SDK pasa el div contenedor, no el iframe directamente.
-            // Buscamos el iframe real dentro y le ponemos display-capture
-            // antes de que termine de cargar la página de Jitsi.
             const iframe = containerDiv.querySelector("iframe");
             if (iframe) {
               iframe.allow =

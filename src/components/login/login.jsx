@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import Swal from "sweetalert2";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import AnimatedLogo from "./LoginLogo";
 import { loginUser } from "../../redux/userSlice";
@@ -62,6 +62,11 @@ const Login = () => {
   const { t } = useTranslation();
   const userStatus = useSelector((state) => state.user.status);
   const userError = useSelector((state) => state.user.error);
+  const token = useSelector((state) => state.user.userInfo?.token);
+
+  if (token) {
+    return <Navigate to="/home" replace />;
+  }
 
   const handleLogin = (event) => {
     event.preventDefault();

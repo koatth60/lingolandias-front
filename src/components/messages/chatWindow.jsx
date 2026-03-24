@@ -16,6 +16,26 @@ import MessageOptionsCard from "./MessageOptionsCard";
 import { openFilePreview } from "../../redux/filePreviewSlice";
 import Dropdown from "../schedule/Dropdown";
 
+const getInitials = (name) => {
+  if (!name || name === "undefined" || name === "null") return "?";
+  const p = name.trim().split(" ");
+  return ((p[0]?.[0] ?? "") + (p.length > 1 ? p[p.length - 1][0] : "")).toUpperCase();
+};
+
+const generateAvatarColor = (name) => {
+  let h = 0;
+  for (let i = 0; i < (name || "").length; i++) h = (name.charCodeAt(i) + ((h << 5) - h));
+  return `hsl(${Math.abs(h) % 360}, 60%, 52%)`;
+};
+
+// File extension set — defined outside component to avoid recreation on each render
+const FILE_EXTS = new Set([
+  "jpg","jpeg","png","gif","webp","svg",
+  "mp3","wav","ogg","m4a","aac","flac",
+  "mp4","mov","webm","avi","mkv",
+  "pdf","doc","docx","xls","xlsx","ppt","pptx","txt","zip","rar","csv",
+]);
+
 const ChatWindow = ({
   username,
   email,
@@ -31,8 +51,8 @@ const ChatWindow = ({
   onNewMessage,
 }) => {
   const { t } = useTranslation();
-  const user = useSelector((state) => state.user.userInfo.user);
-  const teacher = useSelector((state) => state.user.userInfo.user.teacher);
+  const user = useSelector((state) => state.user.userInfo?.user);
+  const teacher = useSelector((state) => state.user.userInfo?.user?.teacher);
   const dispatch = useDispatch();
   const soundEnabled = user?.settings?.notificationSound !== false;
   const handleToggleSound = () => {
@@ -183,12 +203,12 @@ const ChatWindow = ({
 
   const handleClearConversation = () => {
     Swal.fire({
-      title: "Clear Conversation?",
-      text: "All messages will be permanently deleted and cannot be recovered.",
+      title: t("chatWindow.clearTitle"),
+      text: t("chatWindow.clearText"),
       icon: "warning",
       showCancelButton: true,
-      confirmButtonText: "Yes, clear all",
-      cancelButtonText: "Cancel",
+      confirmButtonText: t("chatWindow.clearConfirm"),
+      cancelButtonText: t("chatWindow.clearCancel"),
       confirmButtonColor: "#e53e3e",
       background: "#1a1a2e",
       color: "#fff",
@@ -436,7 +456,6 @@ const ChatWindow = ({
                 new Date(allMessages[index - 1].timestamp) >
                 3 * 60 * 1000;
             const isSender = msg.email === email;
-            const FILE_EXTS = new Set(["jpg","jpeg","png","gif","webp","svg","mp3","wav","ogg","m4a","aac","flac","mp4","mov","webm","avi","mkv","pdf","doc","docx","xls","xlsx","ppt","pptx","txt","zip","rar","csv"]);
             const isFileMessage = msg.message.startsWith("http") && FILE_EXTS.has(msg.message.split("?")[0].split(".").pop().toLowerCase());
             const isImageMessage = isFileMessage && isImageUrl(msg.message);
             const isGrouped =
@@ -463,6 +482,22 @@ const ChatWindow = ({
                     isSender ? "justify-end" : "justify-start"
                   }`}
                 >
+                  {/* Avatar for received messages */}
+                  {!isSender && (
+                    <div className="flex-shrink-0 w-7 self-end">
+                      {!isGrouped ? (
+                        msg.userUrl ? (
+                          <img src={msg.userUrl} alt="avatar"
+                            className="w-7 h-7 rounded-full object-cover shadow ring-2 ring-purple-200 dark:ring-purple-500/30" />
+                        ) : (
+                          <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shadow ring-2 ring-purple-200 dark:ring-purple-500/30"
+                            style={{ background: generateAvatarColor(msg.username) }}>
+                            {getInitials(msg.username)}
+                          </div>
+                        )
+                      ) : <div className="w-7 h-7" />}
+                    </div>
+                  )}
                   <div
                     className={`relative max-w-[75%] shadow-sm ${
                       isImageMessage

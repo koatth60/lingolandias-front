@@ -475,7 +475,16 @@
     "uploading": "Uploading...",
     "typePlaceholder": "Type a message...",
     "activeNow": "Active now",
-    "noMessages": "No messages yet — say hi!"
+    "noMessages": "No messages yet — say hi!",
+    "editing": "Editing message",
+    "isTyping": "is typing",
+    "areTyping": "are typing",
+    "replyTo": "Replying to",
+    "clearTitle": "Clear Conversation?",
+    "clearText": "All messages will be permanently deleted and cannot be recovered.",
+    "clearConfirm": "Yes, clear all",
+    "clearCancel": "Cancel",
+    "fileTooBig": "File is too large. Maximum size is 10 MB."
   },
   "roomData": {
     "generalEnglish": "General Chat - English",

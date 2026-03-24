@@ -12,6 +12,13 @@ import { FiMessageSquare } from "react-icons/fi";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
+const getToken = () => {
+  try {
+    const s = JSON.parse(localStorage.getItem('state') || '{}');
+    return s?.user?.userInfo?.token || '';
+  } catch { return ''; }
+};
+
 const Messages = () => {
   const { t } = useTranslation();
   const user = useSelector((state) => state.user.userInfo.user);
@@ -20,22 +27,48 @@ const Messages = () => {
   const [showChatList, setShowChatList] = useState(true);
   const [newMessage, setNewMessage] = useState({});
   const [socket, setSocket] = useState(null);
+  // Last message previews for general/teacher/group rooms (for ChatList sidebar)
+  const [lastMessages, setLastMessages] = useState({});
   const { handleChatSelect, handleBackClick } = useMessagesSection(setNewMessage, setSelectedChat, setShowChatList);
 
   useEffect(() => {
-    const socketInstance = io(`${BACKEND_URL}`);
+    const socketInstance = io(BACKEND_URL, {
+      auth: { token: getToken() },
+    });
     setSocket(socketInstance);
     return () => { socketInstance.disconnect(); };
   }, []);
 
   useEffect(() => {
-    if (socket) {
-      socket.on('newUnreadGlobalMessage', (data) => {
-        const { room } = data;
-        setNewMessage((prev) => ({ ...prev, [room]: (prev[room] || 0) + 1 }));
-      });
-      return () => { socket.off('newUnreadGlobalMessage'); };
-    }
+    if (!socket) return;
+
+    const handleNewGlobal = (data) => {
+      const { room, preview, sender } = data;
+      setNewMessage((prev) => ({ ...prev, [room]: (prev[room] || 0) + 1 }));
+      if (preview !== undefined) {
+        setLastMessages((prev) => ({
+          ...prev,
+          [room]: { content: preview, sender, timestamp: new Date().toISOString() },
+        }));
+      }
+    };
+
+    const handleNewChat = (data) => {
+      const { room, preview, sender } = data;
+      if (preview !== undefined) {
+        setLastMessages((prev) => ({
+          ...prev,
+          [room]: { content: preview, sender, timestamp: new Date().toISOString() },
+        }));
+      }
+    };
+
+    socket.on('newUnreadGlobalMessage', handleNewGlobal);
+    socket.on('newChat', handleNewChat);
+    return () => {
+      socket.off('newUnreadGlobalMessage', handleNewGlobal);
+      socket.off('newChat', handleNewChat);
+    };
   }, [socket]);
 
   const chats = [];
@@ -82,7 +115,7 @@ const Messages = () => {
     };
   });
 
-  const chatListProps = { chats: updatedChats, onChatSelect: handleChatSelect, newMessage, setNewMessage, socket };
+  const chatListProps = { chats: updatedChats, onChatSelect: handleChatSelect, newMessage, setNewMessage, socket, selectedChatId: selectedChat?.id, lastMessages };
   const chatWindowProps = selectedChat ? {
     username: user.name,
     email: user.email,

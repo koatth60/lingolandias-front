@@ -36,7 +36,7 @@ const useGlobalChat = (socket, room, username, email, userUrl) => {
     }
   }, [room, socket, username, fetchMessages]);
 
-  const sendMessage = (message) => {
+  const sendMessage = (message, replyTo) => {
     if (message && room && socket) {
       const timestamp = new Date();
       const messageData = {
@@ -46,9 +46,8 @@ const useGlobalChat = (socket, room, username, email, userUrl) => {
         message,
         timestamp,
       };
-      if (userUrl) {
-        messageData.userUrl = userUrl;
-      }
+      if (userUrl) messageData.userUrl = userUrl;
+      if (replyTo) messageData.replyTo = replyTo;
       socket.emit('globalChat', messageData);
     }
   };

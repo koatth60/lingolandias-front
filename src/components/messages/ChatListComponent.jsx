@@ -34,7 +34,18 @@ const ChatIcon = ({ type }) => {
   return <FaComments size={18} />;
 };
 
-const ChatListComponent = ({ chats, onChatSelect, newMessage, setNewMessage, socket }) => {
+const formatTime = (ts, t) => {
+  if (!ts) return "";
+  const d = new Date(ts);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+  if (d >= today) return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  if (d >= yesterday) return t("common.yesterday");
+  return d.toLocaleDateString([], { month: "short", day: "numeric" });
+};
+
+const ChatListComponent = ({ chats, onChatSelect, newMessage, setNewMessage, socket, selectedChatId, lastMessages = {} }) => {
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
 
@@ -45,18 +56,12 @@ const ChatListComponent = ({ chats, onChatSelect, newMessage, setNewMessage, soc
 
   const getMeta = (type) => TYPE_META[type] ?? TYPE_META.general;
 
-  const getStatusText = (chat) => {
-    if (chat.type === "group") return t("messages.activeGroup");
-    return chat.online ? t("messages.activeNow") : t("messages.lastSeenRecently");
-  };
-
   return (
     <div className="h-full flex flex-col bg-white dark:bg-[#16131f] border-r border-gray-100 dark:border-white/5">
 
       {/* ── Header ── */}
       <div className="px-4 pt-5 pb-4 flex-shrink-0 border-b border-gray-100 dark:border-white/5">
         <div className="flex items-center gap-2 mb-3">
-          {/* Purple accent bar */}
           <span className="w-1 h-5 rounded-full bg-[#9E2FD0]" />
           <h2 className="text-sm font-semibold text-gray-700 dark:text-white">
             {t("messagesExtra.chatsHeader")}
@@ -99,15 +104,19 @@ const ChatListComponent = ({ chats, onChatSelect, newMessage, setNewMessage, soc
         {filtered.map((chat) => {
           const meta = getMeta(chat.type);
           const unread = chat.unreadCount || 0;
+          const isActive = chat.id === selectedChatId;
+          const lastMsg = lastMessages[chat.id];
 
           return (
             <li
               key={chat.id}
               onClick={() => onChatSelect(chat)}
-              className="group flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer
-                         transition-all duration-150
-                         hover:bg-purple-50 dark:hover:bg-white/[0.04]
-                         active:scale-[0.99]"
+              className={`group flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer
+                         transition-all duration-150 active:scale-[0.99]
+                         ${isActive
+                           ? "bg-[#9E2FD0]/10 dark:bg-[#9E2FD0]/15 border border-[#9E2FD0]/25 dark:border-[#9E2FD0]/30"
+                           : "hover:bg-purple-50 dark:hover:bg-white/[0.04] border border-transparent"
+                         }`}
             >
               {/* Icon avatar */}
               <div className="relative flex-shrink-0">
@@ -122,24 +131,40 @@ const ChatListComponent = ({ chats, onChatSelect, newMessage, setNewMessage, soc
 
               {/* Text */}
               <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-1">
-                  <p className="text-sm font-medium text-gray-700 dark:text-white leading-tight truncate">
+                {/* Row 1: name + timestamp */}
+                <div className="flex items-center justify-between gap-1">
+                  <p className={`text-sm font-medium leading-tight truncate ${isActive ? "text-[#9E2FD0] dark:text-purple-300" : "text-gray-700 dark:text-white"}`}>
                     {chat.name}
                   </p>
-                  {unread > 0 && (
-                    <span className="flex-shrink-0 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-[#9E2FD0] text-white text-[9px] font-bold px-1 mt-0.5">
-                      {unread > 99 ? "99+" : unread}
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    {lastMsg?.timestamp && (
+                      <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                        {formatTime(lastMsg.timestamp, t)}
+                      </span>
+                    )}
+                    {unread > 0 && (
+                      <span className="min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-[#9E2FD0] text-white text-[9px] font-bold px-1">
+                        {unread > 99 ? "99+" : unread}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Row 2: last message preview OR chip + status */}
+                {lastMsg?.content ? (
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                    {lastMsg.sender ? (
+                      <span className="font-medium text-gray-600 dark:text-gray-300">{lastMsg.sender}: </span>
+                    ) : null}
+                    {lastMsg.content}
+                  </p>
+                ) : (
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className={`inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-md ${meta.chipStyle}`}>
+                      {t(meta.chipKey)}
                     </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className={`inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-md ${meta.chipStyle}`}>
-                    {t(meta.chipKey)}
-                  </span>
-                  <span className="text-[10px] text-gray-400 dark:text-gray-600 truncate">
-                    {getStatusText(chat)}
-                  </span>
-                </div>
+                  </div>
+                )}
               </div>
             </li>
           );
@@ -154,11 +179,12 @@ ChatListComponent.propTypes = {
     PropTypes.shape({
       id: PropTypes.string.isRequired,
       name: PropTypes.string.isRequired,
-      online: PropTypes.string.isRequired,
       type: PropTypes.oneOf(["general", "teacher", "group"]).isRequired,
     })
   ).isRequired,
   onChatSelect: PropTypes.func.isRequired,
+  selectedChatId: PropTypes.string,
+  lastMessages: PropTypes.object,
 };
 
 export default memo(ChatListComponent);

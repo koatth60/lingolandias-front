@@ -475,7 +475,16 @@
     "uploading": "Przesyłanie...",
     "typePlaceholder": "Napisz wiadomość...",
     "activeNow": "Aktywny teraz",
-    "noMessages": "Brak wiadomości — przywitaj się!"
+    "noMessages": "Brak wiadomości — przywitaj się!",
+    "editing": "Edytowanie wiadomości",
+    "isTyping": "pisze",
+    "areTyping": "piszą",
+    "replyTo": "Odpowiadasz na",
+    "clearTitle": "Wyczyścić rozmowę?",
+    "clearText": "Wszystkie wiadomości zostaną trwale usunięte i nie będzie można ich odzyskać.",
+    "clearConfirm": "Tak, wyczyść wszystko",
+    "clearCancel": "Anuluj",
+    "fileTooBig": "Plik jest za duży. Maksymalny rozmiar to 10 MB."
   },
   "roomData": {
     "generalEnglish": "Czat Ogólny - Angielski",

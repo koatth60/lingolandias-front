@@ -76,7 +76,6 @@ const Login = () => {
     dispatch(loginUser(data)).then((action) => {
       if (action.payload?.token) {
         navigate("/home");
-        window.location.reload();
       } else if (action.payload?.networkError) {
         Swal.fire({
           title: t("login.connectionError"),

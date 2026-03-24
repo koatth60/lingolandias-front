@@ -47,7 +47,13 @@ const loadState = () => {
     if (serializedState === null) {
       return undefined;
     }
-    return JSON.parse(serializedState);
+    const state = JSON.parse(serializedState);
+    // Strip transient fields — these must always reset to slice defaults on page load
+    if (state?.user) {
+      delete state.user.status;
+      delete state.user.error;
+    }
+    return state;
   } catch (e) {
     console.error('Could not load state', e);
     return undefined;
@@ -71,12 +77,24 @@ const store = configureStore({
 });
 
 store.subscribe(() => {
+  const { status, error, ...userRest } = store.getState().user;
   debouncedSaveState({
-    user: store.getState().user,
+    user: userRest,
     sidebar: store.getState().sidebar,
     messages: store.getState().messages,
     chat: store.getState().chat,
   });
 });
+
+// Call this before window.location.reload() so debounce doesn't lose state
+export const flushStateNow = () => {
+  const { status, error, ...userRest } = store.getState().user;
+  saveState({
+    user: userRest,
+    sidebar: store.getState().sidebar,
+    messages: store.getState().messages,
+    chat: store.getState().chat,
+  });
+};
 
 export default store;

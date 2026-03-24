@@ -475,7 +475,16 @@
     "uploading": "Subiendo...",
     "typePlaceholder": "Escribe un mensaje...",
     "activeNow": "Activo ahora",
-    "noMessages": "Sin mensajes aún — ¡di hola!"
+    "noMessages": "Sin mensajes aún — ¡di hola!",
+    "editing": "Editando mensaje",
+    "isTyping": "está escribiendo",
+    "areTyping": "están escribiendo",
+    "replyTo": "Respondiendo a",
+    "clearTitle": "¿Borrar conversación?",
+    "clearText": "Todos los mensajes se eliminarán permanentemente y no podrán recuperarse.",
+    "clearConfirm": "Sí, borrar todo",
+    "clearCancel": "Cancelar",
+    "fileTooBig": "El archivo es demasiado grande. El tamaño máximo es 10 MB."
   },
   "roomData": {
     "generalEnglish": "Chat General - Inglés",

@@ -40,7 +40,7 @@ const ChatWindowComponent = ({
   const typingTimeoutRef = useRef(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const user = useSelector((state) => state.user.userInfo.user);
+  const user = useSelector((state) => state.user.userInfo?.user);
 
   const { chatMessages, setChatMessages, sendMessage } = useGlobalChat(
     socket, room, username, email, userUrl

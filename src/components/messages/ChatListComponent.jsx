@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, memo } from "react";
 import PropTypes from "prop-types";
 import { FaComments, FaUsers, FaUserFriends } from "react-icons/fa";
 import { FiSearch } from "react-icons/fi";
@@ -38,8 +38,9 @@ const ChatListComponent = ({ chats, onChatSelect, newMessage, setNewMessage, soc
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
 
-  const filtered = chats.filter((c) =>
-    c.name.toLowerCase().includes(search.toLowerCase())
+  const filtered = useMemo(
+    () => chats.filter((c) => c.name.toLowerCase().includes(search.toLowerCase())),
+    [chats, search]
   );
 
   const getMeta = (type) => TYPE_META[type] ?? TYPE_META.general;
@@ -160,4 +161,4 @@ ChatListComponent.propTypes = {
   onChatSelect: PropTypes.func.isRequired,
 };
 
-export default ChatListComponent;
+export default memo(ChatListComponent);

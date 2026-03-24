@@ -16,7 +16,7 @@ const useSocketManager = (room, username, email, onNewMessage) => {
   const [socket, setSocket] = useState(socketInstance);
   const [chatMessages, setChatMessages] = useState([]);
   const [typingUser, setTypingUser] = useState(null);
-  const user = useSelector((state) => state.user.userInfo.user);
+  const user = useSelector((state) => state.user.userInfo?.user);
   const dispatch = useDispatch();
   const { readChat } = useChatWindow();
   const playSound = useNotificationSound();
@@ -35,39 +35,46 @@ const useSocketManager = (room, username, email, onNewMessage) => {
   }, [room, email]);
 
   useEffect(() => {
-    if (socket && room) {
-      socket.on("normalChatDeleted", (data) => {
-        setChatMessages((prev) => prev.filter((msg) => msg.id !== data.messageId));
-      });
-      socket.on("normalChatEdited", ({ messageId, newMessage }) => {
-        setChatMessages((prev) =>
-          prev.map((msg) => msg.id === messageId ? { ...msg, message: newMessage } : msg)
-        );
-      });
-      socket.on("normalChatCleared", () => {
-        setChatMessages([]);
-      });
-      socket.on("chatMessagesRead", () => {
-        setChatMessages((prev) =>
-          prev.map((msg) => msg.email === email ? { ...msg, unread: false } : msg)
-        );
-      });
-      socket.on("typing", ({ username: typingUsername }) => {
-        setTypingUser(typingUsername);
-      });
-      socket.on("stopTyping", () => {
-        setTypingUser(null);
-      });
+    if (!socket || !room) return;
 
-      return () => {
-        socket.off("normalChatDeleted");
-        socket.off("normalChatEdited");
-        socket.off("normalChatCleared");
-        socket.off("chatMessagesRead");
-        socket.off("typing");
-        socket.off("stopTyping");
-      };
-    }
+    const handleDeleted = (data) => {
+      setChatMessages((prev) => prev.filter((msg) => msg.id !== data.messageId));
+    };
+    const handleEdited = ({ messageId, newMessage }) => {
+      setChatMessages((prev) =>
+        prev.map((msg) => msg.id === messageId ? { ...msg, message: newMessage } : msg)
+      );
+    };
+    const handleCleared = () => {
+      setChatMessages([]);
+    };
+    const handleRead = () => {
+      setChatMessages((prev) =>
+        prev.map((msg) => msg.email === email ? { ...msg, unread: false } : msg)
+      );
+    };
+    const handleTyping = ({ username: typingUsername }) => {
+      setTypingUser(typingUsername);
+    };
+    const handleStopTyping = () => {
+      setTypingUser(null);
+    };
+
+    socket.on("normalChatDeleted", handleDeleted);
+    socket.on("normalChatEdited", handleEdited);
+    socket.on("normalChatCleared", handleCleared);
+    socket.on("chatMessagesRead", handleRead);
+    socket.on("typing", handleTyping);
+    socket.on("stopTyping", handleStopTyping);
+
+    return () => {
+      socket.off("normalChatDeleted", handleDeleted);
+      socket.off("normalChatEdited", handleEdited);
+      socket.off("normalChatCleared", handleCleared);
+      socket.off("chatMessagesRead", handleRead);
+      socket.off("typing", handleTyping);
+      socket.off("stopTyping", handleStopTyping);
+    };
   }, [socket, room, email]);
 
   useEffect(() => {

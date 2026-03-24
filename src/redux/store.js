@@ -31,6 +31,16 @@ const saveState = (state) => {
   }
 };
 
+const debounce = (fn, wait) => {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), wait);
+  };
+};
+
+const debouncedSaveState = debounce(saveState, 500);
+
 const loadState = () => {
   try {
     const serializedState = localStorage.getItem('state');
@@ -61,7 +71,7 @@ const store = configureStore({
 });
 
 store.subscribe(() => {
-  saveState({
+  debouncedSaveState({
     user: store.getState().user,
     sidebar: store.getState().sidebar,
     messages: store.getState().messages,

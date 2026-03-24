@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
+import { selectUserInfo, selectAllSchedules, selectAllUsers } from "../../redux/selectors";
 import { setSchedulesData } from "../../redux/schedulesSlice";
 import { FiGlobe, FiVideo } from "react-icons/fi";
 import AdminStats from "./AdminStats";
@@ -25,8 +26,9 @@ const AdminHomeDashboard = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const admin = useSelector((state) => state.user.userInfo.user);
-  const { allSchedules, allUsers } = useSelector((state) => state.schedules);
+  const admin = useSelector(selectUserInfo);
+  const allSchedules = useSelector(selectAllSchedules);
+  const allUsers = useSelector(selectAllUsers);
 
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001/api";
 
@@ -56,7 +58,10 @@ const AdminHomeDashboard = () => {
     () => filterUsers(allUsers),
     [allUsers]
   );
-  const filteredClasses = getFilteredClasses(activeSection, todaysClasses);
+  const filteredClasses = useMemo(
+    () => getFilteredClasses(activeSection, todaysClasses),
+    [activeSection, todaysClasses]
+  );
 
   // Join class as admin observer — room is the student's ID
   const handleJoinClass = (classItem) => {

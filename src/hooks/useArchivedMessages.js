@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const useArchivedMessages = (room, chatMessages) => {
@@ -6,8 +6,9 @@ const useArchivedMessages = (room, chatMessages) => {
   const [allMessages, setAllMessages] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const autoFetched = useRef(false);
 
-  const fetchArchivedMessages = async () => {
+  const fetchArchivedMessages = useCallback(async () => {
     if (!hasMore) return;
     try {
       const response = await fetch(
@@ -26,7 +27,30 @@ const useArchivedMessages = (room, chatMessages) => {
     } catch (error) {
       console.error("Error fetching archived messages:", error);
     }
-  };
+  }, [room, page, hasMore]);
+
+  // Auto-load first page of archived messages when active chat is empty.
+  // This way users always see recent conversation history even if all
+  // messages have been archived (chat inactive for 1-2 months).
+  useEffect(() => {
+    if (
+      chatMessages &&
+      chatMessages.length === 0 &&
+      !autoFetched.current &&
+      hasMore
+    ) {
+      autoFetched.current = true;
+      fetchArchivedMessages();
+    }
+  }, [chatMessages, hasMore, fetchArchivedMessages]);
+
+  // Reset auto-fetch flag when room changes
+  useEffect(() => {
+    autoFetched.current = false;
+    setArchivedMessages([]);
+    setPage(1);
+    setHasMore(true);
+  }, [room]);
 
   useEffect(() => {
     if (chatMessages) {

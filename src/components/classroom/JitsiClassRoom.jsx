@@ -142,6 +142,34 @@ const JitsiClassRoom = () => {
         stunServers: TURN_SERVERS,
       },
       iceServers: TURN_SERVERS,
+      // Camera stays at 15fps to preserve A/V sync fix
+      constraints: {
+        video: {
+          height: { ideal: 720, max: 720, min: 180 },
+          width: { ideal: 1280, max: 1280, min: 320 },
+          frameRate: { ideal: 15, max: 15 },
+        },
+      },
+      // Screenshare gets its own settings — 1080p @ 20fps for sharp text
+      desktopSharingFrameRate: { min: 5, max: 20 },
+      desktopSharingConstraints: {
+        video: {
+          height: { ideal: 1080, max: 1080 },
+          width: { ideal: 1920, max: 1920 },
+          frameRate: { ideal: 20, max: 20 },
+        },
+      },
+      enableLayerSuspension: true,
+      videoQuality: {
+        preferredCodec: "VP9",
+        maxBitratesVideo: {
+          VP9:  { low: 100000, standard: 400000, high: 1200000, ssHigh: 2500000 },
+          VP8:  { low: 200000, standard: 500000, high: 1500000, ssHigh: 2500000 },
+          H264: { low: 200000, standard: 500000, high: 1500000, ssHigh: 2500000 },
+        },
+        enableAdaptiveMode: true,
+      },
+      screenshotInterval: 0,
     },
     interfaceConfigOverwrite: {
       DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,

@@ -615,33 +615,38 @@ const ChatWindowComponent = ({
                             {msg.username}
                           </p>
                         )}
-                        <div className={`relative rounded-2xl rounded-bl-sm ${
-                            isImageOnly ? "overflow-hidden shadow-sm"
-                            : isFileOnly ? ""
-                            : "px-4 py-2.5 text-sm leading-relaxed bg-white dark:bg-white/5 text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none"
-                          }`}>
-                          {/* Reply quote in received bubble */}
-                          {msg.replyTo && (
-                            <div className="mb-2 pl-2 border-l-2 border-[#9E2FD0]/60 rounded bg-[#9E2FD0]/5 dark:bg-white/5 text-xs" style={{ padding: "4px 6px" }}>
-                              <p className="font-semibold text-[10px] mb-0.5 text-[#9E2FD0] dark:text-purple-300">{msg.replyTo.username}</p>
-                              <p className="line-clamp-2 text-[11px] text-gray-500 dark:text-gray-400">{msg.replyTo.message}</p>
-                            </div>
-                          )}
-                          {msg.fileUrl && renderFile(msg.fileUrl, false)}
-                          {msg.message?.trim() && (
-                            <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-                              {formatMessageWithLinks(msg.message)}
-                            </p>
-                          )}
+                        {/* relative wrapper for bubble only — so button centers on bubble, not username */}
+                        <div className="relative">
+                          <div className={`rounded-2xl rounded-bl-sm ${
+                              isImageOnly ? "overflow-hidden shadow-sm"
+                              : isFileOnly ? ""
+                              : "px-4 py-2.5 text-sm leading-relaxed bg-white dark:bg-white/5 text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none"
+                            }`}>
+                            {/* Reply quote in received bubble */}
+                            {msg.replyTo && (
+                              <div className="mb-2 pl-2 border-l-2 border-[#9E2FD0]/60 rounded bg-[#9E2FD0]/5 dark:bg-white/5 text-xs" style={{ padding: "4px 6px" }}>
+                                <p className="font-semibold text-[10px] mb-0.5 text-[#9E2FD0] dark:text-purple-300">{msg.replyTo.username}</p>
+                                <p className="line-clamp-2 text-[11px] text-gray-500 dark:text-gray-400">{msg.replyTo.message}</p>
+                              </div>
+                            )}
+                            {msg.fileUrl && renderFile(msg.fileUrl, false)}
+                            {msg.message?.trim() && (
+                              <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                                {formatMessageWithLinks(msg.message)}
+                              </p>
+                            )}
+                          </div>
+                          {/* Reply button — positioned relative to bubble only */}
+                          <button
+                            onClick={() => setReplyTo({ id: msg.id, message: msg.message || "📎 File", username: msg.username })}
+                            className="absolute left-full top-1/2 -translate-y-1/2 ml-1
+                                       opacity-0 group-hover:opacity-100 transition-opacity
+                                       p-1.5 rounded-full text-gray-400
+                                       hover:text-purple-600 dark:hover:text-purple-400
+                                       hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+                            <FiCornerUpLeft size={13} />
+                          </button>
                         </div>
-                        {/* Reply button for received messages */}
-                        <button
-                          onClick={() => setReplyTo({ id: msg.id, message: msg.message || "📎 File", username: msg.username })}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity mt-0.5 ml-1 p-1 rounded-full
-                                     text-gray-400 hover:text-purple-600 dark:hover:text-purple-400
-                                     hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
-                          <FiCornerUpLeft size={12} />
-                        </button>
                       </div>
                     )}
                   </li>

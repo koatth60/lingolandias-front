@@ -1,3 +1,4 @@
+import './api'; // Global axios auth interceptor — must be first
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { useEffect, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';

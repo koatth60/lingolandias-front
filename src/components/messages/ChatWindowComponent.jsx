@@ -445,32 +445,11 @@ const ChatWindowComponent = ({
               </button>
             )}
           </div>
-          {/* Active members — only show once loaded */}
-          {roomMembersLoaded ? (
-            roomMembers.length > 0 ? (
-              <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-                {roomMembers.slice(0, 5).map((m) => {
-                  const flag = m.language?.toLowerCase() === "spanish" ? "🇪🇸"
-                             : m.language?.toLowerCase() === "polish"  ? "🇵🇱" : "🇬🇧";
-                  const initials = m.name?.trim().split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase() || "?";
-                  return (
-                    <span key={m.id} title={`${m.name} • ${m.language || "English"}`}
-                      className="flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full
-                                 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400
-                                 border border-emerald-200 dark:border-emerald-500/20">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
-                      {initials} {flag}
-                    </span>
-                  );
-                })}
-                {roomMembers.length > 5 && (
-                  <span className="text-[10px] text-gray-400 dark:text-gray-500">+{roomMembers.length - 5}</span>
-                )}
-              </div>
-            ) : (
-              <span className="text-[11px] text-gray-400 dark:text-gray-500">{t("chatWindow.noActiveMembers")}</span>
-            )
-          ) : null}
+          {/* Online indicator */}
+          <span className="flex items-center gap-1 mt-0.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#26D9A1]" />
+            <span className="text-[11px] font-medium text-[#26D9A1]">{t("chatWindow.activeNow")}</span>
+          </span>
         </div>
 
         {/* Close button */}

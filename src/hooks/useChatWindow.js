@@ -31,12 +31,14 @@ const useChatWindow = () => {
 
   const readMessages = useCallback(async (userId, room) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch(
         `${BACKEND_URL}/chat/delete-unread-global-messages/`,
         {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
           body: JSON.stringify({ userId, room }),
         }
@@ -53,10 +55,12 @@ const useChatWindow = () => {
 
   const readChat = useCallback(async (room, email) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch(`${BACKEND_URL}/chat/read-chat/`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ room, email }),
       });

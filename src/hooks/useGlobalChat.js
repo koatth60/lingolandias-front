@@ -8,10 +8,12 @@ const useGlobalChat = (socket, room, username, email, userUrl) => {
   const fetchMessages = useCallback(async () => {
     if (!room || !email) return;
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.get(
         `${BACKEND_URL}/chat/global-chats/${room}`,
         {
           params: { email },
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
         }
       );
       setChatMessages(response.data.reverse());

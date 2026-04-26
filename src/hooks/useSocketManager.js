@@ -25,8 +25,10 @@ const useSocketManager = (room, username, email, onNewMessage) => {
 
   const fetchMessages = useCallback(async () => {
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.get(`${BACKEND_URL}/chat/messages/${room}`, {
         params: { email },
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       setChatMessages(response.data.reverse());
     } catch (error) {

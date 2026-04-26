@@ -65,7 +65,7 @@ const RemoveStudent = ({ teachers, onRefresh }) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ teacherId: selectedTeacher.id, studentIds: [selectedStudent] }),
       }),
-      fetch(`${BACKEND_URL}/chat/delete-chats-by-student/${selectedStudent}`, { method: "DELETE" }),
+      fetch(`${BACKEND_URL}/chat/delete-chats-by-student/${selectedStudent}`, { method: "DELETE", headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }),
     ])
       .then(async ([studentsResponse, chatResponse]) => {
         if (!studentsResponse.ok) {

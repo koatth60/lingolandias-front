@@ -42,8 +42,10 @@ const SupportChatWindow = () => {
   // Fetch history
   const fetchMessages = async () => {
     try {
+      const token = localStorage.getItem("token");
       const { data } = await axios.get(
-        `${BACKEND_URL}/chat/global-chats/${SUPPORT_ROOM}`
+        `${BACKEND_URL}/chat/global-chats/${SUPPORT_ROOM}`,
+        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
       );
       setChatMessages(data.reverse());
     } catch (e) {
@@ -55,10 +57,11 @@ const SupportChatWindow = () => {
   const markRead = async () => {
     if (!user?.id) return;
     try {
+      const token = localStorage.getItem("token");
       await axios.patch(`${BACKEND_URL}/chat/delete-unread-global-messages`, {
         room: SUPPORT_ROOM,
         userId: user.id,
-      });
+      }, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
       dispatch(fetchUnreadMessages(user.id));
     } catch (e) {}
   };

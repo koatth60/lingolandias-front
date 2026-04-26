@@ -12,8 +12,10 @@ const useDeleteMessage = (setChatMessages, socket, room) => {
       const handleDeleteMessage = async (messageId) => {
         try {
           // Delete message from backend
+          const token = localStorage.getItem("token");
           const response = await fetch(`${BACKEND_URL}/chat/delete-global-chat/${messageId}`, {
             method: "DELETE",
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
           });
       
           if (!response.ok) {
@@ -36,8 +38,10 @@ const useDeleteMessage = (setChatMessages, socket, room) => {
       const handleDeleteNormalMessage = async (messageId) => {
         try {
           // Delete message from backend
+          const token = localStorage.getItem("token");
           const response = await fetch(`${BACKEND_URL}/chat/delete-normal-chat/${messageId}`, {
             method: "DELETE",
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
           });
       
           if (!response.ok) {

@@ -20,8 +20,10 @@ export const fetchMessagesForTeacher = createAsyncThunk(
       }
 
       const rooms = user.students.map((s) => s.id).join(",");
+      const token = localStorage.getItem("token");
       const response = await axios.get(`${BACKEND_URL}/chat/teacher-summary`, {
         params: { rooms, email: user.email },
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
 
       const { lastMessages, unreadCounts } = response.data;
@@ -55,7 +57,7 @@ export const fetchUnreadCountsForStudent = createAsyncThunk(
 
       const response = await axios.get(
         `${BACKEND_URL}/chat/messages/${user.id}`,
-        { params: { email: user.email } }
+        { params: { email: user.email }, headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
 
       const unreadCount = response.data.filter(
@@ -79,7 +81,7 @@ export const fetchLastMessageForRoom = createAsyncThunk(
     try {
       const response = await axios.get(
         `${BACKEND_URL}/chat/messages/${roomId}`,
-        { params: { email: user.email } }
+        { params: { email: user.email }, headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
 
       const messages = response.data;

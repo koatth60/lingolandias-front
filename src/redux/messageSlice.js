@@ -6,8 +6,10 @@ export const fetchUnreadMessages = createAsyncThunk(
   'messages/fetchUnreadMessages',
   async (userId, { rejectWithValue }) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch(
-        `${BACKEND_URL}/chat/unread-global-messages/${userId}`
+        `${BACKEND_URL}/chat/unread-global-messages/${userId}`,
+        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
       );
       if (!response.ok) {
         throw new Error('Failed to fetch unread messages');

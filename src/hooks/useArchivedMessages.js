@@ -1,18 +1,23 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const useArchivedMessages = (room, chatMessages) => {
   const [archivedMessages, setArchivedMessages] = useState([]);
   const [allMessages, setAllMessages] = useState([]);
-  const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const pageRef = useRef(1);
+  const hasMoreRef = useRef(true);
   const autoFetched = useRef(false);
 
-  const fetchArchivedMessages = useCallback(async () => {
-    if (!hasMore) return;
+  const fetchArchivedMessages = async () => {
+    if (!hasMoreRef.current) return;
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch(
-        `${BACKEND_URL}/chat/archived-messages/${room}?page=${page}`
+        `${BACKEND_URL}/chat/archived-messages/${room}?page=${pageRef.current}`,
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }
       );
       if (!response.ok) {
         throw new Error("Failed to fetch archived messages");
@@ -20,14 +25,15 @@ const useArchivedMessages = (room, chatMessages) => {
       const data = await response.json();
       if (data.length > 0) {
         setArchivedMessages((prev) => [...data, ...prev]);
-        setPage((prevPage) => prevPage + 1);
+        pageRef.current += 1;
       } else {
+        hasMoreRef.current = false;
         setHasMore(false);
       }
     } catch (error) {
       console.error("Error fetching archived messages:", error);
     }
-  }, [room, page, hasMore]);
+  };
 
   // Auto-load first page of archived messages when active chat is empty.
   // This way users always see recent conversation history even if all
@@ -37,18 +43,19 @@ const useArchivedMessages = (room, chatMessages) => {
       chatMessages &&
       chatMessages.length === 0 &&
       !autoFetched.current &&
-      hasMore
+      hasMoreRef.current
     ) {
       autoFetched.current = true;
       fetchArchivedMessages();
     }
-  }, [chatMessages, hasMore, fetchArchivedMessages]);
+  }, [chatMessages]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Reset auto-fetch flag when room changes
+  // Reset when room changes
   useEffect(() => {
     autoFetched.current = false;
+    pageRef.current = 1;
+    hasMoreRef.current = true;
     setArchivedMessages([]);
-    setPage(1);
     setHasMore(true);
   }, [room]);
 

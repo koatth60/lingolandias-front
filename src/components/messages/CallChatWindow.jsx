@@ -50,8 +50,10 @@ const CallChatWindow = ({
 
   const fetchMessages = async () => {
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.get(`${BACKEND_URL}/chat/global-chats/${room}`, {
         params: { email },
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       setChatMessages(response.data.reverse());
     } catch (error) {

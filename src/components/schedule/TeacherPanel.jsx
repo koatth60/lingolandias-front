@@ -56,6 +56,7 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
             `${BACKEND_URL}/chat/delete-chats-by-student/${selectedStudent.id}`,
             {
               method: "DELETE",
+              headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
             }
           ),
         ]);

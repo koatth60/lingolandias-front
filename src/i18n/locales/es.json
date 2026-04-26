@@ -293,6 +293,15 @@
     "contactAdmin": "Contacta a un administrador para que te asignen estudiantes.",
     "contactAdminStudent": "Contacta a un administrador para que te asignen un profesor."
   },
+  "mobileSchedule": {
+    "upcomingClasses": "Próximas Clases",
+    "today": "Hoy",
+    "tomorrow": "Mañana",
+    "min": "min",
+    "live": "En vivo",
+    "soon": "Pronto",
+    "chat": "Chat"
+  },
   "addEvent": {
     "title": "Agregar Evento",
     "for": "para {{name}}",

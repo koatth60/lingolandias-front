@@ -293,6 +293,15 @@
     "contactAdmin": "Skontaktuj się z administratorem, aby przypisano Ci studentów.",
     "contactAdminStudent": "Skontaktuj się z administratorem, aby przypisano Ci nauczyciela."
   },
+  "mobileSchedule": {
+    "upcomingClasses": "Nadchodzące Zajęcia",
+    "today": "Dziś",
+    "tomorrow": "Jutro",
+    "min": "min",
+    "live": "Na żywo",
+    "soon": "Wkrótce",
+    "chat": "Czat"
+  },
   "addEvent": {
     "title": "Dodaj Wydarzenie",
     "for": "dla {{name}}",

@@ -6,6 +6,7 @@ import Dashboard from "../../sections/dashboard";
 import Navbar from "../layout/navbar";
 import ChatWindow from "../messages/chatWindow";
 import MainChat from "../buttons/chatList";
+import MobileClassList from "./MobileClassList";
 import useFormattedEvents from "../../hooks/useFormattedEvents";
 import useEventEdit from "../../hooks/useEventEdit";
 import "react-big-calendar/lib/css/react-big-calendar.css";
@@ -36,6 +37,7 @@ import EditEventModal from "./EditEventModal";
 import Dropdown from "./Dropdown";
 import TeacherPanel from "./TeacherPanel";
 import AdminMeetingRooms from "./AdminMeetingRooms";
+import { FiMessageSquare, FiX, FiUsers, FiChevronDown } from "react-icons/fi";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -52,8 +54,17 @@ const Schedule = () => {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState(false);
+  const [mobileChatOpen, setMobileChatOpen] = useState(false);
+  const [teacherPanelOpen, setTeacherPanelOpen] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const unreadCountsByRoom = useSelector((state) => state.chat.unreadCountsByRoom);
+  const studentUnreadCount = useSelector((state) => state.chat.studentUnreadCount);
+
+  // Total unread for the chat FAB badge
+  const chatUnreadCount = user.role === "teacher"
+    ? Object.values(unreadCountsByRoom).reduce((sum, c) => sum + c, 0)
+    : studentUnreadCount || 0;
 
   const events = useFormattedEvents(user);
 
@@ -88,8 +99,14 @@ const Schedule = () => {
   // changes made while the tab was closed are applied immediately.
   useEffect(() => {
     if (user.role === 'user' && user.id) {
-      fetch(`${BACKEND_URL}/users/student-profile/${user.id}`)
-        .then((res) => res.json())
+      const token = localStorage.getItem("token");
+      fetch(`${BACKEND_URL}/users/student-profile/${user.id}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error('Failed to fetch student profile');
+          return res.json();
+        })
         .then((data) => {
           if (Array.isArray(data.studentSchedules)) {
             dispatch(setStudentSchedules(data.studentSchedules));
@@ -250,76 +267,121 @@ const Schedule = () => {
             <AdminMeetingRooms onJoinMeeting={handleJoinMeeting} />
           ) : (
             <>
-              {/* ── Calendar container ── */}
+              {/* ── Calendar (desktop) / Class list (mobile) ── */}
               <div className="lg:flex-grow">
                 {events.length > 0 ? (
-                  /* Glassmorphism calendar card */
-                  <div
-                    className="relative rounded-2xl overflow-hidden"
-                    style={{
-                      border: '1px solid rgba(158,47,208,0.15)',
-                      boxShadow: '0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(158,47,208,0.06)',
-                    }}
-                  >
-                    {/* Light mode glass */}
+                  <>
+                    {/* Desktop: full calendar */}
                     <div
-                      className="absolute inset-0 dark:hidden"
+                      className="relative rounded-2xl overflow-hidden hidden lg:block"
                       style={{
-                        background: 'rgba(255,255,255,0.88)',
-                        backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+                        border: '1px solid rgba(158,47,208,0.15)',
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(158,47,208,0.06)',
                       }}
-                    />
-                    {/* Dark mode glass */}
-                    <div
-                      className="absolute inset-0 hidden dark:block"
-                      style={{
-                        background: 'rgba(13,10,30,0.65)',
-                        backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-                      }}
-                    />
-
-                    {/* Content */}
-                    <div className="relative z-10 h-[630px]">
-                      <PerfectScrollbar
-                        className={user?.settings?.darkMode ? "dark-scrollbar" : ""}
-                      >
-                        <Calendar
-                          localizer={localizer}
-                          events={events}
-                          startAccessor="start"
-                          endAccessor="end"
-                          defaultView="week"
-                          step={60}
-                          timeslots={1}
-                          onSelectEvent={handleEventClick}
-                          eventPropGetter={(event) => ({
-                            style: {
-                              background: event.type === 'group'
-                                ? 'linear-gradient(135deg, #26D9A1, #1fa07a)'
-                                : 'linear-gradient(135deg, #9E2FD0, #7b22a8)',
-                              color: 'white',
-                              borderRadius: '8px',
-                              border: 'none',
-                              boxShadow: event.type === 'group'
-                                ? '0 3px 10px rgba(38,217,161,0.35)'
-                                : '0 3px 10px rgba(158,47,208,0.35)',
-                              fontSize: '0.82em',
-                              padding: '3px 8px',
-                            },
-                          })}
-                          style={{ height: '100%', minHeight: '630px' }}
-                          formats={{
-                            eventTimeRangeFormat: () => "",
-                            timeGutterFormat: 'HH:mm',
-                          }}
-                          components={{
-                            event: CustomEvent,
-                            toolbar: CustomToolbar,
-                          }}
-                        />
-                      </PerfectScrollbar>
+                    >
+                      <div
+                        className="absolute inset-0 dark:hidden"
+                        style={{
+                          background: 'rgba(255,255,255,0.88)',
+                          backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+                        }}
+                      />
+                      <div
+                        className="absolute inset-0 hidden dark:block"
+                        style={{
+                          background: 'rgba(13,10,30,0.65)',
+                          backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+                        }}
+                      />
+                      <div className="relative z-10 h-[630px]">
+                        <PerfectScrollbar
+                          className={user?.settings?.darkMode ? "dark-scrollbar" : ""}
+                        >
+                          <Calendar
+                            localizer={localizer}
+                            events={events}
+                            startAccessor="start"
+                            endAccessor="end"
+                            defaultView="week"
+                            step={60}
+                            timeslots={1}
+                            onSelectEvent={handleEventClick}
+                            eventPropGetter={(event) => ({
+                              style: {
+                                background: event.type === 'group'
+                                  ? 'linear-gradient(135deg, #26D9A1, #1fa07a)'
+                                  : 'linear-gradient(135deg, #9E2FD0, #7b22a8)',
+                                color: 'white',
+                                borderRadius: '8px',
+                                border: 'none',
+                                boxShadow: event.type === 'group'
+                                  ? '0 3px 10px rgba(38,217,161,0.35)'
+                                  : '0 3px 10px rgba(158,47,208,0.35)',
+                                fontSize: '0.82em',
+                                padding: '3px 8px',
+                              },
+                            })}
+                            style={{ height: '100%', minHeight: '630px' }}
+                            formats={{
+                              eventTimeRangeFormat: () => "",
+                              timeGutterFormat: 'HH:mm',
+                            }}
+                            components={{
+                              event: CustomEvent,
+                              toolbar: CustomToolbar,
+                            }}
+                          />
+                        </PerfectScrollbar>
+                      </div>
                     </div>
-                  </div>
+
+                    {/* Mobile: class list cards */}
+                    <div
+                      className="lg:hidden relative rounded-2xl overflow-hidden"
+                      style={{
+                        border: '1px solid rgba(158,47,208,0.15)',
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(158,47,208,0.06)',
+                      }}
+                    >
+                      <div
+                        className="absolute inset-0 dark:hidden"
+                        style={{
+                          background: 'rgba(255,255,255,0.88)',
+                          backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+                        }}
+                      />
+                      <div
+                        className="absolute inset-0 hidden dark:block"
+                        style={{
+                          background: 'rgba(13,10,30,0.65)',
+                          backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+                        }}
+                      />
+                      {/* Top accent */}
+                      <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#9E2FD0] via-[#F6B82E] to-[#26D9A1] opacity-60 z-10" />
+                      <div className="relative z-10 p-4">
+                        <div className="flex items-center gap-2 mb-4">
+                          <div
+                            className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                            style={{
+                              background: "linear-gradient(135deg, #9E2FD0, #7b22a8)",
+                              boxShadow: "0 2px 8px rgba(158,47,208,0.35)",
+                            }}
+                          >
+                            <FiMessageSquare size={14} className="text-white" />
+                          </div>
+                          <span className="text-sm font-extrabold login-gradient-text">
+                            {t("mobileSchedule.upcomingClasses")}
+                          </span>
+                        </div>
+                        <MobileClassList
+                          events={events}
+                          onEventClick={handleEventClick}
+                          user={user}
+                        />
+                      </div>
+                    </div>
+                  </>
                 ) : (
                   /* Empty state */
                   <div
@@ -353,9 +415,9 @@ const Schedule = () => {
                 )}
               </div>
 
-              {/* ── Chat sidebar ── */}
+              {/* ── Chat sidebar (hidden on mobile, FAB used instead) ── */}
               {isChatVisible && (
-                <div className="w-full xl:w-[350px] flex-shrink-0">
+                <div className="w-full xl:w-[350px] flex-shrink-0 hidden xl:block">
                   {user.role === "teacher" ? (
                     <MainChat
                       user={user}
@@ -378,6 +440,69 @@ const Schedule = () => {
                   )}
                 </div>
               )}
+
+              {/* ── Mobile chat FAB + full-screen overlay ── */}
+              {isChatVisible && (
+                <>
+                  {!mobileChatOpen && (
+                    <button
+                      onClick={() => setMobileChatOpen(true)}
+                      className="xl:hidden fixed right-6 z-40 w-14 h-14 rounded-full flex items-center justify-center shadow-xl active:scale-95 transition-transform"
+                      style={{
+                        bottom: user.role === "teacher" ? "5.5rem" : "1.5rem",
+                        background: "linear-gradient(135deg, #9E2FD0, #7b22a8)",
+                        boxShadow: "0 4px 20px rgba(158,47,208,0.45)",
+                      }}
+                    >
+                      <FiMessageSquare size={22} className="text-white" />
+                      {chatUnreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] px-1 rounded-full bg-[#26D9A1] text-white text-[10px] font-bold flex items-center justify-center">
+                          {chatUnreadCount > 9 ? "9+" : chatUnreadCount}
+                        </span>
+                      )}
+                    </button>
+                  )}
+
+                  {mobileChatOpen && (
+                    <div className="xl:hidden fixed inset-0 z-50 flex flex-col bg-white dark:bg-[#0f0d24]">
+                      <div className="flex-shrink-0 flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-white/10">
+                        <span className="text-sm font-bold text-gray-700 dark:text-white">
+                          {t("mobileSchedule.chat")}
+                        </span>
+                        <button
+                          onClick={() => setMobileChatOpen(false)}
+                          className="p-2 rounded-lg text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                        >
+                          <FiX size={20} />
+                        </button>
+                      </div>
+                      <div className="flex-1 min-h-0">
+                        {user.role === "teacher" ? (
+                          <MainChat
+                            user={user}
+                            username={user.name}
+                            teacherChat={teacherChat}
+                            email={user.email}
+                            handleJoinMeeting={handleJoinMeeting}
+                            setEditingEvent={setEditingEvent}
+                            editingEvent={editingEvent}
+                            loading={loading}
+                          />
+                        ) : (
+                          <ChatWindow
+                            username={user.name}
+                            room={chatRoom}
+                            email={user.email}
+                            peerInfo={user.teacher}
+                            handleJoinMeeting={handleJoinMeeting}
+                            height="100%"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             </>
           )}
         </div>
@@ -385,12 +510,49 @@ const Schedule = () => {
         {/* Teacher panel */}
         {user.role === "teacher" && user.students && user.students.length > 0 && (
           <div className="px-4 pb-6">
-            <TeacherPanel
-              students={user.students}
-              events={events}
-              teacherId={user.id}
-              teacherName={`${user.name} ${user.lastName}`}
-            />
+            {/* Desktop: show directly */}
+            <div className="hidden lg:block">
+              <TeacherPanel
+                students={user.students}
+                events={events}
+                teacherId={user.id}
+                teacherName={`${user.name} ${user.lastName}`}
+              />
+            </div>
+            {/* Mobile: collapsible */}
+            <div className="lg:hidden">
+              <button
+                onClick={() => setTeacherPanelOpen((p) => !p)}
+                className="w-full flex items-center justify-between p-4 rounded-2xl border border-gray-200 dark:border-[#9E2FD0]/20 bg-white/80 dark:bg-white/5 backdrop-blur-sm transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-8 h-8 rounded-lg flex items-center justify-center"
+                    style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 2px 8px rgba(158,47,208,0.3)" }}
+                  >
+                    <FiUsers size={15} className="text-white" />
+                  </div>
+                  <span className="text-sm font-bold text-gray-800 dark:text-white">
+                    {t("teacherPanel.title")}
+                  </span>
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#9E2FD0]/10 text-[#9E2FD0]">
+                    {user.students.length}
+                  </span>
+                </div>
+                <FiChevronDown
+                  size={18}
+                  className={`text-gray-400 transition-transform duration-200 ${teacherPanelOpen ? "rotate-180" : ""}`}
+                />
+              </button>
+              {teacherPanelOpen && (
+                <TeacherPanel
+                  students={user.students}
+                  events={events}
+                  teacherId={user.id}
+                  teacherName={`${user.name} ${user.lastName}`}
+                />
+              )}
+            </div>
           </div>
         )}
 

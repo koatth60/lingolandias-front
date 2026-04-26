@@ -293,6 +293,15 @@
     "contactAdmin": "Contact an administrator to get students assigned to you.",
     "contactAdminStudent": "Contact an administrator to get a teacher assigned to you."
   },
+  "mobileSchedule": {
+    "upcomingClasses": "Upcoming Classes",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "min": "min",
+    "live": "Live now",
+    "soon": "Starting soon",
+    "chat": "Chat"
+  },
   "addEvent": {
     "title": "Add Event",
     "for": "for {{name}}",

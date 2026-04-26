@@ -98,6 +98,38 @@ const Messages = () => {
   const userLanguage = user.role === 'admin' ? '' : (user.language ? user.language.charAt(0).toUpperCase() + user.language.slice(1) : '');
   const isAdmin = user.role === 'admin';
 
+  // Fetch last message preview for each room on mount
+  useEffect(() => {
+    const roomIds = chats.map((c) => c.id);
+    if (!roomIds.length) return;
+
+    Promise.all(
+      roomIds.map((roomId) =>
+        fetch(`${BACKEND_URL}/chat/global-chats/${roomId}`)
+          .then((r) => (r.ok ? r.json() : []))
+          .then((msgs) => {
+            const latest = msgs[0];
+            if (latest) {
+              return {
+                roomId,
+                content: latest.fileUrl ? "📎 File" : (latest.message || "").slice(0, 80),
+                sender: latest.username,
+                timestamp: latest.timestamp,
+              };
+            }
+            return null;
+          })
+          .catch(() => null)
+      )
+    ).then((results) => {
+      const previews = {};
+      for (const r of results) {
+        if (r) previews[r.roomId] = { content: r.content, sender: r.sender, timestamp: r.timestamp };
+      }
+      setLastMessages((prev) => ({ ...prev, ...previews }));
+    });
+  }, [user.role, user.language]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const updatedChats = chats.map((chat) => {
     let roomKey = "";
     const chatLanguage = chat.language || chat.name.split(" - ")[1];

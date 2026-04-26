@@ -86,6 +86,7 @@ const ChatWindow = ({
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const [newMsgCount, setNewMsgCount] = useState(0);
   const prevMsgCountRef = useRef(0);
+  const scrollReadyRef = useRef(false);
 
   // Typing emit debounce
   const typingTimeoutRef = useRef(null);
@@ -240,6 +241,17 @@ const ChatWindow = ({
       }
     }
     prevMsgCountRef.current = allMessages.length;
+
+    // Reveal messages after first scroll positioning is done
+    if (!scrollReadyRef.current && allMessages.length > 0) {
+      scrollReadyRef.current = true;
+      scrollContainer.style.opacity = "1";
+    }
+    // Reset when room changes (allMessages goes empty)
+    if (allMessages.length === 0) {
+      scrollReadyRef.current = false;
+      scrollContainer.style.opacity = "0";
+    }
   }, [allMessages]);
 
   const resizeTextarea = () => {
@@ -419,7 +431,7 @@ const ChatWindow = ({
         ref={scrollContainerRef}
         onScroll={handleScroll}
         className="flex-1 p-4 sm:p-5 bg-gray-50 dark:bg-black/20 overflow-y-auto"
-        style={{ minHeight: 0 }}
+        style={{ minHeight: 0, opacity: 0 }}
       >
         {hasMore && !initialLoading && (
           <div className="text-center mb-4">

@@ -56,7 +56,7 @@ const ChatWindow = ({
     email,
     onNewMessage
   );
-  const { allMessages, fetchArchivedMessages, hasMore } = useArchivedMessages(
+  const { allMessages, fetchArchivedMessages, hasMore, initialLoading } = useArchivedMessages(
     room,
     chatMessages
   );
@@ -421,7 +421,7 @@ const ChatWindow = ({
         className="flex-1 p-4 sm:p-5 bg-gray-50 dark:bg-black/20 overflow-y-auto"
         style={{ minHeight: 0 }}
       >
-        {hasMore && (
+        {hasMore && !initialLoading && (
           <div className="text-center mb-4">
             <button
               onClick={handleLoadMore}
@@ -437,7 +437,7 @@ const ChatWindow = ({
         )}
 
         <ul>
-          {allMessages.map((msg, index) => {
+          {!initialLoading && allMessages.map((msg, index) => {
             const showTimestamp =
               index === 0 ||
               new Date(msg.timestamp) -

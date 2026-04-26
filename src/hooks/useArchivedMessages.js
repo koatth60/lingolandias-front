@@ -5,6 +5,7 @@ const useArchivedMessages = (room, chatMessages) => {
   const [archivedMessages, setArchivedMessages] = useState([]);
   const [allMessages, setAllMessages] = useState([]);
   const [hasMore, setHasMore] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const pageRef = useRef(1);
   const hasMoreRef = useRef(true);
   const autoFetched = useRef(false);
@@ -35,18 +36,16 @@ const useArchivedMessages = (room, chatMessages) => {
     }
   };
 
-  // Auto-load first page of archived messages when active chat is empty.
-  // This way users always see recent conversation history even if all
-  // messages have been archived (chat inactive for 1-2 months).
+  // Auto-load archived messages when active chat is empty.
+  // Mark initialLoading=false only after the auto-fetch completes (or is skipped).
   useEffect(() => {
-    if (
-      chatMessages &&
-      chatMessages.length === 0 &&
-      !autoFetched.current &&
-      hasMoreRef.current
-    ) {
+    if (!chatMessages) return;
+
+    if (chatMessages.length === 0 && !autoFetched.current && hasMoreRef.current) {
       autoFetched.current = true;
-      fetchArchivedMessages();
+      fetchArchivedMessages().finally(() => setInitialLoading(false));
+    } else {
+      setInitialLoading(false);
     }
   }, [chatMessages]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -57,6 +56,7 @@ const useArchivedMessages = (room, chatMessages) => {
     hasMoreRef.current = true;
     setArchivedMessages([]);
     setHasMore(true);
+    setInitialLoading(true);
   }, [room]);
 
   useEffect(() => {
@@ -68,7 +68,7 @@ const useArchivedMessages = (room, chatMessages) => {
     }
   }, [chatMessages, archivedMessages]);
 
-  return { allMessages, fetchArchivedMessages, hasMore };
+  return { allMessages, fetchArchivedMessages, hasMore, initialLoading };
 };
 
 export default useArchivedMessages;

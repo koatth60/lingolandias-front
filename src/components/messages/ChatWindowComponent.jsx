@@ -468,7 +468,7 @@ const ChatWindowComponent = ({
                 )}
               </div>
             ) : (
-              <span className="text-[11px] text-gray-400 dark:text-gray-500">{t("chatWindow.noMessages").split("—")[0].trim()}</span>
+              <span className="text-[11px] text-gray-400 dark:text-gray-500">{t("chatWindow.noActiveMembers")}</span>
             )
           ) : null}
         </div>

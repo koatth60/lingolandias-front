@@ -493,7 +493,8 @@
     "clearText": "Wszystkie wiadomości zostaną trwale usunięte i nie będzie można ich odzyskać.",
     "clearConfirm": "Tak, wyczyść wszystko",
     "clearCancel": "Anuluj",
-    "fileTooBig": "Plik jest za duży. Maksymalny rozmiar to 10 MB."
+    "fileTooBig": "Plik jest za duży. Maksymalny rozmiar to 10 MB.",
+    "noActiveMembers": "Nikogo teraz nie ma w pokoju"
   },
   "roomData": {
     "generalEnglish": "Czat Ogólny - Angielski",

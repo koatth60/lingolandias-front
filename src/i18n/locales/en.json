@@ -493,7 +493,8 @@
     "clearText": "All messages will be permanently deleted and cannot be recovered.",
     "clearConfirm": "Yes, clear all",
     "clearCancel": "Cancel",
-    "fileTooBig": "File is too large. Maximum size is 10 MB."
+    "fileTooBig": "File is too large. Maximum size is 10 MB.",
+    "noActiveMembers": "No one in the room right now"
   },
   "roomData": {
     "generalEnglish": "General Chat - English",

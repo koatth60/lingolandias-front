@@ -86,6 +86,12 @@ const JitsiClassRoom = () => {
   };
 
   const TURN_SERVERS = [
+    // Port 443 TURNS — works through firewalls that block 3478/5349/10000
+    {
+      urls: "turns:turns.lingolandias.com:443",
+      username: "sincelejana",
+      credential: "asdkASDIORNVM345Fasdegf23",
+    },
     { urls: `stun:${JITSI_DOMAIN}:3478` },
     {
       urls: `turn:${JITSI_DOMAIN}:3478`,
@@ -108,6 +114,13 @@ const JitsiClassRoom = () => {
     configOverwrite: {
       startWithAudioMuted: false,
       disableModeratorIndicator: true,
+      // Disable DTX — prevents crackling at silence/speech transitions
+      enableOpusDtx: false,
+      // Mono at 64Kbps — stereo doubles bandwidth demand with no benefit for voice
+      audioQuality: {
+        stereo: false,
+        opusMaxAverageBitrate: 64000,
+      },
       // Disable E2EE entirely — prevents Olm/WebAssembly initialization errors
       e2ee: { enabled: false },
       // Suppress all logs forwarded to the parent window
@@ -136,22 +149,27 @@ const JitsiClassRoom = () => {
         "tileview",
         "hangup",
       ],
-      useStunTurn: true,
       p2p: {
         enabled: true,
         stunServers: TURN_SERVERS,
       },
       iceServers: TURN_SERVERS,
-      // Camera stays at 15fps to preserve A/V sync fix
       constraints: {
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          channelCount: 1,
+          sampleRate: 48000,
+          sampleSize: 16,
+        },
         video: {
           height: { ideal: 720, max: 720, min: 180 },
           width: { ideal: 1280, max: 1280, min: 320 },
-          frameRate: { ideal: 15, max: 15 },
         },
       },
-      // Screenshare gets its own settings — 1080p @ 20fps for sharp text
-      desktopSharingFrameRate: { min: 5, max: 20 },
+      // Screenshare — VP9 for sharp text, 10–20fps (floor at 10 for weak connections, ceiling raised for smooth motion)
+      desktopSharingFrameRate: { min: 10, max: 20 },
       desktopSharingConstraints: {
         video: {
           height: { ideal: 1080, max: 1080 },
@@ -159,16 +177,13 @@ const JitsiClassRoom = () => {
           frameRate: { ideal: 20, max: 20 },
         },
       },
-      enableLayerSuspension: true,
+      enableLayerSuspension: false,
+      // VP9 produces crisp text/slides; VP8 turns them blurry under any bitrate pressure
       videoQuality: {
         preferredCodec: "VP9",
-        maxBitratesVideo: {
-          VP9:  { low: 100000, standard: 400000, high: 1200000, ssHigh: 2500000 },
-          VP8:  { low: 200000, standard: 500000, high: 1500000, ssHigh: 2500000 },
-          H264: { low: 200000, standard: 500000, high: 1500000, ssHigh: 2500000 },
-        },
-        enableAdaptiveMode: true,
       },
+      // Disable simulcast for screenshare — simulcast layers fight over bitrate and blur the top layer
+      screenshareSimulcast: false,
       screenshotInterval: 0,
     },
     interfaceConfigOverwrite: {

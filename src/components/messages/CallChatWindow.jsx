@@ -8,6 +8,7 @@ import EmojiPicker from "emoji-picker-react";
 import MessageOptionsCard from "./MessageOptionsCard";
 import useDeleteMessage from "../../hooks/useDeleteMessage";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const getToken = () => localStorage.getItem("token") || "";
 
 const CallChatWindow = ({
   username,
@@ -64,7 +65,9 @@ const CallChatWindow = ({
   // ── Socket setup ──
   useEffect(() => {
     if (username && room) {
-      const socketInstance = io(`${BACKEND_URL}`);
+      const socketInstance = io(`${BACKEND_URL}`, {
+        auth: { token: getToken() },
+      });
       setSocket(socketInstance);
       fetchMessages();
       socketInstance.emit("join", { username, room });

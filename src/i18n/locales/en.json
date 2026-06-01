@@ -18,7 +18,14 @@
     "settings": "Settings",
     "helpCenter": "Help Center",
     "logout": "Logout",
-    "online": "Online"
+    "online": "Online",
+    "watchTutorial": "Watch Tutorial"
+  },
+  "tutorial": {
+    "title": "Welcome to Lingo Academy!",
+    "subtitleTeacher": "Learn how to manage your classes and students",
+    "subtitleStudent": "Learn how to navigate your learning platform",
+    "close": "Got it!"
   },
   "login": {
     "welcomeBack": "Welcome back",

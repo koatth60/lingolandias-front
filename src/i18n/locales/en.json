@@ -438,7 +438,17 @@
     "chatsHeader": "Chats",
     "chipTeacher": "Teachers",
     "chipGroup": "My Group",
-    "chipGeneral": "General"
+    "chipGeneral": "General",
+    "newGroupTitle": "New Group",
+    "groupNamePlaceholder": "Group name",
+    "searchPeoplePlaceholder": "Search chats or people...",
+    "searching": "Searching...",
+    "noResults": "No people found",
+    "creating": "Creating...",
+    "createGroup": "Create Group",
+    "chipDm": "Direct",
+    "chipSupport": "Support",
+    "searchMembersPlaceholder": "Search members..."
   },
   "toolbar": {
     "classesSchedule": "Classes Schedule",
@@ -515,7 +525,8 @@
     "generalPolish": "General Chat - Polish",
     "teacherEnglish": "Teachers Chat - English",
     "teacherSpanish": "Teachers Chat - Spanish",
-    "teacherPolish": "Teachers Chat - Polish"
+    "teacherPolish": "Teachers Chat - Polish",
+    "support": "Support"
   },
   "supportChat": {
     "title": "Support",
@@ -555,5 +566,11 @@
     "fileHint": "JPG, PNG, GIF — max 5 MB",
     "cancel": "Cancel",
     "save": "Save Photo"
+  },
+  "profileCard": {
+    "roleAdmin": "Admin",
+    "roleTeacher": "Teacher",
+    "roleStudent": "Student",
+    "sendMessage": "Send message"
   }
 }

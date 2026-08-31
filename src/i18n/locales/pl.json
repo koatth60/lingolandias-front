@@ -438,7 +438,17 @@
     "chatsHeader": "Czaty",
     "chipTeacher": "Nauczyciele",
     "chipGroup": "Moja Grupa",
-    "chipGeneral": "Ogólny"
+    "chipGeneral": "Ogólny",
+    "newGroupTitle": "Nowa Grupa",
+    "groupNamePlaceholder": "Nazwa grupy",
+    "searchPeoplePlaceholder": "Szukaj czatów lub osób...",
+    "searching": "Szukanie...",
+    "noResults": "Nie znaleziono osób",
+    "creating": "Tworzenie...",
+    "createGroup": "Utwórz Grupę",
+    "chipDm": "Bezpośredni",
+    "chipSupport": "Wsparcie",
+    "searchMembersPlaceholder": "Szukaj członków..."
   },
   "toolbar": {
     "classesSchedule": "Harmonogram Zajęć",
@@ -515,7 +525,8 @@
     "generalPolish": "Czat Ogólny - Polski",
     "teacherEnglish": "Czat Nauczycieli - Angielski",
     "teacherSpanish": "Czat Nauczycieli - Hiszpański",
-    "teacherPolish": "Czat Nauczycieli - Polski"
+    "teacherPolish": "Czat Nauczycieli - Polski",
+    "support": "Wsparcie"
   },
   "supportChat": {
     "title": "Wsparcie",
@@ -555,5 +566,11 @@
     "fileHint": "JPG, PNG, GIF — maks. 5 MB",
     "cancel": "Anuluj",
     "save": "Zapisz Zdjęcie"
+  },
+  "profileCard": {
+    "roleAdmin": "Administrator",
+    "roleTeacher": "Nauczyciel",
+    "roleStudent": "Uczeń",
+    "sendMessage": "Wyślij wiadomość"
   }
 }

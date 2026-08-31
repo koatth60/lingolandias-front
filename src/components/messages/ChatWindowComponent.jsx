@@ -10,12 +10,11 @@ import PerfectScrollbar from "react-perfect-scrollbar";
 import "react-perfect-scrollbar/dist/css/styles.css";
 import EmojiPicker from "emoji-picker-react";
 import MessageOptionsCard from "./MessageOptionsCard";
-import useDeleteMessage from "../../hooks/useDeleteMessage.js";
+import useDeleteConversationMessage from "../../hooks/useDeleteConversationMessage.js";
 import useChatWindow from "../../hooks/useChatWindow.js";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchUnreadMessages } from "../../redux/messageSlice";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import useGlobalChat from "../../hooks/useGlobalChat.js";
+import useConversationChat from "../../hooks/useConversationChat.js";
 import useChatInputHandler from "../../hooks/useChatInputHandler.js";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -39,9 +38,11 @@ const ChatWindowComponent = ({
   email,
   userUrl,
   userId,
+  otherUserId,
   socket,
   onBackClick,
   onClose,
+  onViewProfile,
 }) => {
   const { t, i18n } = useTranslation();
   const scrollContainerRef = useRef(null);
@@ -50,12 +51,12 @@ const ChatWindowComponent = ({
   const typingTimeoutRef = useRef(null);
   const readDebounceRef = useRef(null);
   const isAtBottomRef = useRef(true);
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((state) => state.user.userInfo?.user);
 
-  const { chatMessages, setChatMessages, sendMessage } = useGlobalChat(
-    socket, room, username, email, userUrl
+  const currentUser = { id: userId, name: username, email, avatarUrl: userUrl };
+  const { chatMessages, setChatMessages, sendMessage } = useConversationChat(
+    socket, room, currentUser
   );
 
   const [message, setMessage] = useState("");
@@ -74,7 +75,7 @@ const ChatWindowComponent = ({
     useChatInputHandler(message, setMessage);
 
   const { handleDeleteMessage, toggleOptionsMenu, openMessageId } =
-    useDeleteMessage(setChatMessages, socket, room);
+    useDeleteConversationMessage(setChatMessages, socket, room);
 
   // ── Typing emit wrapper ──
   const handleInputWithTyping = (e) => {
@@ -124,18 +125,6 @@ const ChatWindowComponent = ({
     return () => { socket.off("roomMembers", handleRoomMembers); };
   }, [socket, room]);
 
-  // ── Edit listener (named handler) ──
-  useEffect(() => {
-    if (!socket || !room) return;
-    const handleEdited = ({ messageId, newMessage }) => {
-      setChatMessages((prev) =>
-        prev.map((m) => m.id === messageId ? { ...m, message: newMessage } : m)
-      );
-    };
-    socket.on("globalChatEdited", handleEdited);
-    return () => { socket.off("globalChatEdited", handleEdited); };
-  }, [socket, room, setChatMessages]);
-
   const handleEditMessage = (msg) => {
     setEditingMsg(msg);
     toggleOptionsMenu(openMessageId);
@@ -153,7 +142,7 @@ const ChatWindowComponent = ({
   const handleSendMessage = () => {
     if (editingMsg) {
       if (!message.trim()) return;
-      socket.emit("editGlobalChat", { messageId: editingMsg.id, room, newMessage: message.trim() });
+      socket.emit("editConversationMessage", { messageId: editingMsg.id, conversationId: room, newMessage: message.trim() });
       setChatMessages((prev) =>
         prev.map((m) => m.id === editingMsg.id ? { ...m, message: message.trim() } : m)
       );
@@ -192,8 +181,8 @@ const ChatWindowComponent = ({
       formData.append("file", file);
       const res = await axios.post(`${BACKEND_URL}/upload/chat-upload`, formData);
       const fileUrl = res.data.url;
-      socket.emit("globalChat", {
-        username, room, email, message: "", userUrl: userUrl || null, fileUrl, timestamp: new Date(),
+      socket.emit("sendConversationMessage", {
+        conversationId: room, senderId: userId, username, email, avatarUrl: userUrl || null, message: "", fileUrl,
       });
     } catch (err) {
       console.error("File upload failed:", err);
@@ -290,24 +279,20 @@ const ChatWindowComponent = ({
     );
   };
 
-  const { readMessages } = useChatWindow();
+  const { markConversationRead } = useChatWindow();
 
   // Mark as read on open
   useEffect(() => {
     if (!user?.id || !room) return;
-    (async () => {
-      await readMessages(userId, room);
-      dispatch(fetchUnreadMessages(user.id));
-    })();
+    markConversationRead(room, userId);
   }, [room, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Mark as read when new messages arrive — debounced (max 1 call per 1.5s)
   useEffect(() => {
     if (!user?.id || !room || chatMessages.length === 0) return;
     clearTimeout(readDebounceRef.current);
-    readDebounceRef.current = setTimeout(async () => {
-      await readMessages(userId, room);
-      dispatch(fetchUnreadMessages(user.id));
+    readDebounceRef.current = setTimeout(() => {
+      markConversationRead(room, userId);
     }, 1500);
     return () => clearTimeout(readDebounceRef.current);
   }, [chatMessages.length]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -434,7 +419,12 @@ const ChatWindowComponent = ({
         {/* Name + status */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h2 className="text-sm font-semibold text-gray-900 dark:text-white truncate">{studentName}</h2>
+            <h2
+              onClick={() => chatType === "dm" && otherUserId && onViewProfile?.(otherUserId)}
+              className={`text-sm font-semibold text-gray-900 dark:text-white truncate ${chatType === "dm" ? "cursor-pointer hover:underline" : ""}`}
+            >
+              {studentName}
+            </h2>
             {isGeneralChat && (
               <button onClick={handleJoinGeneralClass} title="Join video class"
                 className="flex items-center gap-1.5 px-2.5 py-1 rounded-full flex-shrink-0
@@ -515,16 +505,19 @@ const ChatWindowComponent = ({
 
                   <li className={`group flex items-end gap-2 mb-1.5 ${isSender ? "justify-end" : "justify-start"}`}>
 
-                    {/* Avatar (others) */}
+                    {/* Avatar (others) — clickable to view sender's profile */}
                     {!isSender && (
                       <div className="flex-shrink-0 w-8 self-end">
                         {isFirstFromUser ? (
-                          msg.userUrl ? (
-                            <img src={msg.userUrl} alt="avatar"
-                              className="w-8 h-8 rounded-full object-cover shadow ring-2 ring-purple-200 dark:ring-purple-500/30" />
+                          msg.avatarUrl ? (
+                            <img src={msg.avatarUrl} alt="avatar"
+                              onClick={() => msg.senderId && onViewProfile?.(msg.senderId)}
+                              className="w-8 h-8 rounded-full object-cover shadow ring-2 ring-purple-200 dark:ring-purple-500/30 cursor-pointer hover:opacity-80 transition-opacity" />
                           ) : (
-                            <div className="w-8 h-8 rounded-full flex items-center justify-center
-                                          text-white text-xs font-bold shadow ring-2 ring-purple-200 dark:ring-purple-500/30"
+                            <div
+                              onClick={() => msg.senderId && onViewProfile?.(msg.senderId)}
+                              className="w-8 h-8 rounded-full flex items-center justify-center
+                                          text-white text-xs font-bold shadow ring-2 ring-purple-200 dark:ring-purple-500/30 cursor-pointer hover:opacity-80 transition-opacity"
                               style={{ background: avatarColor }}>
                               {initials}
                             </div>
@@ -590,7 +583,10 @@ const ChatWindowComponent = ({
                     ) : (
                       <div className="max-w-[75%] sm:max-w-[60%]">
                         {showUsername && msg.username && msg.username !== "undefined" && (
-                          <p className="text-[11px] font-semibold text-purple-600 dark:text-purple-400 mb-1 ml-1">
+                          <p
+                            onClick={() => msg.senderId && onViewProfile?.(msg.senderId)}
+                            className="text-[11px] font-semibold text-purple-600 dark:text-purple-400 mb-1 ml-1 cursor-pointer hover:underline w-fit"
+                          >
                             {msg.username}
                           </p>
                         )}

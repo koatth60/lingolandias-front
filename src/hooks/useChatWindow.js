@@ -80,9 +80,25 @@ const useChatWindow = () => {
   }, [dispatch, userRole]);
   
 
+  const markConversationRead = useCallback(async (conversationId, userId) => {
+    try {
+      const token = localStorage.getItem("token");
+      await fetch(`${BACKEND_URL}/conversations/${conversationId}/read`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ userId }),
+      });
+    } catch (error) {
+      console.error("Error marking conversation as read:", error);
+    }
+  }, []);
+
   return useMemo(
-    () => ({ formatTimestamp, readMessages, readChat }),
-    [formatTimestamp, readMessages, readChat]
+    () => ({ formatTimestamp, readMessages, readChat, markConversationRead }),
+    [formatTimestamp, readMessages, readChat, markConversationRead]
   );
 };
 

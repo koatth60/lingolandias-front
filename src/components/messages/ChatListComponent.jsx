@@ -1,8 +1,9 @@
 import { useState, useMemo, memo } from "react";
 import PropTypes from "prop-types";
 import { FaComments, FaUsers, FaUserFriends } from "react-icons/fa";
-import { FiSearch } from "react-icons/fi";
+import { FiSearch, FiPlus, FiUserPlus } from "react-icons/fi";
 import { useTranslation } from "react-i18next";
+import useUserSearch from "../../hooks/useUserSearch";
 
 const TYPE_META = {
   teacher: {
@@ -26,6 +27,26 @@ const TYPE_META = {
     chipKey: "messagesExtra.chipGeneral",
     chipStyle: "bg-[#26D9A1]/10 text-[#1aad82] dark:bg-[#26D9A1]/15 dark:text-[#26D9A1]",
   },
+  support: {
+    wrap: "bg-[#26D9A1]/10 dark:bg-[#26D9A1]/15",
+    icon: "text-[#26D9A1]",
+    dot:  "bg-[#26D9A1]",
+    chipKey: "messagesExtra.chipGeneral",
+    chipStyle: "bg-[#26D9A1]/10 text-[#1aad82] dark:bg-[#26D9A1]/15 dark:text-[#26D9A1]",
+  },
+  dm: {
+    wrap: "bg-[#9E2FD0]/10 dark:bg-[#9E2FD0]/15",
+    icon: "text-[#9E2FD0]",
+    dot:  "bg-[#9E2FD0]",
+    chipKey: "messagesExtra.chipDm",
+    chipStyle: "bg-[#9E2FD0]/10 text-[#9E2FD0] dark:bg-[#9E2FD0]/20",
+  },
+};
+
+const getInitials = (name) => {
+  if (!name) return "?";
+  const p = name.trim().split(" ");
+  return ((p[0]?.[0] ?? "") + (p.length > 1 ? p[p.length - 1][0] : "")).toUpperCase();
 };
 
 const ChatIcon = ({ type }) => {
@@ -45,16 +66,25 @@ const formatTime = (ts, t) => {
   return d.toLocaleDateString([], { month: "short", day: "numeric" });
 };
 
-const ChatListComponent = ({ chats, onChatSelect, newMessage, setNewMessage, socket, selectedChatId, lastMessages = {} }) => {
+const ChatListComponent = ({
+  chats,
+  onChatSelect,
+  selectedChatId,
+  currentUserId,
+  onStartChatWithUser,
+  onNewGroup,
+}) => {
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
+  const { results: peopleResults, loading: peopleLoading } = useUserSearch(search, currentUserId);
 
   const filtered = useMemo(
-    () => chats.filter((c) => c.name.toLowerCase().includes(search.toLowerCase())),
+    () => chats.filter((c) => (c.name || "").toLowerCase().includes(search.toLowerCase())),
     [chats, search]
   );
 
   const getMeta = (type) => TYPE_META[type] ?? TYPE_META.general;
+  const showPeopleResults = search.trim().length >= 2;
 
   return (
     <div className="h-full flex flex-col bg-white dark:bg-[#16131f] border-r border-gray-100 dark:border-white/5">
@@ -66,12 +96,19 @@ const ChatListComponent = ({ chats, onChatSelect, newMessage, setNewMessage, soc
           <h2 className="text-sm font-semibold text-gray-700 dark:text-white">
             {t("messagesExtra.chatsHeader")}
           </h2>
-          <span className="ml-auto text-xs font-semibold px-2 py-0.5 rounded-full bg-[#9E2FD0]/10 dark:bg-[#9E2FD0]/20 text-[#9E2FD0]">
+          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#9E2FD0]/10 dark:bg-[#9E2FD0]/20 text-[#9E2FD0]">
             {chats.length}
           </span>
+          <button
+            onClick={onNewGroup}
+            title={t("messagesExtra.newGroupTitle")}
+            className="ml-auto p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-[#F6B82E] hover:bg-[#F6B82E]/10 transition-colors"
+          >
+            <FiPlus size={16} />
+          </button>
         </div>
 
-        {/* Search */}
+        {/* Search — filters chats AND finds new people to message */}
         <div className="relative">
           <FiSearch
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-600"
@@ -81,7 +118,7 @@ const ChatListComponent = ({ chats, onChatSelect, newMessage, setNewMessage, soc
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder={t("messages.search")}
+            placeholder={t("messagesExtra.searchPeoplePlaceholder")}
             className="w-full text-xs py-2 pl-8 pr-3 rounded-xl
                        bg-gray-50 dark:bg-[#1e1b35]
                        border border-gray-200 dark:border-white/5
@@ -92,9 +129,41 @@ const ChatListComponent = ({ chats, onChatSelect, newMessage, setNewMessage, soc
         </div>
       </div>
 
+      {/* ── People search results ── */}
+      {showPeopleResults && (
+        <div className="flex-shrink-0 border-b border-gray-100 dark:border-white/5 max-h-48 overflow-y-auto custom-scrollbar">
+          {peopleLoading && (
+            <p className="text-[11px] text-gray-400 text-center py-3">{t("messagesExtra.searching")}</p>
+          )}
+          {!peopleLoading && peopleResults.length === 0 && (
+            <p className="text-[11px] text-gray-400 text-center py-3">{t("messagesExtra.noResults")}</p>
+          )}
+          {peopleResults.map((person) => (
+            <div
+              key={person.id}
+              onClick={() => onStartChatWithUser(person)}
+              className="flex items-center gap-2.5 px-4 py-2.5 cursor-pointer hover:bg-purple-50 dark:hover:bg-white/[0.04] transition-colors"
+            >
+              {person.avatarUrl ? (
+                <img src={person.avatarUrl} alt={person.name} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
+              ) : (
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}>
+                  {getInitials(`${person.name} ${person.lastName}`)}
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-gray-800 dark:text-gray-100 truncate">{person.name} {person.lastName}</p>
+                <p className="text-[10px] text-gray-400 truncate">{person.email}</p>
+              </div>
+              <FiUserPlus size={13} className="text-gray-400 flex-shrink-0" />
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* ── List ── */}
       <ul className="flex-1 overflow-y-auto custom-scrollbar py-2 px-2 space-y-0.5">
-        {filtered.length === 0 && (
+        {filtered.length === 0 && !showPeopleResults && (
           <li className="flex flex-col items-center gap-2 py-12 text-gray-400 dark:text-gray-600">
             <FaComments size={28} className="opacity-30" />
             <span className="text-xs">{t("messages.noConversations")}</span>
@@ -105,7 +174,8 @@ const ChatListComponent = ({ chats, onChatSelect, newMessage, setNewMessage, soc
           const meta = getMeta(chat.type);
           const unread = chat.unreadCount || 0;
           const isActive = chat.id === selectedChatId;
-          const lastMsg = lastMessages[chat.id];
+          const lastMsg = chat.lastMessage;
+          const isOnline = chat.type === "dm" ? chat.otherUser?.online === "online" : true;
 
           return (
             <li
@@ -120,13 +190,24 @@ const ChatListComponent = ({ chats, onChatSelect, newMessage, setNewMessage, soc
             >
               {/* Icon avatar */}
               <div className="relative flex-shrink-0">
-                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-transform duration-150 group-hover:scale-105 ${meta.wrap}`}>
-                  <span className={meta.icon}>
-                    <ChatIcon type={chat.type} />
-                  </span>
-                </div>
+                {chat.type === "dm" && chat.avatarUrl ? (
+                  <img src={chat.avatarUrl} alt={chat.name} className="w-10 h-10 rounded-2xl object-cover" />
+                ) : chat.type === "dm" ? (
+                  <div
+                    className="w-10 h-10 rounded-2xl flex items-center justify-center text-white text-sm font-bold"
+                    style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}
+                  >
+                    {getInitials(chat.name)}
+                  </div>
+                ) : (
+                  <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-transform duration-150 group-hover:scale-105 ${meta.wrap}`}>
+                    <span className={meta.icon}>
+                      <ChatIcon type={chat.type} />
+                    </span>
+                  </div>
+                )}
                 {/* Online dot */}
-                <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-[#16131f] ${meta.dot}`} />
+                <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-[#16131f] ${isOnline ? meta.dot : "bg-gray-300 dark:bg-gray-600"}`} />
               </div>
 
               {/* Text */}
@@ -153,8 +234,8 @@ const ChatListComponent = ({ chats, onChatSelect, newMessage, setNewMessage, soc
                 {/* Row 2: last message preview OR chip + status */}
                 {lastMsg?.content ? (
                   <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate mt-0.5">
-                    {lastMsg.sender ? (
-                      <span className="font-medium text-gray-600 dark:text-gray-300">{lastMsg.sender}: </span>
+                    {chat.type !== "dm" && lastMsg.username ? (
+                      <span className="font-medium text-gray-600 dark:text-gray-300">{lastMsg.username}: </span>
                     ) : null}
                     {lastMsg.content}
                   </p>
@@ -179,12 +260,14 @@ ChatListComponent.propTypes = {
     PropTypes.shape({
       id: PropTypes.string.isRequired,
       name: PropTypes.string.isRequired,
-      type: PropTypes.oneOf(["general", "teacher", "group"]).isRequired,
+      type: PropTypes.oneOf(["general", "teacher", "group", "dm", "support"]).isRequired,
     })
   ).isRequired,
   onChatSelect: PropTypes.func.isRequired,
   selectedChatId: PropTypes.string,
-  lastMessages: PropTypes.object,
+  currentUserId: PropTypes.string,
+  onStartChatWithUser: PropTypes.func,
+  onNewGroup: PropTypes.func,
 };
 
 export default memo(ChatListComponent);

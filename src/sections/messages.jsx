@@ -1,13 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import ChatListComponent from "../components/messages/ChatListComponent";
 import ChatWindowComponent from "../components/messages/ChatWindowComponent";
+import ProfileCard from "../components/messages/ProfileCard";
+import NewGroupModal from "../components/messages/NewGroupModal";
 import { io } from "socket.io-client";
 import Dashboard from "./dashboard";
 import Navbar from "../components/layout/navbar";
-import { teacherChats, generalChats } from '../data/roomData';
-import useMessagesSection from "../hooks/useMessagesSection";
 import { FiMessageSquare } from "react-icons/fi";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -19,17 +19,25 @@ const getToken = () => {
   } catch { return ''; }
 };
 
+const authHeaders = () => {
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
+const LEGACY_NAME_KEYS = {
+  general: { english: "roomData.generalEnglish", spanish: "roomData.generalSpanish", polish: "roomData.generalPolish" },
+  teacher: { english: "roomData.teacherEnglish", spanish: "roomData.teacherSpanish", polish: "roomData.teacherPolish" },
+};
+
 const Messages = () => {
   const { t } = useTranslation();
   const user = useSelector((state) => state.user.userInfo.user);
-  const { unreadCounts } = useSelector((state) => state.messages);
+  const [conversations, setConversations] = useState([]);
   const [selectedChat, setSelectedChat] = useState(null);
   const [showChatList, setShowChatList] = useState(true);
-  const [newMessage, setNewMessage] = useState({});
   const [socket, setSocket] = useState(null);
-  // Last message previews for general/teacher/group rooms (for ChatList sidebar)
-  const [lastMessages, setLastMessages] = useState({});
-  const { handleChatSelect, handleBackClick } = useMessagesSection(setNewMessage, setSelectedChat, setShowChatList);
+  const [profileUser, setProfileUser] = useState(null);
+  const [showNewGroupModal, setShowNewGroupModal] = useState(false);
 
   useEffect(() => {
     const socketInstance = io(BACKEND_URL, {
@@ -39,115 +47,115 @@ const Messages = () => {
     return () => { socketInstance.disconnect(); };
   }, []);
 
+  const getDisplayName = useCallback((c) => {
+    if (c.type === "dm") return c.otherUser ? `${c.otherUser.name} ${c.otherUser.lastName}` : c.name;
+    if (c.type === "support") return t("messagesExtra.chipSupport", "Support");
+    const key = LEGACY_NAME_KEYS[c.type]?.[c.language];
+    return key ? t(key) : c.name;
+  }, [t]);
+
+  const fetchConversations = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}/conversations?userId=${user.id}`, { headers: authHeaders() });
+      if (!res.ok) return;
+      const data = await res.json();
+      setConversations(data.map((c) => ({ ...c, name: getDisplayName(c) })));
+    } catch (err) {
+      console.error("Error fetching conversations:", err);
+    }
+  }, [user?.id, getDisplayName]);
+
+  useEffect(() => { fetchConversations(); }, [fetchConversations]);
+
   useEffect(() => {
     if (!socket) return;
-
-    const handleNewGlobal = (data) => {
-      const { room, preview, sender } = data;
-      setNewMessage((prev) => ({ ...prev, [room]: (prev[room] || 0) + 1 }));
-      if (preview !== undefined) {
-        setLastMessages((prev) => ({
-          ...prev,
-          [room]: { content: preview, sender, timestamp: new Date().toISOString() },
-        }));
-      }
-    };
-
-    const handleNewChat = (data) => {
-      const { room, preview, sender } = data;
-      if (preview !== undefined) {
-        setLastMessages((prev) => ({
-          ...prev,
-          [room]: { content: preview, sender, timestamp: new Date().toISOString() },
-        }));
-      }
-    };
-
-    socket.on('newUnreadGlobalMessage', handleNewGlobal);
-    socket.on('newChat', handleNewChat);
+    const refresh = () => fetchConversations();
+    socket.on("newConversationMessage", refresh);
+    socket.on("newConversation", refresh);
     return () => {
-      socket.off('newUnreadGlobalMessage', handleNewGlobal);
-      socket.off('newChat', handleNewChat);
+      socket.off("newConversationMessage", refresh);
+      socket.off("newConversation", refresh);
     };
-  }, [socket]);
+  }, [socket, fetchConversations]);
 
-  const chats = [];
+  const handleChatSelect = (chat) => {
+    setSelectedChat(chat);
+    setShowChatList(false);
+    setConversations((prev) => prev.map((c) => (c.id === chat.id ? { ...c, unreadCount: 0 } : c)));
+  };
 
-  if (user.role === "admin") {
-    chats.push(generalChats.english, generalChats.spanish, generalChats.polish);
-    chats.push(teacherChats.english, teacherChats.spanish, teacherChats.polish);
-  }
+  const handleBackClick = () => {
+    setSelectedChat(null);
+    setShowChatList(true);
+  };
 
-  if (user.role === "teacher") {
-    const normalizedLanguage = user.language ? user.language.toLowerCase() : "english";
-    if (generalChats[normalizedLanguage]) chats.push(generalChats[normalizedLanguage]);
-    if (teacherChats[normalizedLanguage]) chats.push(teacherChats[normalizedLanguage]);
-    if (user.students && user.students.length > 0) {
-      chats.push({ id: user.id, name: t("chatList.groupChat", { name: user.name }), online: "online", type: "group" });
+  const notifyNewConversation = (conversationId, memberIds) => {
+    socket?.emit("newConversationCreated", { conversationId, memberIds });
+  };
+
+  const startDmWith = async (person) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/conversations/dm`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify({ userId: user.id, otherUserId: person.id }),
+      });
+      const conversation = await res.json();
+      const chat = {
+        id: conversation.id,
+        type: "dm",
+        name: `${person.name} ${person.lastName}`,
+        avatarUrl: person.avatarUrl,
+        otherUser: person,
+        unreadCount: 0,
+      };
+      setProfileUser(null);
+      handleChatSelect(chat);
+      notifyNewConversation(conversation.id, [user.id, person.id]);
+      fetchConversations();
+    } catch (err) {
+      console.error("Error starting conversation:", err);
     }
-  }
+  };
 
-  if (user.role === "user") {
-    if (user.teacher) {
-      chats.push({ id: user.teacher.id, name: t("chatList.groupChat", { name: user.teacher.name }), online: "online", type: "group" });
+  const handleCreateGroup = async ({ name, memberIds }) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/conversations/group`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify({ createdBy: user.id, name, memberIds }),
+      });
+      const conversation = await res.json();
+      setShowNewGroupModal(false);
+      handleChatSelect({ id: conversation.id, type: "group", name, unreadCount: 0 });
+      notifyNewConversation(conversation.id, [user.id, ...memberIds]);
+      fetchConversations();
+    } catch (err) {
+      console.error("Error creating group:", err);
     }
-    const normalizedLanguage = user.language ? user.language.toLowerCase() : "english";
-    if (generalChats[normalizedLanguage]) chats.push(generalChats[normalizedLanguage]);
-  }
+  };
 
-  const userLanguage = user.role === 'admin' ? '' : (user.language ? user.language.charAt(0).toUpperCase() + user.language.slice(1) : '');
-  const isAdmin = user.role === 'admin';
-
-  // Fetch last message preview for each room on mount
-  useEffect(() => {
-    const roomIds = chats.map((c) => c.id);
-    if (!roomIds.length) return;
-
-    Promise.all(
-      roomIds.map((roomId) =>
-        fetch(`${BACKEND_URL}/chat/global-chats/${roomId}`)
-          .then((r) => (r.ok ? r.json() : []))
-          .then((msgs) => {
-            const latest = msgs[0];
-            if (latest) {
-              return {
-                roomId,
-                content: latest.fileUrl ? "📎 File" : (latest.message || "").slice(0, 80),
-                sender: latest.username,
-                timestamp: latest.timestamp,
-              };
-            }
-            return null;
-          })
-          .catch(() => null)
-      )
-    ).then((results) => {
-      const previews = {};
-      for (const r of results) {
-        if (r) previews[r.roomId] = { content: r.content, sender: r.sender, timestamp: r.timestamp };
-      }
-      setLastMessages((prev) => ({ ...prev, ...previews }));
-    });
-  }, [user.role, user.language]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const updatedChats = chats.map((chat) => {
-    let roomKey = "";
-    const chatLanguage = chat.language || chat.name.split(" - ")[1];
-    if (chat.type === "general" && (isAdmin || chatLanguage === userLanguage)) {
-      roomKey = `general${chatLanguage}Room`;
-    } else if (chat.type === "teacher" && (isAdmin || chatLanguage === userLanguage)) {
-      roomKey = `teachers${chatLanguage}Room`;
-    } else if (chat.type === "group") {
-      roomKey = `randomRoom`;
+  const handleViewProfile = async (userId) => {
+    if (!userId) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}/users/${userId}/public-profile`, { headers: authHeaders() });
+      if (!res.ok) return;
+      setProfileUser(await res.json());
+    } catch (err) {
+      console.error("Error fetching profile:", err);
     }
-    return {
-      ...chat,
-      name: chat.nameKey ? t(chat.nameKey) : chat.name,
-      unreadCount: unreadCounts[roomKey] || 0,
-    };
-  });
+  };
 
-  const chatListProps = { chats: updatedChats, onChatSelect: handleChatSelect, newMessage, setNewMessage, socket, selectedChatId: selectedChat?.id, lastMessages };
+  const chatListProps = {
+    chats: conversations,
+    onChatSelect: handleChatSelect,
+    selectedChatId: selectedChat?.id,
+    currentUserId: user.id,
+    onStartChatWithUser: startDmWith,
+    onNewGroup: () => setShowNewGroupModal(true),
+  };
+
   const chatWindowProps = selectedChat ? {
     username: user.name,
     email: user.email,
@@ -155,12 +163,12 @@ const Messages = () => {
     room: selectedChat.id,
     studentName: selectedChat.name,
     chatType: selectedChat.type,
-    newMessage,
+    otherUserId: selectedChat.otherUser?.id,
     userId: user.id,
-    setNewMessage,
     socket,
     onBackClick: handleBackClick,
     onClose: () => setSelectedChat(null),
+    onViewProfile: handleViewProfile,
   } : null;
 
   return (
@@ -264,6 +272,23 @@ const Messages = () => {
 
         </section>
       </div>
+
+      {profileUser && (
+        <ProfileCard
+          user={profileUser}
+          isSelf={profileUser.id === user.id}
+          onClose={() => setProfileUser(null)}
+          onMessage={(u) => startDmWith(u)}
+        />
+      )}
+
+      {showNewGroupModal && (
+        <NewGroupModal
+          currentUserId={user.id}
+          onClose={() => setShowNewGroupModal(false)}
+          onCreate={handleCreateGroup}
+        />
+      )}
     </div>
   );
 };

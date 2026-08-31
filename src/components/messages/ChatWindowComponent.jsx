@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import axios from "axios";
 import send from "../../assets/logos/send.png";
 import { BsEmojiSmile, BsThreeDots } from "react-icons/bs";
-import { FiVideo, FiChevronLeft, FiEdit2, FiX, FiPaperclip, FiDownload, FiFile, FiMusic, FiFileText, FiCornerUpLeft, FiArrowDown } from "react-icons/fi";
+import { FiVideo, FiChevronLeft, FiEdit2, FiX, FiPaperclip, FiDownload, FiFile, FiMusic, FiFileText, FiCornerUpLeft, FiArrowDown, FiUsers } from "react-icons/fi";
 import { FaComments } from "react-icons/fa";
 import PerfectScrollbar from "react-perfect-scrollbar";
 import "react-perfect-scrollbar/dist/css/styles.css";
@@ -43,6 +43,7 @@ const ChatWindowComponent = ({
   onBackClick,
   onClose,
   onViewProfile,
+  onViewGroupMembers,
 }) => {
   const { t, i18n } = useTranslation();
   const scrollContainerRef = useRef(null);
@@ -180,7 +181,7 @@ const ChatWindowComponent = ({
       const formData = new FormData();
       formData.append("file", file);
       const res = await axios.post(`${BACKEND_URL}/upload/chat-upload`, formData);
-      const fileUrl = res.data.url;
+      const fileUrl = res.data.fileUrl;
       socket.emit("sendConversationMessage", {
         conversationId: room, senderId: userId, username, email, avatarUrl: userUrl || null, message: "", fileUrl,
       });
@@ -420,8 +421,11 @@ const ChatWindowComponent = ({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h2
-              onClick={() => chatType === "dm" && otherUserId && onViewProfile?.(otherUserId)}
-              className={`text-sm font-semibold text-gray-900 dark:text-white truncate ${chatType === "dm" ? "cursor-pointer hover:underline" : ""}`}
+              onClick={() => {
+                if (chatType === "dm" && otherUserId) onViewProfile?.(otherUserId);
+                else if (chatType === "group") onViewGroupMembers?.();
+              }}
+              className={`text-sm font-semibold text-gray-900 dark:text-white truncate ${chatType === "dm" || chatType === "group" ? "cursor-pointer hover:underline" : ""}`}
             >
               {studentName}
             </h2>
@@ -432,6 +436,14 @@ const ChatWindowComponent = ({
                 style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 2px 8px rgba(158,47,208,0.4)" }}>
                 <FiVideo size={13} />
                 <span>Join</span>
+              </button>
+            )}
+            {chatType === "group" && (
+              <button onClick={() => onViewGroupMembers?.()} title="View members"
+                className="flex items-center gap-1 px-2 py-1 rounded-full flex-shrink-0
+                           text-gray-600 dark:text-gray-300 text-[11px] font-medium transition-colors
+                           bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10">
+                <FiUsers size={12} />
               </button>
             )}
           </div>

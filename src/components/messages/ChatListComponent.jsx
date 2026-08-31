@@ -76,7 +76,19 @@ const ChatListComponent = ({
 }) => {
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
-  const { results: peopleResults, loading: peopleLoading } = useUserSearch(search, currentUserId);
+  const { results: rawPeopleResults, loading: peopleLoading } = useUserSearch(search, currentUserId);
+
+  // Teams-style: if a DM with this person already exists, it's just a chat
+  // in the list below — don't also show them as a separate "start new chat"
+  // result, that reads as a confusing duplicate.
+  const existingDmUserIds = useMemo(
+    () => new Set(chats.filter((c) => c.type === "dm" && c.otherUser).map((c) => c.otherUser.id)),
+    [chats]
+  );
+  const peopleResults = useMemo(
+    () => rawPeopleResults.filter((p) => !existingDmUserIds.has(p.id)),
+    [rawPeopleResults, existingDmUserIds]
+  );
 
   const filtered = useMemo(
     () => chats.filter((c) => (c.name || "").toLowerCase().includes(search.toLowerCase())),

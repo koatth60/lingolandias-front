@@ -6,7 +6,8 @@ import { FiSend, FiMessageSquare, FiEdit2, FiX, FiPaperclip, FiDownload, FiFile 
 import { FaComments } from "react-icons/fa";
 import EmojiPicker from "emoji-picker-react";
 import MessageOptionsCard from "./MessageOptionsCard";
-import useDeleteMessage from "../../hooks/useDeleteMessage";
+import useConversationChat from "../../hooks/useConversationChat";
+import useDeleteConversationMessage from "../../hooks/useDeleteConversationMessage";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const getToken = () => localStorage.getItem("token") || "";
 
@@ -15,13 +16,13 @@ const CallChatWindow = ({
   room,
   chatName,
   email,
+  userId,
   userUrl,
   onClose,
 }) => {
 
   const [socket, setSocket] = useState(null);
   const [message, setMessage] = useState("");
-  const [chatMessages, setChatMessages] = useState([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [editingMsg, setEditingMsg] = useState(null);
   const [typingUsers, setTypingUsers] = useState([]);
@@ -32,8 +33,12 @@ const CallChatWindow = ({
   const fileInputRef = useRef(null);
   const typingTimeoutRef = useRef(null);
 
+  const currentUser = { id: userId, name: username, email, avatarUrl: userUrl };
+  const { chatMessages, setChatMessages, sendMessage: sendConversationMessage } =
+    useConversationChat(socket, room, currentUser);
+
   const { handleDeleteMessage, toggleOptionsMenu, openMessageId } =
-    useDeleteMessage(setChatMessages, socket, room);
+    useDeleteConversationMessage(setChatMessages, socket, room);
 
   const handleEditMessage = (msg) => {
     setEditingMsg(msg);
@@ -49,19 +54,6 @@ const CallChatWindow = ({
     if (editingMsg) setMessage(editingMsg.message);
   }, [editingMsg]);
 
-  const fetchMessages = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(`${BACKEND_URL}/chat/global-chats/${room}`, {
-        params: { email },
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      setChatMessages(response.data.reverse());
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-    }
-  };
-
   // ── Socket setup ──
   useEffect(() => {
     if (username && room) {
@@ -69,28 +61,6 @@ const CallChatWindow = ({
         auth: (cb) => cb({ token: getToken() }),
       });
       setSocket(socketInstance);
-      fetchMessages();
-      socketInstance.emit("join", { username, room });
-
-      socketInstance.on("globalChat", (data) => {
-        setChatMessages((prev) => [...prev, data]);
-      });
-
-      socketInstance.on("globalChatDeleted", (data) => {
-        setChatMessages((prev) => prev.filter((msg) => msg.id !== data.messageId));
-      });
-
-      socketInstance.on("globalChatEdited", ({ messageId, newMessage }) => {
-        setChatMessages((prev) =>
-          prev.map((m) => m.id === messageId ? { ...m, message: newMessage } : m)
-        );
-      });
-
-      socketInstance.on("chatError", ({ reason }) => {
-        if (reason === "not_authenticated") {
-          console.warn("[CallChatWindow] not_authenticated — session may have expired");
-        }
-      });
 
       // ── Typing listeners (room-scoped via own socket) ──
       socketInstance.on("typing", ({ username: who }) => {
@@ -137,7 +107,7 @@ const CallChatWindow = ({
   const sendMessage = () => {
     if (editingMsg) {
       if (!message.trim() || !socket) return;
-      socket.emit("editGlobalChat", { messageId: editingMsg.id, room, newMessage: message.trim() });
+      socket.emit("editConversationMessage", { messageId: editingMsg.id, conversationId: room, newMessage: message.trim() });
       setChatMessages((prev) =>
         prev.map((m) => m.id === editingMsg.id ? { ...m, message: message.trim() } : m)
       );
@@ -147,14 +117,7 @@ const CallChatWindow = ({
       return;
     }
     if (message.trim() && room && socket) {
-      socket.emit("globalChat", {
-        username,
-        room,
-        email,
-        message,
-        timestamp: new Date(),
-        ...(userUrl && { userUrl }),
-      });
+      sendConversationMessage(message);
       setMessage("");
       if (textareaRef.current) textareaRef.current.style.height = "32px";
     }
@@ -186,16 +149,8 @@ const CallChatWindow = ({
       const formData = new FormData();
       formData.append("file", file);
       const res = await axios.post(`${BACKEND_URL}/upload/chat-upload`, formData);
-      const fileUrl = res.data.url;
-      socket.emit("globalChat", {
-        username,
-        room,
-        email,
-        message: "",
-        userUrl: userUrl || null,
-        fileUrl,
-        timestamp: new Date(),
-      });
+      const fileUrl = res.data.fileUrl;
+      sendConversationMessage("", undefined, fileUrl);
     } catch (err) {
       console.error("File upload failed:", err);
     } finally {
@@ -363,8 +318,8 @@ const CallChatWindow = ({
                   {!isSender && (
                     <div className="flex-shrink-0 w-7 self-end">
                       {isFirstFromUser ? (
-                        msg.userUrl ? (
-                          <img src={msg.userUrl} alt="avatar"
+                        msg.avatarUrl ? (
+                          <img src={msg.avatarUrl} alt="avatar"
                             className="w-7 h-7 rounded-full object-cover shadow ring-2 ring-purple-200 dark:ring-purple-500/30" />
                         ) : (
                           <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shadow ring-2 ring-purple-200 dark:ring-purple-500/30"

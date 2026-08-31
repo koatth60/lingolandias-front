@@ -448,7 +448,12 @@
     "createGroup": "Utwórz Grupę",
     "chipDm": "Bezpośredni",
     "chipSupport": "Wsparcie",
-    "searchMembersPlaceholder": "Szukaj członków..."
+    "searchMembersPlaceholder": "Szukaj członków...",
+    "groupAvatar": "Zdjęcie grupy",
+    "uploadPhoto": "Prześlij zdjęcie",
+    "useImageUrl": "Użyj adresu URL obrazu",
+    "membersCount": "{{count}} członków",
+    "groupOwner": "Właściciel"
   },
   "toolbar": {
     "classesSchedule": "Harmonogram Zajęć",

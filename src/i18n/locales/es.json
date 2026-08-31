@@ -448,7 +448,12 @@
     "createGroup": "Crear Grupo",
     "chipDm": "Directo",
     "chipSupport": "Soporte",
-    "searchMembersPlaceholder": "Buscar miembros..."
+    "searchMembersPlaceholder": "Buscar miembros...",
+    "groupAvatar": "Foto del grupo",
+    "uploadPhoto": "Subir foto",
+    "useImageUrl": "Usar URL de imagen",
+    "membersCount": "{{count}} miembros",
+    "groupOwner": "Dueño"
   },
   "toolbar": {
     "classesSchedule": "Horario de Clases",

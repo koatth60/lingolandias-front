@@ -14,7 +14,9 @@ export const handleJoinClass = ({
   } else {
     let roomId;
     let chatName;
-    if (user.role === "user") {
+    if (classSession.roomId) {
+      roomId = classSession.roomId;
+    } else if (user.role === "user") {
       roomId = user.id;
     } else {
       const student = user.students?.find((s) => s.id === classSession.studentId);

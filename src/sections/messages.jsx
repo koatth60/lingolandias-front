@@ -5,6 +5,7 @@ import ChatListComponent from "../components/messages/ChatListComponent";
 import ChatWindowComponent from "../components/messages/ChatWindowComponent";
 import ProfileCard from "../components/messages/ProfileCard";
 import NewGroupModal from "../components/messages/NewGroupModal";
+import GroupMembersModal from "../components/messages/GroupMembersModal";
 import { io } from "socket.io-client";
 import Dashboard from "./dashboard";
 import Navbar from "../components/layout/navbar";
@@ -38,14 +39,18 @@ const Messages = () => {
   const [socket, setSocket] = useState(null);
   const [profileUser, setProfileUser] = useState(null);
   const [showNewGroupModal, setShowNewGroupModal] = useState(false);
+  const [groupMembers, setGroupMembers] = useState(null);
 
   useEffect(() => {
     const socketInstance = io(BACKEND_URL, {
       auth: { token: getToken() },
     });
+    socketInstance.on("connect", () => {
+      socketInstance.emit("registerUser", { userId: user.id });
+    });
     setSocket(socketInstance);
     return () => { socketInstance.disconnect(); };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const getDisplayName = useCallback((c) => {
     if (c.type === "dm") return c.otherUser ? `${c.otherUser.name} ${c.otherUser.lastName}` : c.name;
@@ -119,16 +124,16 @@ const Messages = () => {
     }
   };
 
-  const handleCreateGroup = async ({ name, memberIds }) => {
+  const handleCreateGroup = async ({ name, avatarUrl, memberIds }) => {
     try {
       const res = await fetch(`${BACKEND_URL}/conversations/group`, {
         method: "POST",
         headers: { "Content-Type": "application/json", ...authHeaders() },
-        body: JSON.stringify({ createdBy: user.id, name, memberIds }),
+        body: JSON.stringify({ createdBy: user.id, name, avatarUrl, memberIds }),
       });
       const conversation = await res.json();
       setShowNewGroupModal(false);
-      handleChatSelect({ id: conversation.id, type: "group", name, unreadCount: 0 });
+      handleChatSelect({ id: conversation.id, type: "group", name, avatarUrl, unreadCount: 0 });
       notifyNewConversation(conversation.id, [user.id, ...memberIds]);
       fetchConversations();
     } catch (err) {
@@ -144,6 +149,17 @@ const Messages = () => {
       setProfileUser(await res.json());
     } catch (err) {
       console.error("Error fetching profile:", err);
+    }
+  };
+
+  const handleViewGroupMembers = async () => {
+    if (!selectedChat) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}/conversations/${selectedChat.id}/members`, { headers: authHeaders() });
+      if (!res.ok) return;
+      setGroupMembers(await res.json());
+    } catch (err) {
+      console.error("Error fetching group members:", err);
     }
   };
 
@@ -169,6 +185,7 @@ const Messages = () => {
     onBackClick: handleBackClick,
     onClose: () => setSelectedChat(null),
     onViewProfile: handleViewProfile,
+    onViewGroupMembers: handleViewGroupMembers,
   } : null;
 
   return (
@@ -287,6 +304,15 @@ const Messages = () => {
           currentUserId={user.id}
           onClose={() => setShowNewGroupModal(false)}
           onCreate={handleCreateGroup}
+        />
+      )}
+
+      {groupMembers && (
+        <GroupMembersModal
+          groupName={selectedChat?.name}
+          members={groupMembers}
+          onClose={() => setGroupMembers(null)}
+          onViewProfile={(id) => { setGroupMembers(null); handleViewProfile(id); }}
         />
       )}
     </div>

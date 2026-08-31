@@ -52,6 +52,7 @@ export const projectSchedule = (schedule, { rangeStart, rangeEnd, nameKey, extra
         end: occEnd.toDate(),
         studentId: schedule.studentId,
         eventId: schedule.id,
+        roomId: schedule.roomId || null,
         ...extra,
       });
     }

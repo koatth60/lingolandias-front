@@ -63,11 +63,12 @@ const AdminHomeDashboard = () => {
     [activeSection, todaysClasses]
   );
 
-  // Join class as admin observer — room is the student's ID
+  // Join class as admin observer — room is the student's ID, unless this is a
+  // group class booked with an explicit shared room
   const handleJoinClass = (classItem) => {
     navigate("/classroom", {
       state: {
-        roomId: classItem.studentId,
+        roomId: classItem.roomId || classItem.studentId,
         userName: admin.name,
         email: admin.email,
       },

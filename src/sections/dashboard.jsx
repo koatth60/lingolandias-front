@@ -44,6 +44,7 @@ const Dashboard = () => {
   const isSidebarOpen = useSelector((state) => state.sidebar.isSidebarOpen);
   const { totalUnread, unreadCounts } = useSelector((state) => state.messages);
   const supportUnreadCount = unreadCounts?.supportRoom || 0;
+  const [conversationsUnread, setConversationsUnread] = useState(0);
 
   useEffect(() => {
     setActiveLink(location.pathname);
@@ -63,10 +64,26 @@ const Dashboard = () => {
     }
   }, [user?.role, user?.students, dispatch]);
 
+  const fetchConversationsUnread = async () => {
+    if (!user?.id) return;
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${BACKEND_URL}/conversations?userId=${user.id}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      setConversationsUnread(data.reduce((sum, c) => sum + (c.unreadCount || 0), 0));
+    } catch (_) {}
+  };
+
+  useEffect(() => { fetchConversationsUnread(); }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     let socket;
     if (user?.id) {
       socket = io(`${BACKEND_URL}`);
+      socket.emit("registerUser", { userId: user.id });
       socket.on("userStatus", (data) => {
         const { id, online, name } = data;
         if (id !== user.id) {
@@ -85,16 +102,20 @@ const Dashboard = () => {
       socket.on("newUnreadSupportMessage", () => {
         dispatch(fetchUnreadMessages(user.id));
       });
+      socket.on("newConversationMessage", fetchConversationsUnread);
+      socket.on("newConversation", fetchConversationsUnread);
     }
     return () => {
       if (socket) {
         socket.off("userStatus");
         socket.off("newUnreadGlobalMessage");
         socket.off("newUnreadSupportMessage");
+        socket.off("newConversationMessage", fetchConversationsUnread);
+        socket.off("newConversation", fetchConversationsUnread);
         socket.disconnect();
       }
     };
-  }, [user?.id, dispatch]);
+  }, [user?.id, dispatch]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleLogout = async () => {
     dispatch(logout());
@@ -128,7 +149,7 @@ const Dashboard = () => {
       ? { to: "/schedule", icon: FiVideo, text: t("nav.meetings") }
       : { to: "/schedule", icon: FiCalendar, text: t("nav.schedule"), unread: totalScheduleUnread },
     // { to: "/learning", icon: FiBookOpen, text: t("nav.learning") }, // Hidden — work in progress
-    { to: "/messages", icon: FiMessageSquare, text: t("nav.messages"), unread: totalUnread },
+    { to: "/messages", icon: FiMessageSquare, text: t("nav.messages"), unread: totalUnread + conversationsUnread },
     ...(user?.role === "teacher" || user?.role === "user"
       ? [{ to: "/recordings", icon: FiVideo, text: t("recordings.title") }]
       : []),

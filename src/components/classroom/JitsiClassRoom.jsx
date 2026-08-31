@@ -575,6 +575,8 @@ const JitsiClassRoom = () => {
               <CallChatWindow
                 username={userName}
                 email={email}
+                userId={user?.id}
+                userUrl={user?.avatarUrl}
                 room={chatRoomId || roomId}
                 chatName={chatName}
                 onClose={closeChat}

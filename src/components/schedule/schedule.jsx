@@ -203,13 +203,13 @@ const Schedule = () => {
       handleEventEdit(event);
       setIsModalOpen(true);
     } else {
-      const roomId = event.studentId;
+      const roomId = event.roomId || event.studentId;
       const userName = user.name;
       const email = user.email;
       const student = user.students?.find((s) => s.id === event.studentId);
       const chatName = student?.name;
       navigate("/classroom", {
-        state: { roomId, chatRoomId: event.studentId, userName, email, fromMeeting: false, chatName },
+        state: { roomId, chatRoomId: roomId, userName, email, fromMeeting: false, chatName },
       });
     }
   };

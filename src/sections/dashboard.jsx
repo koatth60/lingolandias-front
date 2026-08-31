@@ -8,7 +8,7 @@ import {
   FiHome, FiCalendar, FiBookOpen, FiMessageSquare, FiUser,
   FiSettings, FiHelpCircle, FiUsers, FiChevronLeft, FiVideo,
   FiRadio,
-  FiGrid, FiLogOut, FiBarChart2
+  FiGrid, FiLogOut, FiBarChart2, FiActivity
 } from "react-icons/fi";
 import { fetchUnreadMessages } from "../redux/messageSlice";
 import { io } from "socket.io-client";
@@ -18,7 +18,6 @@ import { updateUserStatus } from "../redux/userSlice";
 import logo from "../assets/logos/logo3.png";
 import { useLogout } from "../hooks/customHooks";
 import { logout } from "../redux/userSlice";
-import useAuthExpiry from "../hooks/useAuthExpiry";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -45,8 +44,6 @@ const Dashboard = () => {
   const isSidebarOpen = useSelector((state) => state.sidebar.isSidebarOpen);
   const { totalUnread, unreadCounts } = useSelector((state) => state.messages);
   const supportUnreadCount = unreadCounts?.supportRoom || 0;
-
-  useAuthExpiry(user?.id);
 
   useEffect(() => {
     setActiveLink(location.pathname);
@@ -132,6 +129,9 @@ const Dashboard = () => {
       : { to: "/schedule", icon: FiCalendar, text: t("nav.schedule"), unread: totalScheduleUnread },
     // { to: "/learning", icon: FiBookOpen, text: t("nav.learning") }, // Hidden — work in progress
     { to: "/messages", icon: FiMessageSquare, text: t("nav.messages"), unread: totalUnread },
+    ...(user?.role === "teacher" || user?.role === "user"
+      ? [{ to: "/recordings", icon: FiVideo, text: t("recordings.title") }]
+      : []),
     ...(user?.role === "teacher" || user?.role === "admin"
       ? [{ to: "/support", icon: FiRadio, text: t("nav.support"), unread: supportUnreadCount, accent: true }]
       : []),
@@ -148,6 +148,7 @@ const Dashboard = () => {
     ...(user?.role === "admin" ? [
       { to: "/admin", icon: FiUsers, text: t("nav.admin") },
       { to: "/admin-trello", icon: FiGrid, text: "Trello Admin" },
+      { to: "/admin-meeting-logs", icon: FiActivity, text: "Meeting Logs" },
     ] : []),
     { to: "/settings", icon: FiSettings, text: t("nav.settings") },
     { to: "/help-center", icon: FiHelpCircle, text: t("nav.helpCenter") },

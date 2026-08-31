@@ -153,7 +153,7 @@ const Admin = () => {
       </div>
 
       <UserModal show={showUserModal} handleClose={toggleUserModal} onCreated={refresh} />
-      <DeleteUserModal show={showDeleteModal} handleClose={toggleDeleteModal} onDeleted={refresh} />
+      <DeleteUserModal show={showDeleteModal} handleClose={toggleDeleteModal} onDeleted={refresh} teachers={teachers} />
     </div>
   );
 };

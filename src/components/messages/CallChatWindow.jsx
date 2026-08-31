@@ -66,7 +66,7 @@ const CallChatWindow = ({
   useEffect(() => {
     if (username && room) {
       const socketInstance = io(`${BACKEND_URL}`, {
-        auth: { token: getToken() },
+        auth: (cb) => cb({ token: getToken() }),
       });
       setSocket(socketInstance);
       fetchMessages();
@@ -84,6 +84,12 @@ const CallChatWindow = ({
         setChatMessages((prev) =>
           prev.map((m) => m.id === messageId ? { ...m, message: newMessage } : m)
         );
+      });
+
+      socketInstance.on("chatError", ({ reason }) => {
+        if (reason === "not_authenticated") {
+          console.warn("[CallChatWindow] not_authenticated — session may have expired");
+        }
       });
 
       // ── Typing listeners (room-scoped via own socket) ──

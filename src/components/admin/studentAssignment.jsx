@@ -7,6 +7,8 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./studentAssignment.css";
 import dayjs from "dayjs";
 import { FiUserCheck, FiCalendar, FiClock, FiX, FiCheckCircle, FiChevronLeft, FiChevronRight, FiSearch } from "react-icons/fi";
+import TimeInput from "../common/TimeInput";
+import { projectSchedules, normalizeCalendarRange } from "../../utils/scheduleProjection";
 
 const CalendarToolbar = ({ label, onNavigate, onView, view }) => {
   const { t } = useTranslation();
@@ -61,6 +63,108 @@ const CalendarToolbar = ({ label, onNavigate, onView, view }) => {
 };
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
+const EventTimeModal = ({ selectedDate, onClose, onAdd }) => {
+  const { t } = useTranslation();
+  const [start, setStart] = useState("");
+  const [end, setEnd] = useState("");
+  const [recurrenceWeeks, setRecurrenceWeeks] = useState(1);
+
+  const handleAdd = () => {
+    if (!start || !end) return;
+    // "HH:MM" strings sort lexicographically the same as chronologically since both are zero-padded
+    if (end <= start) {
+      Swal.fire({
+        title: "Error",
+        text: t("addEvent.endBeforeStart"),
+        icon: "error",
+        background: '#1a1a2e',
+        color: '#fff',
+        confirmButtonColor: '#9E2FD0',
+      });
+      return;
+    }
+    onAdd(start, end, recurrenceWeeks);
+  };
+
+  return createPortal(
+    <div
+      className="fixed inset-0 flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.70)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", zIndex: 100001 }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div
+        className="relative w-full max-w-sm rounded-2xl bg-white dark:bg-[#0d0a1e]"
+        style={{
+          border: "1px solid rgba(158,47,208,0.30)",
+          boxShadow: "0 32px 64px rgba(0,0,0,0.5)",
+          zIndex: 100002,
+        }}
+      >
+        <div className="absolute top-0 left-0 w-full h-[2px] rounded-t-2xl" style={{ background: "linear-gradient(90deg, #F6B82E, #9E2FD0)" }} />
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
+              <FiClock size={15} style={{ color: "#F6B82E" }} />
+              {t("addEvent.addClassTime")}
+            </h3>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-all"
+            >
+              <FiX size={15} />
+            </button>
+          </div>
+          <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-5">
+            {selectedDate ? dayjs(selectedDate).format("dddd, MMMM D YYYY") : ""}
+          </p>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">{t("addEvent.startTime")}</label>
+              <TimeInput value={start} onChange={setStart} className="w-full px-4 py-2.5" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">{t("addEvent.endTime")}</label>
+              <TimeInput value={end} onChange={setEnd} className="w-full px-4 py-2.5" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">{t("addEvent.recurrence")}</label>
+              <div className="flex gap-2">
+                {[
+                  { value: 1, label: t("addEvent.everyWeek") },
+                  { value: 2, label: t("addEvent.everyTwoWeeks") },
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setRecurrenceWeeks(opt.value)}
+                    className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all duration-200 ${
+                      recurrenceWeeks === opt.value
+                        ? "text-white"
+                        : "text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-white/10"
+                    }`}
+                    style={recurrenceWeeks === opt.value ? { background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" } : {}}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleAdd}
+              className="w-full py-3 rounded-xl text-white text-sm font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
+              style={{ background: "linear-gradient(135deg, #F6B82E, #d4981a)", boxShadow: "0 4px 14px rgba(246,184,46,0.28)" }}
+            >
+              <FiClock size={14} /> {t("addEvent.add")}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+};
 
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
@@ -124,8 +228,14 @@ const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [eventModalOpen, setEventModalOpen] = useState(false);
   const [events, setEvents] = useState([]);
-  const [eventDetails, setEventDetails] = useState({ start: "", end: "" });
   const [teachersEvents, setTeachersEvents] = useState([]);
+  // Tracks whatever the availability calendar is currently displaying — recomputed
+  // on navigation instead of pre-generating a big fixed window up front (that's what
+  // made it slow, and it still silently ran out a couple months out either way).
+  const [calendarRange, setCalendarRange] = useState(() => ({
+    start: dayjs().startOf("week").toDate(),
+    end: dayjs().add(6, "week").toDate(),
+  }));
 
   // Unassigned students — fetched server-side with search
   const [unassignedStudents, setUnassignedStudents] = useState([]);
@@ -170,42 +280,34 @@ const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
 
   const localizer = useMemo(() => dayjsLocalizer(dayjs), []);
 
-  const handleCalendarOpen = () => {
-    if (selectedTeacher?.teacherSchedules?.length > 0) {
-      const endDate = dayjs().add(2, "month");
-      const formattedEvents = selectedTeacher.teacherSchedules.flatMap((event) => {
-        const initialDate = dayjs(event.initialDateTime).local();
-        const originalStart = dayjs(event.startTime).local();
-        const originalEnd = dayjs(event.endTime).local();
-        const eventDayOfWeek = initialDate.day();
-        const durationMinutes = originalEnd.diff(originalStart, "minute");
-
-        const now = dayjs().startOf("week").local();
-        let firstOccurrence = now.startOf("day").day(eventDayOfWeek);
-        if (firstOccurrence.isBefore(now)) {
-          firstOccurrence = firstOccurrence.add(1, "week");
-        }
-
-        return Array.from({ length: 8 }, (_, i) => {
-          const start = firstOccurrence
-            .add(i * 7, "day")
-            .set("hour", originalStart.hour())
-            .set("minute", originalStart.minute())
-            .set("second", 0);
-          const end = start.add(durationMinutes, "minute");
-          if (start.isBefore(endDate)) {
-            return {
-              title: event.studentName,
-              start: start.toDate(),
-              end: end.toDate(),
-              studentId: event.studentId,
-            };
-          }
-          return null;
-        }).filter(Boolean);
-      });
-      setTeachersEvents(formattedEvents);
+  // Recompute the teacher's projected availability whenever the selected teacher or
+  // the visible calendar window changes — cheap regardless of how far someone
+  // navigates, since it only ever projects what's actually on screen.
+  useEffect(() => {
+    if (!selectedTeacher?.teacherSchedules?.length) {
+      setTeachersEvents([]);
+      return;
     }
+    setTeachersEvents(
+      projectSchedules(selectedTeacher.teacherSchedules, {
+        rangeStart: calendarRange.start,
+        rangeEnd: calendarRange.end,
+        nameKey: "studentName",
+      }),
+    );
+  }, [selectedTeacher, calendarRange]);
+
+  const handleCalendarOpen = () => {
+    // The calendar unmounts on close and remounts fresh (defaultDate={new Date()})
+    // each time it opens, but react-big-calendar only fires onRangeChange in
+    // response to user navigation — never on mount. Without this reset,
+    // calendarRange would still hold whatever week was last navigated to before
+    // closing, out of sync with the freshly-shown "today" view, and no events
+    // would appear until the user navigated again.
+    setCalendarRange({
+      start: dayjs().startOf("week").toDate(),
+      end: dayjs().endOf("week").toDate(),
+    });
     setIsCalendarOpen(true);
   };
 
@@ -214,36 +316,24 @@ const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
     setEventModalOpen(true);
   };
 
-  const handleEventDetailsChange = (e) => {
-    const { name, value } = e.target;
-    setEventDetails((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleAddEvent = () => {
-    if (selectedDate && eventDetails.start && eventDetails.end) {
-      const timePattern = /^([01]?[0-9]|2[0-3]):([0-5][0-9])$/;
-      if (!timePattern.test(eventDetails.start) || !timePattern.test(eventDetails.end)) {
-        Swal.fire({ title: "Invalid Time Format", text: "Please enter time in HH:MM format (24-hour).", icon: "warning", confirmButtonText: "Ok" });
-        return;
-      }
-      const [startHours, startMinutes] = eventDetails.start.split(":").map(Number);
-      const [endHours, endMinutes] = eventDetails.end.split(":").map(Number);
-      const startDateTime = dayjs(selectedDate).hour(startHours).minute(startMinutes).second(0).millisecond(0).utc().toDate();
-      const endDateTime = dayjs(selectedDate).hour(endHours).minute(endMinutes).second(0).millisecond(0).utc().toDate();
-      const dayOfWeek = dayjs(selectedDate).format("dddd");
-      const date = dayjs(selectedDate).format("YYYY-MM-DD");
-      setEvents((prev) => [
-        ...prev,
-        {
-          dayOfWeek, startTime: eventDetails.start, endTime: eventDetails.end, date,
-          start: startDateTime, end: endDateTime,
-          teacherName: `${selectedTeacher.name} ${selectedTeacher.lastName}`,
-          studentName: `${selectedStudent.name} ${selectedStudent.lastName}`,
-        },
-      ]);
-      setEventDetails({ start: "", end: "" });
-      setEventModalOpen(false);
-    }
+  const handleAddEvent = (startTime, endTime, recurrenceWeeks = 1) => {
+    if (!selectedDate) return;
+    const [startHours, startMinutes] = startTime.split(":").map(Number);
+    const [endHours, endMinutes] = endTime.split(":").map(Number);
+    const startDateTime = dayjs(selectedDate).hour(startHours).minute(startMinutes).second(0).millisecond(0).utc().toDate();
+    const endDateTime = dayjs(selectedDate).hour(endHours).minute(endMinutes).second(0).millisecond(0).utc().toDate();
+    const dayOfWeek = dayjs(selectedDate).format("dddd");
+    const date = dayjs(selectedDate).format("YYYY-MM-DD");
+    setEvents((prev) => [
+      ...prev,
+      {
+        dayOfWeek, startTime, endTime, date, recurrenceWeeks,
+        start: startDateTime, end: endDateTime,
+        teacherName: `${selectedTeacher.name} ${selectedTeacher.lastName}`,
+        studentName: `${selectedStudent.name} ${selectedStudent.lastName}`,
+      },
+    ]);
+    setEventModalOpen(false);
   };
 
   const assignTeacherToStudent = (data) => {
@@ -484,6 +574,7 @@ const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
                   views={["month", "week"]}
                   defaultView="week"
                   defaultDate={new Date()}
+                  onRangeChange={(range) => setCalendarRange(normalizeCalendarRange(range))}
                   components={{ toolbar: CalendarToolbar }}
                   formats={{
                     timeGutterFormat: "HH:mm",
@@ -511,80 +602,13 @@ const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
         document.body
       )}
 
-      {/* ── Event Time Modal — also on document.body ── */}
-      {eventModalOpen && createPortal(
-        <div
-          className="fixed inset-0 flex items-center justify-center p-4"
-          style={{ background: "rgba(0,0,0,0.70)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", zIndex: 100001 }}
-          onClick={(e) => { if (e.target === e.currentTarget) setEventModalOpen(false); }}
-        >
-          <div
-            className="relative w-full max-w-sm rounded-2xl bg-white dark:bg-[#0d0a1e]"
-            style={{
-              border: "1px solid rgba(158,47,208,0.30)",
-              boxShadow: "0 32px 64px rgba(0,0,0,0.5)",
-              zIndex: 100002,
-            }}
-          >
-            <div className="absolute top-0 left-0 w-full h-[2px] rounded-t-2xl" style={{ background: "linear-gradient(90deg, #F6B82E, #9E2FD0)" }} />
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
-                  <FiClock size={15} style={{ color: "#F6B82E" }} />
-                  {t("addEvent.addClassTime")}
-                </h3>
-                <button
-                  onClick={() => setEventModalOpen(false)}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-all"
-                >
-                  <FiX size={15} />
-                </button>
-              </div>
-              <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-5">
-                {selectedDate ? dayjs(selectedDate).format("dddd, MMMM D YYYY") : ""}
-              </p>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">{t("addEvent.startTime")}</label>
-                  <div className="relative">
-                    <FiClock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={13} />
-                    <input
-                      type="text"
-                      placeholder="09:00"
-                      name="start"
-                      value={eventDetails.start}
-                      onChange={handleEventDetailsChange}
-                      className="w-full pl-10 pr-4 py-3 rounded-xl text-gray-900 dark:text-white text-sm placeholder-gray-400 outline-none border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-200"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">{t("addEvent.endTime")}</label>
-                  <div className="relative">
-                    <FiClock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={13} />
-                    <input
-                      type="text"
-                      placeholder="10:00"
-                      name="end"
-                      value={eventDetails.end}
-                      onChange={handleEventDetailsChange}
-                      className="w-full pl-10 pr-4 py-3 rounded-xl text-gray-900 dark:text-white text-sm placeholder-gray-400 outline-none border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-200"
-                    />
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleAddEvent}
-                  className="w-full py-3 rounded-xl text-white text-sm font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
-                  style={{ background: "linear-gradient(135deg, #F6B82E, #d4981a)", boxShadow: "0 4px 14px rgba(246,184,46,0.28)" }}
-                >
-                  <FiClock size={14} /> {t("addEvent.add")}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>,
-        document.body
+      {/* ── Event Time Modal — isolated component so typing doesn't re-render parent ── */}
+      {eventModalOpen && (
+        <EventTimeModal
+          selectedDate={selectedDate}
+          onClose={() => setEventModalOpen(false)}
+          onAdd={handleAddEvent}
+        />
       )}
     </section>
   );

@@ -16,12 +16,11 @@ const onBlur = (e) => {
   e.target.style.background = "";
 };
 
-const DeleteUserModal = ({ show, handleClose, onDeleted }) => {
+const DeleteUserModal = ({ show, handleClose, onDeleted, teachers = [] }) => {
   const { t } = useTranslation();
   const [email, setEmail] = useState("");
 
-  const handleDeleteUser = async (e) => {
-    e.preventDefault();
+  const performDelete = async () => {
     try {
       const response = await fetch(`${BACKEND_URL}/users`, {
         method: "DELETE",
@@ -41,6 +40,33 @@ const DeleteUserModal = ({ show, handleClose, onDeleted }) => {
 
     setEmail("");
     handleClose();
+  };
+
+  const handleDeleteUser = async (e) => {
+    e.preventDefault();
+
+    // Deleting a teacher cascades to delete every one of their scheduled classes —
+    // warn with real numbers before that happens instead of a generic confirm.
+    const matchedTeacher = teachers.find(
+      (teacher) => teacher.email?.toLowerCase() === email.trim().toLowerCase(),
+    );
+    const studentCount = matchedTeacher?.students?.length || 0;
+    const scheduleCount = matchedTeacher?.teacherSchedules?.length || 0;
+
+    if (matchedTeacher && (studentCount > 0 || scheduleCount > 0)) {
+      const result = await Swal.fire({
+        title: t("deleteModal.teacherWarningTitle"),
+        text: t("deleteModal.teacherWarningText", { students: studentCount, schedules: scheduleCount }),
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#ef4444",
+        confirmButtonText: t("deleteModal.delete"),
+        cancelButtonText: t("deleteModal.cancel"),
+      });
+      if (!result.isConfirmed) return;
+    }
+
+    await performDelete();
   };
 
   if (!show) return null;

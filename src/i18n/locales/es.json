@@ -290,7 +290,9 @@
     "placeholder": "usuario@ejemplo.com",
     "cancel": "Cancelar",
     "delete": "Eliminar Usuario",
-    "deleting": "Eliminando…"
+    "deleting": "Eliminando…",
+    "teacherWarningTitle": "Este profesor tiene estudiantes activos",
+    "teacherWarningText": "Eliminar este profesor desvinculará a {{students}} estudiante(s) y borrará permanentemente {{schedules}} clase(s) programada(s). ¿Continuar?"
   },
   "schedule": {
     "mySchedule": "Mi horario",
@@ -322,7 +324,11 @@
     "errorFill": "Por favor, completa todos los campos.",
     "errorTimeFormat": "Por favor, usa el formato HH:MM (ej. 09:00).",
     "errorInvalidTime": "Formato de Hora Inválido",
-    "addClassTime": "Agregar Hora de Clase"
+    "addClassTime": "Agregar Hora de Clase",
+    "endBeforeStart": "La hora de fin debe ser posterior a la hora de inicio.",
+    "recurrence": "Repetición",
+    "everyWeek": "Cada semana",
+    "everyTwoWeeks": "Cada 2 semanas"
   },
   "editEvent": {
     "title": "Editar Calendario",

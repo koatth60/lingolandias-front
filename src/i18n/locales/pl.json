@@ -290,7 +290,9 @@
     "placeholder": "użytkownik@przykład.com",
     "cancel": "Anuluj",
     "delete": "Usuń Użytkownika",
-    "deleting": "Usuwanie…"
+    "deleting": "Usuwanie…",
+    "teacherWarningTitle": "Ten nauczyciel ma aktywnych uczniów",
+    "teacherWarningText": "Usunięcie tego nauczyciela odłączy {{students}} uczniów i trwale usunie {{schedules}} zaplanowanych zajęć. Kontynuować?"
   },
   "schedule": {
     "mySchedule": "Mój Harmonogram",
@@ -322,7 +324,11 @@
     "errorFill": "Proszę wypełnić wszystkie pola.",
     "errorTimeFormat": "Proszę użyć formatu GG:MM (np. 09:00).",
     "errorInvalidTime": "Nieprawidłowy Format Czasu",
-    "addClassTime": "Dodaj Godzinę Zajęć"
+    "addClassTime": "Dodaj Godzinę Zajęć",
+    "endBeforeStart": "Godzina zakończenia musi być późniejsza niż godzina rozpoczęcia.",
+    "recurrence": "Powtarzanie",
+    "everyWeek": "Co tydzień",
+    "everyTwoWeeks": "Co 2 tygodnie"
   },
   "editEvent": {
     "title": "Edytuj Kalendarz",

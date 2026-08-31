@@ -153,7 +153,8 @@ const RemoveStudentModal = ({ student, teacher, onClose, onConfirm, isOpen }) =>
             </button>
             <button
               onClick={handleConfirm}
-              className="flex-1 py-3 px-4 rounded-xl font-medium text-white transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
+              disabled={!removeAll && selectedSlots.length === 0}
+              className="flex-1 py-3 px-4 rounded-xl font-medium text-white transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
               style={{
                 background: 'linear-gradient(135deg, #F6B82E, #d49c1f)',
                 boxShadow: '0 4px 15px rgba(246,184,46,0.3)',

@@ -5,6 +5,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 import { logout } from '../../redux/userSlice';
 import useGlobalSocket from '../../hooks/useGlobalSocket';
+import useAuthExpiry from '../../hooks/useAuthExpiry';
 
 const isTokenExpired = (token) => {
   try {
@@ -24,6 +25,7 @@ const RequireAuth = ({ children, role }) => {
   const token = userInfo?.token;
   const userRole = userInfo?.user?.role;
   useGlobalSocket();
+  useAuthExpiry(userInfo?.user?.id);
 
   useEffect(() => {
     if (!token) {

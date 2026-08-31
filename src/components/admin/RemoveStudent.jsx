@@ -59,24 +59,20 @@ const RemoveStudent = ({ teachers, onRefresh }) => {
   const removeStudents = () => {
     if (!selectedTeacher || !selectedStudent) return;
 
-    Promise.all([
-      fetch(`${BACKEND_URL}/users/removeStudentsFromTeacher`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ teacherId: selectedTeacher.id, studentIds: [selectedStudent] }),
-      }),
-      fetch(`${BACKEND_URL}/chat/delete-chats-by-student/${selectedStudent}`, { method: "DELETE", headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }),
-    ])
-      .then(async ([studentsResponse, chatResponse]) => {
-        if (!studentsResponse.ok) {
-          const errorText = await studentsResponse.text();
-          throw new Error(`Failed to remove students: ${errorText || "An error occurred"}`);
+    // Unlinking the student, deleting their schedules, and deleting their chat
+    // history all happen atomically in one backend transaction now — previously
+    // this fired two separate requests in parallel, and a partial failure could
+    // leave the student unlinked with their chat history still intact (or vice versa).
+    fetch(`${BACKEND_URL}/users/removeStudentsFromTeacher`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ teacherId: selectedTeacher.id, studentIds: [selectedStudent] }),
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText || "An error occurred");
         }
-        if (!chatResponse.ok) {
-          const errorText = await chatResponse.text();
-          throw new Error(`Failed to delete chats: ${errorText || "An error occurred"}`);
-        }
-        return Promise.resolve();
       })
       .then(() => {
         Swal.fire({ title: t("common.success"), text: t("admin.removeSuccess"), icon: "success", confirmButtonText: "Ok" });

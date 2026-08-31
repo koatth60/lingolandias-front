@@ -5,6 +5,7 @@ import ChatWindow from "../messages/chatWindow";
 import CallChatWindow from "../messages/CallChatWindow";
 import { useSelector } from "react-redux";
 import useRecording from "../../hooks/useRecording";
+import { teacherChats } from "../../constants";
 
 const CHAT_ICON = `data:image/svg+xml;base64,${btoa(
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg>'
@@ -18,22 +19,94 @@ const JITSI_DOMAIN = import.meta.env.VITE_JITSI_DOMAIN || "jitsi.lingolandias.co
 const BACKEND_URL  = import.meta.env.VITE_BACKEND_URL;
 const IS_MOBILE    = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
 
+// Known-harmless internal Jitsi log lines that fire on every call regardless of outcome —
+// excluded so they don't drown out real problems in the meeting-logs admin view.
+// - "conference.destroyed": normal teardown message on every hangup, not a dropped call
+// - "get STUN/TURN credentials" / "getting turn credentials failed": XMPP service-discovery
+//   for TURN servers isn't configured on our XMPP server, but we already hardcode TURN_SERVERS
+//   below, so ICE negotiation doesn't depend on this succeeding
+const BENIGN_LOG_PATTERNS = [
+  "conference.destroyed",
+  "getting turn credentials failed",
+  "get STUN/TURN credentials",
+];
+
+// Jitsi doesn't always fire the dedicated cameraError/micError events when the
+// browser denies both audio+video at once — this is the raw internal log line
+// that actually shows up in that case, so we watch for it too.
+const MEDIA_DENIED_PATTERNS = [
+  "gum.permission_denied",
+  "Permission dismissed",
+  "NotAllowedError",
+  "Failed to create local tracks",
+];
+
+// The 3 fixed "Teachers Meeting" rooms (see constants/index.js + schedule.jsx's
+// handleJoinMeeting) can have several admins and teachers in the same call — in
+// those specific rooms, recording should always end up controlled by one of these
+// 3 admins, by priority, not whoever happens to join first.
+const TEACHER_MEETING_ROOM_IDS = Object.values(teacherChats).map((c) => c.id);
+const ADMIN_RECORDER_PRIORITY = ["Agati", "Anna", "Carlos"]; // lower index = higher priority
+
+// Matches by first-name prefix — admin recorder displayNames get a "(Admin)" suffix
+// appended below specifically so two people who happen to share a first name (there
+// are two "Carlos" accounts — one admin, one teacher) can't be confused for this check.
+const getRecorderPriority = (displayName) => {
+  const idx = ADMIN_RECORDER_PRIORITY.findIndex(
+    (name) => (displayName || "").startsWith(`${name} (Admin)`),
+  );
+  return idx === -1 ? Infinity : idx;
+};
+
 const JitsiClassRoom = () => {
   const location = useLocation();
   const { userName, roomId, chatRoomId, chatName, email, chatType } = location.state || {};
   const domain = JITSI_DOMAIN;
 
   const user = useSelector((state) => state.user.userInfo.user);
+  const isTeacherMeetingRoom = TEACHER_MEETING_ROOM_IDS.includes(roomId);
+  // Tag the 3 priority admins' displayName so other clients in the room can identify
+  // them unambiguously (see getRecorderPriority above) — cosmetically it also just
+  // shows everyone else in the meeting who the admins are.
+  const displayNameForJitsi =
+    isTeacherMeetingRoom && user?.role === "admin" && ADMIN_RECORDER_PRIORITY.includes(userName)
+      ? `${userName} (Admin)`
+      : userName;
 
   const apiRef          = useRef(null);
   const showChatRef     = useRef(false);
   const sessionIdRef    = useRef(null);
   const sessionStartRef = useRef(null);
   const heartbeatRef    = useRef(null);
+  const loadTimeoutRef  = useRef(null);
+  const joinTimeoutRef  = useRef(null);
+  const localParticipantIdRef = useRef(null);
+  const isLocalModeratorRef   = useRef(false);
 
   const navigate = useNavigate();
   const [showChat, setShowChat] = useState(false);
   const [loading,  setLoading]  = useState(true);
+  const [loadStuck, setLoadStuck] = useState(false);
+  const [mediaBlocked, setMediaBlocked] = useState(false);
+  const [joinStuck, setJoinStuck] = useState(false);
+
+  const logEvent = (event, detail, level = "info") => {
+    fetch(`${BACKEND_URL}/meeting-logs`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        roomId,
+        userId: user?.id,
+        userName,
+        email,
+        role: user?.role,
+        event,
+        level,
+        detail: typeof detail === "string" ? detail : JSON.stringify(detail || {}),
+        userAgent: navigator.userAgent,
+      }),
+    }).catch(() => {});
+  };
   const {
     isRecording,
     isRecordingRef,
@@ -41,13 +114,31 @@ const JitsiClassRoom = () => {
     formatTime,
     toggleRecording,
     stopRecording,
-  } = useRecording({ userName, roomId, role: user.role, email, studentName: chatName });
+    handleRecordingStatusChanged,
+  } = useRecording({ apiRef });
 
   useEffect(() => {
     if (apiRef.current) {
-      apiRef.current.executeCommand("displayName", userName);
+      apiRef.current.executeCommand("displayName", displayNameForJitsi);
     }
-  }, [userName]);
+  }, [displayNameForJitsi]);
+
+  // Log the join attempt and flag it if the Jitsi iframe never becomes ready
+  // (blank/black screen with no dots spinner — iframe failed to load or hung)
+  useEffect(() => {
+    logEvent("join_attempt", { domain, chatType, chatRoomId, role: user?.role });
+    loadTimeoutRef.current = setTimeout(() => {
+      logEvent("jitsi_load_timeout", { domain }, "error");
+      setLoadStuck(true);
+    }, 20000);
+    return () => clearTimeout(loadTimeoutRef.current);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => () => clearTimeout(joinTimeoutRef.current), []);
+
+  useEffect(() => {
+    if (!user) logEvent("user_missing_on_mount", { roomId }, "error");
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const endSession = () => {
     if (!sessionIdRef.current) return;
@@ -65,6 +156,7 @@ const JitsiClassRoom = () => {
   };
 
   const handleCallEnd = () => {
+    logEvent("conference_left");
     endSession();
     if (isRecordingRef.current) stopRecording();
     navigate(user.role === "admin" ? "/home" : "/schedule");
@@ -79,6 +171,24 @@ const JitsiClassRoom = () => {
       endSession();
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Redux user can briefly be unset (stale/corrupted persisted state, race on reload).
+  // Without this guard, `user.role` below throws and the whole page renders blank/black
+  // with no error message — render a safe fallback and log it instead.
+  if (!user) {
+    return (
+      <div className="meeting-full-height flex flex-col items-center justify-center gap-4 bg-black text-white">
+        <p>Couldn't load your session. Please reload the page.</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 rounded-full text-white text-sm font-semibold"
+          style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}
+        >
+          Reload
+        </button>
+      </div>
+    );
+  }
 
   const closeChat = () => {
     showChatRef.current = false;
@@ -123,8 +233,8 @@ const JitsiClassRoom = () => {
       },
       // Disable E2EE entirely — prevents Olm/WebAssembly initialization errors
       e2ee: { enabled: false },
-      // Suppress all logs forwarded to the parent window
-      apiLogLevels: [],
+      // Forward warnings/errors to the parent window so we can log them (see "log" listener below)
+      apiLogLevels: ["warn", "error"],
       logging: {
         defaultLogLevel: "warn",
         loggers: {
@@ -164,23 +274,29 @@ const JitsiClassRoom = () => {
           sampleSize: 16,
         },
         video: {
-          height: { ideal: 720, max: 720, min: 180 },
-          width: { ideal: 1280, max: 1280, min: 320 },
+          height: { ideal: 480, max: 720, min: 180 },
+          width: { ideal: 854, max: 1280, min: 320 },
         },
       },
-      // Screenshare — VP9 for sharp text, 10–20fps (floor at 10 for weak connections, ceiling raised for smooth motion)
-      desktopSharingFrameRate: { min: 10, max: 20 },
+      // Screenshare — VP9 + high bitrate floor prevents adaptive encoder from blurring slides/text
+      desktopSharingFrameRate: { min: 5, max: 30 },
       desktopSharingConstraints: {
         video: {
           height: { ideal: 1080, max: 1080 },
           width: { ideal: 1920, max: 1920 },
-          frameRate: { ideal: 20, max: 20 },
+          frameRate: { ideal: 30, max: 30 },
         },
       },
-      enableLayerSuspension: false,
-      // VP9 produces crisp text/slides; VP8 turns them blurry under any bitrate pressure
+      enableLayerSuspension: true,
+      // Prefer VP9 but allow fallback — enforcing VP9 on clients without hardware decoding causes high CPU → audio dropouts
       videoQuality: {
         preferredCodec: "VP9",
+        enforcePreferredCodec: false,
+        maxBitratesVideo: {
+          VP9: { low: 200000, standard: 700000, high: 2000000 },
+          VP8: { low: 200000, standard: 700000, high: 2000000 },
+          H264: { low: 200000, standard: 700000, high: 2000000 },
+        },
       },
       // Disable simulcast for screenshare — simulcast layers fight over bitrate and blur the top layer
       screenshareSimulcast: false,
@@ -189,7 +305,7 @@ const JitsiClassRoom = () => {
     interfaceConfigOverwrite: {
       DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
     },
-    userInfo: { displayName: userName },
+    userInfo: { displayName: displayNameForJitsi },
   };
 
   return (
@@ -198,13 +314,65 @@ const JitsiClassRoom = () => {
       style={{ display: "flex", flexDirection: "row", position: "relative" }}
     >
       {loading && (
-        <section className="dots-container dark:bg-brand-dark">
-          <div className="dot"></div>
-          <div className="dot"></div>
-          <div className="dot"></div>
-          <div className="dot"></div>
-          <div className="dot"></div>
+        <section className="dots-container dark:bg-brand-dark" style={{ flexDirection: "column", gap: "16px" }}>
+          <div style={{ display: "flex" }}>
+            <div className="dot"></div>
+            <div className="dot"></div>
+            <div className="dot"></div>
+            <div className="dot"></div>
+            <div className="dot"></div>
+          </div>
+          {loadStuck && (
+            <div style={{ textAlign: "center", color: "#fff" }}>
+              <p style={{ marginBottom: "10px" }}>This is taking longer than usual to load.</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 rounded-full text-white text-sm font-semibold"
+                style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}
+              >
+                Reload
+              </button>
+            </div>
+          )}
         </section>
+      )}
+
+      {mediaBlocked && (
+        <div
+          className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-center px-6"
+          style={{ background: "rgba(0,0,0,0.92)", zIndex: 50 }}
+        >
+          <p className="text-white text-base max-w-sm">
+            Your browser blocked camera/microphone access, so the meeting can't display video or audio.
+            Please allow camera and microphone access for this site in your browser settings, then reload.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 rounded-full text-white text-sm font-semibold"
+            style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}
+          >
+            Reload
+          </button>
+        </div>
+      )}
+
+      {joinStuck && !mediaBlocked && (
+        <div
+          className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-center px-6"
+          style={{ background: "rgba(0,0,0,0.92)", zIndex: 50 }}
+        >
+          <p className="text-white text-base max-w-sm">
+            The meeting loaded but never connected. This can happen if a permission prompt
+            (camera/microphone) got stuck or was dismissed. Please reload the page.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 rounded-full text-white text-sm font-semibold"
+            style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}
+          >
+            Reload
+          </button>
+        </div>
       )}
 
       {/* Jitsi frame */}
@@ -219,11 +387,97 @@ const JitsiClassRoom = () => {
           interfaceConfigOverwrite={options.interfaceConfigOverwrite}
           userInfo={options.userInfo}
           onApiReady={(externalApi) => {
+            clearTimeout(loadTimeoutRef.current);
             apiRef.current = externalApi;
-            externalApi.executeCommand("displayName", userName);
+            externalApi.executeCommand("displayName", displayNameForJitsi);
+
+            // The iframe can load fine (api_ready) and then silently hang before actually
+            // joining the conference — e.g. stuck on a permission prompt or ICE negotiation
+            // with no JS error thrown, so nothing else would ever get logged for that session.
+            joinTimeoutRef.current = setTimeout(() => {
+              logEvent("stuck_before_join", {}, "error");
+              setJoinStuck(true);
+            }, 20000);
+
+            externalApi.addEventListener("videoConferenceJoined", (e) => {
+              clearTimeout(joinTimeoutRef.current);
+              setJoinStuck(false);
+              localParticipantIdRef.current = e.id;
+              logEvent("conference_joined");
+            });
             externalApi.addEventListener("videoConferenceLeft", handleCallEnd);
+            externalApi.addEventListener("recordingStatusChanged", (e) => {
+              handleRecordingStatusChanged(e);
+              logEvent("recording_status_changed", e, e.error ? "error" : "info");
+              // Dedicated, unambiguous marker of "who actually started this recording" —
+              // the Jibri upload endpoint looks this up to credit non-1:1 (group/language
+              // room) recordings to the right person instead of an anonymous "others" folder.
+              if (e.on === true) logEvent("recording_started");
+            });
+
+            // Jitsi/XMPP grants "moderator" to whoever joins an empty room first — in a
+            // private class that could be the student, and only a moderator can start a
+            // Jibri recording. Since these rooms only ever contain the teacher + their
+            // student(s), a non-teacher who ends up moderator immediately hands it to
+            // whoever else is/joins the room so the teacher can always record.
+            //
+            // In the shared "Teachers Meeting" rooms (several admins + teachers at once),
+            // the same join-order problem applies but the fix is different: whichever of
+            // the 3 priority admins (see ADMIN_RECORDER_PRIORITY) is present should always
+            // end up moderator, so recording is never left to chance/join order.
+            const handOffModeratorIfNeeded = (targetId) => {
+              if (!isLocalModeratorRef.current) return;
+              if (!targetId || targetId === localParticipantIdRef.current) return;
+
+              if (isTeacherMeetingRoom) {
+                const myPriority = getRecorderPriority(displayNameForJitsi);
+                const target = externalApi.getParticipantsInfo()
+                  .find((p) => p.participantId === targetId);
+                const targetPriority = target ? getRecorderPriority(target.displayName) : Infinity;
+                if (targetPriority < myPriority) {
+                  externalApi.executeCommand("grantModerator", targetId);
+                }
+                return;
+              }
+
+              if (user.role === "teacher" || user.role === "admin") return;
+              externalApi.executeCommand("grantModerator", targetId);
+            };
+            externalApi.addEventListener("participantRoleChanged", (e) => {
+              if (e.id !== localParticipantIdRef.current) return;
+              isLocalModeratorRef.current = e.role === "moderator";
+              if (isLocalModeratorRef.current) {
+                externalApi.getParticipantsInfo()
+                  .filter((p) => p.participantId !== localParticipantIdRef.current)
+                  .forEach((p) => handOffModeratorIfNeeded(p.participantId));
+              }
+            });
+            externalApi.addEventListener("participantJoined", (e) => handOffModeratorIfNeeded(e.id));
+
+            // Camera/mic failures are the usual cause of a black tile — capture the reason
+            externalApi.addEventListener("cameraError", (err) => {
+              logEvent("camera_error", err, "error");
+              setMediaBlocked(true);
+            });
+            externalApi.addEventListener("micError", (err) => {
+              logEvent("mic_error", err, "error");
+              setMediaBlocked(true);
+            });
+
+            // Internal Jitsi warnings/errors (ICE failures, media issues, etc.) — see apiLogLevels above
+            externalApi.addEventListener("log", ({ logLevel, args }) => {
+              if (logLevel !== "error" && logLevel !== "warn") return;
+              const text = JSON.stringify(args);
+              if (MEDIA_DENIED_PATTERNS.some((p) => text.includes(p))) setMediaBlocked(true);
+              if (BENIGN_LOG_PATTERNS.some((p) => text.includes(p))) return;
+              logEvent("jitsi_log", { logLevel, args }, logLevel);
+            });
 
             externalApi.addEventListener("toolbarButtonClicked", ({ key }) => {
+              // Diagnostic: confirms the click is even reaching this listener, and what
+              // state/props the chat panel would render with — added to chase a report
+              // of "chat button does nothing" that couldn't be reproduced from code alone.
+              logEvent("toolbar_button_clicked", { key, chatType, room: chatRoomId || roomId, willShow: !showChatRef.current });
               if (key === "lingo-chat") {
                 const next = !showChatRef.current;
                 showChatRef.current = next;
@@ -261,14 +515,17 @@ const JitsiClassRoom = () => {
             }
 
             setLoading(false);
+            logEvent("api_ready");
           }}
           getIFrameRef={(containerDiv) => {
             containerDiv.style.height = "100%";
             containerDiv.style.width  = "100%";
             const iframe = containerDiv.querySelector("iframe");
             if (iframe) {
+              // "autoplay" is required or iOS Safari blocks remote video/audio playback
+              // inside the iframe, leaving a black tile with a manual play button.
               iframe.allow =
-                "camera *; microphone *; fullscreen *; display-capture *; screen-wake-lock *";
+                "camera *; microphone *; fullscreen *; display-capture *; screen-wake-lock *; autoplay *";
             }
           }}
         />

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import dayjs from "dayjs";
 import Swal from "sweetalert2";
-import { FiX, FiCalendar, FiClock } from "react-icons/fi";
+import { FiX, FiCalendar } from "react-icons/fi";
+import TimeInput from "../common/TimeInput";
 
 const AddEventModal = ({
   student,
@@ -16,6 +17,7 @@ const AddEventModal = ({
     start: "",
     end: "",
   });
+  const [recurrenceWeeks, setRecurrenceWeeks] = useState(1);
 
   if (!student || !isOpen) {
     return null;
@@ -26,9 +28,12 @@ const AddEventModal = ({
     setEventDetails((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleTimeChange = (name) => (value) => {
+    setEventDetails((prev) => ({ ...prev, [name]: value }));
+  };
+
   const handleSubmit = () => {
     const { date, start, end } = eventDetails;
-    const timePattern = /^([01]?[0-9]|2[0-3]):([0-5][0-9])$/;
 
     if (!date || !start || !end) {
       Swal.fire({
@@ -42,11 +47,12 @@ const AddEventModal = ({
       return;
     }
 
-    if (!timePattern.test(start) || !timePattern.test(end)) {
+    // "HH:MM" strings sort lexicographically the same as chronologically since both are zero-padded
+    if (end <= start) {
       Swal.fire({
-        title: "Invalid Time Format",
-        text: "Please use HH:MM format for start and end times.",
-        icon: "warning",
+        title: "Error",
+        text: "End time must be after start time.",
+        icon: "error",
         background: '#1a1a2e',
         color: '#fff',
         confirmButtonColor: '#9E2FD0',
@@ -75,6 +81,7 @@ const AddEventModal = ({
       startTime: startDateTime.toDate(),
       endTime: endDateTime.toDate(),
       dayOfWeek: startDateTime.format("dddd"),
+      recurrenceWeeks,
     };
     onConfirm(payload);
   };
@@ -140,17 +147,11 @@ const AddEventModal = ({
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Start Time (HH:MM)
               </label>
-              <div className="relative">
-                <FiClock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                <input
-                  type="text"
-                  name="start"
-                  placeholder="09:00"
-                  value={eventDetails.start}
-                  onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-[#9E2FD0]/20 text-gray-900 dark:text-white focus:border-[#9E2FD0] focus:ring-1 focus:ring-[#9E2FD0] transition-all outline-none"
-                />
-              </div>
+              <TimeInput
+                value={eventDetails.start}
+                onChange={handleTimeChange("start")}
+                className="w-full px-4 py-3"
+              />
             </div>
 
             {/* End Time */}
@@ -158,16 +159,37 @@ const AddEventModal = ({
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 End Time (HH:MM)
               </label>
-              <div className="relative">
-                <FiClock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                <input
-                  type="text"
-                  name="end"
-                  placeholder="10:00"
-                  value={eventDetails.end}
-                  onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-[#9E2FD0]/20 text-gray-900 dark:text-white focus:border-[#9E2FD0] focus:ring-1 focus:ring-[#9E2FD0] transition-all outline-none"
-                />
+              <TimeInput
+                value={eventDetails.end}
+                onChange={handleTimeChange("end")}
+                className="w-full px-4 py-3"
+              />
+            </div>
+
+            {/* Recurrence */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Repeats
+              </label>
+              <div className="flex gap-2">
+                {[
+                  { value: 1, label: "Every week" },
+                  { value: 2, label: "Every 2 weeks" },
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setRecurrenceWeeks(opt.value)}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                      recurrenceWeeks === opt.value
+                        ? "text-white"
+                        : "text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-[#9E2FD0]/20"
+                    }`}
+                    style={recurrenceWeeks === opt.value ? { background: 'linear-gradient(135deg, #9E2FD0, #7b22a8)' } : {}}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
               </div>
             </div>
           </div>

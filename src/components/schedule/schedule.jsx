@@ -8,6 +8,7 @@ import ChatWindow from "../messages/chatWindow";
 import MainChat from "../buttons/chatList";
 import MobileClassList from "./MobileClassList";
 import useFormattedEvents from "../../hooks/useFormattedEvents";
+import { normalizeCalendarRange } from "../../utils/scheduleProjection";
 import useEventEdit from "../../hooks/useEventEdit";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import dayjs from "dayjs";
@@ -66,7 +67,14 @@ const Schedule = () => {
     ? Object.values(unreadCountsByRoom).reduce((sum, c) => sum + c, 0)
     : studentUnreadCount || 0;
 
-  const events = useFormattedEvents(user);
+  // Tracks whatever the calendar is currently displaying — recurring classes are
+  // projected only within this window (see useFormattedEvents/scheduleProjection),
+  // updated live as the calendar is navigated instead of a fixed cutoff.
+  const [calendarRange, setCalendarRange] = useState(() => ({
+    start: dayjs().startOf("week").toDate(),
+    end: dayjs().add(6, "week").toDate(),
+  }));
+  const events = useFormattedEvents(user, calendarRange);
 
   const {
     eventDetails,
@@ -306,6 +314,7 @@ const Schedule = () => {
                             step={60}
                             timeslots={1}
                             onSelectEvent={handleEventClick}
+                            onRangeChange={(range) => setCalendarRange(normalizeCalendarRange(range))}
                             eventPropGetter={(event) => ({
                               style: {
                                 background: event.type === 'group'

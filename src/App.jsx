@@ -6,6 +6,7 @@ import Login from './components/login/login';
 import RequireAuth from './components/auth/requireAuth';
 import GlobalNotificationHandler from './components/common/GlobalNotificationHandler';
 import FilePreviewModal from './components/common/FilePreviewModal';
+import ErrorBoundary from './components/common/ErrorBoundary';
 import { UploadProvider } from './context/UploadContext';
 import UploadStatusBar from './components/common/UploadStatusBar';
 
@@ -23,7 +24,9 @@ const ForgotPassword = lazy(() => import('./components/login/forgotPassword'));
 const ResetPassword  = lazy(() => import('./components/login/resetPassword'));
 const Trello       = lazy(() => import('./sections/trello'));
 const AdminTrello  = lazy(() => import('./sections/adminTrello'));
+const AdminMeetingLogs = lazy(() => import('./sections/adminMeetingLogs'));
 const Analytics    = lazy(() => import('./sections/analytics'));
+const Recordings   = lazy(() => import('./sections/recordings'));
 import { useSelector } from 'react-redux';
 import { ToastContainer, Slide } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -116,7 +119,34 @@ function App() {
             path="/classroom"
             element={
               <RequireAuth>
-                <JitsiClassRoom />
+                <ErrorBoundary
+                  fallback={
+                    <div className="meeting-full-height flex flex-col items-center justify-center gap-4 bg-black text-white">
+                      <p>Something went wrong loading the meeting.</p>
+                      <button
+                        onClick={() => window.location.reload()}
+                        className="px-4 py-2 rounded-full text-white text-sm font-semibold"
+                        style={{ background: 'linear-gradient(135deg, #9E2FD0, #7b22a8)' }}
+                      >
+                        Reload
+                      </button>
+                    </div>
+                  }
+                  onError={(error) => {
+                    fetch(`${import.meta.env.VITE_BACKEND_URL}/meeting-logs`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        event: 'classroom_crash',
+                        level: 'error',
+                        detail: `${error?.message}\n${error?.stack || ''}`.slice(0, 4000),
+                        userAgent: navigator.userAgent,
+                      }),
+                    }).catch(() => {});
+                  }}
+                >
+                  <JitsiClassRoom />
+                </ErrorBoundary>
               </RequireAuth>
             }
           />
@@ -145,10 +175,26 @@ function App() {
             }
           />
           <Route
+            path="/admin-meeting-logs"
+            element={
+              <RequireAuth role="admin">
+                <AdminMeetingLogs />
+              </RequireAuth>
+            }
+          />
+          <Route
             path="/analytics"
             element={
               <RequireAuth role="admin">
                 <Analytics />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/recordings"
+            element={
+              <RequireAuth>
+                <Recordings />
               </RequireAuth>
             }
           />

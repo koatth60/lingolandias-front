@@ -290,7 +290,9 @@
     "placeholder": "user@example.com",
     "cancel": "Cancel",
     "delete": "Delete User",
-    "deleting": "Deleting…"
+    "deleting": "Deleting…",
+    "teacherWarningTitle": "This teacher has active students",
+    "teacherWarningText": "Deleting this teacher will unassign {{students}} student(s) and permanently delete {{schedules}} scheduled class(es). Continue?"
   },
   "schedule": {
     "mySchedule": "My Schedule",
@@ -322,7 +324,11 @@
     "errorFill": "Please fill in all fields.",
     "errorTimeFormat": "Please use HH:MM format (e.g. 09:00).",
     "errorInvalidTime": "Invalid Time Format",
-    "addClassTime": "Add Class Time"
+    "addClassTime": "Add Class Time",
+    "endBeforeStart": "End time must be after start time.",
+    "recurrence": "Repeats",
+    "everyWeek": "Every week",
+    "everyTwoWeeks": "Every 2 weeks"
   },
   "editEvent": {
     "title": "Edit Calendar",

@@ -68,7 +68,8 @@ const SupportChatWindow = () => {
 
   useEffect(() => {
     if (!user) return;
-    const s = io(BACKEND_URL);
+    const token = localStorage.getItem("token") || "";
+    const s = io(BACKEND_URL, { auth: (cb) => cb({ token }) });
     setSocket(s);
     s.emit("join", { username: user.name, room: SUPPORT_ROOM });
     fetchMessages();

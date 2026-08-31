@@ -28,29 +28,54 @@ const useGlobalChat = (socket, room, username, email, userUrl) => {
       fetchMessages();
 
       const handleGlobalChat = (data) => {
-        setChatMessages((prevMessages) => [...prevMessages, data]);
+        setChatMessages((prev) => {
+          // Replace optimistic pending message with server-confirmed one
+          const idx = prev.findIndex(
+            (m) =>
+              m._pending &&
+              m.email === data.email &&
+              m.message === data.message &&
+              Math.abs(new Date(m.timestamp) - new Date(data.timestamp)) < 10000,
+          );
+          if (idx !== -1) {
+            const updated = [...prev];
+            updated[idx] = data;
+            return updated;
+          }
+          return [...prev, data];
+        });
       };
+
+      const handleChatError = ({ reason }) => {
+        console.error('[chat] Server rejected message:', reason);
+        // Remove any unsent pending messages from state on error
+        if (reason === 'not_authenticated' || reason === 'server_error') {
+          setChatMessages((prev) => prev.filter((m) => !m._pending));
+        }
+      };
+
       socket.on('globalChat', handleGlobalChat);
+      socket.on('chatError', handleChatError);
 
       return () => {
         socket.off('globalChat', handleGlobalChat);
+        socket.off('chatError', handleChatError);
       };
     }
   }, [room, socket, username, fetchMessages]);
 
   const sendMessage = (message, replyTo) => {
-    if (message && room && socket) {
+    if (message && room && socket && socket.connected) {
       const timestamp = new Date();
-      const messageData = {
-        username,
-        room,
-        email,
-        message,
-        timestamp,
-      };
-      if (userUrl) messageData.userUrl = userUrl;
-      if (replyTo) messageData.replyTo = replyTo;
-      socket.emit('globalChat', messageData);
+      const optimistic = { _pending: true, username, room, email, message, timestamp };
+      if (userUrl) optimistic.userUrl = userUrl;
+      if (replyTo) optimistic.replyTo = replyTo;
+      setChatMessages((prev) => [...prev, optimistic]);
+
+      const payload = { username, room, email, message, timestamp };
+      if (userUrl) payload.userUrl = userUrl;
+      if (replyTo) payload.replyTo = replyTo;
+      socket.emit('globalChat', payload);
     }
   };
 

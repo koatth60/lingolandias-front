@@ -41,27 +41,22 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
     try {
       if (removeAll) {
-        const [removeStudentResponse, chatResponse] = await Promise.all([
-          fetch(`${BACKEND_URL}/users/removeStudentsFromTeacher`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              teacherId: teacherId,
-              studentIds: [selectedStudent.id],
-            }),
+        // Unlinking the student, deleting their schedules, and deleting their chat
+        // history all happen atomically in one backend transaction now — previously
+        // this fired two separate requests in parallel, and a partial failure could
+        // leave the student unlinked with their chat history still intact (or vice versa).
+        const removeStudentResponse = await fetch(`${BACKEND_URL}/users/removeStudentsFromTeacher`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            teacherId: teacherId,
+            studentIds: [selectedStudent.id],
           }),
-          fetch(
-            `${BACKEND_URL}/chat/delete-chats-by-student/${selectedStudent.id}`,
-            {
-              method: "DELETE",
-              headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-            }
-          ),
-        ]);
+        });
 
-        if (removeStudentResponse.ok && chatResponse.ok) {
+        if (removeStudentResponse.ok) {
           Swal.fire({
             title: t("common.success"),
             text: t("teacherPanel.removeStudentSuccess"),

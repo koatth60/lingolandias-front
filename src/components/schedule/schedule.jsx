@@ -32,6 +32,8 @@ import {
   setStudentTeacher,
   removeStudent,
   removeTeacherSchedules,
+  addTeacherSchedule,
+  updateTeacherSchedule,
 } from "../../redux/userSlice";
 import { socket } from "../../socket";
 import { meetingRooms, teacherChats } from "../../constants";
@@ -136,11 +138,19 @@ const Schedule = () => {
         }
       };
 
-      const handleScheduleUpdated = ({ studentId, action, schedule, eventIds }) => {
+      const handleScheduleUpdated = ({ studentId, teacherId, action, schedule, eventIds }) => {
         if (user.role === 'user' && user.id === studentId) {
           if (action === 'add') dispatch(addStudentSchedule(schedule));
           else if (action === 'remove') dispatch(removeStudentSchedules(eventIds));
           else if (action === 'modify') dispatch(updateStudentSchedule(schedule));
+        } else if (user.role === 'teacher' && user.id === (schedule?.teacherId || teacherId)) {
+          // Covers class changes triggered from the Messages/group-chat side
+          // (renamed, member added/removed) — those already work for every
+          // other participant via socket, this keeps the teacher's own
+          // calendar live too instead of only updating on next refresh.
+          if (action === 'add') dispatch(addTeacherSchedule(schedule));
+          else if (action === 'remove') dispatch(removeTeacherSchedules(eventIds));
+          else if (action === 'modify') dispatch(updateTeacherSchedule(schedule));
         }
       };
 
@@ -184,7 +194,8 @@ const Schedule = () => {
   const localizer = dayjsLocalizer(dayjs);
 
   const CustomEvent = ({ event }) => (
-    <div className="flex items-center justify-center text-center h-full text-[10px] sm:text-[13px] flex-wrap">
+    <div className="flex items-center justify-center text-center h-full text-[10px] sm:text-[13px] flex-wrap gap-1">
+      {event.isGroupClass && <FiUsers size={10} className="flex-shrink-0" />}
       <span>{event.title}</span>
     </div>
   );
@@ -218,6 +229,18 @@ const Schedule = () => {
       const roomId = event.roomId || event.studentId;
       const userName = user.name;
       const email = user.email;
+
+      // A class scheduled from a group chat has no single "other side" to
+      // ring directly — roomId is the conversation id, and the ring falls
+      // back to the room's existing conversation members (same convention
+      // handleJoinMeeting already uses for the teacher's own multi-student room).
+      if (event.isGroupClass) {
+        navigate("/classroom", {
+          state: { roomId, chatRoomId: roomId, userName, email, fromMeeting: false, chatName: event.title, chatType: "group" },
+        });
+        return;
+      }
+
       const student = user.students?.find((s) => s.id === event.studentId);
       const chatName = student?.name;
       // otherUserId lets the incoming-call ring reach the other side
@@ -338,13 +361,13 @@ const Schedule = () => {
                             onRangeChange={(range) => setCalendarRange(normalizeCalendarRange(range))}
                             eventPropGetter={(event) => ({
                               style: {
-                                background: event.type === 'group'
+                                background: event.isGroupClass
                                   ? 'linear-gradient(135deg, #26D9A1, #1fa07a)'
                                   : 'linear-gradient(135deg, #9E2FD0, #7b22a8)',
                                 color: 'white',
                                 borderRadius: '8px',
                                 border: 'none',
-                                boxShadow: event.type === 'group'
+                                boxShadow: event.isGroupClass
                                   ? '0 3px 10px rgba(38,217,161,0.35)'
                                   : '0 3px 10px rgba(158,47,208,0.35)',
                                 fontSize: '0.82em',

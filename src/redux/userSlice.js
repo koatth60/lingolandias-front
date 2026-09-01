@@ -190,6 +190,11 @@ const userSlice = createSlice({
         state.userInfo.user.teacherSchedules = [];
       }
       const e = action.payload;
+      // A row created from Messages (schedule a class / extend one) is both
+      // dispatched locally right away AND echoed back over the scheduleUpdated
+      // socket to the same acting teacher — skip the echo instead of showing
+      // the same class twice.
+      if (state.userInfo.user.teacherSchedules.some((s) => s.id === e.id)) return;
       state.userInfo.user.teacherSchedules.push({
         ...e,
         startTime: e.startTime || e.start,

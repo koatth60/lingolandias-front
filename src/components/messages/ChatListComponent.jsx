@@ -72,6 +72,7 @@ const ChatListComponent = ({
   onChatSelect,
   selectedChatId,
   currentUserId,
+  currentUserRole,
   onStartChatWithUser,
   onNewGroup,
   onTogglePin,
@@ -334,7 +335,7 @@ const ChatListComponent = ({
                       <FiTrash2 size={13} /> {t("messagesExtra.deleteChat")}
                     </button>
                   )}
-                  {chat.type === "group" && !chat.linkedToSchedule && (
+                  {chat.type === "group" && (!chat.linkedToSchedule || currentUserRole === "teacher") && (
                     <button
                       onClick={() => { onDeleteGroup?.(chat); setOpenMenuId(null); }}
                       className="w-full flex items-center gap-2 px-3 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 border-t border-gray-100 dark:border-white/5"
@@ -377,6 +378,7 @@ ChatListComponent.propTypes = {
   onChatSelect: PropTypes.func.isRequired,
   selectedChatId: PropTypes.string,
   currentUserId: PropTypes.string,
+  currentUserRole: PropTypes.string,
   onStartChatWithUser: PropTypes.func,
   onNewGroup: PropTypes.func,
   onDeleteGroup: PropTypes.func,

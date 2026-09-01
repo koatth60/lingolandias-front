@@ -470,7 +470,21 @@
     "addPeople": "Agregar personas",
     "shareHistoryToggle": "Compartir todo el historial con ellos",
     "cancel": "Cancelar",
-    "loadMoreChats": "Cargar más chats"
+    "loadMoreChats": "Cargar más chats",
+    "scheduleAsClassToggle": "Programar esto como una clase para todos",
+    "scheduleClassTitle": "Programar esta clase",
+    "scheduleClassHint": "Elige un horario libre en tu calendario — haz clic y arrastra para seleccionar una hora.",
+    "eventNameLabel": "Nombre del evento (opcional)",
+    "scheduleClassConfirm": "Programar clase",
+    "scheduleClassButton": "Programar esta clase",
+    "scheduleClassPrompt": "¿Programar esto como una clase recurrente para todos en el grupo?",
+    "scheduleClassSuccess": "¡Clase programada!",
+    "scheduleClassFailed": "No se pudo programar la clase.",
+    "addToClassTitle": "¿Agregar a tu clase existente?",
+    "addToClassWarning": "{{name}} será agregado(a) a tu clase programada para todos. Puedes renombrar la clase abajo.",
+    "addToClassConfirm": "Agregar a la clase",
+    "skipScheduling": "Ahora no",
+    "deleteScheduledGroupWarning": "\"{{name}}\" es una clase programada — borrarla cancela la clase y la elimina del calendario de todos, además de borrar todos sus mensajes. Esto no se puede deshacer."
   },
   "toolbar": {
     "classesSchedule": "Horario de Clases",

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FiX, FiUsers, FiEdit2, FiCheck, FiUserPlus, FiSearch } from "react-icons/fi";
+import { FiX, FiUsers, FiEdit2, FiCheck, FiUserPlus, FiSearch, FiCalendar } from "react-icons/fi";
 import useUserSearch from "../../hooks/useUserSearch";
 import AvatarPicker from "./AvatarPicker";
 
@@ -26,11 +26,14 @@ const GroupMembersModal = ({
   groupAvatarUrl,
   members,
   currentUserId,
+  currentUserRole,
+  linkedToSchedule,
   onClose,
   onViewProfile,
   onRename,
   onChangeAvatar,
   onAddMember,
+  onScheduleClass,
 }) => {
   const { t } = useTranslation();
   const [editingName, setEditingName] = useState(false);
@@ -42,6 +45,7 @@ const GroupMembersModal = ({
   const existingMemberIds = new Set(members.map((m) => m.id));
 
   const canManage = CAN_MANAGE_TYPES.includes(chatType);
+  const canScheduleClass = currentUserRole === "teacher" && chatType === "group" && !linkedToSchedule;
 
   const submitRename = () => {
     if (nameInput.trim() && nameInput.trim() !== groupName) onRename(nameInput.trim());
@@ -138,6 +142,15 @@ const GroupMembersModal = ({
                   {t("messagesExtra.addPeople")}
                 </button>
               )}
+              {canScheduleClass && (
+                <button
+                  onClick={onScheduleClass}
+                  className="mt-2 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 transition-all flex-shrink-0"
+                >
+                  <FiCalendar size={14} />
+                  {t("messagesExtra.scheduleClassButton")}
+                </button>
+              )}
             </>
           ) : (
             <div className="flex flex-col min-h-0 flex-1">
@@ -166,7 +179,7 @@ const GroupMembersModal = ({
                 {results.filter((u) => !existingMemberIds.has(u.id)).map((u) => (
                   <div
                     key={u.id}
-                    onClick={() => { onAddMember(u.id, shareHistory); setShowAddPeople(false); setQuery(""); }}
+                    onClick={() => { onAddMember(u, shareHistory); setShowAddPeople(false); setQuery(""); }}
                     className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
                   >
                     {u.avatarUrl ? (

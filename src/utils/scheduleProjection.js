@@ -53,6 +53,7 @@ export const projectSchedule = (schedule, { rangeStart, rangeEnd, nameKey, extra
         studentId: schedule.studentId,
         eventId: schedule.id,
         roomId: schedule.roomId || null,
+        groupName: schedule.groupName || null,
         ...extra,
       });
     }

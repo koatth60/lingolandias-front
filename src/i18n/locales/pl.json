@@ -470,7 +470,21 @@
     "addPeople": "Dodaj osoby",
     "shareHistoryToggle": "Udostępnij pełną historię wiadomości",
     "cancel": "Anuluj",
-    "loadMoreChats": "Załaduj więcej czatów"
+    "loadMoreChats": "Załaduj więcej czatów",
+    "scheduleAsClassToggle": "Zaplanuj to jako zajęcia dla wszystkich",
+    "scheduleClassTitle": "Zaplanuj te zajęcia",
+    "scheduleClassHint": "Wybierz wolny termin w swoim kalendarzu — kliknij i przeciągnij, aby zaznaczyć godzinę.",
+    "eventNameLabel": "Nazwa wydarzenia (opcjonalnie)",
+    "scheduleClassConfirm": "Zaplanuj zajęcia",
+    "scheduleClassButton": "Zaplanuj te zajęcia",
+    "scheduleClassPrompt": "Zaplanować to jako cykliczne zajęcia dla wszystkich w grupie?",
+    "scheduleClassSuccess": "Zajęcia zaplanowane!",
+    "scheduleClassFailed": "Nie udało się zaplanować zajęć.",
+    "addToClassTitle": "Dodać do istniejących zajęć?",
+    "addToClassWarning": "{{name}} zostanie dodany(a) do zaplanowanych zajęć dla wszystkich. Możesz zmienić nazwę zajęć poniżej.",
+    "addToClassConfirm": "Dodaj do zajęć",
+    "skipScheduling": "Nie teraz",
+    "deleteScheduledGroupWarning": "\"{{name}}\" to zaplanowane zajęcia — usunięcie ich anuluje zajęcia i usuwa je z kalendarza wszystkich, a także usuwa wszystkie wiadomości. Tej operacji nie można cofnąć."
   },
   "toolbar": {
     "classesSchedule": "Harmonogram Zajęć",

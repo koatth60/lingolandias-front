@@ -470,7 +470,21 @@
     "addPeople": "Add people",
     "shareHistoryToggle": "Share full message history with them",
     "cancel": "Cancel",
-    "loadMoreChats": "Load more chats"
+    "loadMoreChats": "Load more chats",
+    "scheduleAsClassToggle": "Schedule this as a class for everyone",
+    "scheduleClassTitle": "Schedule this class",
+    "scheduleClassHint": "Pick a free slot on your calendar — click and drag to select a time.",
+    "eventNameLabel": "Event name (optional)",
+    "scheduleClassConfirm": "Schedule class",
+    "scheduleClassButton": "Schedule this class",
+    "scheduleClassPrompt": "Schedule this as a recurring class for everyone in the group?",
+    "scheduleClassSuccess": "Class scheduled!",
+    "scheduleClassFailed": "Couldn't schedule the class.",
+    "addToClassTitle": "Add to your existing class?",
+    "addToClassWarning": "{{name}} will be added to your scheduled class for everyone. You can rename the class below.",
+    "addToClassConfirm": "Add to class",
+    "skipScheduling": "Not now",
+    "deleteScheduledGroupWarning": "\"{{name}}\" is a scheduled class — deleting it cancels the class and removes it from everyone's calendar, and deletes all its messages. This can't be undone."
   },
   "toolbar": {
     "classesSchedule": "Classes Schedule",

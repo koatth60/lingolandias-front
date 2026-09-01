@@ -19,12 +19,27 @@ const useFormattedEvents = (user, range) => {
   const { start: rangeStart, end: rangeEnd } = range || DEFAULT_RANGE;
 
   const formattedEvents = useMemo(() => {
+    let events = [];
     if (user.role === "teacher" && user.teacherSchedules) {
-      return projectSchedules(user.teacherSchedules, { rangeStart, rangeEnd, nameKey: "studentName" });
+      events = projectSchedules(user.teacherSchedules, { rangeStart, rangeEnd, nameKey: "studentName" });
     } else if (user.role === "user" && user.studentSchedules) {
-      return projectSchedules(user.studentSchedules, { rangeStart, rangeEnd, nameKey: "teacherName" });
+      events = projectSchedules(user.studentSchedules, { rangeStart, rangeEnd, nameKey: "teacherName" });
     }
-    return [];
+    // A class tied to a group chat shows the same title for every viewer —
+    // groupName overrides the normal per-role studentName/teacherName split.
+    const withGroupTitles = events.map((event) =>
+      event.groupName ? { ...event, title: event.groupName, isGroupClass: true } : event
+    );
+    // A group class creates one Schedule row per student sharing the same
+    // roomId — a teacher who teaches 3 students in one class has 3 rows in
+    // teacherSchedules, which would otherwise render as 3 stacked duplicate
+    // blocks at the same time. Each student only ever has their own single
+    // row, so this is a no-op on the student side.
+    return withGroupTitles.filter((event, idx, all) => {
+      if (!event.roomId) return true;
+      const firstIdx = all.findIndex((e) => e.roomId === event.roomId && e.start.getTime() === event.start.getTime());
+      return firstIdx === idx;
+    });
   }, [user.role, user.teacherSchedules, user.studentSchedules, rangeStart, rangeEnd]);
 
   return formattedEvents;

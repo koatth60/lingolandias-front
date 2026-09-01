@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { addTeacherSchedule } from "../redux/userSlice";
 import { useTranslation } from "react-i18next";
 import ChatListComponent from "../components/messages/ChatListComponent";
 import ChatWindowComponent from "../components/messages/ChatWindowComponent";
 import ProfileCard from "../components/messages/ProfileCard";
 import NewGroupModal from "../components/messages/NewGroupModal";
 import GroupMembersModal from "../components/messages/GroupMembersModal";
+import ScheduleClassPicker from "../components/messages/ScheduleClassPicker";
 import { socket } from "../socket";
 import Swal from "sweetalert2";
 import Dashboard from "./dashboard";
@@ -31,12 +33,17 @@ const Messages = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const user = useSelector((state) => state.user.userInfo.user);
+  const dispatch = useDispatch();
   const [conversations, setConversations] = useState([]);
   const [selectedChat, setSelectedChat] = useState(null);
   const [showChatList, setShowChatList] = useState(true);
   const [profileUser, setProfileUser] = useState(null);
   const [showNewGroupModal, setShowNewGroupModal] = useState(false);
   const [groupMembers, setGroupMembers] = useState(null);
+  // Drives ScheduleClassPicker for every "turn this group into a class" entry
+  // point (new group's checkbox, add-member's prompt, the persistent button
+  // in GroupMembersModal) — { conversationId, groupName, students }.
+  const [pendingSchedule, setPendingSchedule] = useState(null);
 
   // Shared with dashboard.jsx's notification-sound logic so a message never
   // dings for the conversation you're already looking at.
@@ -211,7 +218,7 @@ const Messages = () => {
     navigate(location.pathname, { replace: true, state: {} });
   }, [location.state?.openDmWithUserId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleCreateGroup = async ({ name, avatarUrl, memberIds }) => {
+  const handleCreateGroup = async ({ name, avatarUrl, memberIds, members, scheduleAsClass }) => {
     try {
       const res = await fetch(`${BACKEND_URL}/conversations/group`, {
         method: "POST",
@@ -223,9 +230,140 @@ const Messages = () => {
       handleChatSelect({ id: conversation.id, type: "group", name, avatarUrl, unreadCount: 0 });
       notifyNewConversation(conversation.id, [user.id, ...memberIds]);
       fetchConversations();
+      if (scheduleAsClass && user.role === "teacher") {
+        setPendingSchedule({
+          conversationId: conversation.id,
+          groupName: name,
+          students: (members || []).map((m) => ({ id: m.id, name: `${m.name} ${m.lastName}`.trim() })),
+        });
+      }
     } catch (err) {
       console.error("Error creating group:", err);
     }
+  };
+
+  // Fetches the current roster (minus the teacher themself) shaped for
+  // ScheduleClassPicker / POST /users/schedule-group — used both when
+  // offering to schedule a not-yet-linked group and by the persistent
+  // "Schedule this class" button.
+  const fetchStudentsForScheduling = async (conversationId) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/conversations/${conversationId}/members?userId=${user.id}`, { headers: authHeaders() });
+      const allMembers = res.ok ? await res.json() : [];
+      return allMembers.filter((m) => m.id !== user.id).map((m) => ({ id: m.id, name: `${m.name} ${m.lastName}`.trim() }));
+    } catch (err) {
+      console.error("Error fetching members for scheduling:", err);
+      return [];
+    }
+  };
+
+  // Teacher-only: after adding a member, offer to fold them into the
+  // conversation's class — either extending an already-scheduled class
+  // (the "1:1 that gains a third person" case) or offering to schedule a
+  // brand new one. Declining either prompt leaves everything else untouched.
+  const promptScheduleForNewMember = async ({ conversationId, groupName, student }) => {
+    try {
+      const params = new URLSearchParams({ teacherId: user.id, otherUserId: student.id, conversationId });
+      const linkRes = await fetch(`${BACKEND_URL}/users/schedule-link?${params}`, { headers: authHeaders() });
+      const link = linkRes.ok ? await linkRes.json() : { linked: false };
+      const studentName = `${student.name} ${student.lastName}`.trim();
+
+      if (link.linked) {
+        const { value: chosenName, isConfirmed } = await Swal.fire({
+          title: t("messagesExtra.addToClassTitle"),
+          text: t("messagesExtra.addToClassWarning", { name: studentName }),
+          input: "text",
+          inputValue: link.groupName || groupName || "",
+          showCancelButton: true,
+          confirmButtonText: t("messagesExtra.addToClassConfirm"),
+          cancelButtonText: t("messagesExtra.skipScheduling"),
+          confirmButtonColor: "#9E2FD0",
+        });
+        if (!isConfirmed) return;
+        const extendRes = await fetch(`${BACKEND_URL}/users/schedule-group/${link.roomId}/extend`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...authHeaders() },
+          body: JSON.stringify({
+            teacherId: user.id,
+            studentId: student.id,
+            studentName,
+            groupName: chosenName?.trim() || undefined,
+          }),
+        });
+        if (extendRes.ok) {
+          const { schedules } = await extendRes.json().catch(() => ({ schedules: [] }));
+          (schedules || []).forEach((s) => dispatch(addTeacherSchedule(s)));
+          setSelectedChat((prev) =>
+            prev?.id === conversationId ? { ...prev, linkedToSchedule: true, name: chosenName?.trim() || prev.name } : prev
+          );
+          fetchConversations();
+        }
+        return;
+      }
+
+      const { isConfirmed } = await Swal.fire({
+        title: t("messagesExtra.scheduleClassPrompt"),
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: t("messagesExtra.scheduleClassConfirm"),
+        cancelButtonText: t("messagesExtra.skipScheduling"),
+        confirmButtonColor: "#9E2FD0",
+      });
+      if (!isConfirmed) return;
+      const students = await fetchStudentsForScheduling(conversationId);
+      setPendingSchedule({ conversationId, groupName, students });
+    } catch (err) {
+      console.error("Error checking/offering to schedule a class:", err);
+    }
+  };
+
+  // Submit handler for ScheduleClassPicker — creates the class rows and
+  // marks the conversation linkedToSchedule.
+  const handleScheduleConfirm = async (payload) => {
+    if (!pendingSchedule) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}/users/schedule-group`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify({
+          teacherId: user.id,
+          teacherName: `${user.name} ${user.lastName}`.trim(),
+          students: pendingSchedule.students,
+          conversationId: pendingSchedule.conversationId,
+          groupName: payload.groupName,
+          initialDateTime: payload.initialDateTime,
+          startTime: payload.startTime,
+          endTime: payload.endTime,
+          dayOfWeek: payload.dayOfWeek,
+          recurrenceWeeks: payload.recurrenceWeeks,
+        }),
+      });
+      if (res.ok) {
+        const { schedules } = await res.json().catch(() => ({ schedules: [] }));
+        (schedules || []).forEach((s) => dispatch(addTeacherSchedule(s)));
+        setSelectedChat((prev) =>
+          prev?.id === pendingSchedule.conversationId ? { ...prev, linkedToSchedule: true, name: payload.groupName } : prev
+        );
+        fetchConversations();
+        Swal.fire({ icon: "success", title: t("messagesExtra.scheduleClassSuccess"), timer: 2000, showConfirmButton: false });
+      } else {
+        const data = await res.json().catch(() => ({}));
+        Swal.fire({ icon: "error", title: t("common.error"), text: data.message || t("messagesExtra.scheduleClassFailed"), confirmButtonText: "Ok" });
+      }
+    } catch (err) {
+      console.error("Error scheduling class:", err);
+    } finally {
+      setPendingSchedule(null);
+    }
+  };
+
+  // Persistent recovery path for "Schedule this class" in GroupMembersModal —
+  // covers a teacher who declined the prompt once and has no other way back in.
+  const handleOpenScheduleForExistingGroup = async () => {
+    if (!selectedChat) return;
+    const students = await fetchStudentsForScheduling(selectedChat.id);
+    setGroupMembers(null);
+    setPendingSchedule({ conversationId: selectedChat.id, groupName: selectedChat.name, students });
   };
 
   const handleViewProfile = async (userId) => {
@@ -250,13 +388,14 @@ const Messages = () => {
     }
   };
 
-  const handleAddMember = async (newUserId, shareHistory) => {
+  const handleAddMember = async (member, shareHistory) => {
     if (!selectedChat) return;
+    const conversationId = selectedChat.id;
     try {
-      const res = await fetch(`${BACKEND_URL}/conversations/${selectedChat.id}/members`, {
+      const res = await fetch(`${BACKEND_URL}/conversations/${conversationId}/members`, {
         method: "POST",
         headers: { "Content-Type": "application/json", ...authHeaders() },
-        body: JSON.stringify({ userId: newUserId, addedBy: user.id, shareHistory }),
+        body: JSON.stringify({ userId: member.id, addedBy: user.id, shareHistory }),
       });
       const updatedConversation = await res.json();
       // A DM grows into a group the moment a third person joins.
@@ -266,9 +405,13 @@ const Messages = () => {
         name: updatedConversation.name || prev.name,
         otherUser: updatedConversation.type === "group" ? null : prev.otherUser,
       }));
-      notifyNewConversation(selectedChat.id, [newUserId]);
+      notifyNewConversation(conversationId, [member.id]);
       fetchConversations();
       handleViewGroupMembers();
+
+      if (user.role === "teacher") {
+        await promptScheduleForNewMember({ conversationId, groupName: updatedConversation.name, student: member });
+      }
     } catch (err) {
       console.error("Error adding member:", err);
     }
@@ -277,11 +420,16 @@ const Messages = () => {
   const handleRenameChat = async (newName) => {
     if (!selectedChat) return;
     try {
-      await fetch(`${BACKEND_URL}/conversations/${selectedChat.id}`, {
+      const res = await fetch(`${BACKEND_URL}/conversations/${selectedChat.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", ...authHeaders() },
-        body: JSON.stringify({ name: newName }),
+        body: JSON.stringify({ name: newName, userId: user.id }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        Swal.fire({ icon: "error", title: t("common.error"), text: data.message, confirmButtonText: "Ok" });
+        return;
+      }
       setSelectedChat((prev) => ({ ...prev, name: newName }));
       fetchConversations();
     } catch (err) {
@@ -365,7 +513,9 @@ const Messages = () => {
   const handleDeleteGroup = async (chat) => {
     const result = await Swal.fire({
       title: t("messagesExtra.deleteGroupTitle"),
-      text: t("messagesExtra.deleteGroupWarning", { name: chat.name }),
+      text: chat.linkedToSchedule
+        ? t("messagesExtra.deleteScheduledGroupWarning", { name: chat.name })
+        : t("messagesExtra.deleteGroupWarning", { name: chat.name }),
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#ef4444",
@@ -401,6 +551,7 @@ const Messages = () => {
     onChatSelect: handleChatSelect,
     selectedChatId: selectedChat?.id,
     currentUserId: user.id,
+    currentUserRole: user.role,
     onStartChatWithUser: startDmWith,
     onNewGroup: () => setShowNewGroupModal(true),
     onTogglePin: handleTogglePin,
@@ -545,6 +696,7 @@ const Messages = () => {
       {showNewGroupModal && (
         <NewGroupModal
           currentUserId={user.id}
+          currentUserRole={user.role}
           onClose={() => setShowNewGroupModal(false)}
           onCreate={handleCreateGroup}
         />
@@ -557,11 +709,24 @@ const Messages = () => {
           groupAvatarUrl={selectedChat?.avatarUrl}
           members={groupMembers}
           currentUserId={user.id}
+          currentUserRole={user.role}
+          linkedToSchedule={selectedChat?.linkedToSchedule}
           onClose={() => setGroupMembers(null)}
           onViewProfile={(id) => { setGroupMembers(null); handleViewProfile(id); }}
           onRename={handleRenameChat}
           onChangeAvatar={handleChangeAvatar}
           onAddMember={handleAddMember}
+          onScheduleClass={handleOpenScheduleForExistingGroup}
+        />
+      )}
+
+      {pendingSchedule && (
+        <ScheduleClassPicker
+          teacherSchedules={user.teacherSchedules}
+          students={pendingSchedule.students}
+          defaultName={pendingSchedule.groupName}
+          onClose={() => setPendingSchedule(null)}
+          onConfirm={handleScheduleConfirm}
         />
       )}
     </div>

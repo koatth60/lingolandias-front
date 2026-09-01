@@ -10,14 +10,16 @@ const getInitials = (name, lastName) => {
   return (a + b).toUpperCase() || "?";
 };
 
-const NewGroupModal = ({ currentUserId, onClose, onCreate }) => {
+const NewGroupModal = ({ currentUserId, currentUserRole, onClose, onCreate }) => {
   const { t } = useTranslation();
   const [name, setName] = useState("");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [scheduleAsClass, setScheduleAsClass] = useState(false);
   const { results, loading } = useUserSearch(query, currentUserId);
+  const isTeacher = currentUserRole === "teacher";
 
   const toggleMember = (user) => {
     setSelected((prev) =>
@@ -28,7 +30,13 @@ const NewGroupModal = ({ currentUserId, onClose, onCreate }) => {
   const handleSubmit = async () => {
     if (!name.trim() || !selected.length || submitting) return;
     setSubmitting(true);
-    await onCreate({ name: name.trim(), avatarUrl: avatarUrl || undefined, memberIds: selected.map((u) => u.id) });
+    await onCreate({
+      name: name.trim(),
+      avatarUrl: avatarUrl || undefined,
+      memberIds: selected.map((u) => u.id),
+      members: selected,
+      scheduleAsClass: isTeacher && scheduleAsClass,
+    });
     setSubmitting(false);
   };
 
@@ -124,6 +132,18 @@ const NewGroupModal = ({ currentUserId, onClose, onCreate }) => {
               );
             })}
           </div>
+
+          {isTeacher && (
+            <label className="flex items-center gap-2 mt-3 px-1 text-xs text-gray-600 dark:text-gray-300 flex-shrink-0 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={scheduleAsClass}
+                onChange={(e) => setScheduleAsClass(e.target.checked)}
+                className="accent-[#9E2FD0]"
+              />
+              {t("messagesExtra.scheduleAsClassToggle")}
+            </label>
+          )}
 
           <button
             onClick={handleSubmit}

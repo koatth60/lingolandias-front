@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { JitsiMeeting } from "@jitsi/react-sdk";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import ChatWindow from "../messages/chatWindow";
 import CallChatWindow from "../messages/CallChatWindow";
 import { useSelector } from "react-redux";
@@ -66,10 +66,27 @@ const getRecorderPriority = (displayName) => {
 
 const JitsiClassRoom = () => {
   const location = useLocation();
-  const { userName, roomId, chatRoomId, chatName, email, chatType, otherUserId } = location.state || {};
-  const domain = JITSI_DOMAIN;
-
+  const [searchParams] = useSearchParams();
   const user = useSelector((state) => state.user.userInfo.user);
+
+  // A push notification's notificationclick can only open a URL (see
+  // sw.js), not React Router state — so a call accepted that way lands
+  // here with query params instead. Falls back to those only when there's
+  // no real location.state at all (a genuine fresh navigation from the
+  // notification, not e.g. a reload of an in-app join).
+  const pushConversationId = searchParams.get("conversationId");
+  const stateFromPush = !location.state && pushConversationId ? {
+    roomId: pushConversationId,
+    chatRoomId: pushConversationId,
+    userName: user?.name,
+    email: user?.email,
+    chatName: searchParams.get("chatName") || undefined,
+    chatType: searchParams.get("chatType") || "private",
+    otherUserId: searchParams.get("callerId") || undefined,
+  } : null;
+
+  const { userName, roomId, chatRoomId, chatName, email, chatType, otherUserId } = location.state || stateFromPush || {};
+  const domain = JITSI_DOMAIN;
   const isTeacherMeetingRoom = TEACHER_MEETING_ROOM_IDS.includes(roomId);
   // Tag the 3 priority admins' displayName so other clients in the room can identify
   // them unambiguously (see getRecorderPriority above) — cosmetically it also just

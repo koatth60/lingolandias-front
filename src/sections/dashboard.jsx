@@ -68,12 +68,12 @@ const Dashboard = () => {
     if (!user?.id) return;
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${BACKEND_URL}/conversations?userId=${user.id}`, {
+      const res = await fetch(`${BACKEND_URL}/conversations?userId=${user.id}&limit=200`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (!res.ok) return;
       const data = await res.json();
-      setConversationsUnread(data.reduce((sum, c) => sum + (c.unreadCount || 0), 0));
+      setConversationsUnread(data.conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0));
     } catch (_) {}
   };
 

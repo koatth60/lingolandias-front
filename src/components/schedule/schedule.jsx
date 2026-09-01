@@ -18,6 +18,7 @@ import { useEffect, useState } from "react";
 import PerfectScrollbar from "react-perfect-scrollbar";
 import "react-perfect-scrollbar/dist/css/styles.css";
 import CustomToolbar from "./customToolBar";
+import ScheduleActionsBar from "./ScheduleActionsBar";
 import {
   fetchMessagesForTeacher,
   fetchUnreadCountsForStudent,
@@ -267,7 +268,7 @@ const Schedule = () => {
         <Navbar header={header} />
 
         <div
-          className={`mt-4 flex flex-col xl:flex-row gap-4 px-4 pb-6 ${
+          className={`mt-4 flex flex-col xl:flex-row gap-4 px-4 pb-6 flex-1 ${
             !isChatVisible && user.role !== "admin" ? "justify-center" : ""
           }`}
         >
@@ -424,7 +425,13 @@ const Schedule = () => {
                 )}
               </div>
 
-              {/* ── Chat sidebar (hidden on mobile, FAB used instead) ── */}
+              {/*
+                Chat sidebar hidden — Messages now owns 1:1/group chat.
+                Kept here commented (not deleted) in case it comes back later.
+                "Edit Calendar" / "Group Class" / teacher-meeting-room
+                shortcuts were extracted into ScheduleActionsBar below so
+                they don't disappear along with it.
+
               {isChatVisible && (
                 <div className="w-full xl:w-[350px] flex-shrink-0 hidden xl:block">
                   {user.role === "teacher" ? (
@@ -449,9 +456,10 @@ const Schedule = () => {
                   )}
                 </div>
               )}
+              */}
 
-              {/* ── Mobile chat FAB + full-screen overlay ── */}
-              {isChatVisible && (
+              {/* ── Mobile chat FAB + full-screen overlay — hidden, see note above */}
+              {false && isChatVisible && (
                 <>
                   {!mobileChatOpen && (
                     <button
@@ -515,6 +523,19 @@ const Schedule = () => {
             </>
           )}
         </div>
+
+        {/* Calendar actions — Edit Calendar / Group Class / teacher-meeting shortcuts */}
+        {user.role !== "admin" && (
+          <div className="px-4 pb-4 flex justify-center">
+            <ScheduleActionsBar
+              user={user}
+              handleJoinMeeting={handleJoinMeeting}
+              setEditingEvent={setEditingEvent}
+              editingEvent={editingEvent}
+              loading={loading}
+            />
+          </div>
+        )}
 
         {/* Teacher panel */}
         {user.role === "teacher" && user.students && user.students.length > 0 && (

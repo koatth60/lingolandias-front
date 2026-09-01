@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import ChatListComponent from "../components/messages/ChatListComponent";
@@ -32,6 +33,8 @@ const LEGACY_NAME_KEYS = {
 
 const Messages = () => {
   const { t } = useTranslation();
+  const location = useLocation();
+  const navigate = useNavigate();
   const user = useSelector((state) => state.user.userInfo.user);
   const [conversations, setConversations] = useState([]);
   const [selectedChat, setSelectedChat] = useState(null);
@@ -59,17 +62,38 @@ const Messages = () => {
     return key ? t(key) : c.name;
   }, [t]);
 
-  const fetchConversations = useCallback(async () => {
+  const CONVERSATIONS_PAGE_SIZE = 20;
+  const [hasMoreChats, setHasMoreChats] = useState(false);
+  const [loadingMoreChats, setLoadingMoreChats] = useState(false);
+  const conversationsRef = useRef([]);
+  useEffect(() => { conversationsRef.current = conversations; }, [conversations]);
+
+  // append=false (default) always reloads page 1 — used on mount and any time
+  // something changes that could reorder the top of the list (new message,
+  // new conversation). append=true is only for the explicit "load more" click.
+  const fetchConversations = useCallback(async (append = false) => {
     if (!user?.id) return;
     try {
-      const res = await fetch(`${BACKEND_URL}/conversations?userId=${user.id}`, { headers: authHeaders() });
+      const offset = append ? conversationsRef.current.length : 0;
+      const res = await fetch(
+        `${BACKEND_URL}/conversations?userId=${user.id}&limit=${CONVERSATIONS_PAGE_SIZE}&offset=${offset}`,
+        { headers: authHeaders() }
+      );
       if (!res.ok) return;
       const data = await res.json();
-      setConversations(data.map((c) => ({ ...c, name: getDisplayName(c) })));
+      const withNames = data.conversations.map((c) => ({ ...c, name: getDisplayName(c) }));
+      setConversations((prev) => (append ? [...prev, ...withNames] : withNames));
+      setHasMoreChats(data.hasMore);
     } catch (err) {
       console.error("Error fetching conversations:", err);
     }
-  }, [user?.id, getDisplayName]);
+  }, [user?.id, getDisplayName]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const loadMoreChats = async () => {
+    setLoadingMoreChats(true);
+    await fetchConversations(true);
+    setLoadingMoreChats(false);
+  };
 
   useEffect(() => { fetchConversations(); }, [fetchConversations]);
 
@@ -124,6 +148,15 @@ const Messages = () => {
     }
   };
 
+  // Deep link from the Schedule calendar's "message this person" icon —
+  // open (or create) that DM automatically on arrival.
+  useEffect(() => {
+    const targetId = location.state?.openDmWithUserId;
+    if (!targetId || !user?.id) return;
+    startDmWith({ id: targetId, name: location.state?.openDmWithName || "", lastName: "" });
+    navigate(location.pathname, { replace: true, state: {} });
+  }, [location.state?.openDmWithUserId]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleCreateGroup = async ({ name, avatarUrl, memberIds }) => {
     try {
       const res = await fetch(`${BACKEND_URL}/conversations/group`, {
@@ -163,6 +196,91 @@ const Messages = () => {
     }
   };
 
+  const handleAddMember = async (newUserId, shareHistory) => {
+    if (!selectedChat) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}/conversations/${selectedChat.id}/members`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify({ userId: newUserId, addedBy: user.id, shareHistory }),
+      });
+      const updatedConversation = await res.json();
+      // A DM grows into a group the moment a third person joins.
+      setSelectedChat((prev) => ({
+        ...prev,
+        type: updatedConversation.type,
+        name: updatedConversation.name || prev.name,
+        otherUser: updatedConversation.type === "group" ? null : prev.otherUser,
+      }));
+      notifyNewConversation(selectedChat.id, [newUserId]);
+      fetchConversations();
+      handleViewGroupMembers();
+    } catch (err) {
+      console.error("Error adding member:", err);
+    }
+  };
+
+  const handleRenameChat = async (newName) => {
+    if (!selectedChat) return;
+    try {
+      await fetch(`${BACKEND_URL}/conversations/${selectedChat.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify({ name: newName }),
+      });
+      setSelectedChat((prev) => ({ ...prev, name: newName }));
+      fetchConversations();
+    } catch (err) {
+      console.error("Error renaming chat:", err);
+    }
+  };
+
+  const handleTogglePin = async (chat) => {
+    const nextPinned = !chat.pinned;
+    setConversations((prev) => prev.map((c) => (c.id === chat.id ? { ...c, pinned: nextPinned } : c)));
+    try {
+      await fetch(`${BACKEND_URL}/conversations/${chat.id}/pin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify({ userId: user.id, pinned: nextPinned }),
+      });
+      fetchConversations();
+    } catch (err) {
+      console.error("Error toggling pin:", err);
+    }
+  };
+
+  const handleToggleMute = async (chat) => {
+    const nextMuted = !chat.muted;
+    setConversations((prev) => prev.map((c) => (c.id === chat.id ? { ...c, muted: nextMuted } : c)));
+    try {
+      await fetch(`${BACKEND_URL}/conversations/${chat.id}/mute`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify({ userId: user.id, muted: nextMuted }),
+      });
+      fetchConversations();
+    } catch (err) {
+      console.error("Error toggling mute:", err);
+    }
+  };
+
+  const handleDeleteChat = async (chat) => {
+    setConversations((prev) => prev.filter((c) => c.id !== chat.id));
+    if (selectedChat?.id === chat.id) {
+      setSelectedChat(null);
+      setShowChatList(true);
+    }
+    try {
+      await fetch(`${BACKEND_URL}/conversations/${chat.id}?userId=${user.id}`, {
+        method: "DELETE",
+        headers: authHeaders(),
+      });
+    } catch (err) {
+      console.error("Error deleting chat:", err);
+    }
+  };
+
   const chatListProps = {
     chats: conversations,
     onChatSelect: handleChatSelect,
@@ -170,6 +288,12 @@ const Messages = () => {
     currentUserId: user.id,
     onStartChatWithUser: startDmWith,
     onNewGroup: () => setShowNewGroupModal(true),
+    onTogglePin: handleTogglePin,
+    onToggleMute: handleToggleMute,
+    onDeleteChat: handleDeleteChat,
+    hasMoreChats,
+    loadingMoreChats,
+    onLoadMoreChats: loadMoreChats,
   };
 
   const chatWindowProps = selectedChat ? {
@@ -309,10 +433,14 @@ const Messages = () => {
 
       {groupMembers && (
         <GroupMembersModal
+          chatType={selectedChat?.type}
           groupName={selectedChat?.name}
           members={groupMembers}
+          currentUserId={user.id}
           onClose={() => setGroupMembers(null)}
           onViewProfile={(id) => { setGroupMembers(null); handleViewProfile(id); }}
+          onRename={handleRenameChat}
+          onAddMember={handleAddMember}
         />
       )}
     </div>

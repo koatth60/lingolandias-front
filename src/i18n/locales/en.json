@@ -453,7 +453,16 @@
     "uploadPhoto": "Upload photo",
     "useImageUrl": "Use image URL",
     "membersCount": "{{count}} members",
-    "groupOwner": "Owner"
+    "groupOwner": "Owner",
+    "pin": "Pin",
+    "unpin": "Unpin",
+    "mute": "Mute notifications",
+    "unmute": "Unmute notifications",
+    "deleteChat": "Delete chat",
+    "addPeople": "Add people",
+    "shareHistoryToggle": "Share full message history with them",
+    "cancel": "Cancel",
+    "loadMoreChats": "Load more chats"
   },
   "toolbar": {
     "classesSchedule": "Classes Schedule",

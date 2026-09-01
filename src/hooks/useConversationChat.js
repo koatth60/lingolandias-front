@@ -10,6 +10,8 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 // one model.
 const useConversationChat = (socket, conversationId, user) => {
   const [chatMessages, setChatMessages] = useState([]);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const fetchMessages = useCallback(async () => {
     if (!conversationId) return;
@@ -17,13 +19,33 @@ const useConversationChat = (socket, conversationId, user) => {
       const token = localStorage.getItem("token");
       const response = await axios.get(
         `${BACKEND_URL}/conversations/${conversationId}/messages`,
-        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+        { params: { userId: user?.id }, headers: token ? { Authorization: `Bearer ${token}` } : {} }
       );
       setChatMessages(response.data);
+      setHasMore(response.data.length >= 50);
     } catch (error) {
       console.error("Error fetching conversation messages:", error);
     }
-  }, [conversationId]);
+  }, [conversationId, user?.id]);
+
+  const loadOlderMessages = useCallback(async () => {
+    if (!conversationId || loadingMore || !hasMore || !chatMessages.length) return;
+    setLoadingMore(true);
+    try {
+      const token = localStorage.getItem("token");
+      const oldest = chatMessages[0];
+      const response = await axios.get(
+        `${BACKEND_URL}/conversations/${conversationId}/messages`,
+        { params: { userId: user?.id, before: oldest.id }, headers: token ? { Authorization: `Bearer ${token}` } : {} }
+      );
+      setChatMessages((prev) => [...response.data, ...prev]);
+      setHasMore(response.data.length >= 50);
+    } catch (error) {
+      console.error("Error loading older messages:", error);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [conversationId, user?.id, chatMessages, loadingMore, hasMore]);
 
   useEffect(() => {
     if (!socket || !conversationId || !user?.name) return;
@@ -109,7 +131,7 @@ const useConversationChat = (socket, conversationId, user) => {
     });
   };
 
-  return { chatMessages, setChatMessages, sendMessage };
+  return { chatMessages, setChatMessages, sendMessage, loadOlderMessages, hasMore, loadingMore };
 };
 
 export default useConversationChat;

@@ -1,7 +1,7 @@
-import { useState, useMemo, memo } from "react";
+import { useState, useMemo, memo, useEffect } from "react";
 import PropTypes from "prop-types";
 import { FaComments, FaUsers, FaUserFriends } from "react-icons/fa";
-import { FiSearch, FiPlus, FiUserPlus } from "react-icons/fi";
+import { FiSearch, FiPlus, FiUserPlus, FiMoreVertical, FiBookmark, FiBellOff, FiBell, FiTrash2 } from "react-icons/fi";
 import { useTranslation } from "react-i18next";
 import useUserSearch from "../../hooks/useUserSearch";
 
@@ -73,9 +73,23 @@ const ChatListComponent = ({
   currentUserId,
   onStartChatWithUser,
   onNewGroup,
+  onTogglePin,
+  onToggleMute,
+  onDeleteChat,
+  hasMoreChats,
+  loadingMoreChats,
+  onLoadMoreChats,
 }) => {
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
+  const [openMenuId, setOpenMenuId] = useState(null);
+
+  useEffect(() => {
+    if (!openMenuId) return;
+    const closeMenu = () => setOpenMenuId(null);
+    document.addEventListener("click", closeMenu);
+    return () => document.removeEventListener("click", closeMenu);
+  }, [openMenuId]);
   const { results: rawPeopleResults, loading: peopleLoading } = useUserSearch(search, currentUserId);
 
   // Teams-style: if a DM with this person already exists, it's just a chat
@@ -90,10 +104,13 @@ const ChatListComponent = ({
     [rawPeopleResults, existingDmUserIds]
   );
 
-  const filtered = useMemo(
-    () => chats.filter((c) => (c.name || "").toLowerCase().includes(search.toLowerCase())),
-    [chats, search]
-  );
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return chats;
+    return chats.filter(
+      (c) => (c.name || "").toLowerCase().includes(q) || (c.otherUser?.email || "").toLowerCase().includes(q)
+    );
+  }, [chats, search]);
 
   const getMeta = (type) => TYPE_META[type] ?? TYPE_META.general;
   const showPeopleResults = search.trim().length >= 2;
@@ -188,12 +205,13 @@ const ChatListComponent = ({
           const isActive = chat.id === selectedChatId;
           const lastMsg = chat.lastMessage;
           const isOnline = chat.type === "dm" ? chat.otherUser?.online === "online" : true;
+          const isManageable = chat.type === "dm" || chat.type === "group";
 
           return (
             <li
               key={chat.id}
-              onClick={() => onChatSelect(chat)}
-              className={`group flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer
+              onClick={() => { onChatSelect(chat); setOpenMenuId(null); }}
+              className={`group relative flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer
                          transition-all duration-150 active:scale-[0.99]
                          ${isActive
                            ? "bg-[#9E2FD0]/10 dark:bg-[#9E2FD0]/15 border border-[#9E2FD0]/25 dark:border-[#9E2FD0]/30"
@@ -226,10 +244,12 @@ const ChatListComponent = ({
               <div className="flex-1 min-w-0">
                 {/* Row 1: name + timestamp */}
                 <div className="flex items-center justify-between gap-1">
-                  <p className={`text-sm font-medium leading-tight truncate ${isActive ? "text-[#9E2FD0] dark:text-purple-300" : "text-gray-700 dark:text-white"}`}>
-                    {chat.name}
+                  <p className={`flex items-center gap-1 text-sm font-medium leading-tight truncate ${isActive ? "text-[#9E2FD0] dark:text-purple-300" : "text-gray-700 dark:text-white"}`}>
+                    {chat.pinned && <FiBookmark size={10} className="text-[#F6B82E] flex-shrink-0" />}
+                    {chat.muted && <FiBellOff size={10} className="text-gray-400 flex-shrink-0" />}
+                    <span className="truncate">{chat.name}</span>
                   </p>
-                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <div className="flex items-center gap-1 flex-shrink-0">
                     {lastMsg?.timestamp && (
                       <span className="text-[10px] text-gray-400 dark:text-gray-500">
                         {formatTime(lastMsg.timestamp, t)}
@@ -240,6 +260,12 @@ const ChatListComponent = ({
                         {unread > 99 ? "99+" : unread}
                       </span>
                     )}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setOpenMenuId((id) => (id === chat.id ? null : chat.id)); }}
+                      className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                    >
+                      <FiMoreVertical size={13} />
+                    </button>
                   </div>
                 </div>
 
@@ -259,10 +285,54 @@ const ChatListComponent = ({
                   </div>
                 )}
               </div>
+
+              {/* Pin / mute / delete menu */}
+              {openMenuId === chat.id && (
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute right-2 top-12 z-30 w-40 rounded-xl shadow-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1e1b35] overflow-hidden"
+                >
+                  <button
+                    onClick={() => { onTogglePin?.(chat); setOpenMenuId(null); }}
+                    className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5"
+                  >
+                    <FiBookmark size={13} /> {chat.pinned ? t("messagesExtra.unpin") : t("messagesExtra.pin")}
+                  </button>
+                  <button
+                    onClick={() => { onToggleMute?.(chat); setOpenMenuId(null); }}
+                    className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 border-t border-gray-100 dark:border-white/5"
+                  >
+                    {chat.muted ? <FiBell size={13} /> : <FiBellOff size={13} />}
+                    {chat.muted ? t("messagesExtra.unmute") : t("messagesExtra.mute")}
+                  </button>
+                  {isManageable && (
+                    <button
+                      onClick={() => { onDeleteChat?.(chat); setOpenMenuId(null); }}
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 border-t border-gray-100 dark:border-white/5"
+                    >
+                      <FiTrash2 size={13} /> {t("messagesExtra.deleteChat")}
+                    </button>
+                  )}
+                </div>
+              )}
             </li>
           );
         })}
       </ul>
+
+      {hasMoreChats && !showPeopleResults && (
+        <div className="flex-shrink-0 px-3 py-2 border-t border-gray-100 dark:border-white/5">
+          <button
+            onClick={onLoadMoreChats}
+            disabled={loadingMoreChats}
+            className="w-full text-xs font-medium py-2 rounded-xl text-[#9E2FD0] dark:text-purple-300
+                       bg-[#9E2FD0]/10 dark:bg-[#9E2FD0]/15 hover:bg-[#9E2FD0]/20 transition-colors
+                       disabled:opacity-50"
+          >
+            {loadingMoreChats ? t("messagesExtra.searching") : t("messagesExtra.loadMoreChats")}
+          </button>
+        </div>
+      )}
     </div>
   );
 };

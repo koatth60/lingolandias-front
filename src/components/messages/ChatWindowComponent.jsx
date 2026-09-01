@@ -56,7 +56,7 @@ const ChatWindowComponent = ({
   const user = useSelector((state) => state.user.userInfo?.user);
 
   const currentUser = { id: userId, name: username, email, avatarUrl: userUrl };
-  const { chatMessages, setChatMessages, sendMessage } = useConversationChat(
+  const { chatMessages, setChatMessages, sendMessage, loadOlderMessages, hasMore, loadingMore } = useConversationChat(
     socket, room, currentUser
   );
 
@@ -386,7 +386,8 @@ const ChatWindowComponent = ({
     return parts.length > 0 ? parts : text;
   };
 
-  const isGeneralChat = chatType === "general" || chatType === "teacher" || chatType === "group";
+  const isGeneralChat = chatType === "general" || chatType === "teacher" || chatType === "group" || chatType === "dm";
+  const canShowMembers = chatType === "general" || chatType === "teacher" || chatType === "support" || chatType === "group" || chatType === "dm";
 
   return (
     <div className="w-full h-full flex flex-col relative overflow-hidden
@@ -438,7 +439,7 @@ const ChatWindowComponent = ({
                 <span>Join</span>
               </button>
             )}
-            {chatType === "group" && (
+            {canShowMembers && (
               <button onClick={() => onViewGroupMembers?.()} title="View members"
                 className="flex items-center gap-1 px-2 py-1 rounded-full flex-shrink-0
                            text-gray-600 dark:text-gray-300 text-[11px] font-medium transition-colors
@@ -477,6 +478,19 @@ const ChatWindowComponent = ({
         options={{ suppressScrollX: true }}
       >
         <div className="p-4 sm:p-6">
+          {hasMore && chatMessages.length > 0 && (
+            <div className="flex justify-center mb-4">
+              <button
+                onClick={loadOlderMessages}
+                disabled={loadingMore}
+                className="text-xs font-medium px-3 py-1.5 rounded-full text-[#9E2FD0] dark:text-purple-300
+                           bg-[#9E2FD0]/10 dark:bg-[#9E2FD0]/15 hover:bg-[#9E2FD0]/20 transition-colors
+                           disabled:opacity-50"
+              >
+                {loadingMore ? t("chatWindow.loading", "Loading...") : t("chatWindow.loadMore")}
+              </button>
+            </div>
+          )}
           {chatMessages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-48 gap-3">
               <div className="w-14 h-14 rounded-full bg-purple-100 dark:bg-purple-500/20

@@ -453,7 +453,16 @@
     "uploadPhoto": "Prześlij zdjęcie",
     "useImageUrl": "Użyj adresu URL obrazu",
     "membersCount": "{{count}} członków",
-    "groupOwner": "Właściciel"
+    "groupOwner": "Właściciel",
+    "pin": "Przypnij",
+    "unpin": "Odepnij",
+    "mute": "Wycisz powiadomienia",
+    "unmute": "Włącz powiadomienia",
+    "deleteChat": "Usuń czat",
+    "addPeople": "Dodaj osoby",
+    "shareHistoryToggle": "Udostępnij pełną historię wiadomości",
+    "cancel": "Anuluj",
+    "loadMoreChats": "Załaduj więcej czatów"
   },
   "toolbar": {
     "classesSchedule": "Harmonogram Zajęć",

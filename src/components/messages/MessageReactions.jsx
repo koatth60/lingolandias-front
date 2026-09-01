@@ -1,12 +1,16 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FiSmile } from "react-icons/fi";
 
 const QUICK_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🙏"];
 
 // Renders existing reaction pills (emoji + count, highlighted if the current
 // user is in that emoji's list) plus a hover-revealed trigger that pops a
-// small quick-react strip — mirrors Teams' own default reaction set.
+// small quick-react strip — mirrors Teams' own default reaction set. Each
+// pill's title attribute lists who reacted (native tooltip, no extra fetch —
+// reactions already carry {id, name} per person).
 const MessageReactions = ({ reactions, currentUserId, onToggle, align = "start" }) => {
+  const { t } = useTranslation();
   const [pickerOpen, setPickerOpen] = useState(false);
   const wrapperRef = useRef(null);
 
@@ -19,7 +23,7 @@ const MessageReactions = ({ reactions, currentUserId, onToggle, align = "start" 
     return () => document.removeEventListener("click", closeOnOutsideClick);
   }, [pickerOpen]);
 
-  const entries = Object.entries(reactions || {}).filter(([, ids]) => ids?.length);
+  const entries = Object.entries(reactions || {}).filter(([, reactors]) => reactors?.length);
 
   const pick = (emoji) => {
     onToggle(emoji);
@@ -31,12 +35,14 @@ const MessageReactions = ({ reactions, currentUserId, onToggle, align = "start" 
       ref={wrapperRef}
       className={`relative flex flex-wrap items-center gap-1 mt-1 ${align === "end" ? "justify-end" : ""}`}
     >
-      {entries.map(([emoji, ids]) => {
-        const mine = currentUserId && ids.includes(currentUserId);
+      {entries.map(([emoji, reactors]) => {
+        const mine = currentUserId && reactors.some((r) => r.id === currentUserId);
+        const names = reactors.map((r) => (r.id === currentUserId ? t("messagesExtra.you") : r.name));
         return (
           <button
             key={emoji}
             onClick={() => onToggle(emoji)}
+            title={names.join(", ")}
             className={`flex items-center gap-1 text-[11px] leading-none px-1.5 py-0.5 rounded-full border transition-colors ${
               mine
                 ? "bg-[#9E2FD0]/15 border-[#9E2FD0]/40 text-[#9E2FD0]"
@@ -44,7 +50,7 @@ const MessageReactions = ({ reactions, currentUserId, onToggle, align = "start" 
             }`}
           >
             <span>{emoji}</span>
-            <span>{ids.length}</span>
+            <span>{reactors.length}</span>
           </button>
         );
       })}

@@ -165,7 +165,7 @@ const useConversationChat = (socket, conversationId, user) => {
 
   const toggleReaction = (messageId, emoji) => {
     if (!conversationId || !socket || !socket.connected) return;
-    socket.emit("toggleReaction", { conversationId, messageId, emoji });
+    socket.emit("toggleReaction", { conversationId, messageId, emoji, userName: user?.name });
   };
 
   return { chatMessages, setChatMessages, sendMessage, loadOlderMessages, hasMore, loadingMore, toggleReaction };

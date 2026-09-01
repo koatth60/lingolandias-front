@@ -608,7 +608,8 @@ const ChatWindowComponent = ({
                     )}
 
                     {isSender ? (
-                      <div className="flex items-end gap-1.5 max-w-[75%] sm:max-w-[60%]">
+                      <div className="flex flex-col items-end max-w-[75%] sm:max-w-[60%]">
+                      <div className="flex items-end gap-1.5">
                         {/* Reply + options */}
                         <div className="flex items-center gap-0.5 self-end mb-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
                           <button
@@ -660,8 +661,9 @@ const ChatWindowComponent = ({
                             </p>
                           )}
                         </div>
+                      </div>
                         {isLastOwnMessage && chatType === "dm" && (
-                          <span className={`text-[10px] flex-shrink-0 mb-0.5 ${isSeen ? "text-[#9E2FD0]" : "text-gray-400"}`}>
+                          <span className={`text-[10px] mt-0.5 mr-1 ${isSeen ? "text-[#9E2FD0]" : "text-gray-400"}`}>
                             {isSeen ? t("chatWindow.seen") : t("chatWindow.sent")}
                           </span>
                         )}

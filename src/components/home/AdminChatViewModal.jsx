@@ -1,22 +1,27 @@
 // AdminChatViewModal.jsx — Read-only chat observer for admin dashboard
 import { useEffect, useRef, useState, useCallback } from "react";
-import { io } from "socket.io-client";
 import axios from "axios";
 import { FiX, FiMessageSquare, FiEye } from "react-icons/fi";
+import { socket } from "../../socket";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-const AdminChatViewModal = ({ classItem, onClose }) => {
+// A class's chat is the same conversation the new Messages page and
+// in-call chat both read/write (conversation id = the student's own userId
+// for a 1:1 class, per the Fase 1 migration convention) — this used to read
+// the old, pre-migration /chat table instead, so anything sent through the
+// current chat system was invisible here.
+const AdminChatViewModal = ({ classItem, adminUserId, onClose }) => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef(null);
+  const conversationId = classItem.roomId || classItem.studentId;
 
   const fetchMessages = useCallback(async () => {
     try {
-      // Class chats use /chat/messages/{studentId} — NOT /chat/global-chats/
       const res = await axios.get(
-        `${BACKEND_URL}/chat/messages/${classItem.studentId}`,
-        { params: { email: classItem.teacherEmail } }
+        `${BACKEND_URL}/conversations/${conversationId}/admin-messages`,
+        { params: { requesterId: adminUserId } }
       );
       setMessages(res.data.reverse());
     } catch (e) {
@@ -24,23 +29,26 @@ const AdminChatViewModal = ({ classItem, onClose }) => {
     } finally {
       setLoading(false);
     }
-  }, [classItem.studentId, classItem.teacherEmail]);
+  }, [conversationId, adminUserId]);
 
   useEffect(() => {
     fetchMessages();
 
-    // Live updates via socket — class chat uses "chat" event, not "globalChat"
-    const socket = io(BACKEND_URL);
-    socket.emit("join", { username: "admin-observer", room: classItem.studentId });
-    socket.on("chat", (data) => {
+    // Shared, already-authenticated socket — a raw io(BACKEND_URL) here was
+    // the same anti-pattern fixed in dashboard.jsx (a fresh, unauthenticated
+    // connection per mount, contributing to the platform-wide online-status
+    // toast storm), and it used the legacy "chat" event which the current
+    // conversations model never emits.
+    const handleMessage = (data) => {
+      if (data.conversationId !== conversationId) return;
       setMessages((prev) => [...prev, data]);
-    });
+    };
+    socket.on("conversationMessage", handleMessage);
 
     return () => {
-      socket.off("chat");
-      socket.disconnect();
+      socket.off("conversationMessage", handleMessage);
     };
-  }, [classItem.studentId, fetchMessages]);
+  }, [conversationId, fetchMessages]);
 
   // Auto-scroll on new messages
   useEffect(() => {
@@ -314,9 +322,9 @@ const AdminChatViewModal = ({ classItem, onClose }) => {
                       {!isTeacher && (
                         <div className="flex-shrink-0 w-8 self-end">
                           {isFirstFromUser ? (
-                            msg.userUrl ? (
+                            msg.avatarUrl ? (
                               <img
-                                src={msg.userUrl}
+                                src={msg.avatarUrl}
                                 alt="avatar"
                                 className="w-8 h-8 rounded-full object-cover"
                                 style={{ boxShadow: "0 0 0 2px rgba(158,47,208,0.35)" }}
@@ -365,8 +373,8 @@ const AdminChatViewModal = ({ classItem, onClose }) => {
                           }
                         >
                           <div style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-                            {msg.message.startsWith("http")
-                              ? renderFileMessage(msg.message, isTeacher)
+                            {msg.fileUrl
+                              ? renderFileMessage(msg.fileUrl, isTeacher)
                               : formatMessageWithLinks(msg.message, isTeacher)}
                           </div>
                         </div>
@@ -383,9 +391,9 @@ const AdminChatViewModal = ({ classItem, onClose }) => {
                       {isTeacher && (
                         <div className="flex-shrink-0 w-8 self-end">
                           {isFirstFromUser ? (
-                            msg.userUrl ? (
+                            msg.avatarUrl ? (
                               <img
-                                src={msg.userUrl}
+                                src={msg.avatarUrl}
                                 alt="avatar"
                                 className="w-8 h-8 rounded-full object-cover"
                                 style={{ boxShadow: "0 0 0 2px rgba(38,217,161,0.45)" }}

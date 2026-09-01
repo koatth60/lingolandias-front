@@ -230,8 +230,12 @@ const Schedule = () => {
       const email = user.email;
       const student = user.students?.find((s) => s.id === event.studentId);
       const chatName = student?.name;
+      // otherUserId lets the incoming-call ring reach the other side
+      // directly even if roomId doesn't correspond to a real conversations
+      // row yet — same convention as joinClassHandler.js's shared flow.
+      const otherUserId = user.role === "user" ? user.teacher?.id : event.studentId;
       navigate("/classroom", {
-        state: { roomId, chatRoomId: roomId, userName, email, fromMeeting: false, chatName },
+        state: { roomId, chatRoomId: roomId, userName, email, fromMeeting: false, chatName, chatType: "private", otherUserId },
       });
     }
   };
@@ -251,7 +255,12 @@ const Schedule = () => {
       else if (user.role === "user") { roomId = user.teacher.id; }
     }
 
-    const params = { roomId, chatRoomId: roomId, userName, email, fromMeeting: true, chatName, chatType: roomName ? "teacher" : "group" };
+    // Only the student side has one specific "other side" to ring directly —
+    // a teacher's own room can have several different students join it, so
+    // there's no single otherUserId to target there; the incoming-call ring
+    // falls back to the room's existing conversation members in that case.
+    const otherUserId = !roomName && user.role === "user" ? user.teacher?.id : undefined;
+    const params = { roomId, chatRoomId: roomId, userName, email, fromMeeting: true, chatName, chatType: roomName ? "teacher" : "group", otherUserId };
 
     navigate("/classroom", { state: params });
   };

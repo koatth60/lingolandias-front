@@ -203,6 +203,7 @@ const AdminHomeDashboard = () => {
       {chatModal && (
         <AdminChatViewModal
           classItem={chatModal}
+          adminUserId={admin.id}
           onClose={() => setChatModal(null)}
         />
       )}

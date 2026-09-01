@@ -18,7 +18,7 @@ const useRingtone = () => {
       oscillator.type = "sine";
       oscillator.frequency.setValueAtTime(740, now + offset);
       gain.gain.setValueAtTime(0.0001, now + offset);
-      gain.gain.exponentialRampToValueAtTime(0.16, now + offset + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.4, now + offset + 0.02);
       gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.22);
       oscillator.start(now + offset);
       oscillator.stop(now + offset + 0.24);

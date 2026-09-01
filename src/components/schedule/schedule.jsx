@@ -169,7 +169,10 @@ const Schedule = () => {
           if (action === 'add') dispatch(addStudentSchedule(schedule));
           else if (action === 'remove') dispatch(removeStudentSchedules(eventIds));
           else if (action === 'modify') dispatch(updateStudentSchedule(schedule));
-        } else if (user.role === 'teacher' && user.id === (schedule?.teacherId || teacherId)) {
+        } else if (
+          user.role === 'teacher' &&
+          (user.id === (schedule?.teacherId || teacherId) || schedule?.coTeacherIds?.includes(user.id))
+        ) {
           // Covers class changes triggered from the Messages/group-chat side
           // (renamed, member added/removed) — those already work for every
           // other participant via socket, this keeps the teacher's own

@@ -211,17 +211,26 @@ const userSlice = createSlice({
       }
     },
     updateTeacherSchedule: (state, action) => {
+      if (!state.userInfo?.user) return;
+      if (!Array.isArray(state.userInfo.user.teacherSchedules)) {
+        state.userInfo.user.teacherSchedules = [];
+      }
       const e = action.payload;
-      if (state.userInfo?.user?.teacherSchedules) {
-        const idx = state.userInfo.user.teacherSchedules.findIndex(s => s.id === e.id);
-        if (idx !== -1) {
-          state.userInfo.user.teacherSchedules[idx] = {
-            ...state.userInfo.user.teacherSchedules[idx],
-            ...e,
-            startTime: e.startTime || e.start,
-            endTime: e.endTime || e.end,
-          };
-        }
+      const idx = state.userInfo.user.teacherSchedules.findIndex(s => s.id === e.id);
+      const normalized = {
+        ...e,
+        startTime: e.startTime || e.start,
+        endTime: e.endTime || e.end,
+        initialDateTime: e.initialDateTime || e.startTime || e.start,
+      };
+      if (idx !== -1) {
+        state.userInfo.user.teacherSchedules[idx] = { ...state.userInfo.user.teacherSchedules[idx], ...normalized };
+      } else {
+        // A co-teacher gaining access to a class arrives here as a 'modify'
+        // broadcast for a row they've never seen before — upsert instead of
+        // silently dropping it, so it shows up live instead of only after
+        // their next Schedule-page visit.
+        state.userInfo.user.teacherSchedules.push(normalized);
       }
     },
     // Replaces the student's full schedule list (used on reconnect/mount to apply missed changes)

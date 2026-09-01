@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { io } from "socket.io-client";
 import axios from "axios";
 import { BsEmojiSmile, BsThreeDots } from "react-icons/bs";
@@ -32,6 +32,7 @@ const CallChatWindow = ({
   const textareaRef = useRef(null);
   const fileInputRef = useRef(null);
   const typingTimeoutRef = useRef(null);
+  const readDebounceRef = useRef(null);
 
   const currentUser = { id: userId, name: username, email, avatarUrl: userUrl };
   const { chatMessages, setChatMessages, sendMessage: sendConversationMessage } =
@@ -39,6 +40,25 @@ const CallChatWindow = ({
 
   const { handleDeleteMessage, toggleOptionsMenu, openMessageId } =
     useDeleteConversationMessage(setChatMessages, socket, room);
+
+  // Messages seen inside a call chat were never marked read server-side —
+  // reopening Messages afterward showed them as unread again even though
+  // you'd just read them live in the call.
+  const markConversationRead = useCallback(() => {
+    if (!socket || !room || !userId) return;
+    socket.emit("markConversationRead", { conversationId: room, userId });
+  }, [socket, room, userId]);
+
+  useEffect(() => {
+    markConversationRead();
+  }, [room, markConversationRead]);
+
+  useEffect(() => {
+    if (!room || chatMessages.length === 0) return;
+    clearTimeout(readDebounceRef.current);
+    readDebounceRef.current = setTimeout(markConversationRead, 1500);
+    return () => clearTimeout(readDebounceRef.current);
+  }, [chatMessages.length, room, markConversationRead]);
 
   const handleEditMessage = (msg) => {
     setEditingMsg(msg);

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
@@ -12,6 +12,8 @@ import TimeInput from "../common/TimeInput";
 import { projectSchedules, normalizeCalendarRange } from "../../utils/scheduleProjection";
 
 dayjs.extend(utc);
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const CalendarToolbar = ({ label, onNavigate, onView, view }) => {
   const { t } = useTranslation();
@@ -61,13 +63,35 @@ const CalendarToolbar = ({ label, onNavigate, onView, view }) => {
 // they can pick a free slot, then confirm the time/recurrence/name. Confirm
 // contract mirrors the old (dead, unwired) ScheduleGroupClassModal so nothing
 // downstream cares which one produced the payload.
-const ScheduleClassPicker = ({ teacherSchedules, students, defaultName, onClose, onConfirm }) => {
+//
+// Fetches its own busy schedule from the server on open instead of trusting
+// the caller's Redux-cached teacherSchedules — that cache only gets updated
+// by a live socket event while the Schedule page happens to be mounted, so a
+// class deleted/changed from Messages (this component's only real caller)
+// would otherwise still show up here as "busy" after being deleted.
+const ScheduleClassPicker = ({ teacherId, students, defaultName, onClose, onConfirm }) => {
   const { t } = useTranslation();
   const localizer = useMemo(() => dayjsLocalizer(dayjs), []);
   const [calendarRange, setCalendarRange] = useState(() => ({
     start: dayjs().startOf("week").toDate(),
     end: dayjs().endOf("week").toDate(),
   }));
+  const [teacherSchedules, setTeacherSchedules] = useState([]);
+  const [loadingSchedules, setLoadingSchedules] = useState(true);
+
+  useEffect(() => {
+    if (!teacherId) return;
+    const token = localStorage.getItem("token");
+    setLoadingSchedules(true);
+    fetch(`${BACKEND_URL}/users/teacher-profile/${teacherId}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+      .then((res) => (res.ok ? res.json() : { teacherSchedules: [] }))
+      .then((data) => setTeacherSchedules(Array.isArray(data.teacherSchedules) ? data.teacherSchedules : []))
+      .catch((err) => console.error("Error fetching teacher availability:", err))
+      .finally(() => setLoadingSchedules(false));
+  }, [teacherId]);
+
   const busyEvents = useMemo(
     () =>
       projectSchedules(teacherSchedules || [], {
@@ -148,7 +172,12 @@ const ScheduleClassPicker = ({ teacherSchedules, students, defaultName, onClose,
           </button>
         </div>
 
-        <div className="flex-1 overflow-hidden p-4">
+        <div className="flex-1 overflow-hidden p-4 relative">
+          {loadingSchedules && (
+            <div className="absolute inset-4 z-10 flex items-center justify-center rounded-xl bg-white/70 dark:bg-black/40 backdrop-blur-sm">
+              <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "#9E2FD0", borderTopColor: "transparent" }} />
+            </div>
+          )}
           <div className="rbc-admin-cal h-full rounded-xl overflow-hidden border border-gray-200 dark:border-white/[0.07]">
             <Calendar
               localizer={localizer}
@@ -165,7 +194,7 @@ const ScheduleClassPicker = ({ teacherSchedules, students, defaultName, onClose,
                 timeGutterFormat: "HH:mm",
                 eventTimeRangeFormat: ({ start: s, end: e }) => `${dayjs(s).format("HH:mm")} – ${dayjs(e).format("HH:mm")}`,
               }}
-              selectable
+              selectable={!loadingSchedules}
               onSelectSlot={handleSelectSlot}
               eventPropGetter={() => ({
                 style: { background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", border: "none", borderRadius: 6, color: "#fff", fontSize: 12, fontWeight: 600, padding: "2px 6px" },

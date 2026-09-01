@@ -210,6 +210,19 @@ const userSlice = createSlice({
         );
       }
     },
+    // Deleting a scheduled group's chat cascades to its Schedule rows
+    // server-side, but the acting teacher's own Redux copy only gets told via
+    // the scheduleUpdated socket, which only reaches them while the Schedule
+    // page happens to be mounted — a delete triggered from Messages would
+    // otherwise leave the deleted class showing as "busy" until next login.
+    removeTeacherSchedulesByRoom: (state, action) => {
+      const roomId = action.payload;
+      if (state.userInfo?.user?.teacherSchedules) {
+        state.userInfo.user.teacherSchedules = state.userInfo.user.teacherSchedules.filter(
+          s => s.roomId !== roomId
+        );
+      }
+    },
     updateTeacherSchedule: (state, action) => {
       if (!state.userInfo?.user) return;
       if (!Array.isArray(state.userInfo.user.teacherSchedules)) {
@@ -410,6 +423,7 @@ export const {
   updateEvent,
   addTeacherSchedule,
   removeTeacherSchedules,
+  removeTeacherSchedulesByRoom,
   updateTeacherSchedule,
   setStudentSchedules,
   setTeacherSchedules,

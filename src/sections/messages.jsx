@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { addTeacherSchedule } from "../redux/userSlice";
+import { addTeacherSchedule, removeTeacherSchedulesByRoom } from "../redux/userSlice";
 import { useTranslation } from "react-i18next";
 import ChatListComponent from "../components/messages/ChatListComponent";
 import ChatWindowComponent from "../components/messages/ChatWindowComponent";
@@ -600,6 +600,9 @@ const Messages = () => {
         setSelectedChat(null);
         setShowChatList(true);
       }
+      if (chat.linkedToSchedule) {
+        dispatch(removeTeacherSchedulesByRoom(chat.id));
+      }
       socket?.emit("conversationDeleted", { conversationId: chat.id, memberIds });
     } catch (err) {
       console.error("Error deleting group:", err);
@@ -782,7 +785,7 @@ const Messages = () => {
 
       {pendingSchedule && (
         <ScheduleClassPicker
-          teacherSchedules={user.teacherSchedules}
+          teacherId={user.id}
           students={pendingSchedule.students}
           defaultName={pendingSchedule.groupName}
           onClose={() => setPendingSchedule(null)}

@@ -5,6 +5,7 @@ import { FiSend, FiMessageSquare, FiEdit2, FiX, FiPaperclip, FiDownload, FiFile 
 import { FaComments } from "react-icons/fa";
 import EmojiPicker from "emoji-picker-react";
 import MessageOptionsCard from "./MessageOptionsCard";
+import MessageReactions from "./MessageReactions";
 import useConversationChat from "../../hooks/useConversationChat";
 import useDeleteConversationMessage from "../../hooks/useDeleteConversationMessage";
 import { socket } from "../../socket";
@@ -33,7 +34,7 @@ const CallChatWindow = ({
   const readDebounceRef = useRef(null);
 
   const currentUser = { id: userId, name: username, email, avatarUrl: userUrl };
-  const { chatMessages, setChatMessages, sendMessage: sendConversationMessage } =
+  const { chatMessages, setChatMessages, sendMessage: sendConversationMessage, toggleReaction } =
     useConversationChat(socket, room, currentUser);
 
   const { handleDeleteMessage, toggleOptionsMenu, openMessageId } =
@@ -369,12 +370,23 @@ const CallChatWindow = ({
                         )}
                       </div>
                       {/* Bubble */}
+                      <div>
                       <div className="px-3.5 py-2 rounded-2xl rounded-br-sm text-white text-sm leading-relaxed shadow-md"
                         style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 3px 10px rgba(158,47,208,0.30)" }}>
                         {effectiveFileUrl && renderFile(effectiveFileUrl, true)}
                         {effectiveMessage && (
-                          <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{formatMessageWithLinks(effectiveMessage)}</p>
+                          <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                            {formatMessageWithLinks(effectiveMessage)}
+                            {msg.editedAt && <span className="text-[10px] text-white/60 ml-1">(edited)</span>}
+                          </p>
                         )}
+                      </div>
+                      <MessageReactions
+                        reactions={msg.reactions}
+                        currentUserId={userId}
+                        onToggle={(emoji) => toggleReaction(msg.id, emoji)}
+                        align="end"
+                      />
                       </div>
                     </div>
                   ) : (
@@ -387,9 +399,18 @@ const CallChatWindow = ({
                       <div className="px-3.5 py-2 rounded-2xl rounded-bl-sm text-sm leading-relaxed bg-white dark:bg-white/[0.07] text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-white/10 shadow-sm">
                         {effectiveFileUrl && renderFile(effectiveFileUrl, false)}
                         {effectiveMessage && (
-                          <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{formatMessageWithLinks(effectiveMessage)}</p>
+                          <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                            {formatMessageWithLinks(effectiveMessage)}
+                            {msg.editedAt && <span className="text-[10px] text-gray-400 dark:text-gray-500 ml-1">(edited)</span>}
+                          </p>
                         )}
                       </div>
+                      <MessageReactions
+                        reactions={msg.reactions}
+                        currentUserId={userId}
+                        onToggle={(emoji) => toggleReaction(msg.id, emoji)}
+                        align="start"
+                      />
                     </div>
                   )}
                 </li>

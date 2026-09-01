@@ -90,14 +90,21 @@ const useConversationChat = (socket, conversationId, user) => {
       });
     };
 
-    const handleEdited = ({ messageId, newMessage }) => {
+    const handleEdited = ({ messageId, newMessage, editedAt }) => {
       setChatMessages((prev) =>
-        prev.map((m) => (m.id === messageId ? { ...m, message: newMessage } : m))
+        prev.map((m) => (m.id === messageId ? { ...m, message: newMessage, editedAt } : m))
       );
     };
 
     const handleDeleted = ({ messageId }) => {
       setChatMessages((prev) => prev.filter((m) => m.id !== messageId));
+    };
+
+    const handleReactionUpdated = ({ conversationId: cid, messageId, reactions }) => {
+      if (cid !== conversationId) return;
+      setChatMessages((prev) =>
+        prev.map((m) => (m.id === messageId ? { ...m, reactions } : m))
+      );
     };
 
     const handleChatError = ({ reason }) => {
@@ -110,12 +117,14 @@ const useConversationChat = (socket, conversationId, user) => {
     socket.on("conversationMessage", handleMessage);
     socket.on("conversationMessageEdited", handleEdited);
     socket.on("conversationMessageDeleted", handleDeleted);
+    socket.on("messageReactionUpdated", handleReactionUpdated);
     socket.on("chatError", handleChatError);
 
     return () => {
       socket.off("conversationMessage", handleMessage);
       socket.off("conversationMessageEdited", handleEdited);
       socket.off("conversationMessageDeleted", handleDeleted);
+      socket.off("messageReactionUpdated", handleReactionUpdated);
       socket.off("chatError", handleChatError);
     };
   }, [conversationId, socket, user?.name, fetchMessages]);
@@ -154,7 +163,12 @@ const useConversationChat = (socket, conversationId, user) => {
     });
   };
 
-  return { chatMessages, setChatMessages, sendMessage, loadOlderMessages, hasMore, loadingMore };
+  const toggleReaction = (messageId, emoji) => {
+    if (!conversationId || !socket || !socket.connected) return;
+    socket.emit("toggleReaction", { conversationId, messageId, emoji });
+  };
+
+  return { chatMessages, setChatMessages, sendMessage, loadOlderMessages, hasMore, loadingMore, toggleReaction };
 };
 
 export default useConversationChat;

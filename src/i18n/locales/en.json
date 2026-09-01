@@ -535,6 +535,7 @@
     "offline": "Offline",
     "seen": "Read",
     "sent": "Sent",
+    "edited": "edited",
     "muteSound": "Mute notification sounds",
     "unmuteSound": "Unmute notification sounds",
     "loadMore": "Load more messages",

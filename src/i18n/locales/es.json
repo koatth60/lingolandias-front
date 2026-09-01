@@ -535,6 +535,7 @@
     "offline": "Desconectado",
     "seen": "Visto",
     "sent": "Enviado",
+    "edited": "editado",
     "muteSound": "Silenciar sonidos de notificación",
     "unmuteSound": "Activar sonidos de notificación",
     "loadMore": "Cargar más mensajes",

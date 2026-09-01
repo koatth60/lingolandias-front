@@ -10,6 +10,7 @@ import PerfectScrollbar from "react-perfect-scrollbar";
 import "react-perfect-scrollbar/dist/css/styles.css";
 import EmojiPicker from "emoji-picker-react";
 import MessageOptionsCard from "./MessageOptionsCard";
+import MessageReactions from "./MessageReactions";
 import useDeleteConversationMessage from "../../hooks/useDeleteConversationMessage.js";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -57,7 +58,7 @@ const ChatWindowComponent = ({
   const user = useSelector((state) => state.user.userInfo?.user);
 
   const currentUser = { id: userId, name: username, email, avatarUrl: userUrl };
-  const { chatMessages, setChatMessages, sendMessage, loadOlderMessages, hasMore, loadingMore } = useConversationChat(
+  const { chatMessages, setChatMessages, sendMessage, loadOlderMessages, hasMore, loadingMore, toggleReaction } = useConversationChat(
     socket, room, currentUser
   );
 
@@ -691,10 +692,17 @@ const ChatWindowComponent = ({
                           {effectiveMessage?.trim() && (
                             <p className="text-white" style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
                               {formatMessageWithLinks(effectiveMessage)}
+                              {msg.editedAt && <span className="text-[10px] text-white/60 ml-1">({t("chatWindow.edited")})</span>}
                             </p>
                           )}
                         </div>
                       </div>
+                      <MessageReactions
+                        reactions={msg.reactions}
+                        currentUserId={userId}
+                        onToggle={(emoji) => toggleReaction(msg.id, emoji)}
+                        align="end"
+                      />
                         {isLastOwnMessage && chatType === "dm" && (
                           <span className={`text-[10px] mt-0.5 mr-1 ${isSeen ? "text-[#9E2FD0]" : "text-gray-400"}`}>
                             {isSeen ? t("chatWindow.seen") : t("chatWindow.sent")}
@@ -729,6 +737,7 @@ const ChatWindowComponent = ({
                             {effectiveMessage?.trim() && (
                               <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
                                 {formatMessageWithLinks(effectiveMessage)}
+                                {msg.editedAt && <span className="text-[10px] text-gray-400 dark:text-gray-500 ml-1">({t("chatWindow.edited")})</span>}
                               </p>
                             )}
                           </div>
@@ -743,6 +752,12 @@ const ChatWindowComponent = ({
                             <FiCornerUpLeft size={13} />
                           </button>
                         </div>
+                        <MessageReactions
+                          reactions={msg.reactions}
+                          currentUserId={userId}
+                          onToggle={(emoji) => toggleReaction(msg.id, emoji)}
+                          align="start"
+                        />
                       </div>
                     )}
                   </li>

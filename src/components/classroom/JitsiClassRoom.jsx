@@ -587,11 +587,16 @@ const JitsiClassRoom = () => {
                     // entry in the chat (with its own Join button) instead
                     // of the call just silently going nowhere. Re-checks
                     // participant count at fire time so it's a no-op if
-                    // someone joined in the meantime.
-                    missedCallTimeoutRef.current = setTimeout(
-                      () => sendMissedCallMessage(targetConversationId),
-                      CALL_RING_TIMEOUT_MS
-                    );
+                    // someone joined in the meantime. 1:1 only — a group
+                    // call staying open for whoever joins later isn't a
+                    // "missed" call the way a 1:1 is, and the ring/call
+                    // itself already fired above regardless of chatType.
+                    if (chatType !== "group") {
+                      missedCallTimeoutRef.current = setTimeout(
+                        () => sendMissedCallMessage(targetConversationId),
+                        CALL_RING_TIMEOUT_MS
+                      );
+                    }
                   }
                 }
               } catch (err) {

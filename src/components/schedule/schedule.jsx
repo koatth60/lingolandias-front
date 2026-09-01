@@ -34,6 +34,7 @@ import {
   removeTeacherSchedules,
   addTeacherSchedule,
   updateTeacherSchedule,
+  setTeacherSchedules,
 } from "../../redux/userSlice";
 import { socket } from "../../socket";
 import { meetingRooms, teacherChats } from "../../constants";
@@ -125,6 +126,31 @@ const Schedule = () => {
           dispatch(setStudentTeacher(data.teacher ?? null));
         })
         .catch((err) => console.error('Failed to refresh student profile:', err));
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Teacher-side equivalent — a teacher's own teacherSchedules previously
+  // never refetched on its own, only ever updated via live socket (which
+  // only works while this page happens to be mounted) or their own local
+  // optimistic dispatches right after their own scheduling actions. Anything
+  // scheduled/renamed elsewhere while they weren't on this page stayed stale
+  // until their next login.
+  useEffect(() => {
+    if (user.role === 'teacher' && user.id) {
+      const token = localStorage.getItem("token");
+      fetch(`${BACKEND_URL}/users/teacher-profile/${user.id}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error('Failed to fetch teacher profile');
+          return res.json();
+        })
+        .then((data) => {
+          if (Array.isArray(data.teacherSchedules)) {
+            dispatch(setTeacherSchedules(data.teacherSchedules));
+          }
+        })
+        .catch((err) => console.error('Failed to refresh teacher profile:', err));
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

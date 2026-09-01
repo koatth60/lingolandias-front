@@ -229,6 +229,11 @@ const userSlice = createSlice({
       if (!state.userInfo?.user) return;
       state.userInfo.user.studentSchedules = action.payload;
     },
+    // Teacher-side equivalent of setStudentSchedules above.
+    setTeacherSchedules: (state, action) => {
+      if (!state.userInfo?.user) return;
+      state.userInfo.user.teacherSchedules = action.payload;
+    },
     // Keeps the student's own calendar in sync after schedule changes pushed via socket
     addStudentSchedule: (state, action) => {
       if (!state.userInfo?.user) return;
@@ -398,6 +403,7 @@ export const {
   removeTeacherSchedules,
   updateTeacherSchedule,
   setStudentSchedules,
+  setTeacherSchedules,
   addStudentSchedule,
   removeStudentSchedules,
   updateStudentSchedule,

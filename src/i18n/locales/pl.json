@@ -478,6 +478,7 @@
     "scheduleClassConfirm": "Zaplanuj zajęcia",
     "scheduleClassButton": "Zaplanuj te zajęcia",
     "scheduleClassPrompt": "Zaplanować to jako cykliczne zajęcia dla wszystkich w grupie?",
+    "scheduleClassWithTitle": "Zaplanować zajęcia z {{name}}?",
     "scheduleClassSuccess": "Zajęcia zaplanowane!",
     "scheduleClassFailed": "Nie udało się zaplanować zajęć.",
     "addToClassTitle": "Dodać do istniejących zajęć?",

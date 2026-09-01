@@ -44,6 +44,9 @@ const Messages = () => {
   // point (new group's checkbox, add-member's prompt, the persistent button
   // in GroupMembersModal) — { conversationId, groupName, students }.
   const [pendingSchedule, setPendingSchedule] = useState(null);
+  // Avoids re-nagging a teacher every time they reopen the same not-yet-
+  // scheduled student's chat within one session — cleared on next login.
+  const promptedStudentIdsRef = useRef(new Set());
 
   // Shared with dashboard.jsx's notification-sound logic so a message never
   // dings for the conversation you're already looking at.
@@ -166,6 +169,7 @@ const Messages = () => {
       unreadCount: 0,
       isDraft: true,
     });
+    promptScheduleForStudentDm(person);
 
     // If a real conversation already exists, upgrade the draft in place
     // once the lookup resolves — only if the user is still looking at this
@@ -231,11 +235,17 @@ const Messages = () => {
       notifyNewConversation(conversation.id, [user.id, ...memberIds]);
       fetchConversations();
       if (scheduleAsClass && user.role === "teacher") {
-        setPendingSchedule({
-          conversationId: conversation.id,
-          groupName: name,
-          students: (members || []).map((m) => ({ id: m.id, name: `${m.name} ${m.lastName}`.trim() })),
-        });
+        // Only actual students can have a class scheduled for them — another
+        // teacher or an admin included in the group is never a "student to
+        // schedule," and would otherwise silently create a Schedule row
+        // nobody can ever see (their own calendar never reads rows where
+        // they're listed as the student).
+        const students = (members || [])
+          .filter((m) => m.role === "user")
+          .map((m) => ({ id: m.id, name: `${m.name} ${m.lastName}`.trim() }));
+        if (students.length) {
+          setPendingSchedule({ conversationId: conversation.id, groupName: name, students });
+        }
       }
     } catch (err) {
       console.error("Error creating group:", err);
@@ -250,7 +260,8 @@ const Messages = () => {
     try {
       const res = await fetch(`${BACKEND_URL}/conversations/${conversationId}/members?userId=${user.id}`, { headers: authHeaders() });
       const allMembers = res.ok ? await res.json() : [];
-      return allMembers.filter((m) => m.id !== user.id).map((m) => ({ id: m.id, name: `${m.name} ${m.lastName}`.trim() }));
+      // Only real students — see the same note in handleCreateGroup.
+      return allMembers.filter((m) => m.role === "user").map((m) => ({ id: m.id, name: `${m.name} ${m.lastName}`.trim() }));
     } catch (err) {
       console.error("Error fetching members for scheduling:", err);
       return [];
@@ -262,6 +273,9 @@ const Messages = () => {
   // (the "1:1 that gains a third person" case) or offering to schedule a
   // brand new one. Declining either prompt leaves everything else untouched.
   const promptScheduleForNewMember = async ({ conversationId, groupName, student }) => {
+    // Adding another teacher or an admin to a group should never trigger a
+    // scheduling prompt — this flow only ever models teacher/student classes.
+    if (student.role !== "user") return;
     try {
       const params = new URLSearchParams({ teacherId: user.id, otherUserId: student.id, conversationId });
       const linkRes = await fetch(`${BACKEND_URL}/users/schedule-link?${params}`, { headers: authHeaders() });
@@ -314,6 +328,52 @@ const Messages = () => {
       setPendingSchedule({ conversationId, groupName, students });
     } catch (err) {
       console.error("Error checking/offering to schedule a class:", err);
+    }
+  };
+
+  // Teacher opening a 1:1 chat with a student for the first time — offer to
+  // schedule a class, the same way adding a member to a group does. Skipped
+  // entirely for teacher<->teacher or teacher<->admin chats, and only asked
+  // once per student per session (declining isn't a permanent dismissal —
+  // it'll ask again next login — just not on every reopen of the same chat).
+  const promptScheduleForStudentDm = async (person) => {
+    if (user.role !== "teacher" || person.role !== "user") return;
+    if (promptedStudentIdsRef.current.has(person.id)) return;
+    promptedStudentIdsRef.current.add(person.id);
+    try {
+      const params = new URLSearchParams({ teacherId: user.id, otherUserId: person.id });
+      const linkRes = await fetch(`${BACKEND_URL}/users/schedule-link?${params}`, { headers: authHeaders() });
+      const link = linkRes.ok ? await linkRes.json() : { linked: false };
+      if (link.linked) return; // already have a class together — don't nag
+
+      const studentName = `${person.name} ${person.lastName}`.trim();
+      const { isConfirmed } = await Swal.fire({
+        title: t("messagesExtra.scheduleClassWithTitle", { name: studentName }),
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: t("messagesExtra.scheduleClassConfirm"),
+        cancelButtonText: t("messagesExtra.skipScheduling"),
+        confirmButtonColor: "#9E2FD0",
+      });
+      if (!isConfirmed) return;
+
+      // Scheduling needs a real conversation id — find-or-create it now,
+      // same as resolveDraftConversation does when the first message is sent.
+      const dmRes = await fetch(`${BACKEND_URL}/conversations/dm`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify({ userId: user.id, otherUserId: person.id }),
+      });
+      const conversation = await dmRes.json();
+      if (!dmRes.ok || !conversation?.id) return;
+
+      setPendingSchedule({
+        conversationId: conversation.id,
+        groupName: studentName,
+        students: [{ id: person.id, name: studentName }],
+      });
+    } catch (err) {
+      console.error("Error offering to schedule a class from a new DM:", err);
     }
   };
 

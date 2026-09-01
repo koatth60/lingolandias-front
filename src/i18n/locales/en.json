@@ -478,6 +478,7 @@
     "scheduleClassConfirm": "Schedule class",
     "scheduleClassButton": "Schedule this class",
     "scheduleClassPrompt": "Schedule this as a recurring class for everyone in the group?",
+    "scheduleClassWithTitle": "Schedule a class with {{name}}?",
     "scheduleClassSuccess": "Class scheduled!",
     "scheduleClassFailed": "Couldn't schedule the class.",
     "addToClassTitle": "Add to your existing class?",

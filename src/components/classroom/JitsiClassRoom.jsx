@@ -32,12 +32,17 @@ const BENIGN_LOG_PATTERNS = [
 ];
 
 // Jitsi doesn't always fire the dedicated cameraError/micError events when the
-// browser denies both audio+video at once — this is the raw internal log line
-// that actually shows up in that case, so we watch for it too.
+// browser denies both audio+video at once — these are the raw internal log
+// lines that actually show up in that case, so we watch for them too.
+// NOTE: bare "NotAllowedError" used to be in this list and caused false
+// positives — that string also shows up on every iOS session for things with
+// nothing to do with camera/mic access (Screen Wake Lock API denied, remote
+// audio blocked by autoplay policy, setSinkId needing a user gesture), which
+// showed the "blocked" overlay on perfectly working sessions. Only match
+// patterns that are specific to actual local track/device acquisition failing.
 const MEDIA_DENIED_PATTERNS = [
   "gum.permission_denied",
   "Permission dismissed",
-  "NotAllowedError",
   "Failed to create local tracks",
 ];
 

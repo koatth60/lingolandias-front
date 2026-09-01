@@ -25,11 +25,11 @@ const Dropdown = ({ children, buttonText = "Actions", buttonClassName, buttonSty
 
       {isOpen && (
         <>
-          <div 
-            className="fixed inset-0 z-40"
+          <div
+            className="fixed inset-0 z-[100]"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 mt-2 w-56 rounded-xl shadow-lg overflow-hidden z-50">
+          <div className="absolute right-0 mt-2 w-56 rounded-xl shadow-lg overflow-hidden z-[101]">
             {/* Fondo con gradiente */}
             <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-[#0d0a1e] dark:via-[#1a1a2e] dark:to-[#110e28]" />
             

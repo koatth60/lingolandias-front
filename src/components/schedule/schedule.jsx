@@ -199,6 +199,27 @@ const Schedule = () => {
     </div>
   );
 
+  // Wraps CustomToolbar so it can render the Actions dropdown (Edit Calendar
+  // / Group Class / teacher-meeting shortcuts) right in its own toolbar row,
+  // next to the Week/Day/Agenda switcher — react-big-calendar only passes a
+  // fixed prop set to `toolbar`, so this closure is how extra props get in.
+  const CustomToolbarWithActions = (toolbarProps) => (
+    <CustomToolbar
+      {...toolbarProps}
+      actionsBar={
+        user.role !== "admin" && (
+          <ScheduleActionsBar
+            user={user}
+            handleJoinMeeting={handleJoinMeeting}
+            setEditingEvent={setEditingEvent}
+            editingEvent={editingEvent}
+            loading={loading}
+          />
+        )
+      }
+    />
+  );
+
   const handleEventClick = (event) => {
     if (editingEvent) {
       handleEventEdit(event);
@@ -338,7 +359,7 @@ const Schedule = () => {
                             }}
                             components={{
                               event: CustomEvent,
-                              toolbar: CustomToolbar,
+                              toolbar: CustomToolbarWithActions,
                             }}
                           />
                         </PerfectScrollbar>
@@ -523,19 +544,6 @@ const Schedule = () => {
             </>
           )}
         </div>
-
-        {/* Calendar actions — Edit Calendar / Group Class / teacher-meeting shortcuts */}
-        {user.role !== "admin" && (
-          <div className="px-4 pb-4 flex justify-center">
-            <ScheduleActionsBar
-              user={user}
-              handleJoinMeeting={handleJoinMeeting}
-              setEditingEvent={setEditingEvent}
-              editingEvent={editingEvent}
-              loading={loading}
-            />
-          </div>
-        )}
 
         {/* Teacher panel */}
         {user.role === "teacher" && user.students && user.students.length > 0 && (

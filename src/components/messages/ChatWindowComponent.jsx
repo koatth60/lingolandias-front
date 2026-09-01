@@ -39,6 +39,8 @@ const ChatWindowComponent = ({
   userUrl,
   userId,
   otherUserId,
+  isDraft,
+  onResolveDraft,
   socket,
   onBackClick,
   onClose,
@@ -140,7 +142,7 @@ const ChatWindowComponent = ({
     if (editingMsg) setMessage(editingMsg.message);
   }, [editingMsg]);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (editingMsg) {
       if (!message.trim()) return;
       socket.emit("editConversationMessage", { messageId: editingMsg.id, conversationId: room, newMessage: message.trim() });
@@ -151,7 +153,15 @@ const ChatWindowComponent = ({
       setEditingMsg(null);
     } else {
       if (!message.trim()) return;
-      sendMessage(message, replyTo ? { id: replyTo.id, message: replyTo.message, username: replyTo.username } : undefined);
+      // First message on a brand-new DM: nothing was ever persisted just from
+      // opening the chat (Teams doesn't do that either) — create the real
+      // conversation only now, at send time.
+      let targetRoom = room;
+      if (isDraft && onResolveDraft) {
+        targetRoom = await onResolveDraft();
+        if (!targetRoom) return;
+      }
+      sendMessage(message, replyTo ? { id: replyTo.id, message: replyTo.message, username: replyTo.username } : undefined, undefined, targetRoom);
       setMessage("");
       setReplyTo(null);
       const ta = textareaRef.current;
@@ -386,6 +396,12 @@ const ChatWindowComponent = ({
     return parts.length > 0 ? parts : text;
   };
 
+  const extractLegacyFileUrl = (text) => {
+    if (!text) return null;
+    const trimmed = text.trim();
+    return /^https?:\/\/\S*\/chat-uploads\//i.test(trimmed) ? trimmed : null;
+  };
+
   const isGeneralChat = chatType === "general" || chatType === "teacher" || chatType === "group" || chatType === "dm";
   const canShowMembers = chatType === "general" || chatType === "teacher" || chatType === "support" || chatType === "group" || chatType === "dm";
 
@@ -506,14 +522,17 @@ const ChatWindowComponent = ({
               const prev = chatMessages[index - 1];
               const showTimestamp = index === 0 || new Date(msg.timestamp) - new Date(prev.timestamp) > 3 * 60 * 1000;
               const isSender = msg.email === email;
-              const hasContent = msg.fileUrl || msg.message?.trim();
+              const legacyFileUrl = !msg.fileUrl ? extractLegacyFileUrl(msg.message) : null;
+              const effectiveFileUrl = msg.fileUrl || legacyFileUrl;
+              const effectiveMessage = legacyFileUrl ? "" : msg.message;
+              const hasContent = effectiveFileUrl || effectiveMessage?.trim();
               if (!hasContent) return null;
               const isFirstFromUser = index === 0 || msg.email !== prev.email;
               const showUsername = !isSender && isFirstFromUser;
               const initials = getInitials(msg.username);
               const avatarColor = generateColor(msg.username);
-              const isImageOnly = !!(msg.fileUrl && !msg.message?.trim() && isImageUrl(msg.fileUrl));
-              const isFileOnly = !!(msg.fileUrl && !msg.message?.trim() && !isImageUrl(msg.fileUrl));
+              const isImageOnly = !!(effectiveFileUrl && !effectiveMessage?.trim() && isImageUrl(effectiveFileUrl));
+              const isFileOnly = !!(effectiveFileUrl && !effectiveMessage?.trim() && !isImageUrl(effectiveFileUrl));
 
               return (
                 <div key={index}>
@@ -557,7 +576,7 @@ const ChatWindowComponent = ({
                         {/* Reply + options */}
                         <div className="flex items-center gap-0.5 self-end mb-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
                           <button
-                            onClick={() => setReplyTo({ id: msg.id, message: msg.message || "📎 File", username: msg.username })}
+                            onClick={() => setReplyTo({ id: msg.id, message: legacyFileUrl ? "📎 File" : (msg.message || "📎 File"), username: msg.username })}
                             className="p-1.5 rounded-full text-gray-500 dark:text-gray-400
                                        hover:text-purple-600 dark:hover:text-purple-400
                                        hover:bg-purple-50 dark:hover:bg-white/10 transition-colors duration-150">
@@ -598,10 +617,10 @@ const ChatWindowComponent = ({
                               <p className="line-clamp-2 text-[11px] text-white/70">{msg.replyTo.message}</p>
                             </div>
                           )}
-                          {msg.fileUrl && renderFile(msg.fileUrl, true)}
-                          {msg.message?.trim() && (
+                          {effectiveFileUrl && renderFile(effectiveFileUrl, true)}
+                          {effectiveMessage?.trim() && (
                             <p className="text-white" style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-                              {formatMessageWithLinks(msg.message)}
+                              {formatMessageWithLinks(effectiveMessage)}
                             </p>
                           )}
                         </div>
@@ -630,16 +649,16 @@ const ChatWindowComponent = ({
                                 <p className="line-clamp-2 text-[11px] text-gray-500 dark:text-gray-400">{msg.replyTo.message}</p>
                               </div>
                             )}
-                            {msg.fileUrl && renderFile(msg.fileUrl, false)}
-                            {msg.message?.trim() && (
+                            {effectiveFileUrl && renderFile(effectiveFileUrl, false)}
+                            {effectiveMessage?.trim() && (
                               <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-                                {formatMessageWithLinks(msg.message)}
+                                {formatMessageWithLinks(effectiveMessage)}
                               </p>
                             )}
                           </div>
                           {/* Reply button — positioned relative to bubble only */}
                           <button
-                            onClick={() => setReplyTo({ id: msg.id, message: msg.message || "📎 File", username: msg.username })}
+                            onClick={() => setReplyTo({ id: msg.id, message: legacyFileUrl ? "📎 File" : (msg.message || "📎 File"), username: msg.username })}
                             className="absolute left-full top-1/2 -translate-y-1/2 ml-1
                                        opacity-0 group-hover:opacity-100 transition-opacity
                                        p-1.5 rounded-full text-gray-400

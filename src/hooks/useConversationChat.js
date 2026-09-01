@@ -101,13 +101,17 @@ const useConversationChat = (socket, conversationId, user) => {
     };
   }, [conversationId, socket, user?.name, fetchMessages]);
 
-  const sendMessage = (message, replyTo, fileUrl) => {
-    if (!conversationId || !socket || !socket.connected || !user) return;
+  // targetId overrides the hook's own conversationId — needed for a draft DM
+  // that doesn't have a real conversation yet when the user hits send (see
+  // ChatWindowComponent's handleSendMessage).
+  const sendMessage = (message, replyTo, fileUrl, targetId) => {
+    const id = targetId || conversationId;
+    if (!id || !socket || !socket.connected || !user) return;
     const timestamp = new Date();
     const optimistic = {
       _pending: true,
       id: `pending-${Date.now()}`,
-      conversationId,
+      conversationId: id,
       senderId: user.id,
       username: user.name,
       email: user.email,
@@ -120,7 +124,7 @@ const useConversationChat = (socket, conversationId, user) => {
     setChatMessages((prev) => [...prev, optimistic]);
 
     socket.emit("sendConversationMessage", {
-      conversationId,
+      conversationId: id,
       senderId: user.id,
       username: user.name,
       email: user.email,

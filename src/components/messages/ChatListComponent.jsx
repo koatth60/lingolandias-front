@@ -79,6 +79,7 @@ const ChatListComponent = ({
   hasMoreChats,
   loadingMoreChats,
   onLoadMoreChats,
+  isLoading,
 }) => {
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
@@ -192,14 +193,26 @@ const ChatListComponent = ({
 
       {/* ── List ── */}
       <ul className="flex-1 overflow-y-auto custom-scrollbar py-2 px-2 space-y-0.5">
-        {filtered.length === 0 && !showPeopleResults && (
+        {isLoading && (
+          Array.from({ length: 6 }).map((_, i) => (
+            <li key={i} className="flex items-center gap-3 px-3 py-3 animate-pulse">
+              <div className="w-10 h-10 rounded-2xl bg-gray-200 dark:bg-white/10 flex-shrink-0" />
+              <div className="flex-1 min-w-0 space-y-1.5">
+                <div className="h-3 w-2/3 rounded bg-gray-200 dark:bg-white/10" />
+                <div className="h-2.5 w-1/2 rounded bg-gray-100 dark:bg-white/5" />
+              </div>
+            </li>
+          ))
+        )}
+
+        {!isLoading && filtered.length === 0 && !showPeopleResults && (
           <li className="flex flex-col items-center gap-2 py-12 text-gray-400 dark:text-gray-600">
             <FaComments size={28} className="opacity-30" />
             <span className="text-xs">{t("messages.noConversations")}</span>
           </li>
         )}
 
-        {filtered.map((chat) => {
+        {!isLoading && filtered.map((chat) => {
           const meta = getMeta(chat.type);
           const unread = chat.unreadCount || 0;
           const isActive = chat.id === selectedChatId;

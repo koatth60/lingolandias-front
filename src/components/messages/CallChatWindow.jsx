@@ -217,6 +217,12 @@ const CallChatWindow = ({
     return `hsl(${Math.abs(h) % 360}, 60%, 52%)`;
   };
 
+  const extractLegacyFileUrl = (text) => {
+    if (!text) return null;
+    const trimmed = text.trim();
+    return /^https?:\/\/\S*\/chat-uploads\//i.test(trimmed) ? trimmed : null;
+  };
+
   const formatMessageWithLinks = (text) => {
     if (!text) return text;
     const parts = [];
@@ -300,6 +306,9 @@ const CallChatWindow = ({
             const showUsername = !isSender && isFirstFromUser;
             const initials = getInitials(msg.username);
             const avatarColor = generateColor(msg.username);
+            const legacyFileUrl = !msg.fileUrl ? extractLegacyFileUrl(msg.message) : null;
+            const effectiveFileUrl = msg.fileUrl || legacyFileUrl;
+            const effectiveMessage = legacyFileUrl ? "" : msg.message;
 
             return (
               <div key={index}>
@@ -351,9 +360,9 @@ const CallChatWindow = ({
                       {/* Bubble */}
                       <div className="px-3.5 py-2 rounded-2xl rounded-br-sm text-white text-sm leading-relaxed shadow-md"
                         style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 3px 10px rgba(158,47,208,0.30)" }}>
-                        {msg.fileUrl && renderFile(msg.fileUrl, true)}
-                        {msg.message && (
-                          <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{formatMessageWithLinks(msg.message)}</p>
+                        {effectiveFileUrl && renderFile(effectiveFileUrl, true)}
+                        {effectiveMessage && (
+                          <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{formatMessageWithLinks(effectiveMessage)}</p>
                         )}
                       </div>
                     </div>
@@ -365,9 +374,9 @@ const CallChatWindow = ({
                         </p>
                       )}
                       <div className="px-3.5 py-2 rounded-2xl rounded-bl-sm text-sm leading-relaxed bg-white dark:bg-white/[0.07] text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-white/10 shadow-sm">
-                        {msg.fileUrl && renderFile(msg.fileUrl, false)}
-                        {msg.message && (
-                          <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{formatMessageWithLinks(msg.message)}</p>
+                        {effectiveFileUrl && renderFile(effectiveFileUrl, false)}
+                        {effectiveMessage && (
+                          <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{formatMessageWithLinks(effectiveMessage)}</p>
                         )}
                       </div>
                     </div>

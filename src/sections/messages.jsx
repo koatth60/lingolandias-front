@@ -65,6 +65,7 @@ const Messages = () => {
   const CONVERSATIONS_PAGE_SIZE = 20;
   const [hasMoreChats, setHasMoreChats] = useState(false);
   const [loadingMoreChats, setLoadingMoreChats] = useState(false);
+  const [isLoadingConversations, setIsLoadingConversations] = useState(true);
   const conversationsRef = useRef([]);
   useEffect(() => { conversationsRef.current = conversations; }, [conversations]);
 
@@ -86,6 +87,8 @@ const Messages = () => {
       setHasMoreChats(data.hasMore);
     } catch (err) {
       console.error("Error fetching conversations:", err);
+    } finally {
+      setIsLoadingConversations(false);
     }
   }, [user?.id, getDisplayName]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -123,28 +126,42 @@ const Messages = () => {
     socket?.emit("newConversationCreated", { conversationId, memberIds });
   };
 
-  const startDmWith = async (person) => {
+  // Just opens a local draft — nothing is saved until an actual message is
+  // sent (see resolveDraftConversation), so clicking someone and closing
+  // without typing anything never leaves a phantom empty chat behind.
+  const startDmWith = (person) => {
+    setProfileUser(null);
+    handleChatSelect({
+      id: person.id,
+      type: "dm",
+      name: `${person.name} ${person.lastName}`.trim(),
+      avatarUrl: person.avatarUrl,
+      otherUser: person,
+      unreadCount: 0,
+      isDraft: true,
+    });
+  };
+
+  // Called from ChatWindowComponent the moment the first message is actually
+  // sent on a draft — creates (or finds) the real conversation, then hands
+  // its id back so the message can go out under the right room.
+  const resolveDraftConversation = async (otherUserId) => {
     try {
       const res = await fetch(`${BACKEND_URL}/conversations/dm`, {
         method: "POST",
         headers: { "Content-Type": "application/json", ...authHeaders() },
-        body: JSON.stringify({ userId: user.id, otherUserId: person.id }),
+        body: JSON.stringify({ userId: user.id, otherUserId }),
       });
       const conversation = await res.json();
-      const chat = {
-        id: conversation.id,
-        type: "dm",
-        name: `${person.name} ${person.lastName}`,
-        avatarUrl: person.avatarUrl,
-        otherUser: person,
-        unreadCount: 0,
-      };
-      setProfileUser(null);
-      handleChatSelect(chat);
-      notifyNewConversation(conversation.id, [user.id, person.id]);
+      setSelectedChat((prev) =>
+        prev && prev.otherUser?.id === otherUserId ? { ...prev, id: conversation.id, isDraft: false } : prev
+      );
+      notifyNewConversation(conversation.id, [user.id, otherUserId]);
       fetchConversations();
+      return conversation.id;
     } catch (err) {
       console.error("Error starting conversation:", err);
+      return null;
     }
   };
 
@@ -294,6 +311,7 @@ const Messages = () => {
     hasMoreChats,
     loadingMoreChats,
     onLoadMoreChats: loadMoreChats,
+    isLoading: isLoadingConversations,
   };
 
   const chatWindowProps = selectedChat ? {
@@ -304,6 +322,8 @@ const Messages = () => {
     studentName: selectedChat.name,
     chatType: selectedChat.type,
     otherUserId: selectedChat.otherUser?.id,
+    isDraft: selectedChat.isDraft,
+    onResolveDraft: () => resolveDraftConversation(selectedChat.otherUser.id),
     userId: user.id,
     socket,
     onBackClick: handleBackClick,

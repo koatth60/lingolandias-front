@@ -1,7 +1,7 @@
 import { FiChevronLeft, FiChevronRight, FiCalendar } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
 
-const CustomToolbar = ({ label, onNavigate, onView, view }) => {
+const CustomToolbar = ({ label, onNavigate, onView, view, actionsBar }) => {
   const { t } = useTranslation();
   const views = ['week', 'day', 'agenda'];
   const viewLabels = {
@@ -11,7 +11,7 @@ const CustomToolbar = ({ label, onNavigate, onView, view }) => {
   };
 
   return (
-    <div className="relative overflow-hidden">
+    <div className="relative">
       {/* Light mode bg */}
       <div
         className="absolute inset-0 dark:hidden"
@@ -74,25 +74,28 @@ const CustomToolbar = ({ label, onNavigate, onView, view }) => {
           {label}
         </span>
 
-        {/* Right: view toggle pill */}
-        <div className="flex items-center gap-0.5 p-1 rounded-xl bg-gray-100 dark:bg-white/5 border border-gray-200/80 dark:border-[#9E2FD0]/15">
-          {views.map((v) => (
-            <button
-              key={v}
-              onClick={() => onView(v)}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg capitalize transition-colors ${
-                view === v
-                  ? 'text-white'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5'
-              }`}
-              style={view === v ? {
-                background: 'linear-gradient(135deg, #9E2FD0 0%, #7b22a8 100%)',
-                boxShadow: '0 2px 10px rgba(158,47,208,0.45)',
-              } : {}}
-            >
-              {viewLabels[v]}
-            </button>
-          ))}
+        {/* Right: actions dropdown + view toggle pill */}
+        <div className="flex items-center gap-2">
+          {actionsBar}
+          <div className="flex items-center gap-0.5 p-1 rounded-xl bg-gray-100 dark:bg-white/5 border border-gray-200/80 dark:border-[#9E2FD0]/15">
+            {views.map((v) => (
+              <button
+                key={v}
+                onClick={() => onView(v)}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-lg capitalize transition-colors ${
+                  view === v
+                    ? 'text-white'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/60 dark:hover:bg-white/5'
+                }`}
+                style={view === v ? {
+                  background: 'linear-gradient(135deg, #9E2FD0 0%, #7b22a8 100%)',
+                  boxShadow: '0 2px 10px rgba(158,47,208,0.45)',
+                } : {}}
+              >
+                {viewLabels[v]}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>

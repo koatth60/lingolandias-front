@@ -40,8 +40,6 @@ const Dashboard = () => {
 
   const dispatch = useDispatch();
   const logoutAndNavigate = useLogout();
-  const unreadCountsByRoom = useSelector((state) => state.chat.unreadCountsByRoom);
-  const studentUnreadCount = useSelector((state) => state.chat.studentUnreadCount);
   const user = useSelector((state) => state.user.userInfo.user);
   const isSidebarOpen = useSelector((state) => state.sidebar.isSidebarOpen);
   const { totalUnread, unreadCounts } = useSelector((state) => state.messages);
@@ -145,23 +143,14 @@ const Dashboard = () => {
     }
   };
 
-  const getScheduleUnreads = () => {
-    if (user?.role === 'teacher') {
-      return Object.values(unreadCountsByRoom).reduce((sum, count) => sum + count, 0);
-    }
-    if (user?.role === 'user') {
-      return studentUnreadCount || 0;
-    }
-    return 0;
-  };
-
-  const totalScheduleUnread = getScheduleUnreads();
-
   const navLinks = [
     { to: "/home", icon: FiHome, text: t("nav.dashboard") },
     user?.role === "admin"
       ? { to: "/schedule", icon: FiVideo, text: t("nav.meetings") }
-      : { to: "/schedule", icon: FiCalendar, text: t("nav.schedule"), unread: totalScheduleUnread },
+      // No unread badge here — Schedule's own chat list is hidden (see
+      // schedule.jsx), so a count with nowhere to click through to just
+      // looked like a bug. New-message badges now live only on Messages.
+      : { to: "/schedule", icon: FiCalendar, text: t("nav.schedule") },
     // { to: "/learning", icon: FiBookOpen, text: t("nav.learning") }, // Hidden — work in progress
     { to: "/messages", icon: FiMessageSquare, text: t("nav.messages"), unread: totalUnread + conversationsUnread },
     ...(user?.role === "teacher" || user?.role === "user"

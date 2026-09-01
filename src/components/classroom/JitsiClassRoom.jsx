@@ -287,10 +287,22 @@ const JitsiClassRoom = () => {
     },
   ];
 
+  // Only force both muted when our own preflight found BOTH audio and video
+  // completely unavailable — that's the crash-prevention case this was built
+  // for. Muting just one (e.g. video muted, audio not) makes Jitsi request
+  // that single modality alone, and iOS WebKit (every browser on iOS, Chrome
+  // included, runs on WebKit) has been observed to hard-deny that single-
+  // modality getUserMedia call from inside our cross-origin iframe even when
+  // the exact same device grants a combined audio+video request fine. So if
+  // at least one modality worked in our own top-level probe, let Jitsi ask
+  // for both together like it always did pre-preflight, and rely on its own
+  // per-track fallback for whichever one is genuinely unavailable.
+  const bothMediaUnavailable = mediaPreflight?.audio === false && mediaPreflight?.video === false;
+
   const options = {
     configOverwrite: {
-      startWithAudioMuted: !(mediaPreflight?.audio ?? true),
-      startWithVideoMuted: !(mediaPreflight?.video ?? true),
+      startWithAudioMuted: bothMediaUnavailable,
+      startWithVideoMuted: bothMediaUnavailable,
       disableModeratorIndicator: true,
       // Disable DTX — prevents crackling at silence/speech transitions
       enableOpusDtx: false,

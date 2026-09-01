@@ -132,7 +132,12 @@ const Messages = () => {
   const startDmWith = (person) => {
     setProfileUser(null);
     handleChatSelect({
-      id: person.id,
+      // No real conversation exists yet — deliberately NOT person.id. Some
+      // legacy DMs were migrated with their conversation id set to one of
+      // the participants' own userId, so reusing person.id here could
+      // collide with a real (unrelated) conversation and leak it into this
+      // draft window before resolveDraftConversation ever runs.
+      id: null,
       type: "dm",
       name: `${person.name} ${person.lastName}`.trim(),
       avatarUrl: person.avatarUrl,
@@ -205,7 +210,7 @@ const Messages = () => {
   const handleViewGroupMembers = async () => {
     if (!selectedChat) return;
     try {
-      const res = await fetch(`${BACKEND_URL}/conversations/${selectedChat.id}/members`, { headers: authHeaders() });
+      const res = await fetch(`${BACKEND_URL}/conversations/${selectedChat.id}/members?userId=${user.id}`, { headers: authHeaders() });
       if (!res.ok) return;
       setGroupMembers(await res.json());
     } catch (err) {

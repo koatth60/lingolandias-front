@@ -118,22 +118,13 @@ const JitsiClassRoom = () => {
   // 1:1 class chat used to run entirely on the old, pre-migration chats
   // table (see legacy ChatWindow below) — completely disconnected from the
   // unified conversation a student and teacher already share in Messages.
-  // Resolve (or create) that real conversation here so the in-call chat
-  // panel shows/continues the exact same history instead of a separate one.
-  const [privateConversationId, setPrivateConversationId] = useState(null);
-  useEffect(() => {
-    if (chatType !== "private" || !user?.id || !otherUserId) return;
-    let cancelled = false;
-    fetch(`${BACKEND_URL}/conversations/dm`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: user.id, otherUserId }),
-    })
-      .then((r) => r.json())
-      .then((conversation) => { if (!cancelled && conversation?.id) setPrivateConversationId(conversation.id); })
-      .catch(() => {});
-    return () => { cancelled = true; };
-  }, [chatType, user?.id, otherUserId]);
+  // roomId here already follows the same convention Fase 1's migration used
+  // for that conversation's id (the student's own userId), so it's reused
+  // directly below instead of re-resolving it — an earlier version of this
+  // fix called POST /conversations/dm with a separately-computed
+  // otherUserId, which could land on a different (or brand-new) conversation
+  // than the one roomId already points to, splitting history between the
+  // Schedule-join and Messages-join entry points.
 
   const logEvent = (event, detail, level = "info") => {
     fetch(`${BACKEND_URL}/meeting-logs`, {
@@ -628,37 +619,23 @@ const JitsiClassRoom = () => {
       >
         {showChat && (
           <div className="relative w-full h-full chat-slide-in">
-            {chatType === "group" || chatType === "teacher" || chatType === "general" || chatType === "dm" ? (
-              <CallChatWindow
-                username={userName}
-                email={email}
-                userId={user?.id}
-                userUrl={user?.avatarUrl}
-                room={chatRoomId || roomId}
-                chatName={chatName}
-                onClose={closeChat}
-              />
-            ) : chatType === "private" && privateConversationId ? (
-              <CallChatWindow
-                username={userName}
-                email={email}
-                userId={user?.id}
-                userUrl={user?.avatarUrl}
-                room={privateConversationId}
-                chatName={chatName}
-                onClose={closeChat}
-              />
-            ) : (
-              <ChatWindow
-                username={userName}
-                email={email}
-                room={chatRoomId || roomId}
-                studentName={chatName}
-                height="100%"
-                meeting={true}
-                onBack={closeChat}
-              />
-            )}
+            {/* Always the unified chat now — every chatType used to route
+                here eventually needs the same shared history as Messages,
+                and any entry point that forgets to set chatType (e.g. the
+                admin "observe a class" join) was silently falling back to
+                the legacy, disconnected ChatWindow below. That fallback was
+                the actual source of the split-history reports: two people
+                in the same call, one on each component, each writing to a
+                different table. */}
+            <CallChatWindow
+              username={userName}
+              email={email}
+              userId={user?.id}
+              userUrl={user?.avatarUrl}
+              room={chatRoomId || roomId}
+              chatName={chatName}
+              onClose={closeChat}
+            />
             {/* Floating close pill — mobile only */}
             <button
               onClick={closeChat}

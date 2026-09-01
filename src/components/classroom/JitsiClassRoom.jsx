@@ -99,19 +99,50 @@ const JitsiClassRoom = () => {
   const [mediaPreflight, setMediaPreflight] = useState(null);
   useEffect(() => {
     let cancelled = false;
-    navigator.mediaDevices?.getUserMedia?.({ audio: true, video: true })
-      .then((stream) => {
-        stream.getTracks().forEach((t) => t.stop());
-        if (!cancelled) setMediaPreflight({ audio: true, video: true });
-      })
-      .catch(() => {
-        if (cancelled) return;
-        // Audio and video permissions are granted/denied together in most
-        // browsers, but check independently in case only one device is busy.
-        navigator.mediaDevices?.getUserMedia?.({ audio: true })
-          .then((s) => { s.getTracks().forEach((t) => t.stop()); if (!cancelled) setMediaPreflight((p) => ({ ...p, audio: true, video: false })); })
-          .catch(() => { if (!cancelled) setMediaPreflight((p) => ({ ...p, audio: false, video: false })); });
-      });
+
+    const probeWithGetUserMedia = () => {
+      navigator.mediaDevices?.getUserMedia?.({ audio: true, video: true })
+        .then((stream) => {
+          stream.getTracks().forEach((t) => t.stop());
+          if (!cancelled) setMediaPreflight({ audio: true, video: true });
+        })
+        .catch(() => {
+          if (cancelled) return;
+          // Audio and video permissions are granted/denied together in most
+          // browsers, but check independently in case only one device is busy.
+          navigator.mediaDevices?.getUserMedia?.({ audio: true })
+            .then((s) => { s.getTracks().forEach((t) => t.stop()); if (!cancelled) setMediaPreflight((p) => ({ ...p, audio: true, video: false })); })
+            .catch(() => { if (!cancelled) setMediaPreflight((p) => ({ ...p, audio: false, video: false })); });
+        });
+    };
+
+    // Checking the Permissions API first (when supported) avoids opening a
+    // real camera/mic stream just to close it again right before Jitsi opens
+    // its own — that back-to-back open/close raced on some devices (camera
+    // not released yet) and showed the "blocked" overlay even though access
+    // was actually granted. Only fall back to a real getUserMedia probe when
+    // the permission state is still undecided ('prompt') or the browser
+    // doesn't support querying camera/microphone this way (older Safari).
+    if (navigator.permissions?.query) {
+      Promise.allSettled([
+        navigator.permissions.query({ name: "camera" }),
+        navigator.permissions.query({ name: "microphone" }),
+      ])
+        .then(([cam, mic]) => {
+          if (cancelled) return;
+          const camState = cam.status === "fulfilled" ? cam.value.state : "prompt";
+          const micState = mic.status === "fulfilled" ? mic.value.state : "prompt";
+          if (camState === "prompt" || micState === "prompt") {
+            probeWithGetUserMedia();
+            return;
+          }
+          setMediaPreflight({ audio: micState === "granted", video: camState === "granted" });
+        })
+        .catch(probeWithGetUserMedia);
+    } else {
+      probeWithGetUserMedia();
+    }
+
     return () => { cancelled = true; };
   }, []);
 

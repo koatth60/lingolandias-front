@@ -108,6 +108,24 @@ const JitsiClassRoom = () => {
   const callStartedNotifiedRef = useRef(false);
   const missedCallTimeoutRef   = useRef(null);
 
+  // Auto-repair for legacy 1:1 classes: roomId here is the student's own
+  // userId by convention, but that only had a real Conversation behind it if
+  // the student had already used the old chat before the unified-messages
+  // migration — otherwise every message sent in this class's chat was
+  // silently rejected (not a real member of a conversation that never
+  // existed), which looked like "I type and it just disappears." This makes
+  // sure the conversation (and both members) exist before the chat is used,
+  // without touching anything for classes that already work fine.
+  useEffect(() => {
+    if (!user?.id || !roomId || !otherUserId) return;
+    if (chatType !== "private" && chatType !== "dm") return;
+    fetch(`${BACKEND_URL}/conversations/dm/ensure`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ conversationId: roomId, userId: user.id, otherUserId }),
+    }).catch((err) => console.error("Error ensuring DM conversation exists:", err));
+  }, [user?.id, roomId, otherUserId, chatType]);
+
   const navigate = useNavigate();
   const [showChat, setShowChat] = useState(false);
   const [loading,  setLoading]  = useState(true);

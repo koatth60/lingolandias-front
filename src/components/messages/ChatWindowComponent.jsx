@@ -11,7 +11,6 @@ import "react-perfect-scrollbar/dist/css/styles.css";
 import EmojiPicker from "emoji-picker-react";
 import MessageOptionsCard from "./MessageOptionsCard";
 import useDeleteConversationMessage from "../../hooks/useDeleteConversationMessage.js";
-import useChatWindow from "../../hooks/useChatWindow.js";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import useConversationChat from "../../hooks/useConversationChat.js";
@@ -290,23 +289,56 @@ const ChatWindowComponent = ({
     );
   };
 
-  const { markConversationRead } = useChatWindow();
+  const markConversationRead = useCallback(() => {
+    if (!socket || !room || !userId) return;
+    socket.emit("markConversationRead", { conversationId: room, userId });
+  }, [socket, room, userId]);
 
   // Mark as read on open
   useEffect(() => {
-    if (!user?.id || !room) return;
-    markConversationRead(room, userId);
+    if (!user?.id) return;
+    markConversationRead();
   }, [room, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Mark as read when new messages arrive — debounced (max 1 call per 1.5s)
   useEffect(() => {
     if (!user?.id || !room || chatMessages.length === 0) return;
     clearTimeout(readDebounceRef.current);
-    readDebounceRef.current = setTimeout(() => {
-      markConversationRead(room, userId);
-    }, 1500);
+    readDebounceRef.current = setTimeout(markConversationRead, 1500);
     return () => clearTimeout(readDebounceRef.current);
   }, [chatMessages.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Live "seen" state for the other participant in a DM — updated the moment
+  // they read, and seeded from their persisted lastReadAt when the window
+  // first opens so a page reload doesn't lose the checkmark.
+  const [otherReadAt, setOtherReadAt] = useState(null);
+
+  useEffect(() => {
+    setOtherReadAt(null);
+    if (chatType !== "dm" || !room || !otherUserId) return;
+    let cancelled = false;
+    fetch(`${BACKEND_URL}/conversations/${room}/members?userId=${userId}`, {
+      headers: localStorage.getItem("token") ? { Authorization: `Bearer ${localStorage.getItem("token")}` } : {},
+    })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((members) => {
+        if (cancelled) return;
+        const other = members.find((m) => m.id === otherUserId);
+        if (other?.lastReadAt) setOtherReadAt(other.lastReadAt);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [room, chatType, otherUserId, userId]);
+
+  useEffect(() => {
+    if (!socket || chatType !== "dm") return;
+    const handleConversationRead = (data) => {
+      if (data.conversationId !== room || data.userId !== otherUserId) return;
+      setOtherReadAt(data.readAt);
+    };
+    socket.on("conversationRead", handleConversationRead);
+    return () => socket.off("conversationRead", handleConversationRead);
+  }, [socket, room, chatType, otherUserId]);
 
   // Scroll tracking
   const handleScroll = useCallback(() => {
@@ -522,6 +554,10 @@ const ChatWindowComponent = ({
               const prev = chatMessages[index - 1];
               const showTimestamp = index === 0 || new Date(msg.timestamp) - new Date(prev.timestamp) > 3 * 60 * 1000;
               const isSender = msg.email === email;
+              // "Seen" checkmark only makes sense on the last message you
+              // sent — same convention as WhatsApp/Teams.
+              const isLastOwnMessage = isSender && !chatMessages.slice(index + 1).some((m) => m.email === email);
+              const isSeen = isLastOwnMessage && chatType === "dm" && otherReadAt && new Date(otherReadAt) >= new Date(msg.timestamp);
               const legacyFileUrl = !msg.fileUrl ? extractLegacyFileUrl(msg.message) : null;
               const effectiveFileUrl = msg.fileUrl || legacyFileUrl;
               const effectiveMessage = legacyFileUrl ? "" : msg.message;
@@ -624,6 +660,11 @@ const ChatWindowComponent = ({
                             </p>
                           )}
                         </div>
+                        {isLastOwnMessage && chatType === "dm" && (
+                          <span className={`text-[10px] flex-shrink-0 mb-0.5 ${isSeen ? "text-[#9E2FD0]" : "text-gray-400"}`}>
+                            {isSeen ? t("chatWindow.seen") : t("chatWindow.sent")}
+                          </span>
+                        )}
                       </div>
                     ) : (
                       <div className="max-w-[75%] sm:max-w-[60%]">

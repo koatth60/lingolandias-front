@@ -18,6 +18,8 @@ import { updateUserStatus } from "../redux/userSlice";
 import logo from "../assets/logos/logo3.png";
 import { useLogout } from "../hooks/customHooks";
 import { logout } from "../redux/userSlice";
+import useNotificationSound from "../hooks/useNotificationSound";
+import { activeRoomRef } from "../state/activeRoom";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -45,6 +47,8 @@ const Dashboard = () => {
   const { totalUnread, unreadCounts } = useSelector((state) => state.messages);
   const supportUnreadCount = unreadCounts?.supportRoom || 0;
   const [conversationsUnread, setConversationsUnread] = useState(0);
+  const playSound = useNotificationSound();
+  const soundEnabled = user?.settings?.notificationSound !== false;
 
   useEffect(() => {
     setActiveLink(location.pathname);
@@ -102,7 +106,17 @@ const Dashboard = () => {
       socket.on("newUnreadSupportMessage", () => {
         dispatch(fetchUnreadMessages(user.id));
       });
-      socket.on("newConversationMessage", fetchConversationsUnread);
+      const handleNewConversationMessage = (data) => {
+        fetchConversationsUnread();
+        // Server only emits this to members other than the sender, so any
+        // event we receive here is genuinely someone else's message. Skip
+        // the room the user already has open — its own chat window handles
+        // that case visually, a sound on top would be redundant.
+        if (soundEnabled && data?.conversationId !== activeRoomRef.current) {
+          playSound();
+        }
+      };
+      socket.on("newConversationMessage", handleNewConversationMessage);
       socket.on("newConversation", fetchConversationsUnread);
     }
     return () => {
@@ -110,12 +124,12 @@ const Dashboard = () => {
         socket.off("userStatus");
         socket.off("newUnreadGlobalMessage");
         socket.off("newUnreadSupportMessage");
-        socket.off("newConversationMessage", fetchConversationsUnread);
+        socket.off("newConversationMessage");
         socket.off("newConversation", fetchConversationsUnread);
         socket.disconnect();
       }
     };
-  }, [user?.id, dispatch]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user?.id, dispatch, soundEnabled, playSound]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleLogout = async () => {
     dispatch(logout());

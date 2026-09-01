@@ -511,6 +511,8 @@
     "noTeacher": "No teacher yet",
     "online": "Online",
     "offline": "Offline",
+    "seen": "Read",
+    "sent": "Sent",
     "muteSound": "Mute notification sounds",
     "unmuteSound": "Unmute notification sounds",
     "loadMore": "Load more messages",

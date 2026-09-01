@@ -511,6 +511,8 @@
     "noTeacher": "Brak nauczyciela",
     "online": "Online",
     "offline": "Offline",
+    "seen": "Przeczytano",
+    "sent": "Wysłano",
     "muteSound": "Wycisz dźwięki powiadomień",
     "unmuteSound": "Włącz dźwięki powiadomień",
     "loadMore": "Załaduj więcej wiadomości",

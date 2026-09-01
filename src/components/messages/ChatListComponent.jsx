@@ -1,7 +1,8 @@
 import { useState, useMemo, memo, useEffect } from "react";
 import PropTypes from "prop-types";
 import { FaComments, FaUsers, FaUserFriends } from "react-icons/fa";
-import { FiSearch, FiPlus, FiUserPlus, FiMoreVertical, FiBookmark, FiBellOff, FiBell, FiTrash2 } from "react-icons/fi";
+import { FiSearch, FiPlus, FiUserPlus, FiMoreVertical, FiBellOff, FiBell, FiTrash2 } from "react-icons/fi";
+import { BsPinAngleFill, BsPinAngle } from "react-icons/bs";
 import { useTranslation } from "react-i18next";
 import useUserSearch from "../../hooks/useUserSearch";
 
@@ -226,6 +227,7 @@ const ChatListComponent = ({
               onClick={() => { onChatSelect(chat); setOpenMenuId(null); }}
               className={`group relative flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer
                          transition-all duration-150 active:scale-[0.99]
+                         ${openMenuId === chat.id ? "z-40" : ""}
                          ${isActive
                            ? "bg-[#9E2FD0]/10 dark:bg-[#9E2FD0]/15 border border-[#9E2FD0]/25 dark:border-[#9E2FD0]/30"
                            : "hover:bg-purple-50 dark:hover:bg-white/[0.04] border border-transparent"
@@ -258,7 +260,7 @@ const ChatListComponent = ({
                 {/* Row 1: name + timestamp */}
                 <div className="flex items-center justify-between gap-1">
                   <p className={`flex items-center gap-1 text-sm font-medium leading-tight truncate ${isActive ? "text-[#9E2FD0] dark:text-purple-300" : "text-gray-700 dark:text-white"}`}>
-                    {chat.pinned && <FiBookmark size={10} className="text-[#F6B82E] flex-shrink-0" />}
+                    {chat.pinned && <BsPinAngleFill size={10} className="text-[#F6B82E] flex-shrink-0" />}
                     {chat.muted && <FiBellOff size={10} className="text-gray-400 flex-shrink-0" />}
                     <span className="truncate">{chat.name}</span>
                   </p>
@@ -309,7 +311,7 @@ const ChatListComponent = ({
                     onClick={() => { onTogglePin?.(chat); setOpenMenuId(null); }}
                     className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5"
                   >
-                    <FiBookmark size={13} /> {chat.pinned ? t("messagesExtra.unpin") : t("messagesExtra.pin")}
+                    {chat.pinned ? <BsPinAngleFill size={13} /> : <BsPinAngle size={13} />} {chat.pinned ? t("messagesExtra.unpin") : t("messagesExtra.pin")}
                   </button>
                   <button
                     onClick={() => { onToggleMute?.(chat); setOpenMenuId(null); }}

@@ -11,6 +11,7 @@ import { io } from "socket.io-client";
 import Dashboard from "./dashboard";
 import Navbar from "../components/layout/navbar";
 import { FiMessageSquare } from "react-icons/fi";
+import { activeRoomRef } from "../state/activeRoom";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -43,6 +44,13 @@ const Messages = () => {
   const [profileUser, setProfileUser] = useState(null);
   const [showNewGroupModal, setShowNewGroupModal] = useState(false);
   const [groupMembers, setGroupMembers] = useState(null);
+
+  // Shared with dashboard.jsx's notification-sound logic so a message never
+  // dings for the conversation you're already looking at.
+  useEffect(() => {
+    activeRoomRef.current = selectedChat?.id || null;
+    return () => { activeRoomRef.current = null; };
+  }, [selectedChat?.id]);
 
   useEffect(() => {
     const socketInstance = io(BACKEND_URL, {

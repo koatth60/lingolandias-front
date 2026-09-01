@@ -61,9 +61,18 @@ const useArchivedMessages = (room, chatMessages) => {
 
   useEffect(() => {
     if (chatMessages) {
-      const combined = [...archivedMessages, ...chatMessages].sort(
-        (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
-      );
+      // archivedMessages and chatMessages can overlap (e.g. a message ages
+      // into the archive between the initial fetch and a later "load more"),
+      // so de-dupe by id before rendering — otherwise the same message shows
+      // up twice in the list.
+      const seen = new Set();
+      const combined = [...archivedMessages, ...chatMessages]
+        .filter((m) => {
+          if (!m.id || seen.has(m.id)) return !m.id;
+          seen.add(m.id);
+          return true;
+        })
+        .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
       setAllMessages(combined);
     }
   }, [chatMessages, archivedMessages]);

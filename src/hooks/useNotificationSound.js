@@ -6,24 +6,36 @@ const useNotificationSound = () => {
   const playSound = useCallback(() => {
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const oscillator = ctx.createOscillator();
-      const gain = ctx.createGain();
 
-      oscillator.connect(gain);
-      gain.connect(ctx.destination);
+      const play = () => {
+        const oscillator = ctx.createOscillator();
+        const gain = ctx.createGain();
 
-      // Soft descending tone: 880 Hz → 660 Hz (A5 → E5)
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(880, ctx.currentTime);
-      oscillator.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + 0.12);
+        oscillator.connect(gain);
+        gain.connect(ctx.destination);
 
-      // Low volume, quick fade-out
-      gain.gain.setValueAtTime(0.12, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
+        // Soft descending tone: 880 Hz → 660 Hz (A5 → E5)
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(880, ctx.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + 0.12);
 
-      oscillator.start(ctx.currentTime);
-      oscillator.stop(ctx.currentTime + 0.45);
-      oscillator.onended = () => ctx.close();
+        // Low volume, quick fade-out
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
+
+        oscillator.start(ctx.currentTime);
+        oscillator.stop(ctx.currentTime + 0.45);
+        oscillator.onended = () => ctx.close();
+      };
+
+      // A context created without a prior user gesture on the page starts
+      // "suspended" in some browsers — it accepts the graph but never
+      // actually emits sound until resumed.
+      if (ctx.state === 'suspended') {
+        ctx.resume().then(play).catch(() => {});
+      } else {
+        play();
+      }
     } catch (_) {
       // AudioContext not available — silent fallback
     }

@@ -60,7 +60,7 @@ const getRecorderPriority = (displayName) => {
 
 const JitsiClassRoom = () => {
   const location = useLocation();
-  const { userName, roomId, chatRoomId, chatName, email, chatType } = location.state || {};
+  const { userName, roomId, chatRoomId, chatName, email, chatType, otherUserId } = location.state || {};
   const domain = JITSI_DOMAIN;
 
   const user = useSelector((state) => state.user.userInfo.user);
@@ -89,6 +89,51 @@ const JitsiClassRoom = () => {
   const [loadStuck, setLoadStuck] = useState(false);
   const [mediaBlocked, setMediaBlocked] = useState(false);
   const [joinStuck, setJoinStuck] = useState(false);
+  // Probe camera/mic access ourselves before Jitsi ever tries — if we join
+  // with startWithAudioMuted/VideoMuted: false and the browser denies both
+  // (incognito, device already in use elsewhere, etc.), Jitsi's own
+  // getUserMedia call can fail hard enough to crash its bootstrap entirely
+  // ("Something went wrong loading the meeting", not even our own error
+  // overlay). Telling it up front to join muted avoids that path — users can
+  // still enable camera/mic afterwards via Jitsi's own toolbar.
+  const [mediaPreflight, setMediaPreflight] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    navigator.mediaDevices?.getUserMedia?.({ audio: true, video: true })
+      .then((stream) => {
+        stream.getTracks().forEach((t) => t.stop());
+        if (!cancelled) setMediaPreflight({ audio: true, video: true });
+      })
+      .catch(() => {
+        if (cancelled) return;
+        // Audio and video permissions are granted/denied together in most
+        // browsers, but check independently in case only one device is busy.
+        navigator.mediaDevices?.getUserMedia?.({ audio: true })
+          .then((s) => { s.getTracks().forEach((t) => t.stop()); if (!cancelled) setMediaPreflight((p) => ({ ...p, audio: true, video: false })); })
+          .catch(() => { if (!cancelled) setMediaPreflight((p) => ({ ...p, audio: false, video: false })); });
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  // 1:1 class chat used to run entirely on the old, pre-migration chats
+  // table (see legacy ChatWindow below) — completely disconnected from the
+  // unified conversation a student and teacher already share in Messages.
+  // Resolve (or create) that real conversation here so the in-call chat
+  // panel shows/continues the exact same history instead of a separate one.
+  const [privateConversationId, setPrivateConversationId] = useState(null);
+  useEffect(() => {
+    if (chatType !== "private" || !user?.id || !otherUserId) return;
+    let cancelled = false;
+    fetch(`${BACKEND_URL}/conversations/dm`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: user.id, otherUserId }),
+    })
+      .then((r) => r.json())
+      .then((conversation) => { if (!cancelled && conversation?.id) setPrivateConversationId(conversation.id); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [chatType, user?.id, otherUserId]);
 
   const logEvent = (event, detail, level = "info") => {
     fetch(`${BACKEND_URL}/meeting-logs`, {
@@ -222,7 +267,8 @@ const JitsiClassRoom = () => {
 
   const options = {
     configOverwrite: {
-      startWithAudioMuted: false,
+      startWithAudioMuted: !(mediaPreflight?.audio ?? true),
+      startWithVideoMuted: !(mediaPreflight?.video ?? true),
       disableModeratorIndicator: true,
       // Disable DTX — prevents crackling at silence/speech transitions
       enableOpusDtx: false,
@@ -343,16 +389,25 @@ const JitsiClassRoom = () => {
           style={{ background: "rgba(0,0,0,0.92)", zIndex: 50 }}
         >
           <p className="text-white text-base max-w-sm">
-            Your browser blocked camera/microphone access, so the meeting can't display video or audio.
-            Please allow camera and microphone access for this site in your browser settings, then reload.
+            Your browser blocked camera/microphone access, so the meeting can't display your video or audio.
+            This can also happen if another app or tab is already using the camera/mic. You can still join
+            and use chat without them, or allow access in your browser settings and reload.
           </p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 rounded-full text-white text-sm font-semibold"
-            style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}
-          >
-            Reload
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setMediaBlocked(false)}
+              className="px-4 py-2 rounded-full text-white text-sm font-semibold border border-white/30 hover:bg-white/10 transition-colors"
+            >
+              Join without camera/mic
+            </button>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 rounded-full text-white text-sm font-semibold"
+              style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}
+            >
+              Reload
+            </button>
+          </div>
         </div>
       )}
 
@@ -380,6 +435,7 @@ const JitsiClassRoom = () => {
         className="relative"
         style={{ flex: 1, display: loading ? "none" : "block" }}
       >
+        {mediaPreflight && (
         <JitsiMeeting
           domain={domain}
           roomName={roomId}
@@ -529,6 +585,7 @@ const JitsiClassRoom = () => {
             }
           }}
         />
+        )}
 
         {/* Gradient bar — glows at the bottom when chat is open */}
         {user.role !== "admin" && (
@@ -578,6 +635,16 @@ const JitsiClassRoom = () => {
                 userId={user?.id}
                 userUrl={user?.avatarUrl}
                 room={chatRoomId || roomId}
+                chatName={chatName}
+                onClose={closeChat}
+              />
+            ) : chatType === "private" && privateConversationId ? (
+              <CallChatWindow
+                username={userName}
+                email={email}
+                userId={user?.id}
+                userUrl={user?.avatarUrl}
+                room={privateConversationId}
                 chatName={chatName}
                 onClose={closeChat}
               />

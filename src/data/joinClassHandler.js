@@ -14,6 +14,7 @@ export const handleJoinClass = ({
   } else {
     let roomId;
     let chatName;
+    let otherUserId;
     if (classSession.roomId) {
       roomId = classSession.roomId;
     } else if (user.role === "user") {
@@ -23,9 +24,10 @@ export const handleJoinClass = ({
       roomId = student ? student.id : classSession.studentId;
       chatName = student?.name;
     }
+    otherUserId = user.role === "user" ? user.teacher?.id : classSession.studentId;
     const userName = user.name;
     const email = user.email;
-    const params = { roomId, chatRoomId: roomId, userName, email, fromMeeting: false, chatName, chatType: "private" };
+    const params = { roomId, chatRoomId: roomId, otherUserId, userName, email, fromMeeting: false, chatName, chatType: "private" };
     navigate("/classroom", { state: params });
   }
 };

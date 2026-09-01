@@ -3,6 +3,15 @@ import axios from "axios";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
+const dedupeById = (list) => {
+  const seen = new Set();
+  return list.filter((m) => {
+    if (seen.has(m.id)) return false;
+    seen.add(m.id);
+    return true;
+  });
+};
+
 // Same shape/behavior as useGlobalChat, but talks to the unified
 // /conversations API + sendConversationMessage socket events instead of the
 // legacy /chat + chat/globalChat pair — used for every conversation type now
@@ -21,7 +30,7 @@ const useConversationChat = (socket, conversationId, user) => {
         `${BACKEND_URL}/conversations/${conversationId}/messages`,
         { params: { userId: user?.id }, headers: token ? { Authorization: `Bearer ${token}` } : {} }
       );
-      setChatMessages(response.data);
+      setChatMessages(dedupeById(response.data));
       setHasMore(response.data.length >= 50);
     } catch (error) {
       console.error("Error fetching conversation messages:", error);
@@ -38,7 +47,7 @@ const useConversationChat = (socket, conversationId, user) => {
         `${BACKEND_URL}/conversations/${conversationId}/messages`,
         { params: { userId: user?.id, before: oldest.id }, headers: token ? { Authorization: `Bearer ${token}` } : {} }
       );
-      setChatMessages((prev) => [...response.data, ...prev]);
+      setChatMessages((prev) => dedupeById([...response.data, ...prev]));
       setHasMore(response.data.length >= 50);
     } catch (error) {
       console.error("Error loading older messages:", error);

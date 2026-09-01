@@ -56,6 +56,16 @@ const useConversationChat = (socket, conversationId, user) => {
     }
   }, [conversationId, user?.id, chatMessages, loadingMore, hasMore]);
 
+  // Runs on every conversationId change, including into a draft DM's `null`
+  // (see ChatWindowComponent) — without this, switching from an open
+  // conversation into a blank draft left the previous conversation's
+  // messages rendered under the new person's name until the first message
+  // was actually sent and a real fetch overwrote the stale state.
+  useEffect(() => {
+    setChatMessages([]);
+    setHasMore(true);
+  }, [conversationId]);
+
   useEffect(() => {
     if (!socket || !conversationId || !user?.name) return;
     socket.emit("join", { username: user.name, room: conversationId });

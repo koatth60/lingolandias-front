@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FiX, FiUsers, FiEdit2, FiCheck, FiUserPlus, FiSearch } from "react-icons/fi";
 import useUserSearch from "../../hooks/useUserSearch";
+import AvatarPicker from "./AvatarPicker";
 
 const getInitials = (name, lastName) => {
   const a = (name || "").trim()[0] || "";
@@ -22,11 +23,13 @@ const CAN_MANAGE_TYPES = ["dm", "group"];
 const GroupMembersModal = ({
   chatType,
   groupName,
+  groupAvatarUrl,
   members,
   currentUserId,
   onClose,
   onViewProfile,
   onRename,
+  onChangeAvatar,
   onAddMember,
 }) => {
   const { t } = useTranslation();
@@ -57,9 +60,13 @@ const GroupMembersModal = ({
         <div className="relative z-10 p-5 flex flex-col min-h-0 flex-1">
           <div className="flex items-center justify-between mb-1 flex-shrink-0 gap-2">
             <div className="flex items-center gap-2 min-w-0 flex-1">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-[#F6B82E]/15 flex-shrink-0">
-                <FiUsers size={15} className="text-[#F6B82E]" />
-              </div>
+              {chatType === "group" ? (
+                <AvatarPicker value={groupAvatarUrl} onChange={onChangeAvatar} size={32} align="start" />
+              ) : (
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-[#F6B82E]/15 flex-shrink-0">
+                  <FiUsers size={15} className="text-[#F6B82E]" />
+                </div>
+              )}
               {editingName ? (
                 <div className="flex items-center gap-1 flex-1 min-w-0">
                   <input

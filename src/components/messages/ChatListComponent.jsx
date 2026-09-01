@@ -1,7 +1,7 @@
 import { useState, useMemo, memo, useEffect } from "react";
 import PropTypes from "prop-types";
 import { FaComments, FaUsers, FaUserFriends } from "react-icons/fa";
-import { FiSearch, FiPlus, FiUserPlus, FiMoreVertical, FiBellOff, FiBell, FiTrash2 } from "react-icons/fi";
+import { FiSearch, FiPlus, FiUserPlus, FiMoreVertical, FiBellOff, FiBell, FiTrash2, FiAlertTriangle } from "react-icons/fi";
 import { BsPinAngleFill, BsPinAngle } from "react-icons/bs";
 import { useTranslation } from "react-i18next";
 import useUserSearch from "../../hooks/useUserSearch";
@@ -77,6 +77,7 @@ const ChatListComponent = ({
   onTogglePin,
   onToggleMute,
   onDeleteChat,
+  onDeleteGroup,
   hasMoreChats,
   loadingMoreChats,
   onLoadMoreChats,
@@ -223,7 +224,7 @@ const ChatListComponent = ({
 
           return (
             <li
-              key={chat.id}
+              key={chat.id || "draft"}
               onClick={() => { onChatSelect(chat); setOpenMenuId(null); }}
               className={`group relative flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer
                          transition-all duration-150 active:scale-[0.99]
@@ -235,7 +236,7 @@ const ChatListComponent = ({
             >
               {/* Icon avatar */}
               <div className="relative flex-shrink-0">
-                {chat.type === "dm" && chat.avatarUrl ? (
+                {(chat.type === "dm" || chat.type === "group") && chat.avatarUrl ? (
                   <img src={chat.avatarUrl} alt={chat.name} className="w-10 h-10 rounded-2xl object-cover" />
                 ) : chat.type === "dm" ? (
                   <div
@@ -275,12 +276,14 @@ const ChatListComponent = ({
                         {unread > 99 ? "99+" : unread}
                       </span>
                     )}
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setOpenMenuId((id) => (id === chat.id ? null : chat.id)); }}
-                      className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
-                    >
-                      <FiMoreVertical size={13} />
-                    </button>
+                    {!chat.isDraft && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setOpenMenuId((id) => (id === chat.id ? null : chat.id)); }}
+                        className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                      >
+                        <FiMoreVertical size={13} />
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -301,8 +304,11 @@ const ChatListComponent = ({
                 )}
               </div>
 
-              {/* Pin / mute / delete menu */}
-              {openMenuId === chat.id && (
+              {/* Pin / mute / delete menu — chat.id is null for a draft, same
+                  as openMenuId's unset default, so this must also check
+                  !chat.isDraft or a fresh draft would render "open" by
+                  coincidence before anyone ever clicked its (hidden) button. */}
+              {!chat.isDraft && openMenuId === chat.id && (
                 <div
                   onClick={(e) => e.stopPropagation()}
                   className="absolute right-2 top-12 z-30 w-40 rounded-xl shadow-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1e1b35] overflow-hidden"
@@ -326,6 +332,14 @@ const ChatListComponent = ({
                       className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 border-t border-gray-100 dark:border-white/5"
                     >
                       <FiTrash2 size={13} /> {t("messagesExtra.deleteChat")}
+                    </button>
+                  )}
+                  {chat.type === "group" && !chat.linkedToSchedule && (
+                    <button
+                      onClick={() => { onDeleteGroup?.(chat); setOpenMenuId(null); }}
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 border-t border-gray-100 dark:border-white/5"
+                    >
+                      <FiAlertTriangle size={13} /> {t("messagesExtra.deleteGroup")}
                     </button>
                   )}
                 </div>
@@ -365,6 +379,7 @@ ChatListComponent.propTypes = {
   currentUserId: PropTypes.string,
   onStartChatWithUser: PropTypes.func,
   onNewGroup: PropTypes.func,
+  onDeleteGroup: PropTypes.func,
 };
 
 export default memo(ChatListComponent);

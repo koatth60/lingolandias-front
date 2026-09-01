@@ -8,6 +8,7 @@ import ProfileCard from "../components/messages/ProfileCard";
 import NewGroupModal from "../components/messages/NewGroupModal";
 import GroupMembersModal from "../components/messages/GroupMembersModal";
 import { io } from "socket.io-client";
+import Swal from "sweetalert2";
 import Dashboard from "./dashboard";
 import Navbar from "../components/layout/navbar";
 import { FiMessageSquare } from "react-icons/fi";
@@ -119,39 +120,72 @@ const Messages = () => {
     };
   }, [socket, fetchConversations]);
 
+  // A draft's local-only list entry never survives a switch to something
+  // else — Teams-style: it's visible while you're looking at it, gone the
+  // moment you look away without sending. fetchConversations() (see below)
+  // wholesale-replaces this array whenever a message actually gets sent, so
+  // there's nothing to reconcile on that path — this cleanup only matters
+  // for the "never sent anything" case.
+  const dropStaleDrafts = (list) => list.filter((c) => !c.isDraft);
+
   const handleChatSelect = (chat) => {
     setSelectedChat(chat);
     setShowChatList(false);
-    setConversations((prev) => prev.map((c) => (c.id === chat.id ? { ...c, unreadCount: 0 } : c)));
+    setConversations((prev) => {
+      const cleaned = dropStaleDrafts(prev).map((c) => (c.id === chat.id ? { ...c, unreadCount: 0 } : c));
+      return chat.isDraft ? [chat, ...cleaned] : cleaned;
+    });
   };
 
   const handleBackClick = () => {
     setSelectedChat(null);
     setShowChatList(true);
+    setConversations(dropStaleDrafts);
   };
 
   const notifyNewConversation = (conversationId, memberIds) => {
     socket?.emit("newConversationCreated", { conversationId, memberIds });
   };
 
-  // Just opens a local draft — nothing is saved until an actual message is
-  // sent (see resolveDraftConversation), so clicking someone and closing
-  // without typing anything never leaves a phantom empty chat behind.
-  const startDmWith = (person) => {
+  // Opens a chat with this person. If a real DM already exists (they're not
+  // necessarily in the currently-loaded/paginated conversations list, so a
+  // local check isn't reliable — e.g. clicking someone from a group's member
+  // list you've never pinned/recently messaged), a quick read-only lookup
+  // finds it and its full history opens directly, exactly like Teams. Only
+  // when there's genuinely no prior conversation does this fall back to a
+  // local draft — shown at the top of the chat list right away, but nothing
+  // is saved server-side until an actual message is sent (see
+  // resolveDraftConversation). Switching to another chat, closing this one,
+  // or reloading the page all discard an unsent draft, since it never
+  // existed anywhere but this component's own state.
+  const startDmWith = async (person) => {
     setProfileUser(null);
+    let existingId = null;
+    try {
+      const res = await fetch(
+        `${BACKEND_URL}/conversations/dm/existing?userId=${user.id}&otherUserId=${person.id}`,
+        { headers: authHeaders() }
+      );
+      if (res.ok) {
+        const { conversation } = await res.json();
+        existingId = conversation?.id || null;
+      }
+    } catch (err) {
+      console.error("Error checking for an existing DM:", err);
+    }
     handleChatSelect({
-      // No real conversation exists yet — deliberately NOT person.id. Some
-      // legacy DMs were migrated with their conversation id set to one of
-      // the participants' own userId, so reusing person.id here could
+      // Deliberately NOT person.id when no real conversation exists yet.
+      // Some legacy DMs were migrated with their conversation id set to one
+      // of the participants' own userId, so reusing person.id here could
       // collide with a real (unrelated) conversation and leak it into this
       // draft window before resolveDraftConversation ever runs.
-      id: null,
+      id: existingId,
       type: "dm",
       name: `${person.name} ${person.lastName}`.trim(),
       avatarUrl: person.avatarUrl,
       otherUser: person,
       unreadCount: 0,
-      isDraft: true,
+      isDraft: !existingId,
     });
   };
 
@@ -265,6 +299,29 @@ const Messages = () => {
     }
   };
 
+  const handleChangeAvatar = async (avatarUrl) => {
+    if (!selectedChat) return;
+    try {
+      await fetch(`${BACKEND_URL}/conversations/${selectedChat.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify({ avatarUrl }),
+      });
+      setSelectedChat((prev) => ({ ...prev, avatarUrl }));
+      setConversations((prev) => prev.map((c) => (c.id === selectedChat.id ? { ...c, avatarUrl } : c)));
+      // Other members only refetch their list on the next socket-driven
+      // "newConversation" trigger (new message, add member, etc.) — reuse
+      // that same signal here so an avatar-only change shows up live too.
+      // groupMembers is already populated whenever this can be called, since
+      // it's only reachable from inside the open GroupMembersModal.
+      if (groupMembers?.length) {
+        notifyNewConversation(selectedChat.id, groupMembers.map((m) => m.id));
+      }
+    } catch (err) {
+      console.error("Error changing group avatar:", err);
+    }
+  };
+
   const handleTogglePin = async (chat) => {
     const nextPinned = !chat.pinned;
     setConversations((prev) => prev.map((c) => (c.id === chat.id ? { ...c, pinned: nextPinned } : c)));
@@ -311,6 +368,44 @@ const Messages = () => {
     }
   };
 
+  // Distinct from handleDeleteChat above: this removes the group entirely
+  // for every member, not just the requester's own view. Any member can do
+  // this today — groups a teacher creates through the (not yet wired)
+  // scheduling flow are excluded server-side via linkedToSchedule.
+  const handleDeleteGroup = async (chat) => {
+    const result = await Swal.fire({
+      title: t("messagesExtra.deleteGroupTitle"),
+      text: t("messagesExtra.deleteGroupWarning", { name: chat.name }),
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      confirmButtonText: t("messagesExtra.deleteGroupConfirm"),
+      cancelButtonText: t("messagesExtra.cancel"),
+    });
+    if (!result.isConfirmed) return;
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/conversations/${chat.id}/group?userId=${user.id}`, {
+        method: "DELETE",
+        headers: authHeaders(),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        Swal.fire({ title: t("common.error"), text: data.message || t("messagesExtra.deleteGroupFailed"), icon: "error", confirmButtonText: "Ok" });
+        return;
+      }
+      const { memberIds } = await res.json();
+      setConversations((prev) => prev.filter((c) => c.id !== chat.id));
+      if (selectedChat?.id === chat.id) {
+        setSelectedChat(null);
+        setShowChatList(true);
+      }
+      socket?.emit("conversationDeleted", { conversationId: chat.id, memberIds });
+    } catch (err) {
+      console.error("Error deleting group:", err);
+    }
+  };
+
   const chatListProps = {
     chats: conversations,
     onChatSelect: handleChatSelect,
@@ -321,6 +416,7 @@ const Messages = () => {
     onTogglePin: handleTogglePin,
     onToggleMute: handleToggleMute,
     onDeleteChat: handleDeleteChat,
+    onDeleteGroup: handleDeleteGroup,
     hasMoreChats,
     loadingMoreChats,
     onLoadMoreChats: loadMoreChats,
@@ -340,7 +436,7 @@ const Messages = () => {
     userId: user.id,
     socket,
     onBackClick: handleBackClick,
-    onClose: () => setSelectedChat(null),
+    onClose: () => { setSelectedChat(null); setConversations(dropStaleDrafts); },
     onViewProfile: handleViewProfile,
     onViewGroupMembers: handleViewGroupMembers,
   } : null;
@@ -468,11 +564,13 @@ const Messages = () => {
         <GroupMembersModal
           chatType={selectedChat?.type}
           groupName={selectedChat?.name}
+          groupAvatarUrl={selectedChat?.avatarUrl}
           members={groupMembers}
           currentUserId={user.id}
           onClose={() => setGroupMembers(null)}
           onViewProfile={(id) => { setGroupMembers(null); handleViewProfile(id); }}
           onRename={handleRenameChat}
+          onChangeAvatar={handleChangeAvatar}
           onAddMember={handleAddMember}
         />
       )}

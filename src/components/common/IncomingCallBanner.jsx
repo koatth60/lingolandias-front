@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { FiPhone, FiPhoneOff } from "react-icons/fi";
+import { FiPhone, FiPhoneOff, FiUsers } from "react-icons/fi";
 import { socket } from "../../socket";
 import useRingtone from "../../hooks/useRingtone";
 import { CALL_RING_TIMEOUT_MS } from "../../constants";
@@ -45,6 +45,23 @@ const IncomingCallBanner = () => {
     setIncomingCall(null);
   };
 
+  // 1:1 only — a group call has no single "the other side", other members
+  // might still pick up, so declining there just quietly hides the banner
+  // for this person instead of ending the ring for everyone else. Emitting
+  // this is what lets the caller log "missed call" immediately instead of
+  // sitting through the full ring timeout for a call that was actively
+  // turned down.
+  const decline = () => {
+    if (incomingCall && incomingCall.chatType !== "group" && user) {
+      socket.emit("callDeclined", {
+        conversationId: incomingCall.conversationId,
+        callerId: incomingCall.callerId,
+        calleeId: user.id,
+      });
+    }
+    dismiss();
+  };
+
   const accept = () => {
     if (!incomingCall || !user) return;
     const call = incomingCall;
@@ -63,9 +80,10 @@ const IncomingCallBanner = () => {
   };
 
   if (!incomingCall) return null;
+  const isGroup = incomingCall.chatType === "group";
 
   return (
-    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] w-[92vw] max-w-sm px-2">
+    <div className="fixed bottom-4 right-4 z-[9999] w-[92vw] max-w-sm px-2 sm:px-0">
       <div
         className="flex items-center gap-3 px-4 py-3.5 rounded-2xl shadow-2xl"
         style={{
@@ -80,20 +98,25 @@ const IncomingCallBanner = () => {
             className="w-11 h-11 rounded-full flex items-center justify-center text-white text-sm font-bold"
             style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}
           >
-            {getInitials(incomingCall.callerName)}
+            {isGroup ? <FiUsers size={18} /> : getInitials(incomingCall.callerName)}
           </div>
           <span className="absolute inset-0 rounded-full border-2 border-[#9E2FD0] animate-ping" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-white text-sm font-semibold truncate">{incomingCall.callerName}</p>
-          <p className="text-gray-400 text-xs truncate">
-            {incomingCall.chatType === "group" && incomingCall.chatName
-              ? `Calling in ${incomingCall.chatName}`
-              : "Incoming call"}
-          </p>
+          {isGroup ? (
+            <>
+              <p className="text-white text-sm font-semibold truncate">{incomingCall.chatName}</p>
+              <p className="text-gray-400 text-xs truncate">{incomingCall.callerName} is calling</p>
+            </>
+          ) : (
+            <>
+              <p className="text-white text-sm font-semibold truncate">{incomingCall.callerName}</p>
+              <p className="text-gray-400 text-xs truncate">Incoming call</p>
+            </>
+          )}
         </div>
         <button
-          onClick={dismiss}
+          onClick={decline}
           title="Decline"
           className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-white transition-transform hover:scale-105 active:scale-95"
           style={{ background: "#ef4444" }}

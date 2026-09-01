@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { io } from "socket.io-client";
+import { socket } from "../../socket";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { BsEmojiSmile, BsThreeDots } from "react-icons/bs";
@@ -22,7 +22,6 @@ const SupportChatWindow = () => {
   const user = useSelector((state) => state.user.userInfo?.user);
   const soundEnabled = user?.settings?.notificationSound !== false;
 
-  const [socket, setSocket] = useState(null);
   const [message, setMessage] = useState("");
   const [chatMessages, setChatMessages] = useState([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -68,25 +67,27 @@ const SupportChatWindow = () => {
 
   useEffect(() => {
     if (!user) return;
-    const token = localStorage.getItem("token") || "";
-    const s = io(BACKEND_URL, { auth: (cb) => cb({ token }) });
-    setSocket(s);
-    s.emit("join", { username: user.name, room: SUPPORT_ROOM });
+    socket.emit("join", { username: user.name, room: SUPPORT_ROOM });
     fetchMessages();
     markRead();
 
-    s.on("supportChat", (data) => {
+    const handleSupportChat = (data) => {
       setChatMessages((prev) => [...prev, data]);
       if (data.email !== user?.email && soundEnabledRef.current) {
         playSound();
       }
-    });
-
-    s.on("supportChatDeleted", (data) => {
+    };
+    const handleSupportChatDeleted = (data) => {
       setChatMessages((prev) => prev.filter((m) => m.id !== data.messageId));
-    });
+    };
 
-    return () => s.disconnect();
+    socket.on("supportChat", handleSupportChat);
+    socket.on("supportChatDeleted", handleSupportChatDeleted);
+
+    return () => {
+      socket.off("supportChat", handleSupportChat);
+      socket.off("supportChatDeleted", handleSupportChatDeleted);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 

@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { io } from "socket.io-client";
 import axios from "axios";
 import { BsEmojiSmile, BsThreeDots } from "react-icons/bs";
 import { FiSend, FiMessageSquare, FiEdit2, FiX, FiPaperclip, FiDownload, FiFile } from "react-icons/fi";
@@ -8,8 +7,8 @@ import EmojiPicker from "emoji-picker-react";
 import MessageOptionsCard from "./MessageOptionsCard";
 import useConversationChat from "../../hooks/useConversationChat";
 import useDeleteConversationMessage from "../../hooks/useDeleteConversationMessage";
+import { socket } from "../../socket";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-const getToken = () => localStorage.getItem("token") || "";
 
 const CallChatWindow = ({
   username,
@@ -21,7 +20,6 @@ const CallChatWindow = ({
   onClose,
 }) => {
 
-  const [socket, setSocket] = useState(null);
   const [message, setMessage] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [editingMsg, setEditingMsg] = useState(null);
@@ -45,9 +43,9 @@ const CallChatWindow = ({
   // reopening Messages afterward showed them as unread again even though
   // you'd just read them live in the call.
   const markConversationRead = useCallback(() => {
-    if (!socket || !room || !userId) return;
+    if (!room || !userId) return;
     socket.emit("markConversationRead", { conversationId: room, userId });
-  }, [socket, room, userId]);
+  }, [room, userId]);
 
   useEffect(() => {
     markConversationRead();
@@ -74,31 +72,24 @@ const CallChatWindow = ({
     if (editingMsg) setMessage(editingMsg.message);
   }, [editingMsg]);
 
-  // ── Socket setup ──
+  // ── Typing listeners on the shared socket ──
   useEffect(() => {
-    if (username && room) {
-      const socketInstance = io(`${BACKEND_URL}`, {
-        auth: (cb) => cb({ token: getToken() }),
-      });
-      setSocket(socketInstance);
+    if (!username || !room) return;
+    const handleTyping = ({ username: who }) => {
+      if (who && who !== username) {
+        setTypingUsers((prev) => prev.includes(who) ? prev : [...prev, who]);
+      }
+    };
+    const handleStopTyping = () => setTypingUsers([]);
 
-      // ── Typing listeners (room-scoped via own socket) ──
-      socketInstance.on("typing", ({ username: who }) => {
-        if (who && who !== username) {
-          setTypingUsers((prev) => prev.includes(who) ? prev : [...prev, who]);
-        }
-      });
+    socket.on("typing", handleTyping);
+    socket.on("stopTyping", handleStopTyping);
 
-      socketInstance.on("stopTyping", () => {
-        setTypingUsers([]);
-      });
-
-      return () => {
-        clearTimeout(typingTimeoutRef.current);
-        socketInstance.disconnect();
-      };
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      clearTimeout(typingTimeoutRef.current);
+      socket.off("typing", handleTyping);
+      socket.off("stopTyping", handleStopTyping);
+    };
   }, [username, room]);
 
   useEffect(() => {

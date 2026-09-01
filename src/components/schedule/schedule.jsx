@@ -33,7 +33,7 @@ import {
   removeStudent,
   removeTeacherSchedules,
 } from "../../redux/userSlice";
-import { io } from "socket.io-client";
+import { socket } from "../../socket";
 import { meetingRooms, teacherChats } from "../../constants";
 import EditEventModal from "./EditEventModal";
 import Dropdown from "./Dropdown";
@@ -127,14 +127,7 @@ const Schedule = () => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    let socket;
-
     if (user?.id) {
-      socket = io(`${BACKEND_URL}`, {
-        autoConnect: true,
-        reconnection: true
-      });
-
       const handleNewChat = () => {
         if (user.role === 'teacher') {
           dispatch(fetchMessagesForTeacher());
@@ -176,13 +169,10 @@ const Schedule = () => {
       socket.on("studentRemoved", handleStudentRemoved);
 
       return () => {
-        if (socket) {
-          socket.off("newChat", handleNewChat);
-          socket.off("scheduleUpdated", handleScheduleUpdated);
-          socket.off("studentAssigned", handleStudentAssigned);
-          socket.off("studentRemoved", handleStudentRemoved);
-          socket.disconnect();
-        }
+        socket.off("newChat", handleNewChat);
+        socket.off("scheduleUpdated", handleScheduleUpdated);
+        socket.off("studentAssigned", handleStudentAssigned);
+        socket.off("studentRemoved", handleStudentRemoved);
       };
     }
   }, [user, dispatch]);

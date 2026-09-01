@@ -7,7 +7,7 @@ import ChatWindowComponent from "../components/messages/ChatWindowComponent";
 import ProfileCard from "../components/messages/ProfileCard";
 import NewGroupModal from "../components/messages/NewGroupModal";
 import GroupMembersModal from "../components/messages/GroupMembersModal";
-import { io } from "socket.io-client";
+import { socket } from "../socket";
 import Swal from "sweetalert2";
 import Dashboard from "./dashboard";
 import Navbar from "../components/layout/navbar";
@@ -15,13 +15,6 @@ import { FiMessageSquare } from "react-icons/fi";
 import { activeRoomRef } from "../state/activeRoom";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-
-const getToken = () => {
-  try {
-    const s = JSON.parse(localStorage.getItem('state') || '{}');
-    return s?.user?.userInfo?.token || '';
-  } catch { return ''; }
-};
 
 const authHeaders = () => {
   const token = localStorage.getItem("token");
@@ -41,7 +34,6 @@ const Messages = () => {
   const [conversations, setConversations] = useState([]);
   const [selectedChat, setSelectedChat] = useState(null);
   const [showChatList, setShowChatList] = useState(true);
-  const [socket, setSocket] = useState(null);
   const [profileUser, setProfileUser] = useState(null);
   const [showNewGroupModal, setShowNewGroupModal] = useState(false);
   const [groupMembers, setGroupMembers] = useState(null);
@@ -52,17 +44,6 @@ const Messages = () => {
     activeRoomRef.current = selectedChat?.id || null;
     return () => { activeRoomRef.current = null; };
   }, [selectedChat?.id]);
-
-  useEffect(() => {
-    const socketInstance = io(BACKEND_URL, {
-      auth: { token: getToken() },
-    });
-    socketInstance.on("connect", () => {
-      socketInstance.emit("registerUser", { userId: user.id });
-    });
-    setSocket(socketInstance);
-    return () => { socketInstance.disconnect(); };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const getDisplayName = useCallback((c) => {
     if (c.type === "dm") return c.otherUser ? `${c.otherUser.name} ${c.otherUser.lastName}` : c.name;
@@ -110,7 +91,6 @@ const Messages = () => {
   useEffect(() => { fetchConversations(); }, [fetchConversations]);
 
   useEffect(() => {
-    if (!socket) return;
     const refresh = () => fetchConversations();
     socket.on("newConversationMessage", refresh);
     socket.on("newConversation", refresh);
@@ -118,7 +98,7 @@ const Messages = () => {
       socket.off("newConversationMessage", refresh);
       socket.off("newConversation", refresh);
     };
-  }, [socket, fetchConversations]);
+  }, [fetchConversations]);
 
   // A draft's local-only list entry never survives a switch to something
   // else — Teams-style: it's visible while you're looking at it, gone the
@@ -158,35 +138,45 @@ const Messages = () => {
   // resolveDraftConversation). Switching to another chat, closing this one,
   // or reloading the page all discard an unsent draft, since it never
   // existed anywhere but this component's own state.
-  const startDmWith = async (person) => {
+  const startDmWith = (person) => {
     setProfileUser(null);
-    let existingId = null;
-    try {
-      const res = await fetch(
-        `${BACKEND_URL}/conversations/dm/existing?userId=${user.id}&otherUserId=${person.id}`,
-        { headers: authHeaders() }
-      );
-      if (res.ok) {
-        const { conversation } = await res.json();
-        existingId = conversation?.id || null;
-      }
-    } catch (err) {
-      console.error("Error checking for an existing DM:", err);
-    }
+    // Open instantly as a draft — Teams' own "instant open" feel — rather
+    // than waiting on the existing-DM lookup first. Most clicks land on a
+    // genuinely new contact anyway, so blocking the open on that network
+    // round trip made every single click feel laggy for no benefit in the
+    // common case.
     handleChatSelect({
-      // Deliberately NOT person.id when no real conversation exists yet.
-      // Some legacy DMs were migrated with their conversation id set to one
-      // of the participants' own userId, so reusing person.id here could
-      // collide with a real (unrelated) conversation and leak it into this
-      // draft window before resolveDraftConversation ever runs.
-      id: existingId,
+      // Deliberately NOT person.id. Some legacy DMs were migrated with their
+      // conversation id set to one of the participants' own userId, so
+      // reusing person.id here could collide with a real (unrelated)
+      // conversation and leak it into this draft window before the lookup
+      // below (or resolveDraftConversation, on send) ever runs.
+      id: null,
       type: "dm",
       name: `${person.name} ${person.lastName}`.trim(),
       avatarUrl: person.avatarUrl,
       otherUser: person,
       unreadCount: 0,
-      isDraft: !existingId,
+      isDraft: true,
     });
+
+    // If a real conversation already exists, upgrade the draft in place
+    // once the lookup resolves — only if the user is still looking at this
+    // same person's chat (they may have already switched to something else).
+    fetch(`${BACKEND_URL}/conversations/dm/existing?userId=${user.id}&otherUserId=${person.id}`, {
+      headers: authHeaders(),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        const existingId = data?.conversation?.id;
+        if (!existingId) return;
+        setSelectedChat((prev) =>
+          prev && prev.isDraft && prev.otherUser?.id === person.id
+            ? { ...prev, id: existingId, isDraft: false }
+            : prev
+        );
+      })
+      .catch((err) => console.error("Error checking for an existing DM:", err));
   };
 
   // Called from ChatWindowComponent the moment the first message is actually

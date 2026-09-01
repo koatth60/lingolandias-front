@@ -230,6 +230,37 @@ const JitsiClassRoom = () => {
     }).catch(() => {});
   };
 
+  // Shared by the ring-timeout fallback and the immediate 'callDeclined'
+  // signal below — re-checks participant count at fire time so it's a
+  // no-op if someone joined in the meantime.
+  const sendMissedCallMessage = (targetConversationId) => {
+    if (apiRef.current && apiRef.current.getParticipantsInfo().length > 1) return;
+    socket.emit("sendConversationMessage", {
+      conversationId: targetConversationId,
+      senderId: user.id,
+      username: displayNameForJitsi,
+      email: user.email,
+      avatarUrl: user.avatarUrl,
+      message: "Missed call",
+      messageType: "missed_call",
+    });
+  };
+
+  // 1:1 callee actively declining (see IncomingCallBanner) — log the missed
+  // call right away instead of waiting out the full ring timeout. Only
+  // fires for the person who actually placed this call (callStartedNotifiedRef
+  // is only set true on that client) and only for the matching conversation.
+  useEffect(() => {
+    const handleCallDeclined = (data) => {
+      const targetConversationId = chatRoomId || roomId;
+      if (!callStartedNotifiedRef.current || data.conversationId !== targetConversationId) return;
+      clearTimeout(missedCallTimeoutRef.current);
+      sendMissedCallMessage(targetConversationId);
+    };
+    socket.on("callDeclined", handleCallDeclined);
+    return () => socket.off("callDeclined", handleCallDeclined);
+  }, [chatRoomId, roomId]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleCallEnd = () => {
     logEvent("conference_left");
     endSession();
@@ -540,18 +571,10 @@ const JitsiClassRoom = () => {
                     // of the call just silently going nowhere. Re-checks
                     // participant count at fire time so it's a no-op if
                     // someone joined in the meantime.
-                    missedCallTimeoutRef.current = setTimeout(() => {
-                      if (externalApi.getParticipantsInfo().length > 1) return;
-                      socket.emit("sendConversationMessage", {
-                        conversationId: targetConversationId,
-                        senderId: user.id,
-                        username: displayNameForJitsi,
-                        email: user.email,
-                        avatarUrl: user.avatarUrl,
-                        message: "Missed call",
-                        messageType: "missed_call",
-                      });
-                    }, CALL_RING_TIMEOUT_MS);
+                    missedCallTimeoutRef.current = setTimeout(
+                      () => sendMissedCallMessage(targetConversationId),
+                      CALL_RING_TIMEOUT_MS
+                    );
                   }
                 }
               } catch (err) {

@@ -628,7 +628,7 @@ const JitsiClassRoom = () => {
       >
         {showChat && (
           <div className="relative w-full h-full chat-slide-in">
-            {chatType === "group" || chatType === "teacher" || chatType === "general" ? (
+            {chatType === "group" || chatType === "teacher" || chatType === "general" || chatType === "dm" ? (
               <CallChatWindow
                 username={userName}
                 email={email}

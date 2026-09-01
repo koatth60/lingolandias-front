@@ -453,6 +453,8 @@
     "uploadPhoto": "Subir foto",
     "useImageUrl": "Usar URL de imagen",
     "chooseFromGallery": "Elegir de la galería",
+    "missedCallFrom": "Llamada perdida de {{name}}",
+    "joinCall": "Unirse",
     "membersCount": "{{count}} miembros",
     "groupOwner": "Dueño",
     "pin": "Pinear",

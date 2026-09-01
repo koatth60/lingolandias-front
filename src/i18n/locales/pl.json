@@ -453,6 +453,8 @@
     "uploadPhoto": "Prześlij zdjęcie",
     "useImageUrl": "Użyj adresu URL obrazu",
     "chooseFromGallery": "Wybierz z galerii",
+    "missedCallFrom": "Nieodebrane połączenie od {{name}}",
+    "joinCall": "Dołącz",
     "membersCount": "{{count}} członków",
     "groupOwner": "Właściciel",
     "pin": "Przypnij",

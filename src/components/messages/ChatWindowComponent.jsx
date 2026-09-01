@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import axios from "axios";
 import send from "../../assets/logos/send.png";
 import { BsEmojiSmile, BsThreeDots } from "react-icons/bs";
-import { FiVideo, FiChevronLeft, FiEdit2, FiX, FiPaperclip, FiDownload, FiFile, FiMusic, FiFileText, FiCornerUpLeft, FiArrowDown, FiUsers } from "react-icons/fi";
+import { FiVideo, FiChevronLeft, FiEdit2, FiX, FiPaperclip, FiDownload, FiFile, FiMusic, FiFileText, FiCornerUpLeft, FiArrowDown, FiUsers, FiPhoneMissed } from "react-icons/fi";
 import { FaComments } from "react-icons/fa";
 import PerfectScrollbar from "react-perfect-scrollbar";
 import "react-perfect-scrollbar/dist/css/styles.css";
@@ -569,6 +569,39 @@ const ChatWindowComponent = ({
               const avatarColor = generateColor(msg.username);
               const isImageOnly = !!(effectiveFileUrl && !effectiveMessage?.trim() && isImageUrl(effectiveFileUrl));
               const isFileOnly = !!(effectiveFileUrl && !effectiveMessage?.trim() && !isImageUrl(effectiveFileUrl));
+
+              if (msg.messageType === "missed_call") {
+                return (
+                  <div key={index}>
+                    {showTimestamp && (
+                      <div className="flex items-center gap-3 my-5">
+                        <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
+                        <span className="text-[10px] font-medium text-gray-600 dark:text-gray-300
+                                       px-3 py-1 rounded-full bg-white dark:bg-black/40
+                                       backdrop-blur-sm border border-gray-200 dark:border-white/10">
+                          {formatTimestamp(msg.timestamp)}
+                        </span>
+                        <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
+                      </div>
+                    )}
+                    <li className="flex justify-center my-1.5">
+                      <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20">
+                        <FiPhoneMissed size={14} className="text-red-500 flex-shrink-0" />
+                        <span className="text-xs text-gray-700 dark:text-gray-200">
+                          {t("messagesExtra.missedCallFrom", { name: msg.username })}
+                        </span>
+                        <button
+                          onClick={handleJoinGeneralClass}
+                          className="text-xs font-semibold px-2.5 py-1 rounded-full text-white flex-shrink-0"
+                          style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}
+                        >
+                          {t("messagesExtra.joinCall")}
+                        </button>
+                      </div>
+                    </li>
+                  </div>
+                );
+              }
 
               return (
                 <div key={index}>

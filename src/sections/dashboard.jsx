@@ -11,7 +11,7 @@ import {
   FiGrid, FiLogOut, FiBarChart2, FiActivity
 } from "react-icons/fi";
 import { fetchUnreadMessages } from "../redux/messageSlice";
-import { io } from "socket.io-client";
+import { socket } from "../socket";
 import { toast } from "react-toastify";
 import { fetchMessagesForTeacher, fetchUnreadCountsForStudent } from "../redux/chatSlice";
 import { updateUserStatus } from "../redux/userSlice";
@@ -81,11 +81,19 @@ const Dashboard = () => {
 
   useEffect(() => { fetchConversationsUnread(); }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Was creating its own raw `io(BACKEND_URL)` connection on every mount —
+  // Dashboard is the shared layout every page renders, so every single
+  // navigation between pages (not just login) tore down and reconnected an
+  // entirely separate, unauthenticated socket (no token passed to io() here
+  // at all). Each cycle re-broadcast this user's online/offline status to
+  // everyone, which is what caused the flood of duplicate "X is now
+  // online/offline" toasts, worst when a backgrounded tab's throttled timers
+  // let several of these cycles queue up and then fire in a burst on focus.
+  // The already-connected, already-registered global singleton (see
+  // useGlobalSocket, mounted once via RequireAuth) is what every other part
+  // of the app already listens on — just attach to that instead.
   useEffect(() => {
-    let socket;
     if (user?.id) {
-      socket = io(`${BACKEND_URL}`);
-      socket.emit("registerUser", { userId: user.id });
       socket.on("userStatus", (data) => {
         const { id, online, name } = data;
         if (id !== user.id) {
@@ -118,13 +126,15 @@ const Dashboard = () => {
       socket.on("newConversation", fetchConversationsUnread);
     }
     return () => {
-      if (socket) {
+      if (user?.id) {
         socket.off("userStatus");
         socket.off("newUnreadGlobalMessage");
         socket.off("newUnreadSupportMessage");
         socket.off("newConversationMessage");
         socket.off("newConversation", fetchConversationsUnread);
-        socket.disconnect();
+        // Deliberately no socket.disconnect() — this is the shared
+        // singleton every other part of the app relies on staying
+        // connected; its lifecycle belongs to useGlobalSocket alone.
       }
     };
   }, [user?.id, dispatch, soundEnabled, playSound]); // eslint-disable-line react-hooks/exhaustive-deps

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import Login from './components/login/login';
 import RequireAuth from './components/auth/requireAuth';
 import GlobalNotificationHandler from './components/common/GlobalNotificationHandler';
+import IncomingCallBanner from './components/common/IncomingCallBanner';
 import FilePreviewModal from './components/common/FilePreviewModal';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import { UploadProvider } from './context/UploadContext';
@@ -62,6 +63,7 @@ function App() {
       <UploadStatusBar />
       <Router>
         <GlobalNotificationHandler />
+        <IncomingCallBanner />
         <FilePreviewModal />
         <ToastContainer
           position="bottom-left"

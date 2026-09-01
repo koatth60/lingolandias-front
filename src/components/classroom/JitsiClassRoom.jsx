@@ -5,7 +5,8 @@ import ChatWindow from "../messages/chatWindow";
 import CallChatWindow from "../messages/CallChatWindow";
 import { useSelector } from "react-redux";
 import useRecording from "../../hooks/useRecording";
-import { teacherChats } from "../../constants";
+import { teacherChats, CALL_RING_TIMEOUT_MS } from "../../constants";
+import { socket } from "../../socket";
 
 const CHAT_ICON = `data:image/svg+xml;base64,${btoa(
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg>'
@@ -87,6 +88,8 @@ const JitsiClassRoom = () => {
   const joinTimeoutRef  = useRef(null);
   const localParticipantIdRef = useRef(null);
   const isLocalModeratorRef   = useRef(false);
+  const callStartedNotifiedRef = useRef(false);
+  const missedCallTimeoutRef   = useRef(null);
 
   const navigate = useNavigate();
   const [showChat, setShowChat] = useState(false);
@@ -230,6 +233,7 @@ const JitsiClassRoom = () => {
   const handleCallEnd = () => {
     logEvent("conference_left");
     endSession();
+    clearTimeout(missedCallTimeoutRef.current);
     if (isRecordingRef.current) stopRecording();
     navigate(user.role === "admin" ? "/home" : "/schedule");
   };
@@ -499,6 +503,60 @@ const JitsiClassRoom = () => {
               setJoinStuck(false);
               localParticipantIdRef.current = e.id;
               logEvent("conference_joined");
+
+              // Ring the other side, Teams-style — but only for the first
+              // person into an otherwise-empty room. If others are already
+              // here, they already got rung (or joined directly), and
+              // ringing again on every subsequent joiner would just spam
+              // the group. Skipped for the big shared legacy rooms
+              // (general/teacher/support) where there's no single "other
+              // side" to ring. Wrapped in try/catch — getParticipantsInfo()
+              // has been observed to throw if called in the same tick as
+              // videoConferenceJoined, before Jitsi's own internal state
+              // (large video, etc.) has finished settling.
+              try {
+                if (
+                  !callStartedNotifiedRef.current &&
+                  ["group", "dm", "private"].includes(chatType)
+                ) {
+                  const others = externalApi.getParticipantsInfo();
+                  logEvent("call_ring_check", { chatType, othersCount: others.length });
+                  if (others.length <= 1) {
+                    callStartedNotifiedRef.current = true;
+                    const targetConversationId = chatRoomId || roomId;
+                    logEvent("call_ring_emit", { targetConversationId, otherUserId });
+                    socket.emit("callStarted", {
+                      conversationId: targetConversationId,
+                      callerId: user.id,
+                      callerName: displayNameForJitsi,
+                      chatName: chatName || userName,
+                      chatType,
+                      otherUserId,
+                    });
+
+                    // Nobody picked up within the same window the banner
+                    // rings for on the other end — leave a "missed call"
+                    // entry in the chat (with its own Join button) instead
+                    // of the call just silently going nowhere. Re-checks
+                    // participant count at fire time so it's a no-op if
+                    // someone joined in the meantime.
+                    missedCallTimeoutRef.current = setTimeout(() => {
+                      if (externalApi.getParticipantsInfo().length > 1) return;
+                      socket.emit("sendConversationMessage", {
+                        conversationId: targetConversationId,
+                        senderId: user.id,
+                        username: displayNameForJitsi,
+                        email: user.email,
+                        avatarUrl: user.avatarUrl,
+                        message: "Missed call",
+                        messageType: "missed_call",
+                      });
+                    }, CALL_RING_TIMEOUT_MS);
+                  }
+                }
+              } catch (err) {
+                logEvent("call_ring_check_failed", { error: err?.message }, "error");
+              }
             });
             externalApi.addEventListener("videoConferenceLeft", handleCallEnd);
             externalApi.addEventListener("recordingStatusChanged", (e) => {

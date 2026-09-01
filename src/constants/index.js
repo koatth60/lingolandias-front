@@ -1,3 +1,8 @@
+// How long an incoming-call banner rings before it's treated as missed —
+// shared between IncomingCallBanner.jsx (when to give up and hide it) and
+// JitsiClassRoom.jsx (when to log a "missed call" message if still alone).
+export const CALL_RING_TIMEOUT_MS = 30000;
+
 export const meetingRooms = {
   english: "English Teachers Meeting",
   spanish: "Spanish Teachers Meeting",

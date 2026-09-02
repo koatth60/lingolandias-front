@@ -525,6 +525,11 @@ const ChatWindowComponent = ({
            style={{ background: "linear-gradient(90deg, #9E2FD0, #F6B82E, #26D9A1)" }} />
 
       {/* Messages */}
+      {chatMessages.length === 0 && isLoading ? (
+        <div className="flex-1 relative z-10 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full border-4 border-[#9E2FD0]/30 border-t-[#9E2FD0] animate-spin" />
+        </div>
+      ) : (
       <PerfectScrollbar
         containerRef={(ref) => { scrollContainerRef.current = ref; }}
         onScrollY={handleScroll}
@@ -543,11 +548,6 @@ const ChatWindowComponent = ({
               >
                 {loadingMore ? t("chatWindow.loading", "Loading...") : t("chatWindow.loadMore")}
               </button>
-            </div>
-          )}
-          {chatMessages.length === 0 && isLoading && (
-            <div className="flex items-center justify-center h-48">
-              <div className="w-8 h-8 rounded-full border-4 border-[#9E2FD0]/30 border-t-[#9E2FD0] animate-spin" />
             </div>
           )}
           {chatMessages.length === 0 && !isLoading && (
@@ -790,6 +790,7 @@ const ChatWindowComponent = ({
           </ul>
         </div>
       </PerfectScrollbar>
+      )}
 
       {/* Scroll-to-bottom button */}
       {showScrollBtn && (

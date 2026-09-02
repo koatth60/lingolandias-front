@@ -300,12 +300,12 @@ const CallChatWindow = ({
 
       {/* ── Messages ── */}
       <div ref={scrollContainerRef}
-        className="flex-1 p-4 sm:p-5 bg-gray-50 dark:bg-black/20 overflow-y-auto"
+        className={`flex-1 bg-gray-50 dark:bg-black/20 overflow-y-auto ${
+          chatMessages.length === 0 && isLoading ? "flex items-center justify-center" : "p-4 sm:p-5"
+        }`}
         style={{ minHeight: 0 }}>
         {chatMessages.length === 0 && isLoading && (
-          <div className="flex items-center justify-center h-40">
-            <div className="w-7 h-7 rounded-full border-4 border-[#9E2FD0]/30 border-t-[#9E2FD0] animate-spin" />
-          </div>
+          <div className="w-7 h-7 rounded-full border-4 border-[#9E2FD0]/30 border-t-[#9E2FD0] animate-spin" />
         )}
         {chatMessages.length === 0 && !isLoading && (
           <div className="flex flex-col items-center justify-center h-40 gap-3">

@@ -852,21 +852,6 @@ button, .hover-glow {
   background: rgba(158,47,208,0.1) !important;
 }
 
-/* ======= Sidebar Decorative Chars ======= */
-@keyframes sidebarCharPulse {
-  0%, 100% { opacity: 0;   transform: translateY(0)   scale(0.85) rotate(0deg); }
-  50%       { opacity: 1;  transform: translateY(-8px) scale(1)    rotate(6deg); }
-}
-
-.sidebar-float-char {
-  position: absolute;
-  pointer-events: none;
-  user-select: none;
-  font-weight: 800;
-  line-height: 1;
-  animation: sidebarCharPulse ease-in-out infinite;
-}
-
 /* ======= Navbar Orb ======= */
 @keyframes navbarOrbPulse {
   0%, 100% { opacity: 0.12; transform: scale(1); }

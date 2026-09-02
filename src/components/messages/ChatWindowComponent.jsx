@@ -444,7 +444,7 @@ const ChatWindowComponent = ({
 
   return (
     <div className="w-full h-full flex flex-col relative overflow-hidden
-                    bg-gray-50 dark:bg-[#0d0a1e] transition-colors duration-300">
+                    bg-white dark:bg-[#0d0a1e] transition-colors duration-300">
 
       {/* Background orbs — previously dark-mode-only, which left light mode
           completely flat with nothing to give the chat area any depth. */}
@@ -480,7 +480,7 @@ const ChatWindowComponent = ({
                 if (chatType === "dm" && otherUserId) onViewProfile?.(otherUserId);
                 else if (chatType === "group") onViewGroupMembers?.();
               }}
-              className={`text-sm font-semibold text-gray-900 dark:text-white truncate ${chatType === "dm" || chatType === "group" ? "cursor-pointer hover:underline" : ""}`}
+              className={`text-[15px] font-semibold tracking-tight text-gray-900 dark:text-white truncate ${chatType === "dm" || chatType === "group" ? "cursor-pointer hover:underline" : ""}`}
             >
               {studentName}
             </h2>
@@ -741,7 +741,7 @@ const ChatWindowComponent = ({
                           <div className={`rounded-2xl rounded-bl-sm ${
                               isImageOnly ? "overflow-hidden"
                               : isFileOnly ? ""
-                              : "px-4 py-2.5 text-sm leading-relaxed bg-white dark:bg-[#211d38] text-gray-800 dark:text-gray-100 border border-gray-100 dark:border-white/10"
+                              : "px-4 py-2.5 text-sm leading-relaxed bg-gray-100 dark:bg-[#211d38] text-gray-800 dark:text-gray-100 border border-gray-100 dark:border-white/10"
                             }`}
                             style={isImageOnly ? { boxShadow: "0 4px 16px rgba(0,0,0,0.16)" } : isFileOnly ? {} : { boxShadow: "0 2px 8px rgba(20,20,40,0.08)" }}>
                             {/* Reply quote in received bubble */}

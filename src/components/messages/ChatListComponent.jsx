@@ -128,13 +128,13 @@ const ChatListComponent = ({
   const showPeopleResults = search.trim().length >= 2;
 
   return (
-    <div className="h-full flex flex-col bg-white dark:bg-[#16131f] border-r border-gray-100 dark:border-white/5">
+    <div className="h-full flex flex-col bg-gradient-to-b from-white to-[#f8f7fb] dark:from-[#16131f] dark:to-[#16131f] border-r border-gray-100 dark:border-white/5">
 
       {/* ── Header ── */}
       <div className="px-4 pt-5 pb-4 flex-shrink-0 border-b border-gray-100 dark:border-white/5">
         <div className="flex items-center gap-2 mb-3">
           <span className="w-1 h-5 rounded-full bg-[#9E2FD0]" />
-          <h2 className="text-sm font-semibold text-gray-700 dark:text-white">
+          <h2 className="text-sm font-semibold tracking-tight text-gray-700 dark:text-white">
             {t("messagesExtra.chatsHeader")}
           </h2>
           <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#9E2FD0]/10 dark:bg-[#9E2FD0]/20 text-[#9E2FD0]">
@@ -271,7 +271,7 @@ const ChatListComponent = ({
               <div className="flex-1 min-w-0">
                 {/* Row 1: name + timestamp */}
                 <div className="flex items-center justify-between gap-1">
-                  <p className={`flex items-center gap-1 text-sm font-semibold leading-tight truncate ${isActive ? "text-[#9E2FD0] dark:text-purple-300" : "text-gray-800 dark:text-white"}`}>
+                  <p className={`flex items-center gap-1 text-sm font-semibold tracking-tight leading-tight truncate ${isActive ? "text-[#9E2FD0] dark:text-purple-300" : "text-gray-800 dark:text-white"}`}>
                     {chat.pinned && <BsPinAngleFill size={10} className="text-[#F6B82E] flex-shrink-0" />}
                     {chat.muted && <FiBellOff size={10} className="text-gray-400 flex-shrink-0" />}
                     <span className="truncate">{chat.name}</span>

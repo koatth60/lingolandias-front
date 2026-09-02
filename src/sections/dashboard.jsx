@@ -23,16 +23,6 @@ import { activeRoomRef } from "../state/activeRoom";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-// Subtle decorative chars — atmospheric only, never distracting
-const SIDEBAR_CHARS = [
-  { char: '文', left: '12%', top: '10%', delay: '0s',   duration: '16s', color: '#9E2FD0', opacity: 0.10 },
-  { char: 'α',  left: '72%', top: '24%', delay: '5.5s', duration: '20s', color: '#F6B82E', opacity: 0.08 },
-  { char: 'の', left: '28%', top: '45%', delay: '11s',  duration: '18s', color: '#26D9A1', opacity: 0.09 },
-  { char: '한', left: '68%', top: '62%', delay: '3s',   duration: '22s', color: '#c084fc', opacity: 0.08 },
-  { char: '語', left: '18%', top: '78%', delay: '8s',   duration: '17s', color: '#9E2FD0', opacity: 0.09 },
-  { char: 'β',  left: '76%', top: '90%', delay: '14s',  duration: '21s', color: '#F6B82E', opacity: 0.07 },
-];
-
 const Dashboard = () => {
   const location = useLocation();
   const { t } = useTranslation();
@@ -270,27 +260,6 @@ const Dashboard = () => {
             backgroundSize: '48px 48px',
           }}
         />
-
-        {/* Floating language chars — purely decorative */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
-          {SIDEBAR_CHARS.map((item, i) => (
-            <span
-              key={i}
-              className="sidebar-float-char"
-              style={{
-                left: item.left,
-                top: item.top,
-                animationDelay: item.delay,
-                animationDuration: item.duration,
-                color: item.color,
-                opacity: item.opacity,
-                fontSize: '1.15rem',
-              }}
-            >
-              {item.char}
-            </span>
-          ))}
-        </div>
 
         {/* ─── MAIN CONTENT ─── */}
         <div className="relative z-10 flex flex-col h-full">

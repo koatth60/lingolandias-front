@@ -122,7 +122,7 @@ const Learning = () => {
           {/* ── Hero ── */}
           <div className="text-center py-4 sm:py-8">
             <p className="text-[10px] font-bold tracking-widest text-[#9E2FD0] uppercase mb-3">{t("learning.heroBadge")}</p>
-            <h1 className="text-3xl sm:text-5xl font-extrabold login-gradient-text mb-3 sm:mb-4">
+            <h1 className="text-3xl sm:text-5xl font-bold tracking-tight login-gradient-text mb-3 sm:mb-4">
               {t("learning.heroTitle")}
             </h1>
             <p className="text-base sm:text-lg text-gray-500 dark:text-gray-400 max-w-lg mx-auto">
@@ -139,7 +139,7 @@ const Learning = () => {
                 style={{ background: "rgba(158,47,208,0.12)", border: "1px solid rgba(158,47,208,0.25)" }}>
                 <FiVideo size={15} style={{ color: "#9E2FD0" }} />
               </div>
-              <h2 className="text-lg sm:text-2xl font-extrabold text-gray-800 dark:text-white">
+              <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-gray-800 dark:text-white">
                 {languageCourses.title}
               </h2>
             </div>
@@ -157,7 +157,7 @@ const Learning = () => {
                 style={{ background: "rgba(38,217,161,0.12)", border: "1px solid rgba(38,217,161,0.25)" }}>
                 <FiBookOpen size={15} style={{ color: "#26D9A1" }} />
               </div>
-              <h2 className="text-lg sm:text-2xl font-extrabold text-gray-800 dark:text-white">
+              <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-gray-800 dark:text-white">
                 {ebooks.title}
               </h2>
             </div>

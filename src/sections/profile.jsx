@@ -161,7 +161,7 @@ const Profile = () => {
             />
             <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center px-6 py-5 gap-4">
               <div>
-                <h2 className="text-2xl font-extrabold login-gradient-text">
+                <h2 className="text-2xl font-bold tracking-tight login-gradient-text">
                   {t("profile.hello", { name })}
                 </h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-md">

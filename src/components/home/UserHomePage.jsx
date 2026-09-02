@@ -84,7 +84,7 @@ const UserHomePage = () => {
             />
             <span className="text-xs font-bold tracking-widest text-[#26D9A1] uppercase">{t("home.online")}</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold login-gradient-text mb-3">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight login-gradient-text mb-3">
             {t("home.welcomeBack", { name: user.name })}
           </h1>
           <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-xl">
@@ -144,7 +144,7 @@ const UserHomePage = () => {
               <p className="text-[10px] font-bold tracking-widest text-[#9E2FD0] uppercase mb-1">
                 {t("home.wordOfDay", { lang: tip.lang })}
               </p>
-              <p className="text-2xl font-extrabold text-gray-900 dark:text-white">{tip.word}</p>
+              <p className="text-2xl font-bold text-gray-800 dark:text-white">{tip.word}</p>
               <p className="text-sm font-semibold text-[#26D9A1] mt-0.5">{tip.meaning}</p>
             </div>
             <div className="w-full h-px sm:w-px sm:h-12 bg-gradient-to-r sm:bg-gradient-to-b from-transparent via-[#9E2FD0]/25 to-transparent flex-shrink-0" />

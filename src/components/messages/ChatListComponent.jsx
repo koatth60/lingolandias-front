@@ -271,7 +271,13 @@ const ChatListComponent = ({
               <div className="flex-1 min-w-0">
                 {/* Row 1: name + timestamp */}
                 <div className="flex items-center justify-between gap-1">
-                  <p className={`flex items-center gap-1 text-sm font-semibold tracking-tight leading-tight truncate ${isActive ? "text-[#9E2FD0] dark:text-purple-300" : "text-gray-800 dark:text-white"}`}>
+                  <p className={`flex items-center gap-1 text-sm tracking-tight leading-tight truncate ${
+                      isActive
+                        ? "font-semibold text-[#9E2FD0] dark:text-purple-300"
+                        : unread > 0
+                          ? "font-bold text-gray-900 dark:text-white"
+                          : "font-medium text-gray-500 dark:text-gray-400"
+                    }`}>
                     {chat.pinned && <BsPinAngleFill size={10} className="text-[#F6B82E] flex-shrink-0" />}
                     {chat.muted && <FiBellOff size={10} className="text-gray-400 flex-shrink-0" />}
                     <span className="truncate">{chat.name}</span>

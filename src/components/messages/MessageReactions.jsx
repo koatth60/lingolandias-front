@@ -46,8 +46,9 @@ const MessageReactions = ({ reactions, currentUserId, onToggle, align = "start" 
             className={`flex items-center gap-1 text-[11px] leading-none px-1.5 py-0.5 rounded-full border transition-colors ${
               mine
                 ? "bg-[#9E2FD0]/15 border-[#9E2FD0]/40 text-[#9E2FD0]"
-                : "bg-gray-100 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300"
+                : "bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300"
             }`}
+            style={{ boxShadow: mine ? "0 1px 4px rgba(158,47,208,0.15)" : "0 1px 3px rgba(20,20,40,0.06)" }}
           >
             <span>{emoji}</span>
             <span>{reactors.length}</span>

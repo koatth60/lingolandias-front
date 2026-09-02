@@ -217,6 +217,8 @@ const CallChatWindow = ({
     return `${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })} ${t}`;
   };
 
+  const bubbleTime = (ts) => new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
   const getInitials = (name) => {
     if (!name || name === "undefined") return "?";
     const p = name.trim().split(" ");
@@ -380,6 +382,9 @@ const CallChatWindow = ({
                             {msg.editedAt && <span className="text-[10px] text-white/60 ml-1">(edited)</span>}
                           </p>
                         )}
+                        <span className="block text-right text-[10px] text-white/60 mt-0.5 leading-none">
+                          {bubbleTime(msg.timestamp)}
+                        </span>
                       </div>
                       <MessageReactions
                         reactions={msg.reactions}
@@ -396,7 +401,8 @@ const CallChatWindow = ({
                           {msg.username}
                         </p>
                       )}
-                      <div className="px-3.5 py-2 rounded-2xl rounded-bl-sm text-sm leading-relaxed bg-white dark:bg-white/[0.07] text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-white/10 shadow-sm">
+                      <div className="px-3.5 py-2 rounded-2xl rounded-bl-sm text-sm leading-relaxed bg-white dark:bg-[#211d38] text-gray-800 dark:text-gray-100 border border-gray-100 dark:border-white/10"
+                        style={{ boxShadow: "0 2px 8px rgba(20,20,40,0.08)" }}>
                         {effectiveFileUrl && renderFile(effectiveFileUrl, false)}
                         {effectiveMessage && (
                           <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
@@ -404,6 +410,9 @@ const CallChatWindow = ({
                             {msg.editedAt && <span className="text-[10px] text-gray-400 dark:text-gray-500 ml-1">(edited)</span>}
                           </p>
                         )}
+                        <span className="block text-right text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 leading-none">
+                          {bubbleTime(msg.timestamp)}
+                        </span>
                       </div>
                       <MessageReactions
                         reactions={msg.reactions}

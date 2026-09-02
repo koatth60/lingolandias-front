@@ -395,6 +395,10 @@ const ChatWindowComponent = ({
     return `${d.toLocaleDateString(i18n.language, { month: "short", day: "numeric" })} ${time}`;
   };
 
+  // Small per-bubble time, WhatsApp/Telegram-style — complements the
+  // block-level date separator, doesn't replace it.
+  const bubbleTime = (ts) => new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
   const getInitials = (name) => {
     if (!name || name === "undefined" || name === "null") return "?";
     const p = name.trim().split(" ");
@@ -442,11 +446,12 @@ const ChatWindowComponent = ({
     <div className="w-full h-full flex flex-col relative overflow-hidden
                     bg-gray-50 dark:bg-[#0d0a1e] transition-colors duration-300">
 
-      {/* Background orbs */}
-      <div className="absolute inset-0 pointer-events-none hidden dark:block" aria-hidden="true">
-        <div className="absolute rounded-full blur-3xl opacity-20"
+      {/* Background orbs — previously dark-mode-only, which left light mode
+          completely flat with nothing to give the chat area any depth. */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+        <div className="absolute rounded-full blur-3xl opacity-[0.07] dark:opacity-20"
           style={{ background: "radial-gradient(circle, rgba(158,47,208,0.5), transparent 70%)", width: "400px", height: "400px", top: "-10%", right: "-5%" }} />
-        <div className="absolute rounded-full blur-3xl opacity-15"
+        <div className="absolute rounded-full blur-3xl opacity-[0.06] dark:opacity-15"
           style={{ background: "radial-gradient(circle, rgba(38,217,161,0.4), transparent 70%)", width: "350px", height: "350px", bottom: "-5%", left: "-5%" }} />
       </div>
 
@@ -576,13 +581,14 @@ const ChatWindowComponent = ({
                   <div key={index}>
                     {showTimestamp && (
                       <div className="flex items-center gap-3 my-5">
-                        <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
-                        <span className="text-[10px] font-medium text-gray-600 dark:text-gray-300
-                                       px-3 py-1 rounded-full bg-white dark:bg-black/40
-                                       backdrop-blur-sm border border-gray-200 dark:border-white/10">
+                        <div className="flex-1 h-px bg-[#9E2FD0]/15 dark:bg-white/10" />
+                        <span className="text-[10px] font-semibold text-[#9E2FD0] dark:text-purple-300
+                                       px-3 py-1 rounded-full bg-[#9E2FD0]/[0.06] dark:bg-black/40
+                                       backdrop-blur-sm border border-[#9E2FD0]/15 dark:border-white/10"
+                                       style={{ boxShadow: "0 1px 4px rgba(158,47,208,0.08)" }}>
                           {formatTimestamp(msg.timestamp)}
                         </span>
-                        <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
+                        <div className="flex-1 h-px bg-[#9E2FD0]/15 dark:bg-white/10" />
                       </div>
                     )}
                     <li className="flex justify-center my-1.5">
@@ -608,13 +614,14 @@ const ChatWindowComponent = ({
                 <div key={index}>
                   {showTimestamp && (
                     <div className="flex items-center gap-3 my-5">
-                      <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
-                      <span className="text-[10px] font-medium text-gray-600 dark:text-gray-300
-                                     px-3 py-1 rounded-full bg-white dark:bg-black/40
-                                     backdrop-blur-sm border border-gray-200 dark:border-white/10">
+                      <div className="flex-1 h-px bg-[#9E2FD0]/15 dark:bg-white/10" />
+                      <span className="text-[10px] font-semibold text-[#9E2FD0] dark:text-purple-300
+                                     px-3 py-1 rounded-full bg-[#9E2FD0]/[0.06] dark:bg-black/40
+                                     backdrop-blur-sm border border-[#9E2FD0]/15 dark:border-white/10"
+                                     style={{ boxShadow: "0 1px 4px rgba(158,47,208,0.08)" }}>
                         {formatTimestamp(msg.timestamp)}
                       </span>
-                      <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
+                      <div className="flex-1 h-px bg-[#9E2FD0]/15 dark:bg-white/10" />
                     </div>
                   )}
 
@@ -673,14 +680,14 @@ const ChatWindowComponent = ({
                         </div>
                         {/* Bubble */}
                         <div className={`relative rounded-2xl rounded-br-sm ${
-                            isImageOnly ? "overflow-hidden shadow-lg"
+                            isImageOnly ? "overflow-hidden"
                             : isFileOnly ? ""
-                            : "px-4 py-2.5 text-white text-sm leading-relaxed shadow-lg"
+                            : "px-4 py-2.5 text-white text-sm leading-relaxed"
                           }`}
                           style={isImageOnly
-                            ? { boxShadow: "0 3px 12px rgba(0,0,0,0.22)" }
+                            ? { boxShadow: "0 4px 16px rgba(0,0,0,0.25)" }
                             : isFileOnly ? {}
-                            : { background: "linear-gradient(135deg, #9E2FD0 0%, #7b22a8 100%)" }}>
+                            : { background: "linear-gradient(135deg, #9E2FD0 0%, #7b22a8 100%)", boxShadow: "0 3px 10px rgba(158,47,208,0.35)" }}>
                           {/* Reply quote in bubble */}
                           {msg.replyTo && (
                             <div className="mb-2 pl-2 border-l-2 border-white/50 rounded bg-white/10 text-xs" style={{ padding: "4px 6px" }}>
@@ -694,6 +701,11 @@ const ChatWindowComponent = ({
                               {formatMessageWithLinks(effectiveMessage)}
                               {msg.editedAt && <span className="text-[10px] text-white/60 ml-1">({t("chatWindow.edited")})</span>}
                             </p>
+                          )}
+                          {!isImageOnly && (
+                            <span className="block text-right text-[10px] text-white/60 mt-0.5 leading-none">
+                              {bubbleTime(msg.timestamp)}
+                            </span>
                           )}
                         </div>
                       </div>
@@ -722,10 +734,11 @@ const ChatWindowComponent = ({
                         {/* relative wrapper for bubble only — so button centers on bubble, not username */}
                         <div className="relative">
                           <div className={`rounded-2xl rounded-bl-sm ${
-                              isImageOnly ? "overflow-hidden shadow-sm"
+                              isImageOnly ? "overflow-hidden"
                               : isFileOnly ? ""
-                              : "px-4 py-2.5 text-sm leading-relaxed bg-white dark:bg-white/5 text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none"
-                            }`}>
+                              : "px-4 py-2.5 text-sm leading-relaxed bg-white dark:bg-[#211d38] text-gray-800 dark:text-gray-100 border border-gray-100 dark:border-white/10"
+                            }`}
+                            style={isImageOnly ? { boxShadow: "0 4px 16px rgba(0,0,0,0.16)" } : isFileOnly ? {} : { boxShadow: "0 2px 8px rgba(20,20,40,0.08)" }}>
                             {/* Reply quote in received bubble */}
                             {msg.replyTo && (
                               <div className="mb-2 pl-2 border-l-2 border-[#9E2FD0]/60 rounded bg-[#9E2FD0]/5 dark:bg-white/5 text-xs" style={{ padding: "4px 6px" }}>
@@ -739,6 +752,11 @@ const ChatWindowComponent = ({
                                 {formatMessageWithLinks(effectiveMessage)}
                                 {msg.editedAt && <span className="text-[10px] text-gray-400 dark:text-gray-500 ml-1">({t("chatWindow.edited")})</span>}
                               </p>
+                            )}
+                            {!isImageOnly && (
+                              <span className="block text-right text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 leading-none">
+                                {bubbleTime(msg.timestamp)}
+                              </span>
                             )}
                           </div>
                           {/* Reply button — positioned relative to bubble only */}

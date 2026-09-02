@@ -6,38 +6,46 @@ import { BsPinAngleFill, BsPinAngle } from "react-icons/bs";
 import { useTranslation } from "react-i18next";
 import useUserSearch from "../../hooks/useUserSearch";
 
+// wrap is now a real gradient + shadow color per type — the old flat pastel
+// fill made group/teacher/general avatars feel like placeholders next to
+// the DM avatars, which already got a proper gradient treatment below.
 const TYPE_META = {
   teacher: {
-    wrap: "bg-[#9E2FD0]/10 dark:bg-[#9E2FD0]/15",
-    icon: "text-[#9E2FD0]",
+    wrap: "text-white",
+    gradient: "linear-gradient(135deg, #9E2FD0, #7b22a8)",
+    shadow: "0 2px 8px rgba(158,47,208,0.35)",
     dot:  "bg-[#9E2FD0]",
     chipKey: "messagesExtra.chipTeacher",
     chipStyle: "bg-[#9E2FD0]/10 text-[#9E2FD0] dark:bg-[#9E2FD0]/20",
   },
   group: {
-    wrap: "bg-[#F6B82E]/10 dark:bg-[#F6B82E]/15",
-    icon: "text-[#F6B82E]",
+    wrap: "text-white",
+    gradient: "linear-gradient(135deg, #F6B82E, #d4981a)",
+    shadow: "0 2px 8px rgba(246,184,46,0.35)",
     dot:  "bg-[#F6B82E]",
     chipKey: "messagesExtra.chipGroup",
     chipStyle: "bg-[#F6B82E]/10 text-[#d4a017] dark:bg-[#F6B82E]/15 dark:text-[#F6B82E]",
   },
   general: {
-    wrap: "bg-[#26D9A1]/10 dark:bg-[#26D9A1]/15",
-    icon: "text-[#26D9A1]",
+    wrap: "text-white",
+    gradient: "linear-gradient(135deg, #26D9A1, #1fa07a)",
+    shadow: "0 2px 8px rgba(38,217,161,0.35)",
     dot:  "bg-[#26D9A1]",
     chipKey: "messagesExtra.chipGeneral",
     chipStyle: "bg-[#26D9A1]/10 text-[#1aad82] dark:bg-[#26D9A1]/15 dark:text-[#26D9A1]",
   },
   support: {
-    wrap: "bg-[#26D9A1]/10 dark:bg-[#26D9A1]/15",
-    icon: "text-[#26D9A1]",
+    wrap: "text-white",
+    gradient: "linear-gradient(135deg, #26D9A1, #1fa07a)",
+    shadow: "0 2px 8px rgba(38,217,161,0.35)",
     dot:  "bg-[#26D9A1]",
     chipKey: "messagesExtra.chipGeneral",
     chipStyle: "bg-[#26D9A1]/10 text-[#1aad82] dark:bg-[#26D9A1]/15 dark:text-[#26D9A1]",
   },
   dm: {
-    wrap: "bg-[#9E2FD0]/10 dark:bg-[#9E2FD0]/15",
-    icon: "text-[#9E2FD0]",
+    wrap: "text-white",
+    gradient: "linear-gradient(135deg, #9E2FD0, #7b22a8)",
+    shadow: "0 2px 8px rgba(158,47,208,0.35)",
     dot:  "bg-[#9E2FD0]",
     chipKey: "messagesExtra.chipDm",
     chipStyle: "bg-[#9E2FD0]/10 text-[#9E2FD0] dark:bg-[#9E2FD0]/20",
@@ -234,6 +242,7 @@ const ChatListComponent = ({
                            ? "bg-[#9E2FD0]/10 dark:bg-[#9E2FD0]/15 border border-[#9E2FD0]/25 dark:border-[#9E2FD0]/30"
                            : "hover:bg-purple-50 dark:hover:bg-white/[0.04] border border-transparent"
                          }`}
+              style={isActive ? { boxShadow: "0 2px 10px rgba(158,47,208,0.10)" } : undefined}
             >
               {/* Icon avatar */}
               <div className="relative flex-shrink-0">
@@ -247,10 +256,11 @@ const ChatListComponent = ({
                     {getInitials(chat.name)}
                   </div>
                 ) : (
-                  <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-transform duration-150 group-hover:scale-105 ${meta.wrap}`}>
-                    <span className={meta.icon}>
-                      <ChatIcon type={chat.type} />
-                    </span>
+                  <div
+                    className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-transform duration-150 group-hover:scale-105 ${meta.wrap}`}
+                    style={{ background: meta.gradient, boxShadow: meta.shadow }}
+                  >
+                    <ChatIcon type={chat.type} />
                   </div>
                 )}
                 {/* Online dot */}
@@ -261,7 +271,7 @@ const ChatListComponent = ({
               <div className="flex-1 min-w-0">
                 {/* Row 1: name + timestamp */}
                 <div className="flex items-center justify-between gap-1">
-                  <p className={`flex items-center gap-1 text-sm font-medium leading-tight truncate ${isActive ? "text-[#9E2FD0] dark:text-purple-300" : "text-gray-700 dark:text-white"}`}>
+                  <p className={`flex items-center gap-1 text-sm font-semibold leading-tight truncate ${isActive ? "text-[#9E2FD0] dark:text-purple-300" : "text-gray-800 dark:text-white"}`}>
                     {chat.pinned && <BsPinAngleFill size={10} className="text-[#F6B82E] flex-shrink-0" />}
                     {chat.muted && <FiBellOff size={10} className="text-gray-400 flex-shrink-0" />}
                     <span className="truncate">{chat.name}</span>
@@ -290,7 +300,7 @@ const ChatListComponent = ({
 
                 {/* Row 2: last message preview OR chip + status */}
                 {lastMsg?.content ? (
-                  <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                  <p className="text-[11px] text-gray-400 dark:text-gray-500 truncate mt-0.5">
                     {chat.type !== "dm" && lastMsg.username ? (
                       <span className="font-medium text-gray-600 dark:text-gray-300">{lastMsg.username}: </span>
                     ) : null}

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
+import { messageCache } from "../state/messageCache";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -30,7 +31,14 @@ const useConversationChat = (socket, conversationId, user) => {
         `${BACKEND_URL}/conversations/${conversationId}/messages`,
         { params: { userId: user?.id }, headers: token ? { Authorization: `Bearer ${token}` } : {} }
       );
-      setChatMessages(dedupeById(response.data));
+      const fresh = dedupeById(response.data);
+      setChatMessages((prev) => {
+        // Evita un re-render/parpadeo cuando el servidor devuelve exactamente
+        // lo mismo que ya se estaba mostrando (típicamente desde caché) —
+        // pero si hay un mensaje optimista sin confirmar, siempre se actualiza.
+        if (!prev.some((m) => m._pending) && JSON.stringify(prev) === JSON.stringify(fresh)) return prev;
+        return fresh;
+      });
       setHasMore(response.data.length >= 50);
     } catch (error) {
       console.error("Error fetching conversation messages:", error);
@@ -61,10 +69,21 @@ const useConversationChat = (socket, conversationId, user) => {
   // conversation into a blank draft left the previous conversation's
   // messages rendered under the new person's name until the first message
   // was actually sent and a real fetch overwrote the stale state.
+  // Shows the cached messages for this chat instantly (if we've visited it
+  // already this session) instead of a blank/loading state — fetchMessages
+  // below still always runs in the background to revalidate.
   useEffect(() => {
-    setChatMessages([]);
+    setChatMessages(messageCache.get(conversationId) || []);
     setHasMore(true);
   }, [conversationId]);
+
+  // Keeps the cache in sync with whatever's actually shown — covers fetches,
+  // socket-driven edits/deletes/reactions, and the sender's own optimistic
+  // send, all in one place instead of duplicating this in every handler.
+  useEffect(() => {
+    if (!conversationId) return;
+    messageCache.set(conversationId, chatMessages);
+  }, [conversationId, chatMessages]);
 
   useEffect(() => {
     if (!socket || !conversationId || !user?.name) return;

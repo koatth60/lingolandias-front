@@ -6,6 +6,7 @@ import avatar from "../../assets/logos/avatar.jpg";
 import { useLogout } from "../../hooks/customHooks";
 import { logout } from "../../redux/userSlice";
 import { toggleSidebar } from "../../redux/sidebarSlice";
+import { messageCache } from "../../state/messageCache";
 import ThemeToggleButton from "../buttons/ThemeToggleButton";
 import TutorialModal from "../tutorial/TutorialModal";
 import { FiChevronDown, FiMenu, FiChevronLeft, FiUser, FiSettings, FiHelpCircle, FiLogOut, FiPlay } from "react-icons/fi";
@@ -43,6 +44,7 @@ const Navbar = ({ header }) => {
 
   const handleLogout = async () => {
     dispatch(logout());
+    messageCache.clear();
     logoutAndNavigate();
     try {
       await fetch(`${BACKEND_URL}/auth/logout`, {

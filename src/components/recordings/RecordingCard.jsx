@@ -3,11 +3,8 @@ import { formatDate, formatFilename, formatSize } from "../../utils/recordingFor
 
 const RecordingCard = ({ rec, onDelete, deleting, t }) => (
   <div
-    className="flex items-center justify-between gap-3 p-4 rounded-xl transition-all"
-    style={{
-      border: "1px solid rgba(158,47,208,0.15)",
-      background: "rgba(255,255,255,0.03)",
-    }}
+    className="flex items-center justify-between gap-3 p-4 rounded-xl transition-all bg-white dark:bg-white/[0.03]"
+    style={{ border: "1px solid rgba(158,47,208,0.15)" }}
   >
     <div className="flex items-center gap-3 min-w-0">
       <div
@@ -20,10 +17,10 @@ const RecordingCard = ({ rec, onDelete, deleting, t }) => (
         🎬
       </div>
       <div className="min-w-0">
-        <p className="text-sm font-semibold text-white truncate">
+        <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
           {formatFilename(rec.filename)}
         </p>
-        <p className="text-xs text-gray-400 mt-0.5">
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
           {formatDate(rec.lastModified)} · {formatSize(rec.size)}
           {rec.teacherName ? ` · ${rec.teacherName}` : ""}
         </p>

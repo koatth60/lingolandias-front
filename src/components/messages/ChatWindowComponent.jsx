@@ -525,9 +525,19 @@ const ChatWindowComponent = ({
            style={{ background: "linear-gradient(90deg, #9E2FD0, #F6B82E, #26D9A1)" }} />
 
       {/* Messages */}
-      {chatMessages.length === 0 && isLoading ? (
+      {chatMessages.length === 0 ? (
         <div className="flex-1 relative z-10 flex items-center justify-center">
-          <div className="w-8 h-8 rounded-full border-4 border-[#9E2FD0]/30 border-t-[#9E2FD0] animate-spin" />
+          {isLoading ? (
+            <div className="w-8 h-8 rounded-full border-4 border-[#9E2FD0]/30 border-t-[#9E2FD0] animate-spin" />
+          ) : (
+            <div className="flex flex-col items-center justify-center gap-3">
+              <div className="w-14 h-14 rounded-full bg-purple-100 dark:bg-purple-500/20
+                             border border-purple-200 dark:border-purple-500/30 flex items-center justify-center">
+                <FaComments className="text-purple-400" size={24} />
+              </div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t("chatWindow.noMessages")}</p>
+            </div>
+          )}
         </div>
       ) : (
       <PerfectScrollbar
@@ -550,16 +560,6 @@ const ChatWindowComponent = ({
               </button>
             </div>
           )}
-          {chatMessages.length === 0 && !isLoading && (
-            <div className="flex flex-col items-center justify-center h-48 gap-3">
-              <div className="w-14 h-14 rounded-full bg-purple-100 dark:bg-purple-500/20
-                             border border-purple-200 dark:border-purple-500/30 flex items-center justify-center">
-                <FaComments className="text-purple-400" size={24} />
-              </div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{t("chatWindow.noMessages")}</p>
-            </div>
-          )}
-
           <ul className="space-y-1">
             {chatMessages.map((msg, index) => {
               const prev = chatMessages[index - 1];

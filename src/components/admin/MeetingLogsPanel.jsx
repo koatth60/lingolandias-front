@@ -55,7 +55,7 @@ const MeetingLogsPanel = () => {
   return (
     <div className="w-full max-w-7xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Meeting Logs</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-gray-800 dark:text-white">Meeting Logs</h1>
         <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
           Diagnostic events reported by the Jitsi classroom (camera/mic errors, load timeouts, connection warnings)
         </p>

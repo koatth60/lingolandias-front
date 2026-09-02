@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import axios from "axios";
 import { messageCache } from "../state/messageCache";
 
@@ -22,9 +22,12 @@ const useConversationChat = (socket, conversationId, user) => {
   const [chatMessages, setChatMessages] = useState([]);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const currentIdRef = useRef(conversationId);
 
   const fetchMessages = useCallback(async () => {
     if (!conversationId) return;
+    const forId = conversationId;
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
@@ -42,6 +45,11 @@ const useConversationChat = (socket, conversationId, user) => {
       setHasMore(response.data.length >= 50);
     } catch (error) {
       console.error("Error fetching conversation messages:", error);
+    } finally {
+      // Solo el fetch de la conversación actualmente activa puede apagar el
+      // loading — evita que una respuesta tardía de un chat que ya se
+      // abandonó marque como "cargado" al chat nuevo que se está viendo.
+      if (currentIdRef.current === forId) setIsLoading(false);
     }
   }, [conversationId, user?.id]);
 
@@ -73,8 +81,14 @@ const useConversationChat = (socket, conversationId, user) => {
   // already this session) instead of a blank/loading state — fetchMessages
   // below still always runs in the background to revalidate.
   useEffect(() => {
-    setChatMessages(messageCache.get(conversationId) || []);
+    currentIdRef.current = conversationId;
+    const cached = messageCache.get(conversationId);
+    setChatMessages(cached || []);
     setHasMore(true);
+    // Sin nada en caché todavía no sabemos si el chat está realmente vacío o
+    // solo no se ha cargado en esta sesión — isLoading distingue ambos casos
+    // para no mostrar "no hay mensajes" mientras el primer fetch está en vuelo.
+    setIsLoading(!!conversationId && !cached);
   }, [conversationId]);
 
   // Keeps the cache in sync with whatever's actually shown — covers fetches,
@@ -187,7 +201,7 @@ const useConversationChat = (socket, conversationId, user) => {
     socket.emit("toggleReaction", { conversationId, messageId, emoji, userName: user?.name });
   };
 
-  return { chatMessages, setChatMessages, sendMessage, loadOlderMessages, hasMore, loadingMore, toggleReaction };
+  return { chatMessages, setChatMessages, sendMessage, loadOlderMessages, hasMore, loadingMore, toggleReaction, isLoading };
 };
 
 export default useConversationChat;

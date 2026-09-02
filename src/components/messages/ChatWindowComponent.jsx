@@ -58,7 +58,7 @@ const ChatWindowComponent = ({
   const user = useSelector((state) => state.user.userInfo?.user);
 
   const currentUser = { id: userId, name: username, email, avatarUrl: userUrl };
-  const { chatMessages, setChatMessages, sendMessage, loadOlderMessages, hasMore, loadingMore, toggleReaction } = useConversationChat(
+  const { chatMessages, setChatMessages, sendMessage, loadOlderMessages, hasMore, loadingMore, toggleReaction, isLoading } = useConversationChat(
     socket, room, currentUser
   );
 
@@ -545,7 +545,12 @@ const ChatWindowComponent = ({
               </button>
             </div>
           )}
-          {chatMessages.length === 0 && (
+          {chatMessages.length === 0 && isLoading && (
+            <div className="flex items-center justify-center h-48">
+              <div className="w-8 h-8 rounded-full border-4 border-[#9E2FD0]/30 border-t-[#9E2FD0] animate-spin" />
+            </div>
+          )}
+          {chatMessages.length === 0 && !isLoading && (
             <div className="flex flex-col items-center justify-center h-48 gap-3">
               <div className="w-14 h-14 rounded-full bg-purple-100 dark:bg-purple-500/20
                              border border-purple-200 dark:border-purple-500/30 flex items-center justify-center">

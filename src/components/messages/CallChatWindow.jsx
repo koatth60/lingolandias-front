@@ -34,7 +34,7 @@ const CallChatWindow = ({
   const readDebounceRef = useRef(null);
 
   const currentUser = { id: userId, name: username, email, avatarUrl: userUrl };
-  const { chatMessages, setChatMessages, sendMessage: sendConversationMessage, toggleReaction } =
+  const { chatMessages, setChatMessages, sendMessage: sendConversationMessage, toggleReaction, isLoading } =
     useConversationChat(socket, room, currentUser);
 
   const { handleDeleteMessage, toggleOptionsMenu, openMessageId } =
@@ -302,7 +302,12 @@ const CallChatWindow = ({
       <div ref={scrollContainerRef}
         className="flex-1 p-4 sm:p-5 bg-gray-50 dark:bg-black/20 overflow-y-auto"
         style={{ minHeight: 0 }}>
-        {chatMessages.length === 0 && (
+        {chatMessages.length === 0 && isLoading && (
+          <div className="flex items-center justify-center h-40">
+            <div className="w-7 h-7 rounded-full border-4 border-[#9E2FD0]/30 border-t-[#9E2FD0] animate-spin" />
+          </div>
+        )}
+        {chatMessages.length === 0 && !isLoading && (
           <div className="flex flex-col items-center justify-center h-40 gap-3">
             <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-500/20 border border-purple-200 dark:border-purple-500/30 flex items-center justify-center">
               <FaComments className="text-purple-400" size={20} />

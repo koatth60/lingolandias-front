@@ -3,11 +3,12 @@ import { useDispatch } from "react-redux";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
 import { BsEmojiSmile, BsThreeDots, BsType, BsTypeBold, BsTypeItalic, BsTypeStrikethrough, BsCodeSlash } from "react-icons/bs";
-import { FiSend, FiMessageSquare, FiEdit2, FiX, FiPaperclip, FiDownload, FiFile, FiUsers, FiUserPlus, FiUserMinus, FiLogOut } from "react-icons/fi";
+import { FiSend, FiMessageSquare, FiEdit2, FiX, FiPaperclip, FiDownload, FiFile, FiMusic, FiUsers, FiUserPlus, FiUserMinus, FiLogOut } from "react-icons/fi";
 import { FaComments } from "react-icons/fa";
 import EmojiPicker from "emoji-picker-react";
 import MessageOptionsCard from "./MessageOptionsCard";
 import MessageReactions from "./MessageReactions";
+import AudioPlayer from "./AudioPlayer";
 import useConversationChat from "../../hooks/useConversationChat";
 import useDeleteConversationMessage from "../../hooks/useDeleteConversationMessage";
 import { socket } from "../../socket";
@@ -36,6 +37,9 @@ const CallChatWindow = ({
   const [editingMsg, setEditingMsg] = useState(null);
   const [typingUsers, setTypingUsers] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [stagedFiles, setStagedFiles] = useState([]);
+  const [isDraggingFile, setIsDraggingFile] = useState(false);
+  const dragCounterRef = useRef(0);
 
   const scrollContainerRef = useRef(null);
   const textareaRef = useRef(null);
@@ -143,7 +147,7 @@ const CallChatWindow = ({
     }
   };
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (editingMsg) {
       if (!message.trim() || !socket) return;
       socket.emit("editConversationMessage", { messageId: editingMsg.id, conversationId: room, newMessage: message.trim() });
@@ -155,8 +159,9 @@ const CallChatWindow = ({
       if (textareaRef.current) textareaRef.current.style.height = "32px";
       return;
     }
-    if (message.trim() && room && socket) {
-      sendConversationMessage(message);
+    if ((message.trim() || stagedFiles.length > 0) && room && socket) {
+      if (stagedFiles.length > 0) await sendStagedFiles();
+      if (message.trim()) sendConversationMessage(message);
       setMessage("");
       if (textareaRef.current) textareaRef.current.style.height = "32px";
     }
@@ -205,30 +210,35 @@ const CallChatWindow = ({
     setShowEmojiPicker(false);
   };
 
-  // ── File upload ──
-  const uploadAndSendFile = async (file) => {
-    if (!file || !socket || !room) return;
-    setIsUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const res = await axios.post(`${BACKEND_URL}/upload/chat-upload`, formData);
-      const fileUrl = res.data.fileUrl;
-      sendConversationMessage("", undefined, fileUrl);
-    } catch (err) {
-      console.error("File upload failed:", err);
-    } finally {
-      setIsUploading(false);
-    }
+  // ── File staging (attach/paste/drop, then Send) ──
+  const addStagedFile = (file) => {
+    if (!file) return;
+    setStagedFiles((prev) => [
+      ...prev,
+      {
+        id: `${Date.now()}-${Math.random()}`,
+        file,
+        previewUrl: file.type.startsWith("image/") ? URL.createObjectURL(file) : null,
+        name: file.name,
+      },
+    ]);
   };
 
-  const handleFileSelect = async (e) => {
-    await uploadAndSendFile(e.target.files[0]);
+  const removeStagedFile = (id) => {
+    setStagedFiles((prev) => {
+      const target = prev.find((f) => f.id === id);
+      if (target?.previewUrl) URL.revokeObjectURL(target.previewUrl);
+      return prev.filter((f) => f.id !== id);
+    });
+  };
+
+  const handleFileSelect = (e) => {
+    Array.from(e.target.files).forEach(addStagedFile);
     e.target.value = "";
   };
 
   // Ctrl/Cmd+V a screenshot or a copied image straight into the composer —
-  // same upload-and-send path as the paperclip button.
+  // stages it the same way picking one via the paperclip button does.
   const handlePaste = (e) => {
     const items = e.clipboardData?.items;
     if (!items) return;
@@ -237,10 +247,49 @@ const CallChatWindow = ({
         const pastedFile = item.getAsFile();
         if (pastedFile) {
           e.preventDefault();
-          uploadAndSendFile(pastedFile);
+          addStagedFile(pastedFile);
         }
         return;
       }
+    }
+  };
+
+  const handleDragEnter = (e) => {
+    e.preventDefault();
+    if (!e.dataTransfer.types.includes("Files")) return;
+    dragCounterRef.current += 1;
+    setIsDraggingFile(true);
+  };
+  const handleDragOver = (e) => { e.preventDefault(); };
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    dragCounterRef.current = Math.max(0, dragCounterRef.current - 1);
+    if (dragCounterRef.current === 0) setIsDraggingFile(false);
+  };
+  const handleDrop = (e) => {
+    e.preventDefault();
+    dragCounterRef.current = 0;
+    setIsDraggingFile(false);
+    const files = e.dataTransfer.files;
+    if (files && files.length) Array.from(files).forEach(addStagedFile);
+  };
+
+  const sendStagedFiles = async () => {
+    if (!socket || !room) return;
+    setIsUploading(true);
+    try {
+      for (const staged of stagedFiles) {
+        const formData = new FormData();
+        formData.append("file", staged.file);
+        const res = await axios.post(`${BACKEND_URL}/upload/chat-upload`, formData);
+        sendConversationMessage("", undefined, res.data.fileUrl);
+        if (staged.previewUrl) URL.revokeObjectURL(staged.previewUrl);
+      }
+    } catch (err) {
+      console.error("File upload failed:", err);
+    } finally {
+      setIsUploading(false);
+      setStagedFiles([]);
     }
   };
 
@@ -249,7 +298,7 @@ const CallChatWindow = ({
     const raw = fileUrl.split("?")[0];
     const ext = raw.split(".").pop().toLowerCase();
     const isImage = ["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(ext);
-    const isAudio = ["mp3", "wav", "ogg", "m4a"].includes(ext);
+    const isAudio = ["mp3", "wav", "ogg", "m4a", "aac", "flac", "weba"].includes(ext);
     const fileName = raw.split("/").pop().replace(/^\d+-/, "");
 
     if (isImage) {
@@ -262,8 +311,22 @@ const CallChatWindow = ({
         />
       );
     }
+    // ".weba" = a voice note recorded in-app — the WhatsApp-style waveform
+    // pill, no card around it since it already sits inside the bubble.
+    if (ext === "weba") {
+      return <AudioPlayer src={fileUrl} variant="voiceNote" isSender={isSender} />;
+    }
     if (isAudio) {
-      return <audio src={fileUrl} controls className="max-w-[200px]" />;
+      return (
+        <div className="rounded-xl min-w-[200px] px-3 py-2.5"
+          style={{ background: "rgba(158,47,208,0.08)", border: "1px solid rgba(158,47,208,0.25)" }}>
+          <div className="flex items-center gap-1.5 mb-2">
+            <FiMusic size={11} className="flex-shrink-0 text-purple-500 dark:text-purple-400" />
+            <p className="text-[11px] font-semibold truncate text-gray-800 dark:text-gray-100 flex-1 min-w-0">{fileName}</p>
+          </div>
+          <AudioPlayer src={fileUrl} variant="voiceNote" />
+        </div>
+      );
     }
     return (
       <a href={fileUrl} target="_blank" rel="noopener noreferrer"
@@ -367,7 +430,22 @@ const CallChatWindow = ({
   const displayName = chatName || "Group Chat";
 
   return (
-    <div className="w-full h-full flex flex-col bg-white dark:bg-[#0f0d24] transition-colors duration-300">
+    <div className="w-full h-full flex flex-col relative bg-white dark:bg-[#0f0d24] transition-colors duration-300"
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {isDraggingFile && (
+        <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none
+                        bg-[#9E2FD0]/10 dark:bg-[#9E2FD0]/15 backdrop-blur-[1px]">
+          <div className="flex flex-col items-center gap-2 px-6 py-5 rounded-2xl border-2 border-dashed
+                          border-[#9E2FD0] bg-white/90 dark:bg-[#1a1a2e]/90">
+            <FiPaperclip size={22} className="text-[#9E2FD0]" />
+            <p className="text-sm font-semibold text-[#9E2FD0]">{t("chatWindow.dropFilesHere")}</p>
+          </div>
+        </div>
+      )}
 
       {/* ── Header ── */}
       <div className="relative flex-shrink-0">
@@ -599,6 +677,30 @@ const CallChatWindow = ({
 
       {/* ── Input ── */}
       <div className="relative flex-shrink-0 p-3 bg-white dark:bg-[#0f0d24] border-t border-gray-100 dark:border-[rgba(158,47,208,0.12)]">
+        {stagedFiles.length > 0 && (
+          <div className="flex items-center gap-2 mb-2 overflow-x-auto pb-1">
+            {stagedFiles.map((f) => (
+              <div key={f.id} className="relative flex-shrink-0">
+                {f.previewUrl ? (
+                  <img src={f.previewUrl} alt={f.name}
+                    className="w-14 h-14 rounded-lg object-cover border border-gray-200 dark:border-white/10" />
+                ) : (
+                  <div className="w-14 h-14 rounded-lg flex flex-col items-center justify-center gap-0.5 px-1
+                                  bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10">
+                    <FiFile size={16} className="text-gray-400" />
+                    <span className="text-[8px] text-gray-500 dark:text-gray-400 truncate w-full text-center">{f.name}</span>
+                  </div>
+                )}
+                <button
+                  onClick={() => removeStagedFile(f.id)}
+                  className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-gray-800 text-white
+                             flex items-center justify-center shadow hover:bg-red-500 transition-colors">
+                  <FiX size={11} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
         {editingMsg && (
           <div className="flex items-center justify-between gap-2 px-3 py-1.5 mb-2 rounded-lg bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20">
             <div className="flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400">
@@ -630,7 +732,7 @@ const CallChatWindow = ({
               title="Attach file">
               <FiPaperclip size={16} className={isUploading ? "animate-pulse" : ""} />
             </button>
-            <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileSelect}
+            <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileSelect}
               accept="image/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip" />
           </div>
           {/* Textarea */}
@@ -646,7 +748,7 @@ const CallChatWindow = ({
             style={{ minHeight: "32px", maxHeight: "112px", overflowY: "hidden" }}
           />
           {/* Send */}
-          <button onClick={sendMessage} disabled={!message.trim()}
+          <button onClick={sendMessage} disabled={!message.trim() && stagedFiles.length === 0}
             className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:opacity-90 active:scale-95 disabled:opacity-30 self-end"
             style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 2px 8px rgba(158,47,208,0.35)" }}>
             <FiSend size={13} className="text-white" />

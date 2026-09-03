@@ -1,6 +1,7 @@
 import React from "react";
 import { FiMusic, FiFile, FiFileText, FiDownload, FiVideo } from "react-icons/fi";
 import { renderInlineFormatting } from "../utils/inlineFormatting.jsx";
+import AudioPlayer from "../components/messages/AudioPlayer.jsx";
 
 const useMessageFormatter = (onFileClick) => {
   // @[Display Name](userId) markup, inserted by the @ mention picker (see
@@ -97,39 +98,22 @@ const useMessageFormatter = (onFileClick) => {
       );
     }
 
+    // ".weba" = a voice note recorded in-app (see useVoiceRecorder) — the
+    // WhatsApp-style waveform pill, no card/filename around it since it
+    // already sits inside the message bubble.
+    if (ext === "weba") {
+      return <AudioPlayer src={fileUrl} variant="voiceNote" isSender={isSender} />;
+    }
+
     if (["mp3", "wav", "ogg", "m4a", "aac", "flac"].includes(ext)) {
       return (
-        <div
-          className="rounded-xl overflow-hidden min-w-[230px]"
-          style={{
-            background: "rgba(158,47,208,0.08)",
-            border: "1px solid rgba(158,47,208,0.25)",
-          }}
-        >
-          <div className="flex items-center gap-2.5 px-3 pt-2.5 pb-1.5">
-            <div
-              className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
-              style={{ background: "linear-gradient(135deg,#9E2FD0,#7b22a8)" }}
-            >
-              <FiMusic size={14} className="text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold truncate text-gray-800 dark:text-gray-100">
-                {fileName}
-              </p>
-              <p className="text-[10px] uppercase font-medium tracking-wide text-purple-600 dark:text-purple-400">
-                {ext} · Audio
-              </p>
-            </div>
+        <div className="rounded-xl min-w-[210px] px-3 py-2.5"
+          style={{ background: "rgba(158,47,208,0.08)", border: "1px solid rgba(158,47,208,0.25)" }}>
+          <div className="flex items-center gap-1.5 mb-2">
+            <FiMusic size={11} className="flex-shrink-0 text-purple-500 dark:text-purple-400" />
+            <p className="text-[11px] font-semibold truncate text-gray-800 dark:text-gray-100 flex-1 min-w-0">{fileName}</p>
           </div>
-          <div className="px-3 pb-2.5">
-            <audio
-              src={fileUrl}
-              controls
-              className="w-full"
-              style={{ height: "32px", accentColor: "#9E2FD0" }}
-            />
-          </div>
+          <AudioPlayer src={fileUrl} variant="voiceNote" />
         </div>
       );
     }

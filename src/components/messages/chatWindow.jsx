@@ -19,7 +19,7 @@ import Dropdown from "../schedule/Dropdown";
 // File extension set — defined outside component to avoid recreation on each render
 const FILE_EXTS = new Set([
   "jpg","jpeg","png","gif","webp","svg",
-  "mp3","wav","ogg","m4a","aac","flac",
+  "mp3","wav","ogg","m4a","aac","flac","weba",
   "mp4","mov","webm","avi","mkv",
   "pdf","doc","docx","xls","xlsx","ppt","pptx","txt","zip","rar","csv",
 ]);
@@ -532,6 +532,12 @@ const ChatWindow = ({
             const isSender = msg.email === email;
             const isFileMessage = msg.message.startsWith("http") && FILE_EXTS.has(msg.message.split("?")[0].split(".").pop().toLowerCase());
             const isImageMessage = isFileMessage && isImageUrl(msg.message);
+            // A voice note renders as a bare waveform pill (no card of its
+            // own, unlike every other file type) — it still needs the
+            // bubble's normal background/padding, so it's excluded from the
+            // "file messages get no bubble chrome" styling below even
+            // though it still goes through renderFileMessage.
+            const isVoiceNoteMessage = isFileMessage && msg.message.split("?")[0].split(".").pop().toLowerCase() === "weba";
             const isGrouped =
               !showTimestamp &&
               index > 0 &&
@@ -607,7 +613,7 @@ const ChatWindow = ({
                     className={`relative max-w-[75%] shadow-sm ${
                       isImageMessage
                         ? `overflow-hidden rounded-2xl ${isSender ? "rounded-br-sm" : "rounded-bl-sm"}`
-                        : isFileMessage
+                        : isFileMessage && !isVoiceNoteMessage
                         ? ""
                         : `px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
                             isSender
@@ -618,7 +624,7 @@ const ChatWindow = ({
                     style={
                       isImageMessage
                         ? { boxShadow: "0 3px 12px rgba(0,0,0,0.18)" }
-                        : isFileMessage
+                        : isFileMessage && !isVoiceNoteMessage
                         ? {}
                         : isSender
                         ? { background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 3px 12px rgba(158,47,208,0.30)" }

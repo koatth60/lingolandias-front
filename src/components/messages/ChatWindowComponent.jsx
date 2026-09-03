@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import axios from "axios";
 import send from "../../assets/logos/send.png";
 import { BsEmojiSmile, BsThreeDots, BsType, BsTypeBold, BsTypeItalic, BsTypeStrikethrough, BsCodeSlash } from "react-icons/bs";
-import { FiVideo, FiChevronLeft, FiEdit2, FiX, FiPaperclip, FiDownload, FiFile, FiMusic, FiFileText, FiCornerUpLeft, FiArrowDown, FiUsers, FiPhoneMissed, FiUserPlus, FiUserMinus, FiLogOut } from "react-icons/fi";
+import { FiVideo, FiChevronLeft, FiEdit2, FiX, FiPaperclip, FiDownload, FiFile, FiMusic, FiFileText, FiCornerUpLeft, FiArrowDown, FiUsers, FiPhoneMissed, FiUserPlus, FiUserMinus, FiLogOut, FiMic, FiSquare, FiTrash2, FiPlus } from "react-icons/fi";
 
 const SYSTEM_MESSAGE_TYPES = ["member_added", "member_removed", "member_left", "group_renamed"];
 import { FaComments } from "react-icons/fa";
@@ -13,6 +13,7 @@ import "react-perfect-scrollbar/dist/css/styles.css";
 import EmojiPicker from "emoji-picker-react";
 import MessageOptionsCard from "./MessageOptionsCard";
 import MessageReactions from "./MessageReactions";
+import AudioPlayer from "./AudioPlayer";
 import useDeleteConversationMessage from "../../hooks/useDeleteConversationMessage.js";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -21,13 +22,24 @@ import useChatInputHandler from "../../hooks/useChatInputHandler.js";
 import useUserSearch from "../../hooks/useUserSearch.js";
 import Swal from "sweetalert2";
 import { renderInlineFormatting } from "../../utils/inlineFormatting.jsx";
+import useVoiceRecorder from "../../hooks/useVoiceRecorder.js";
+import { getDraft, setDraft } from "../../state/messageDrafts.js";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB
 const IMAGE_EXTS = new Set(["jpg", "jpeg", "png", "gif", "webp", "svg"]);
-const AUDIO_EXTS = new Set(["mp3", "wav", "ogg", "m4a", "aac", "flac"]);
+// "weba" (not "webm") for voice notes recorded via MediaRecorder — sharing
+// the "webm" extension with VIDEO_EXTS below would make a real .webm video
+// attachment render as an audio player instead.
+const AUDIO_EXTS = new Set(["mp3", "wav", "ogg", "m4a", "aac", "flac", "weba"]);
 const VIDEO_EXTS = new Set(["mp4", "mov", "webm", "avi", "mkv"]);
 const isImageUrl = (url) => IMAGE_EXTS.has(url.split("?")[0].split(".").pop().toLowerCase());
+// Voice notes render as a bare waveform pill (see AudioPlayer's "voiceNote"
+// variant) with no card of their own, unlike every other file type — they
+// need the surrounding message bubble to still supply its normal
+// background/padding instead of going bubble-less like an image or a
+// bordered file card does.
+const isVoiceNoteUrl = (url) => url.split("?")[0].split(".").pop().toLowerCase() === "weba";
 
 const EXT_COLORS = {
   PDF: "#ef4444", DOC: "#2563eb", DOCX: "#2563eb",
@@ -68,7 +80,7 @@ const ChatWindowComponent = ({
     socket, room, currentUser
   );
 
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(() => getDraft(room));
   const [editingMsg, setEditingMsg] = useState(null);
   const [typingUsers, setTypingUsers] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -85,6 +97,49 @@ const ChatWindowComponent = ({
   const [replyTo, setReplyTo] = useState(null);
   const [showFormatMenu, setShowFormatMenu] = useState(false);
   const [stagedFiles, setStagedFiles] = useState([]);
+  const [showMoreOptions, setShowMoreOptions] = useState(false);
+
+  // ── Per-conversation draft (WhatsApp-style) ──
+  // Loads whatever was last typed here whenever the room changes.
+  useEffect(() => {
+    setMessage(getDraft(room));
+    // A file staged for one conversation shouldn't silently ride along into
+    // whichever one you open next — unlike text, in-memory File objects
+    // can't be drafted to localStorage anyway.
+    setStagedFiles((prev) => {
+      prev.forEach((f) => { if (f.previewUrl) URL.revokeObjectURL(f.previewUrl); });
+      return [];
+    });
+    // Switching chats mid-recording would otherwise leave the mic running
+    // and, worse, stage the eventual result into whichever conversation
+    // happens to be open when Stop is finally tapped.
+    if (isRecordingRef.current) cancelRecording();
+  }, [room]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Debounced save tied directly to (room, message) — deliberately NOT a
+  // "save on leave" effect keyed off a remembered previous room. This app
+  // renders a separate ChatWindowComponent instance per layout breakpoint
+  // (mobile/desktop) sharing the same `room` prop; a "save on leave" effect
+  // fires in BOTH instances on every room change, and the one nobody typed
+  // into would overwrite the real draft with "" depending on which
+  // instance's effect happens to commit last. Tying the save to actual
+  // `message` edits means an untouched duplicate only ever re-saves the
+  // same value it just loaded — never clobbers the other instance's draft.
+  useEffect(() => {
+    if (!room) return;
+    const timer = setTimeout(() => setDraft(room, message), 400);
+    return () => clearTimeout(timer);
+  }, [room, message]);
+
+  const {
+    isRecording,
+    seconds: recordingSeconds,
+    startRecording,
+    stopRecording,
+    cancelRecording,
+  } = useVoiceRecorder();
+  const isRecordingRef = useRef(isRecording);
+  useEffect(() => { isRecordingRef.current = isRecording; }, [isRecording]);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const [newMsgCount, setNewMsgCount] = useState(0);
   // Image lightbox
@@ -345,6 +400,36 @@ const ChatWindowComponent = ({
     if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === "i") { e.preventDefault(); wrapSelection("_"); }
   };
 
+  // ── Drag-and-drop staging ──
+  // dragenter/dragleave fire on every child element the pointer crosses too
+  // (bubbling in and out of nested divs while dragging over the chat), so a
+  // plain boolean flag flickers off mid-drag — a counter only zeroes out
+  // once the pointer has genuinely left every nested element.
+  const [isDraggingFile, setIsDraggingFile] = useState(false);
+  const dragCounterRef = useRef(0);
+
+  const handleDragEnter = (e) => {
+    e.preventDefault();
+    if (!e.dataTransfer.types.includes("Files")) return;
+    dragCounterRef.current += 1;
+    setIsDraggingFile(true);
+  };
+  const handleDragOver = (e) => {
+    e.preventDefault(); // required for onDrop to fire at all
+  };
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    dragCounterRef.current = Math.max(0, dragCounterRef.current - 1);
+    if (dragCounterRef.current === 0) setIsDraggingFile(false);
+  };
+  const handleDrop = (e) => {
+    e.preventDefault();
+    dragCounterRef.current = 0;
+    setIsDraggingFile(false);
+    const files = e.dataTransfer.files;
+    if (files && files.length) Array.from(files).forEach(addStagedFile);
+  };
+
   // ── File staging (attach/paste, then Send) ──
   // Picking or pasting a file stages it as a thumbnail above the composer —
   // like chatWindow.jsx's existing single-file "ready to send" preview, but
@@ -396,6 +481,19 @@ const ChatWindowComponent = ({
       }
     }
   };
+
+  // ── Voice notes ──
+  const handleStartRecording = async () => {
+    const result = await startRecording();
+    if (!result.ok) {
+      alert(result.reason === "permission_denied" ? t("chatWindow.micPermissionDenied") : t("chatWindow.micUnavailable"));
+    }
+  };
+  const handleStopRecording = async () => {
+    const file = await stopRecording();
+    if (file) addStagedFile(file);
+  };
+  const handleCancelRecording = () => { cancelRecording(); };
 
   // Uploads every staged file and sends each as its own message — routed
   // through sendMessage() (see handleSendMessage) for the same optimistic
@@ -451,25 +549,27 @@ const ChatWindowComponent = ({
       );
     }
 
+    // ".weba" = a voice note recorded in-app (see useVoiceRecorder) — the
+    // WhatsApp-style waveform pill, no card/filename around it since it
+    // already sits inside the message bubble.
+    if (ext === "weba") {
+      return <AudioPlayer src={fileUrl} variant="voiceNote" isSender={isSender} />;
+    }
+
+    // A real uploaded audio file — same compact waveform player as a voice
+    // note, just with a one-line filename header above it instead of the
+    // old taller icon-box + two-line label (which the "attach" mode never
+    // needed, unlike the actual card, but that made it noticeably taller
+    // than the voice-note pill for no real reason).
     if (AUDIO_EXTS.has(ext)) {
       return (
-        <div className="rounded-xl overflow-hidden min-w-[230px]"
+        <div className="rounded-xl min-w-[210px] px-3 py-2.5"
           style={{ background: "rgba(158,47,208,0.08)", border: "1px solid rgba(158,47,208,0.25)" }}>
-          <div className="flex items-center gap-2.5 px-3 pt-2.5 pb-1.5">
-            <div className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
-              style={{ background: "linear-gradient(135deg,#9E2FD0,#7b22a8)" }}>
-              <FiMusic size={14} className="text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold truncate text-gray-800 dark:text-gray-100">{fileName}</p>
-              <p className="text-[10px] uppercase font-medium tracking-wide text-purple-600 dark:text-purple-400">
-                {extUpper} · Audio
-              </p>
-            </div>
+          <div className="flex items-center gap-1.5 mb-2">
+            <FiMusic size={11} className="flex-shrink-0 text-purple-500 dark:text-purple-400" />
+            <p className="text-[11px] font-semibold truncate text-gray-800 dark:text-gray-100 flex-1 min-w-0">{fileName}</p>
           </div>
-          <div className="px-3 pb-2.5">
-            <audio src={fileUrl} controls className="w-full" style={{ height: "32px", accentColor: "#9E2FD0" }} />
-          </div>
+          <AudioPlayer src={fileUrl} variant="voiceNote" />
         </div>
       );
     }
@@ -718,7 +818,24 @@ const ChatWindowComponent = ({
 
   return (
     <div className="w-full h-full flex flex-col relative overflow-hidden
-                    bg-white dark:bg-[#0d0a1e] transition-colors duration-300">
+                    bg-white dark:bg-[#0d0a1e] transition-colors duration-300"
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {/* Drag-and-drop overlay — dropping anywhere in the chat stages the
+          file(s), same as pasting or picking via the paperclip. */}
+      {isDraggingFile && (
+        <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none
+                        bg-[#9E2FD0]/10 dark:bg-[#9E2FD0]/15 backdrop-blur-[1px]">
+          <div className="flex flex-col items-center gap-2 px-6 py-5 rounded-2xl border-2 border-dashed
+                          border-[#9E2FD0] bg-white/90 dark:bg-[#1a1a2e]/90">
+            <FiPaperclip size={22} className="text-[#9E2FD0]" />
+            <p className="text-sm font-semibold text-[#9E2FD0]">{t("chatWindow.dropFilesHere")}</p>
+          </div>
+        </div>
+      )}
 
       {/* Background orbs — previously dark-mode-only, which left light mode
           completely flat with nothing to give the chat area any depth. */}
@@ -854,7 +971,8 @@ const ChatWindowComponent = ({
               const initials = getInitials(msg.username);
               const avatarColor = generateColor(msg.username);
               const isImageOnly = !!(effectiveFileUrl && !effectiveMessage?.trim() && isImageUrl(effectiveFileUrl));
-              const isFileOnly = !!(effectiveFileUrl && !effectiveMessage?.trim() && !isImageUrl(effectiveFileUrl));
+              const isVoiceNoteOnly = !!(effectiveFileUrl && !effectiveMessage?.trim() && isVoiceNoteUrl(effectiveFileUrl));
+              const isFileOnly = !!(effectiveFileUrl && !effectiveMessage?.trim() && !isImageUrl(effectiveFileUrl) && !isVoiceNoteOnly);
 
               if (isSystemMessage) {
                 const meta = msg.metadata || {};
@@ -1022,6 +1140,12 @@ const ChatWindowComponent = ({
                               <p className="line-clamp-2 text-[11px] text-white/70">{stripMentionMarkup(msg.replyTo.message)}</p>
                             </div>
                           )}
+                          {/* Voice notes get a matching spacer above the
+                              waveform row — otherwise the timestamp line
+                              below it (present but no counterweight above)
+                              makes the play button read as sitting too high
+                              in the pill instead of centered in it. */}
+                          {isVoiceNoteOnly && <div className="h-[13px]" />}
                           {effectiveFileUrl && renderFile(effectiveFileUrl, true)}
                           {effectiveMessage?.trim() && (
                             <p className="text-white" style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
@@ -1073,6 +1197,7 @@ const ChatWindowComponent = ({
                                 <p className="line-clamp-2 text-[11px] text-gray-500 dark:text-gray-400">{stripMentionMarkup(msg.replyTo.message)}</p>
                               </div>
                             )}
+                            {isVoiceNoteOnly && <div className="h-[13px]" />}
                             {effectiveFileUrl && renderFile(effectiveFileUrl, false)}
                             {effectiveMessage?.trim() && (
                               <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
@@ -1243,50 +1368,90 @@ const ChatWindowComponent = ({
                         transition-colors duration-200">
 
           <div className="flex items-center gap-0.5 flex-shrink-0 self-end mb-0.5">
-            {/* Emoji button */}
-            <button onClick={() => { setShowEmojiPicker((p) => !p); setShowFormatMenu(false); }}
-              className="p-1 rounded-lg text-gray-500 dark:text-gray-400
-                         hover:text-amber-600 dark:hover:text-amber-400 transition-colors duration-150">
-              <BsEmojiSmile size={18} />
-            </button>
+            {/* Mobile-only "+" — emoji/format/attach collapse behind it so the
+                row doesn't get crowded on a narrow phone screen; desktop just
+                shows all three inline (see the hidden sm:flex group below). */}
+            {!isRecording && (
+              <button
+                onClick={() => setShowMoreOptions((p) => !p)}
+                className="sm:hidden p-1 rounded-lg text-gray-500 dark:text-gray-400
+                           hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-150">
+                <FiPlus size={18} className={`transition-transform duration-150 ${showMoreOptions ? "rotate-45" : ""}`} />
+              </button>
+            )}
 
-            {/* Text format button — one icon instead of 4 separate ones so the
-                input row stays usable on narrow phone screens. */}
+            <div className={`items-center gap-0.5 ${showMoreOptions ? "flex" : "hidden"} sm:flex`}>
+              {/* Emoji button */}
+              <button onClick={() => { setShowEmojiPicker((p) => !p); setShowFormatMenu(false); setShowMoreOptions(false); }}
+                className="p-1 rounded-lg text-gray-500 dark:text-gray-400
+                           hover:text-amber-600 dark:hover:text-amber-400 transition-colors duration-150">
+                <BsEmojiSmile size={18} />
+              </button>
+
+              {/* Text format button — one icon instead of 4 separate ones so the
+                  input row stays usable on narrow phone screens. */}
+              <button
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => { setShowFormatMenu((p) => !p); setShowEmojiPicker(false); setShowMoreOptions(false); }}
+                title={t("chatWindow.formatText")}
+                className="p-1 rounded-lg text-gray-500 dark:text-gray-400
+                           hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-150">
+                <BsType size={17} />
+              </button>
+
+              {/* File button */}
+              <button onClick={() => { fileInputRef.current?.click(); setShowMoreOptions(false); }} disabled={isUploading}
+                className="p-1 rounded-lg text-gray-500 dark:text-gray-400
+                           hover:text-purple-600 dark:hover:text-purple-400
+                           disabled:opacity-40 transition-colors duration-150" title="Attach file">
+                <FiPaperclip size={17} className={isUploading ? "animate-pulse" : ""} />
+              </button>
+              <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileSelect}
+                accept="image/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip" />
+            </div>
+
+            {/* Voice note — cancel (discard) only shows up mid-recording */}
+            {isRecording && (
+              <button onClick={handleCancelRecording}
+                className="p-1 rounded-lg text-gray-500 dark:text-gray-400 hover:text-red-500 transition-colors duration-150">
+                <FiTrash2 size={17} />
+              </button>
+            )}
             <button
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => { setShowFormatMenu((p) => !p); setShowEmojiPicker(false); }}
-              title={t("chatWindow.formatText")}
-              className="p-1 rounded-lg text-gray-500 dark:text-gray-400
-                         hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-150">
-              <BsType size={17} />
+              onClick={isRecording ? handleStopRecording : handleStartRecording}
+              title={isRecording ? t("chatWindow.stopRecording") : t("chatWindow.recordVoiceNote")}
+              className={isRecording
+                ? "p-1.5 rounded-full bg-red-500 text-white animate-pulse transition-colors duration-150"
+                : "p-1 rounded-lg text-gray-500 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-150"}>
+              {isRecording ? <FiSquare size={13} /> : <FiMic size={17} />}
             </button>
-
-            {/* File button */}
-            <button onClick={() => fileInputRef.current?.click()} disabled={isUploading}
-              className="p-1 rounded-lg text-gray-500 dark:text-gray-400
-                         hover:text-purple-600 dark:hover:text-purple-400
-                         disabled:opacity-40 transition-colors duration-150" title="Attach file">
-              <FiPaperclip size={17} className={isUploading ? "animate-pulse" : ""} />
-            </button>
-            <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileSelect}
-              accept="image/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip" />
           </div>
 
-          {/* Textarea */}
-          <textarea
-            ref={textareaRef}
-            placeholder={t("chatWindow.typePlaceholder")}
-            value={message}
-            onChange={handleInputWithTyping}
-            onKeyDown={handleKeyDown}
-            onPaste={handlePaste}
-            rows={1}
-            className="flex-1 bg-transparent resize-none outline-none
-                       text-sm text-gray-900 dark:text-white
-                       placeholder-gray-400 dark:placeholder-gray-500
-                       max-h-32 leading-relaxed py-1.5"
-            style={{ overflowY: "hidden" }}
-          />
+          {/* Textarea — swapped for a recording indicator while capturing */}
+          {isRecording ? (
+            <div className="flex-1 flex items-center gap-2 py-1.5 min-w-0">
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
+              <span className="text-sm font-semibold text-red-500 tabular-nums flex-shrink-0">
+                {Math.floor(recordingSeconds / 60)}:{(recordingSeconds % 60).toString().padStart(2, "0")}
+              </span>
+              <span className="text-xs text-gray-400 dark:text-gray-500 truncate">{t("chatWindow.recording")}</span>
+            </div>
+          ) : (
+            <textarea
+              ref={textareaRef}
+              placeholder={t("chatWindow.typePlaceholder")}
+              value={message}
+              onChange={handleInputWithTyping}
+              onKeyDown={handleKeyDown}
+              onPaste={handlePaste}
+              rows={1}
+              className="flex-1 bg-transparent resize-none outline-none
+                         text-sm text-gray-900 dark:text-white
+                         placeholder-gray-400 dark:placeholder-gray-500
+                         max-h-32 leading-relaxed py-1.5"
+              style={{ overflowY: "hidden" }}
+            />
+          )}
 
           {/* Send button */}
           <button onClick={handleSendMessage} disabled={!message.trim() && stagedFiles.length === 0}

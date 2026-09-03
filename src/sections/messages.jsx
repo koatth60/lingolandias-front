@@ -15,6 +15,13 @@ import Dashboard from "./dashboard";
 import Navbar from "../components/layout/navbar";
 import { FiMessageSquare } from "react-icons/fi";
 import { activeRoomRef } from "../state/activeRoom";
+import { conversationListCache } from "../state/conversationListCache";
+import {
+  setConversationsSnapshot,
+  clearConversationUnread,
+  setConversationMuted,
+  removeConversation,
+} from "../redux/notificationsSlice";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -34,7 +41,10 @@ const Messages = () => {
   const navigate = useNavigate();
   const user = useSelector((state) => state.user.userInfo.user);
   const dispatch = useDispatch();
-  const [conversations, setConversations] = useState([]);
+  // Pinta la última lista conocida al instante (de una visita anterior) en
+  // vez de "sin mensajes" mientras fetchConversations() trae la real —
+  // mismo patrón stale-while-revalidate que el caché de mensajes.
+  const [conversations, setConversations] = useState(() => conversationListCache.get(user?.id) || []);
   const [selectedChat, setSelectedChat] = useState(null);
   const [showChatList, setShowChatList] = useState(true);
   const [profileUser, setProfileUser] = useState(null);
@@ -44,6 +54,10 @@ const Messages = () => {
   // point (new group's checkbox, add-member's prompt, the persistent button
   // in GroupMembersModal) — { conversationId, groupName, students }.
   const [pendingSchedule, setPendingSchedule] = useState(null);
+  // Drives the inline "add to existing class?" confirmation rendered INSIDE
+  // GroupMembersModal — { conversationId, roomId, defaultGroupName, personId,
+  // personName } — instead of a SweetAlert stacked on top of that modal.
+  const [pendingClassConfirm, setPendingClassConfirm] = useState(null);
   // Avoids re-nagging a teacher every time they reopen the same not-yet-
   // scheduled student's chat within one session — cleared on next login.
   const promptedStudentIdsRef = useRef(new Set());
@@ -56,7 +70,12 @@ const Messages = () => {
   }, [selectedChat?.id]);
 
   const getDisplayName = useCallback((c) => {
-    if (c.type === "dm") return c.otherUser ? `${c.otherUser.name} ${c.otherUser.lastName}` : c.name;
+    // Covers both real DMs and a `type: 'group'` conversation the backend
+    // has resolved an otherUser for — a never-custom-named group that has
+    // shrunk back down to exactly 2 members (see findUserConversations) —
+    // so either one shows as "just the other person" the same way.
+    if (c.otherUser) return `${c.otherUser.name} ${c.otherUser.lastName}`;
+    if (c.type === "dm") return c.name;
     if (c.type === "support") return t("messagesExtra.chipSupport", "Support");
     const key = LEGACY_NAME_KEYS[c.type]?.[c.language];
     return key ? t(key) : c.name;
@@ -65,28 +84,62 @@ const Messages = () => {
   const CONVERSATIONS_PAGE_SIZE = 20;
   const [hasMoreChats, setHasMoreChats] = useState(false);
   const [loadingMoreChats, setLoadingMoreChats] = useState(false);
-  const [isLoadingConversations, setIsLoadingConversations] = useState(true);
+  // Arranca en false cuando ya hay algo en caché — si no, el skeleton
+  // animado se mostraba siempre al entrar a Messages sin importar que la
+  // lista ya estuviera pintada al instante desde conversationListCache.
+  const [isLoadingConversations, setIsLoadingConversations] = useState(() => !conversationListCache.get(user?.id));
   const conversationsRef = useRef([]);
   useEffect(() => { conversationsRef.current = conversations; }, [conversations]);
+  // Guards against out-of-order responses: two live updates firing close
+  // together (e.g. add-then-remove within the same few seconds) each start
+  // their own fetch, and network timing doesn't guarantee they resolve in
+  // the order they were sent — without this, a slightly-delayed OLDER
+  // response can land last and silently overwrite the correct, newer state.
+  const fetchSeqRef = useRef(0);
 
   // append=false (default) always reloads page 1 — used on mount and any time
   // something changes that could reorder the top of the list (new message,
   // new conversation). append=true is only for the explicit "load more" click.
   const fetchConversations = useCallback(async (append = false) => {
     if (!user?.id) return;
+    const seq = ++fetchSeqRef.current;
     try {
       const offset = append ? conversationsRef.current.length : 0;
       const res = await fetch(
         `${BACKEND_URL}/conversations?userId=${user.id}&limit=${CONVERSATIONS_PAGE_SIZE}&offset=${offset}`,
         { headers: authHeaders() }
       );
-      if (!res.ok) return;
+      if (!res.ok) return null;
       const data = await res.json();
-      const withNames = data.conversations.map((c) => ({ ...c, name: getDisplayName(c) }));
+      // A newer call already started (and may already have resolved) while
+      // this one was in flight — this response is stale, discard it.
+      if (seq !== fetchSeqRef.current) return null;
+      // The server's unreadCount for the conversation that's actually open
+      // right now can briefly still say "1" here — it's computed from
+      // lastReadAt, which ChatWindowComponent only persists ~1.5s after a
+      // message arrives — so it's forced to 0 for BOTH local state below and
+      // the shared notifications slice, rather than trusting that stale
+      // number and flashing the row/sidebar badge back on for a chat the
+      // user is already looking at.
+      const withNames = data.conversations.map((c) => ({
+        ...c,
+        name: getDisplayName(c),
+        unreadCount: c.id === activeRoomRef.current ? 0 : c.unreadCount,
+      }));
       setConversations((prev) => (append ? [...prev, ...withNames] : withNames));
       setHasMoreChats(data.hasMore);
+      // Solo la página 1 (la vista "actual") se guarda como caché — páginas
+      // siguientes son solo paginación, no hace falta persistirlas.
+      if (!append) conversationListCache.set(user.id, withNames);
+      // Keeps the sidebar badge (dashboard.jsx) in lockstep with whatever
+      // this page just learned — it does its own independent fetch too, but
+      // there's no reason to wait for that cycle when this one already has
+      // fresher numbers.
+      dispatch(setConversationsSnapshot(withNames));
+      return withNames;
     } catch (err) {
       console.error("Error fetching conversations:", err);
+      return null;
     } finally {
       setIsLoadingConversations(false);
     }
@@ -110,6 +163,28 @@ const Messages = () => {
     };
   }, [fetchConversations]);
 
+  // Live name/type changes (member added/removed shifting the auto-computed
+  // name, a group collapsing back into a plain 1:1 DM, a deliberate rename)
+  // — without this, only whoever triggered the change sees it update; anyone
+  // else with the chat open would need a manual reload. Re-fetching the list
+  // (rather than trusting the raw socket payload) reuses the same
+  // getDisplayName/otherUser resolution the sidebar already relies on.
+  useEffect(() => {
+    const handleConversationUpdated = async (payload) => {
+      // Read straight off fetchConversations' own return value — conversationsRef
+      // only syncs on the NEXT render's effect, so it's still stale here.
+      const list = await fetchConversations();
+      if (list && selectedChat?.id === payload?.conversationId) {
+        const updated = list.find((c) => c.id === payload.conversationId);
+        if (updated) {
+          setSelectedChat((prev) => (prev?.id === payload.conversationId ? { ...prev, ...updated } : prev));
+        }
+      }
+    };
+    socket.on("conversationUpdated", handleConversationUpdated);
+    return () => socket.off("conversationUpdated", handleConversationUpdated);
+  }, [fetchConversations, selectedChat?.id]);
+
   // A draft's local-only list entry never survives a switch to something
   // else — Teams-style: it's visible while you're looking at it, gone the
   // moment you look away without sending. fetchConversations() (see below)
@@ -125,6 +200,12 @@ const Messages = () => {
       const cleaned = dropStaleDrafts(prev).map((c) => (c.id === chat.id ? { ...c, unreadCount: 0 } : c));
       return chat.isDraft ? [chat, ...cleaned] : cleaned;
     });
+    // Optimistic — clears the sidebar badge the instant the chat opens,
+    // instead of waiting on the server round trip (ChatWindowComponent's own
+    // markConversationRead is debounced 1.5s so it doesn't spam the server on
+    // every single incoming message, which is far too slow for a badge that's
+    // supposed to feel instant).
+    if (chat.id) dispatch(clearConversationUnread(chat.id));
   };
 
   const handleBackClick = () => {
@@ -222,6 +303,20 @@ const Messages = () => {
     navigate(location.pathname, { replace: true, state: {} });
   }, [location.state?.openDmWithUserId]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Deep link from a mention notification (toast or push) — the target is a
+  // specific group, not a person, so this can't reuse startDmWith. Retries
+  // as `conversations` fills in rather than clearing the state on the first
+  // (possibly-too-early) render, since the list may still be loading from
+  // the server on a fresh page load.
+  useEffect(() => {
+    const targetId = location.state?.openConversationId;
+    if (!targetId || !user?.id) return;
+    const match = conversations.find((c) => c.id === targetId);
+    if (!match) return;
+    handleChatSelect(match);
+    navigate(location.pathname, { replace: true, state: {} });
+  }, [location.state?.openConversationId, conversations, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleCreateGroup = async ({ name, avatarUrl, memberIds, members, scheduleAsClass }) => {
     try {
       const res = await fetch(`${BACKEND_URL}/conversations/group`, {
@@ -269,52 +364,39 @@ const Messages = () => {
   };
 
   // Teacher-only: after adding a member, offer to fold them into the
-  // conversation's class — either extending an already-scheduled class
-  // (the "1:1 that gains a third person" case) or offering to schedule a
-  // brand new one. Declining either prompt leaves everything else untouched.
+  // conversation's class — either extending an already-scheduled class at
+  // its EXISTING time slot (the "1:1 that gains a third person" case, now
+  // for a student OR a guest teacher joining as co-teacher) or offering to
+  // schedule a brand new one. Declining either prompt leaves everything
+  // else untouched.
   const promptScheduleForNewMember = async ({ conversationId, groupName, student }) => {
-    // Adding another teacher or an admin to a group should never trigger a
-    // scheduling prompt — this flow only ever models teacher/student classes.
-    if (student.role !== "user") return;
+    // Admins aren't part of the teacher/student class model at all — adding
+    // one to a group is just a chat membership change, never a scheduling
+    // question. Students and guest teachers both go through this flow.
+    if (student.role === "admin") return;
     try {
       const params = new URLSearchParams({ teacherId: user.id, otherUserId: student.id, conversationId });
       const linkRes = await fetch(`${BACKEND_URL}/users/schedule-link?${params}`, { headers: authHeaders() });
       const link = linkRes.ok ? await linkRes.json() : { linked: false };
-      const studentName = `${student.name} ${student.lastName}`.trim();
+      const personName = `${student.name} ${student.lastName}`.trim();
 
       if (link.linked) {
-        const { value: chosenName, isConfirmed } = await Swal.fire({
-          title: t("messagesExtra.addToClassTitle"),
-          text: t("messagesExtra.addToClassWarning", { name: studentName }),
-          input: "text",
-          inputValue: link.groupName || groupName || "",
-          showCancelButton: true,
-          confirmButtonText: t("messagesExtra.addToClassConfirm"),
-          cancelButtonText: t("messagesExtra.skipScheduling"),
-          confirmButtonColor: "#9E2FD0",
+        // Rendered INLINE inside GroupMembersModal (see pendingClassConfirm)
+        // instead of a SweetAlert stacked on top of that already-open modal.
+        setPendingClassConfirm({
+          conversationId,
+          roomId: link.roomId,
+          defaultGroupName: link.groupName || groupName || "",
+          personId: student.id,
+          personName,
         });
-        if (!isConfirmed) return;
-        const extendRes = await fetch(`${BACKEND_URL}/users/schedule-group/${link.roomId}/extend`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", ...authHeaders() },
-          body: JSON.stringify({
-            teacherId: user.id,
-            studentId: student.id,
-            studentName,
-            groupName: chosenName?.trim() || undefined,
-          }),
-        });
-        if (extendRes.ok) {
-          const { schedules } = await extendRes.json().catch(() => ({ schedules: [] }));
-          (schedules || []).forEach((s) => dispatch(addTeacherSchedule(s)));
-          setSelectedChat((prev) =>
-            prev?.id === conversationId ? { ...prev, linkedToSchedule: true, name: chosenName?.trim() || prev.name } : prev
-          );
-          fetchConversations();
-        }
         return;
       }
 
+      // No existing class found anywhere for this room or this person — the
+      // only option left really is a brand new slot. (Guest teachers only
+      // ever reach this branch when the room truly has no class yet; if it
+      // does, the `link.linked` branch above already kept the existing time.)
       const { isConfirmed } = await Swal.fire({
         title: t("messagesExtra.scheduleClassPrompt"),
         icon: "question",
@@ -330,6 +412,39 @@ const Messages = () => {
       console.error("Error checking/offering to schedule a class:", err);
     }
   };
+
+  // Confirm/cancel handlers for the inline pendingClassConfirm step rendered
+  // inside GroupMembersModal (see promptScheduleForNewMember above).
+  const handleConfirmAddToClass = async (chosenName) => {
+    if (!pendingClassConfirm) return;
+    const { conversationId, roomId, personId, personName } = pendingClassConfirm;
+    try {
+      const extendRes = await fetch(`${BACKEND_URL}/users/schedule-group/${roomId}/extend`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify({
+          teacherId: user.id,
+          personId,
+          personName,
+          groupName: chosenName?.trim() || undefined,
+        }),
+      });
+      if (extendRes.ok) {
+        const { schedules } = await extendRes.json().catch(() => ({ schedules: [] }));
+        (schedules || []).forEach((s) => dispatch(addTeacherSchedule(s)));
+        setSelectedChat((prev) =>
+          prev?.id === conversationId ? { ...prev, linkedToSchedule: true, name: chosenName?.trim() || prev.name } : prev
+        );
+        fetchConversations();
+      }
+    } catch (err) {
+      console.error("Error adding person to existing class:", err);
+    } finally {
+      setPendingClassConfirm(null);
+    }
+  };
+
+  const handleCancelAddToClass = () => setPendingClassConfirm(null);
 
   // Teacher opening a 1:1 chat with a student for the first time — offer to
   // schedule a class, the same way adding a member to a group does. Skipped
@@ -448,6 +563,33 @@ const Messages = () => {
     }
   };
 
+  // Removing someone else requires being the group owner (enforced
+  // server-side too); removing yourself is always allowed (leaving). If the
+  // group is tied to a scheduled class, the backend already drops the
+  // removed student's calendar rows (or the co-teacher from coTeacherIds)
+  // and recomputes the group name UNLESS it was manually renamed — see
+  // ConversationsRepository.removeMember.
+  const handleRemoveMember = async (userId) => {
+    if (!selectedChat) return;
+    const conversationId = selectedChat.id;
+    const leavingSelf = userId === user.id;
+    try {
+      await fetch(`${BACKEND_URL}/conversations/${conversationId}/members/${userId}?requesterId=${user.id}`, {
+        method: "DELETE",
+        headers: authHeaders(),
+      });
+      if (leavingSelf) {
+        setGroupMembers(null);
+        setSelectedChat(null);
+      } else {
+        handleViewGroupMembers();
+      }
+      fetchConversations();
+    } catch (err) {
+      console.error("Error removing member:", err);
+    }
+  };
+
   const handleAddMember = async (member, shareHistory) => {
     if (!selectedChat) return;
     const conversationId = selectedChat.id;
@@ -538,6 +680,7 @@ const Messages = () => {
   const handleToggleMute = async (chat) => {
     const nextMuted = !chat.muted;
     setConversations((prev) => prev.map((c) => (c.id === chat.id ? { ...c, muted: nextMuted } : c)));
+    dispatch(setConversationMuted({ id: chat.id, muted: nextMuted }));
     try {
       await fetch(`${BACKEND_URL}/conversations/${chat.id}/mute`, {
         method: "POST",
@@ -552,6 +695,7 @@ const Messages = () => {
 
   const handleDeleteChat = async (chat) => {
     setConversations((prev) => prev.filter((c) => c.id !== chat.id));
+    dispatch(removeConversation(chat.id));
     if (selectedChat?.id === chat.id) {
       setSelectedChat(null);
       setShowChatList(true);
@@ -596,6 +740,7 @@ const Messages = () => {
       }
       const { memberIds } = await res.json();
       setConversations((prev) => prev.filter((c) => c.id !== chat.id));
+      dispatch(removeConversation(chat.id));
       if (selectedChat?.id === chat.id) {
         setSelectedChat(null);
         setShowChatList(true);
@@ -643,6 +788,7 @@ const Messages = () => {
     onClose: () => { setSelectedChat(null); setConversations(dropStaleDrafts); },
     onViewProfile: handleViewProfile,
     onViewGroupMembers: handleViewGroupMembers,
+    onAddMember: handleAddMember,
   } : null;
 
   return (
@@ -780,6 +926,10 @@ const Messages = () => {
           onChangeAvatar={handleChangeAvatar}
           onAddMember={handleAddMember}
           onScheduleClass={handleOpenScheduleForExistingGroup}
+          onRemoveMember={handleRemoveMember}
+          pendingClassConfirm={pendingClassConfirm}
+          onConfirmAddToClass={handleConfirmAddToClass}
+          onCancelAddToClass={handleCancelAddToClass}
         />
       )}
 

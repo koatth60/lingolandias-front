@@ -3,8 +3,10 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
 import send from "../../assets/logos/send.png";
-import { BsEmojiSmile, BsThreeDots } from "react-icons/bs";
-import { FiVideo, FiChevronLeft, FiEdit2, FiX, FiPaperclip, FiDownload, FiFile, FiMusic, FiFileText, FiCornerUpLeft, FiArrowDown, FiUsers, FiPhoneMissed } from "react-icons/fi";
+import { BsEmojiSmile, BsThreeDots, BsType, BsTypeBold, BsTypeItalic, BsTypeStrikethrough, BsCodeSlash } from "react-icons/bs";
+import { FiVideo, FiChevronLeft, FiEdit2, FiX, FiPaperclip, FiDownload, FiFile, FiMusic, FiFileText, FiCornerUpLeft, FiArrowDown, FiUsers, FiPhoneMissed, FiUserPlus, FiUserMinus, FiLogOut } from "react-icons/fi";
+
+const SYSTEM_MESSAGE_TYPES = ["member_added", "member_removed", "member_left", "group_renamed"];
 import { FaComments } from "react-icons/fa";
 import PerfectScrollbar from "react-perfect-scrollbar";
 import "react-perfect-scrollbar/dist/css/styles.css";
@@ -16,6 +18,9 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import useConversationChat from "../../hooks/useConversationChat.js";
 import useChatInputHandler from "../../hooks/useChatInputHandler.js";
+import useUserSearch from "../../hooks/useUserSearch.js";
+import Swal from "sweetalert2";
+import { renderInlineFormatting } from "../../utils/inlineFormatting.jsx";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB
@@ -46,6 +51,7 @@ const ChatWindowComponent = ({
   onClose,
   onViewProfile,
   onViewGroupMembers,
+  onAddMember,
 }) => {
   const { t, i18n } = useTranslation();
   const scrollContainerRef = useRef(null);
@@ -68,7 +74,17 @@ const ChatWindowComponent = ({
   const [isUploading, setIsUploading] = useState(false);
   const [roomMembers, setRoomMembers] = useState([]);
   const [roomMembersLoaded, setRoomMembersLoaded] = useState(false);
+  // Actual persistent group roster for @ mentions — NOT roomMembers above,
+  // which is live socket-room presence (who's currently connected), not who
+  // actually belongs to this conversation. DM chats don't get an @ picker;
+  // mentioning the one other person in a 1:1 is redundant.
+  const [mentionCandidates, setMentionCandidates] = useState([]);
+  const [mentionQuery, setMentionQuery] = useState(null);
+  const [mentionStartPos, setMentionStartPos] = useState(null);
+  const [mentionActiveIndex, setMentionActiveIndex] = useState(0);
   const [replyTo, setReplyTo] = useState(null);
+  const [showFormatMenu, setShowFormatMenu] = useState(false);
+  const [stagedFiles, setStagedFiles] = useState([]);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const [newMsgCount, setNewMsgCount] = useState(0);
   // Image lightbox
@@ -96,6 +112,128 @@ const ChatWindowComponent = ({
         socket.emit("stopTyping", { room });
       }, 2000);
     }
+    updateMentionState(e.target.value, e.target.selectionStart);
+  };
+
+  // Finds the @-token the cursor is currently sitting inside of, if any —
+  // e.g. typing "hey @car" opens the picker with query "car"; a space (or
+  // moving the cursor away) closes it. The char right before "@" must be
+  // whitespace/start-of-line so "user@domain.com" never triggers it.
+  const updateMentionState = (text, cursorPos) => {
+    const upToCursor = text.slice(0, cursorPos);
+    const at = upToCursor.lastIndexOf("@");
+    if (at === -1 || (at > 0 && !/\s/.test(upToCursor[at - 1]))) {
+      setMentionQuery(null);
+      return;
+    }
+    const query = upToCursor.slice(at + 1);
+    if (/\s/.test(query)) {
+      setMentionQuery(null);
+      return;
+    }
+    setMentionStartPos(at);
+    setMentionQuery(query);
+    setMentionActiveIndex(0);
+  };
+
+  // Non-member search — lets a mention reach (and, on confirm, add) someone
+  // who isn't in the group yet, not just people already in mentionCandidates.
+  // Backend only notifies mentionedUserIds that are actual current members
+  // (see extractMentionedUserIds in videocalls.gateaway.ts), so adding them
+  // on confirm isn't just a courtesy — it's what makes the mention real.
+  const { results: nonMemberSearchResults } = useUserSearch(
+    chatType === "group" ? mentionQuery : null,
+    userId
+  );
+
+  const filteredMentionCandidates = mentionQuery === null
+    ? []
+    : (() => {
+        const memberIds = new Set(mentionCandidates.map((m) => m.id));
+        const memberMatches = mentionCandidates
+          .filter((m) => m.name.toLowerCase().includes(mentionQuery.toLowerCase()))
+          .map((m) => ({ ...m, isMember: true }));
+        const nonMemberMatches = nonMemberSearchResults
+          .filter((u) => !memberIds.has(u.id))
+          .map((u) => ({
+            id: u.id,
+            name: `${u.name || ""} ${u.lastName || ""}`.trim(),
+            firstName: u.name,
+            lastName: u.lastName,
+            role: u.role,
+            isMember: false,
+          }));
+        return [...memberMatches, ...nonMemberMatches].slice(0, 6);
+      })();
+
+  const insertMentionToken = (candidate) => {
+    const before = message.slice(0, mentionStartPos);
+    const after = message.slice(mentionStartPos + 1 + (mentionQuery?.length || 0));
+    const token = `@[${candidate.name}](${candidate.id}) `;
+    const next = `${before}${token}${after}`;
+    setMessage(next);
+    // Put the cursor right after the inserted token, not at the end of the
+    // message — matters once there's text after the mention (e.g. inserting
+    // a mid-sentence mention someone edited their way back into).
+    requestAnimationFrame(() => {
+      const ta = textareaRef.current;
+      if (!ta) return;
+      const pos = before.length + token.length;
+      ta.focus();
+      ta.setSelectionRange(pos, pos);
+    });
+  };
+
+  const insertMention = (candidate) => {
+    if (mentionStartPos === null) return;
+    setMentionQuery(null);
+    setMentionStartPos(null);
+
+    if (candidate.isMember === false) {
+      Swal.fire({
+        title: t("messagesExtra.mentionAddNotMemberTitle", { name: candidate.name }),
+        text: t("messagesExtra.mentionAddNotMemberWarning", { name: candidate.name }),
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: t("messagesExtra.mentionAddConfirm"),
+        cancelButtonText: t("messagesExtra.cancel"),
+        confirmButtonColor: "#9E2FD0",
+      }).then(({ isConfirmed }) => {
+        if (!isConfirmed) return;
+        insertMentionToken(candidate);
+        onAddMember?.(
+          { id: candidate.id, name: candidate.firstName, lastName: candidate.lastName, role: candidate.role },
+          true
+        );
+      });
+      return;
+    }
+
+    insertMentionToken(candidate);
+  };
+
+  const handleMentionKeyDown = (e) => {
+    if (mentionQuery === null || !filteredMentionCandidates.length) return false;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setMentionActiveIndex((i) => (i + 1) % filteredMentionCandidates.length);
+      return true;
+    }
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setMentionActiveIndex((i) => (i - 1 + filteredMentionCandidates.length) % filteredMentionCandidates.length);
+      return true;
+    }
+    if (e.key === "Enter" || e.key === "Tab") {
+      e.preventDefault();
+      insertMention(filteredMentionCandidates[mentionActiveIndex]);
+      return true;
+    }
+    if (e.key === "Escape") {
+      setMentionQuery(null);
+      return true;
+    }
+    return false;
   };
 
   // ── Typing listeners ──
@@ -152,7 +290,7 @@ const ChatWindowComponent = ({
       setMessage("");
       setEditingMsg(null);
     } else {
-      if (!message.trim()) return;
+      if (!message.trim() && stagedFiles.length === 0) return;
       // First message on a brand-new DM: nothing was ever persisted just from
       // opening the chat (Teams doesn't do that either) — create the real
       // conversation only now, at send time.
@@ -161,7 +299,10 @@ const ChatWindowComponent = ({
         targetRoom = await onResolveDraft();
         if (!targetRoom) return;
       }
-      sendMessage(message, replyTo ? { id: replyTo.id, message: replyTo.message, username: replyTo.username } : undefined, undefined, targetRoom);
+      if (stagedFiles.length > 0) await sendStagedFiles(targetRoom);
+      if (message.trim()) {
+        sendMessage(message, replyTo ? { id: replyTo.id, message: replyTo.message, username: replyTo.username } : undefined, undefined, targetRoom);
+      }
       setMessage("");
       setReplyTo(null);
       const ta = textareaRef.current;
@@ -173,33 +314,108 @@ const ChatWindowComponent = ({
     }
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSendMessage(); }
+  // Slack-style single-char delimiters — *bold*, _italic_, ~strike~, `code` —
+  // wraps the current selection, or (nothing selected) drops the cursor
+  // between an empty pair so typing continues inside it.
+  const wrapSelection = (delimiter) => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const selected = message.slice(start, end);
+    const before = message.slice(0, start);
+    const after = message.slice(end);
+    const next = `${before}${delimiter}${selected}${delimiter}${after}`;
+    setMessage(next);
+    requestAnimationFrame(() => {
+      ta.focus();
+      if (selected) {
+        ta.setSelectionRange(start, start + delimiter.length * 2 + selected.length);
+      } else {
+        const pos = start + delimiter.length;
+        ta.setSelectionRange(pos, pos);
+      }
+    });
   };
 
-  // ── File upload ──
-  const handleFileSelect = async (e) => {
-    const file = e.target.files[0];
-    if (!file || !socket || !room) return;
+  const handleKeyDown = (e) => {
+    if (handleMentionKeyDown(e)) return;
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSendMessage(); }
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === "b") { e.preventDefault(); wrapSelection("*"); }
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === "i") { e.preventDefault(); wrapSelection("_"); }
+  };
+
+  // ── File staging (attach/paste, then Send) ──
+  // Picking or pasting a file stages it as a thumbnail above the composer —
+  // like chatWindow.jsx's existing single-file "ready to send" preview, but
+  // for several files at once, all going out together on the next Send tap
+  // instead of firing off as its own message the instant it's picked.
+  const addStagedFile = (file) => {
+    if (!file) return;
     if (file.size > MAX_FILE_BYTES) {
       alert(t("chatWindow.fileTooBig"));
-      e.target.value = "";
       return;
     }
+    setStagedFiles((prev) => [
+      ...prev,
+      {
+        id: `${Date.now()}-${Math.random()}`,
+        file,
+        previewUrl: file.type.startsWith("image/") ? URL.createObjectURL(file) : null,
+        name: file.name,
+      },
+    ]);
+  };
+
+  const removeStagedFile = (id) => {
+    setStagedFiles((prev) => {
+      const target = prev.find((f) => f.id === id);
+      if (target?.previewUrl) URL.revokeObjectURL(target.previewUrl);
+      return prev.filter((f) => f.id !== id);
+    });
+  };
+
+  const handleFileSelect = (e) => {
+    Array.from(e.target.files).forEach(addStagedFile);
+    e.target.value = "";
+  };
+
+  // Ctrl/Cmd+V a screenshot or a copied image straight into the composer —
+  // stages it the same way picking one via the paperclip button does.
+  const handlePaste = (e) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of items) {
+      if (item.type.startsWith("image/")) {
+        const file = item.getAsFile();
+        if (file) {
+          e.preventDefault();
+          addStagedFile(file);
+        }
+        return;
+      }
+    }
+  };
+
+  // Uploads every staged file and sends each as its own message — routed
+  // through sendMessage() (see handleSendMessage) for the same optimistic
+  // local placeholder a typed message gets, instead of only appearing after
+  // the round trip back from the server's broadcast.
+  const sendStagedFiles = async (targetRoom) => {
     setIsUploading(true);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const res = await axios.post(`${BACKEND_URL}/upload/chat-upload`, formData);
-      const fileUrl = res.data.fileUrl;
-      socket.emit("sendConversationMessage", {
-        conversationId: room, senderId: userId, username, email, avatarUrl: userUrl || null, message: "", fileUrl,
-      });
+      for (const staged of stagedFiles) {
+        const formData = new FormData();
+        formData.append("file", staged.file);
+        const res = await axios.post(`${BACKEND_URL}/upload/chat-upload`, formData);
+        sendMessage("", undefined, res.data.fileUrl, targetRoom);
+        if (staged.previewUrl) URL.revokeObjectURL(staged.previewUrl);
+      }
     } catch (err) {
       console.error("File upload failed:", err);
     } finally {
       setIsUploading(false);
-      e.target.value = "";
+      setStagedFiles([]);
     }
   };
 
@@ -332,6 +548,26 @@ const ChatWindowComponent = ({
   }, [room, chatType, otherUserId, userId]);
 
   useEffect(() => {
+    setMentionCandidates([]);
+    if (chatType !== "group" || !room) return;
+    let cancelled = false;
+    fetch(`${BACKEND_URL}/conversations/${room}/members?userId=${userId}`, {
+      headers: localStorage.getItem("token") ? { Authorization: `Bearer ${localStorage.getItem("token")}` } : {},
+    })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((members) => {
+        if (cancelled) return;
+        setMentionCandidates(
+          (members || [])
+            .filter((m) => m.id !== userId)
+            .map((m) => ({ id: m.id, name: `${m.name || ""} ${m.lastName || ""}`.trim() }))
+        );
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [room, chatType, userId]);
+
+  useEffect(() => {
     if (!socket || chatType !== "dm") return;
     const handleConversationRead = (data) => {
       if (data.conversationId !== room || data.userId !== otherUserId) return;
@@ -411,26 +647,64 @@ const ChatWindowComponent = ({
     return `hsl(${Math.abs(h) % 360}, 60%, 52%)`;
   };
 
-  const formatMessageWithLinks = (text) => {
+  // @[Display Name](userId) markup inserted by the @ mention picker — render
+  // as a styled chip instead of raw text, matching useMessageFormatter's
+  // convention (this component keeps its own copy since it never reads
+  // through that hook).
+  const mentionRegex = /@\[([^\]]+)\]\(([0-9a-f-]{36})\)/g;
+
+  // Reply-quote previews are plain text (no chip rendering), so mention
+  // markup needs to collapse to "@Name" instead of showing raw text.
+  const stripMentionMarkup = (text) => (text || "").replace(/@\[([^\]]+)\]\([0-9a-f-]{36}\)/g, "@$1");
+
+  // "X added Y" system messages read as a mention of Y — style their name
+  // as the same @chip a real mention gets, instead of plain text. Works off
+  // the already-translated sentence (find where the raw name landed after
+  // interpolation) so the surrounding "added"/"removed" wording stays
+  // localized without a translation-key restructure.
+  const renderSystemTextWithTag = (translatedText, targetName) => {
+    if (!targetName) return translatedText;
+    const idx = translatedText.indexOf(targetName);
+    if (idx === -1) return translatedText;
+    return (
+      <>
+        {translatedText.slice(0, idx)}
+        <span className="font-semibold rounded px-1" style={{ background: "rgba(158,47,208,0.15)", color: "inherit" }}>
+          @{targetName}
+        </span>
+        {translatedText.slice(idx + targetName.length)}
+      </>
+    );
+  };
+
+  const formatMessageWithLinks = (text, isSender, currentUserId) => {
     if (!text) return text;
-    const parts = [];
-    let lastIndex = 0;
-    const regex = /https?:\/\/[^\s]+/g;
-    let match;
-    while ((match = regex.exec(text)) !== null) {
-      if (match.index > lastIndex) parts.push(text.slice(lastIndex, match.index));
-      parts.push(
-        <a key={match.index} href={match[0]} target="_blank" rel="noopener noreferrer"
-          className="underline break-all hover:opacity-80 transition-opacity"
-          style={{ color: "inherit", textDecorationColor: "rgba(255,255,255,0.6)" }}
-          onClick={(e) => e.stopPropagation()}>
-          {match[0]}
-        </a>
-      );
-      lastIndex = regex.lastIndex;
-    }
-    if (lastIndex < text.length) parts.push(text.slice(lastIndex));
-    return parts.length > 0 ? parts : text;
+    let mentionKey = 0;
+    return text.split(mentionRegex).map((part, i, arr) => {
+      // matchAll-via-split alternates: text, name, id, text, name, id, ...
+      if (i % 3 === 1) {
+        const name = part;
+        const id = arr[i + 1];
+        const isMe = id === currentUserId;
+        return (
+          <span
+            key={`mention-${mentionKey++}`}
+            className="font-semibold rounded px-1"
+            style={
+              isMe
+                ? { background: "rgba(246,184,46,0.35)", color: "inherit" }
+                : isSender
+                ? { background: "rgba(255,255,255,0.25)", color: "inherit" }
+                : { background: "rgba(158,47,208,0.15)", color: "inherit" }
+            }
+          >
+            @{name}
+          </span>
+        );
+      }
+      if (i % 3 === 2) return null; // the id half of the pair above, already consumed
+      return renderInlineFormatting(part, `fmt-${i}`, "underline break-all hover:opacity-80 transition-opacity");
+    });
   };
 
   const extractLegacyFileUrl = (text) => {
@@ -573,13 +847,61 @@ const ChatWindowComponent = ({
               const effectiveFileUrl = msg.fileUrl || legacyFileUrl;
               const effectiveMessage = legacyFileUrl ? "" : msg.message;
               const hasContent = effectiveFileUrl || effectiveMessage?.trim();
-              if (!hasContent) return null;
+              const isSystemMessage = SYSTEM_MESSAGE_TYPES.includes(msg.messageType);
+              if (!hasContent && !isSystemMessage) return null;
               const isFirstFromUser = index === 0 || msg.email !== prev.email;
               const showUsername = !isSender && isFirstFromUser;
               const initials = getInitials(msg.username);
               const avatarColor = generateColor(msg.username);
               const isImageOnly = !!(effectiveFileUrl && !effectiveMessage?.trim() && isImageUrl(effectiveFileUrl));
               const isFileOnly = !!(effectiveFileUrl && !effectiveMessage?.trim() && !isImageUrl(effectiveFileUrl));
+
+              if (isSystemMessage) {
+                const meta = msg.metadata || {};
+                let icon = <FiUsers size={12} className="text-gray-400 flex-shrink-0" />;
+                let text = "";
+                if (msg.messageType === "member_added") {
+                  icon = <FiUserPlus size={12} className="text-[#26D9A1] flex-shrink-0" />;
+                  text = renderSystemTextWithTag(
+                    t("messagesExtra.systemMemberAdded", { actor: msg.username, target: meta.targetName }),
+                    meta.targetName
+                  );
+                } else if (msg.messageType === "member_removed") {
+                  icon = <FiUserMinus size={12} className="text-red-400 flex-shrink-0" />;
+                  text = renderSystemTextWithTag(
+                    t("messagesExtra.systemMemberRemoved", { actor: msg.username, target: meta.targetName }),
+                    meta.targetName
+                  );
+                } else if (msg.messageType === "member_left") {
+                  icon = <FiLogOut size={12} className="text-gray-400 flex-shrink-0" />;
+                  text = t("messagesExtra.systemMemberLeft", { actor: msg.username });
+                } else if (msg.messageType === "group_renamed") {
+                  icon = <FiEdit2 size={12} className="text-[#9E2FD0] flex-shrink-0" />;
+                  text = t("messagesExtra.systemGroupRenamed", { actor: msg.username, oldName: meta.oldName, newName: meta.newName });
+                }
+                return (
+                  <div key={index}>
+                    {showTimestamp && (
+                      <div className="flex items-center gap-3 my-5">
+                        <div className="flex-1 h-px bg-[#9E2FD0]/15 dark:bg-white/10" />
+                        <span className="text-[10px] font-semibold text-[#9E2FD0] dark:text-purple-300
+                                       px-3 py-1 rounded-full bg-[#9E2FD0]/[0.06] dark:bg-black/40
+                                       backdrop-blur-sm border border-[#9E2FD0]/15 dark:border-white/10"
+                                       style={{ boxShadow: "0 1px 4px rgba(158,47,208,0.08)" }}>
+                          {formatTimestamp(msg.timestamp)}
+                        </span>
+                        <div className="flex-1 h-px bg-[#9E2FD0]/15 dark:bg-white/10" />
+                      </div>
+                    )}
+                    <li className="flex justify-center my-1">
+                      <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-100 dark:bg-white/5">
+                        {icon}
+                        <span className="text-[11px] text-gray-500 dark:text-gray-400">{text}</span>
+                      </div>
+                    </li>
+                  </div>
+                );
+              }
 
               if (msg.messageType === "missed_call") {
                 return (
@@ -697,13 +1019,13 @@ const ChatWindowComponent = ({
                           {msg.replyTo && (
                             <div className="mb-2 pl-2 border-l-2 border-white/50 rounded bg-white/10 text-xs" style={{ padding: "4px 6px" }}>
                               <p className="font-semibold text-[10px] mb-0.5 text-white/80">{msg.replyTo.username}</p>
-                              <p className="line-clamp-2 text-[11px] text-white/70">{msg.replyTo.message}</p>
+                              <p className="line-clamp-2 text-[11px] text-white/70">{stripMentionMarkup(msg.replyTo.message)}</p>
                             </div>
                           )}
                           {effectiveFileUrl && renderFile(effectiveFileUrl, true)}
                           {effectiveMessage?.trim() && (
                             <p className="text-white" style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-                              {formatMessageWithLinks(effectiveMessage)}
+                              {formatMessageWithLinks(effectiveMessage, true, userId)}
                               {msg.editedAt && <span className="text-[10px] text-white/60 ml-1">({t("chatWindow.edited")})</span>}
                             </p>
                           )}
@@ -748,13 +1070,13 @@ const ChatWindowComponent = ({
                             {msg.replyTo && (
                               <div className="mb-2 pl-2 border-l-2 border-[#9E2FD0]/60 rounded bg-[#9E2FD0]/5 dark:bg-white/5 text-xs" style={{ padding: "4px 6px" }}>
                                 <p className="font-semibold text-[10px] mb-0.5 text-[#9E2FD0] dark:text-purple-300">{msg.replyTo.username}</p>
-                                <p className="line-clamp-2 text-[11px] text-gray-500 dark:text-gray-400">{msg.replyTo.message}</p>
+                                <p className="line-clamp-2 text-[11px] text-gray-500 dark:text-gray-400">{stripMentionMarkup(msg.replyTo.message)}</p>
                               </div>
                             )}
                             {effectiveFileUrl && renderFile(effectiveFileUrl, false)}
                             {effectiveMessage?.trim() && (
                               <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-                                {formatMessageWithLinks(effectiveMessage)}
+                                {formatMessageWithLinks(effectiveMessage, false, userId)}
                                 {msg.editedAt && <span className="text-[10px] text-gray-400 dark:text-gray-500 ml-1">({t("chatWindow.edited")})</span>}
                               </p>
                             )}
@@ -826,6 +1148,64 @@ const ChatWindowComponent = ({
       <div className="relative flex-shrink-0 px-3 sm:px-5 py-3 z-10
                       bg-white dark:bg-black/40 backdrop-blur-xl
                       border-t border-gray-200 dark:border-white/10 transition-colors duration-300">
+        {/* @ mention picker — anchored above the input like the emoji picker
+            below; full-width on phones (no left/right inset) instead of a
+            narrow floating box, since a cramped list is hard to tap accurately. */}
+        {mentionQuery !== null && filteredMentionCandidates.length > 0 && (
+          <div className="absolute bottom-full left-0 right-0 sm:left-3 sm:right-auto sm:w-64 mb-2 z-20 px-3 sm:px-0">
+            <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-white/10 shadow-xl bg-white dark:bg-[#1a1a2e] max-h-56 overflow-y-auto">
+              {filteredMentionCandidates.map((candidate, i) => (
+                <button
+                  key={candidate.id}
+                  onClick={() => insertMention(candidate)}
+                  className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors ${
+                    i === mentionActiveIndex
+                      ? "bg-[#9E2FD0]/10 dark:bg-[#9E2FD0]/20"
+                      : "hover:bg-gray-50 dark:hover:bg-white/5"
+                  }`}
+                >
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[11px] font-bold flex-shrink-0"
+                    style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}>
+                    {candidate.name.slice(0, 1).toUpperCase()}
+                  </div>
+                  <span className="text-sm text-gray-800 dark:text-white truncate flex-1">{candidate.name}</span>
+                  {candidate.isMember === false && (
+                    <span className="flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-md flex-shrink-0
+                                     bg-[#F6B82E]/15 text-[#d4a017] dark:text-[#F6B82E]">
+                      <FiUserPlus size={10} />
+                      {t("messagesExtra.addPeople")}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        {/* Staged files — attached/pasted, waiting on the next Send tap */}
+        {stagedFiles.length > 0 && (
+          <div className="flex items-center gap-2 mb-2 overflow-x-auto pb-1">
+            {stagedFiles.map((f) => (
+              <div key={f.id} className="relative flex-shrink-0">
+                {f.previewUrl ? (
+                  <img src={f.previewUrl} alt={f.name}
+                    className="w-14 h-14 rounded-lg object-cover border border-gray-200 dark:border-white/10" />
+                ) : (
+                  <div className="w-14 h-14 rounded-lg flex flex-col items-center justify-center gap-0.5 px-1
+                                  bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10">
+                    <FiFile size={16} className="text-gray-400" />
+                    <span className="text-[8px] text-gray-500 dark:text-gray-400 truncate w-full text-center">{f.name}</span>
+                  </div>
+                )}
+                <button
+                  onClick={() => removeStagedFile(f.id)}
+                  className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-gray-800 text-white
+                             flex items-center justify-center shadow hover:bg-red-500 transition-colors">
+                  <FiX size={11} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
         {/* Editing banner */}
         {editingMsg && (
           <div className="flex items-center justify-between gap-2 px-3 py-1.5 mb-2 rounded-lg
@@ -848,7 +1228,7 @@ const ChatWindowComponent = ({
               <FiCornerUpLeft size={12} className="text-[#9E2FD0] flex-shrink-0" />
               <div className="min-w-0">
                 <p className="text-[10px] font-semibold text-[#9E2FD0] dark:text-purple-300">{replyTo.username}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{replyTo.message}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{stripMentionMarkup(replyTo.message)}</p>
               </div>
             </div>
             <button onClick={() => setReplyTo(null)} className="text-gray-400 hover:text-gray-600 flex-shrink-0">
@@ -857,29 +1237,40 @@ const ChatWindowComponent = ({
           </div>
         )}
 
-        <div className="flex items-end gap-2 bg-gray-50 dark:bg-black/40 rounded-2xl px-3 py-2
+        <div className="flex items-end gap-1.5 bg-gray-50 dark:bg-black/40 rounded-2xl px-3 py-2
                         border border-gray-200 dark:border-white/10
                         focus-within:border-purple-400 dark:focus-within:border-purple-500/50
                         transition-colors duration-200">
 
-          {/* Emoji button */}
-          <button onClick={() => setShowEmojiPicker((p) => !p)}
-            className="flex-shrink-0 p-1.5 rounded-lg self-end mb-0.5
-                       text-gray-500 dark:text-gray-400
-                       hover:text-amber-600 dark:hover:text-amber-400 transition-colors duration-150">
-            <BsEmojiSmile size={19} />
-          </button>
+          <div className="flex items-center gap-0.5 flex-shrink-0 self-end mb-0.5">
+            {/* Emoji button */}
+            <button onClick={() => { setShowEmojiPicker((p) => !p); setShowFormatMenu(false); }}
+              className="p-1 rounded-lg text-gray-500 dark:text-gray-400
+                         hover:text-amber-600 dark:hover:text-amber-400 transition-colors duration-150">
+              <BsEmojiSmile size={18} />
+            </button>
 
-          {/* File button */}
-          <button onClick={() => fileInputRef.current?.click()} disabled={isUploading}
-            className="flex-shrink-0 p-1.5 rounded-lg self-end mb-0.5
-                       text-gray-500 dark:text-gray-400
-                       hover:text-purple-600 dark:hover:text-purple-400
-                       disabled:opacity-40 transition-colors duration-150" title="Attach file">
-            <FiPaperclip size={18} className={isUploading ? "animate-pulse" : ""} />
-          </button>
-          <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileSelect}
-            accept="image/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip" />
+            {/* Text format button — one icon instead of 4 separate ones so the
+                input row stays usable on narrow phone screens. */}
+            <button
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => { setShowFormatMenu((p) => !p); setShowEmojiPicker(false); }}
+              title={t("chatWindow.formatText")}
+              className="p-1 rounded-lg text-gray-500 dark:text-gray-400
+                         hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-150">
+              <BsType size={17} />
+            </button>
+
+            {/* File button */}
+            <button onClick={() => fileInputRef.current?.click()} disabled={isUploading}
+              className="p-1 rounded-lg text-gray-500 dark:text-gray-400
+                         hover:text-purple-600 dark:hover:text-purple-400
+                         disabled:opacity-40 transition-colors duration-150" title="Attach file">
+              <FiPaperclip size={17} className={isUploading ? "animate-pulse" : ""} />
+            </button>
+            <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileSelect}
+              accept="image/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip" />
+          </div>
 
           {/* Textarea */}
           <textarea
@@ -888,6 +1279,7 @@ const ChatWindowComponent = ({
             value={message}
             onChange={handleInputWithTyping}
             onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
             rows={1}
             className="flex-1 bg-transparent resize-none outline-none
                        text-sm text-gray-900 dark:text-white
@@ -897,14 +1289,14 @@ const ChatWindowComponent = ({
           />
 
           {/* Send button */}
-          <button onClick={handleSendMessage} disabled={!message.trim()}
+          <button onClick={handleSendMessage} disabled={!message.trim() && stagedFiles.length === 0}
             className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center
                        self-end transition-all duration-150
                        disabled:opacity-30 disabled:cursor-not-allowed
                        hover:scale-105 active:scale-95 text-white"
             style={{
-              background: message.trim() ? "linear-gradient(135deg, #9E2FD0, #7b22a8)" : "#9E2FD0",
-              opacity: message.trim() ? 1 : 0.3,
+              background: (message.trim() || stagedFiles.length > 0) ? "linear-gradient(135deg, #9E2FD0, #7b22a8)" : "#9E2FD0",
+              opacity: (message.trim() || stagedFiles.length > 0) ? 1 : 0.3,
             }}>
             <img src={send} alt="send" className="w-4 h-4 brightness-200" />
           </button>
@@ -915,6 +1307,32 @@ const ChatWindowComponent = ({
             <div className="bg-white dark:bg-[#1a1a2e] rounded-2xl
                           border border-gray-200 dark:border-white/10 overflow-hidden shadow-xl">
               <EmojiPicker onEmojiClick={handleEmojiClick} />
+            </div>
+          </div>
+        )}
+
+        {showFormatMenu && (
+          <div className="absolute bottom-full left-3 mb-2 z-20">
+            <div className="flex items-center gap-1 p-1.5 rounded-xl bg-white dark:bg-[#1a1a2e]
+                            border border-gray-200 dark:border-white/10 shadow-xl">
+              {[
+                { delimiter: "*", icon: BsTypeBold, label: t("chatWindow.formatBold") },
+                { delimiter: "_", icon: BsTypeItalic, label: t("chatWindow.formatItalic") },
+                { delimiter: "~", icon: BsTypeStrikethrough, label: t("chatWindow.formatStrike") },
+                { delimiter: "`", icon: BsCodeSlash, label: t("chatWindow.formatCode") },
+              ].map(({ delimiter, icon: Icon, label }) => (
+                <button
+                  key={delimiter}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => wrapSelection(delimiter)}
+                  title={label}
+                  className="p-2 rounded-lg text-gray-600 dark:text-gray-300
+                             hover:text-purple-600 dark:hover:text-purple-400
+                             hover:bg-purple-50 dark:hover:bg-white/10 transition-colors"
+                >
+                  <Icon size={16} />
+                </button>
+              ))}
             </div>
           </div>
         )}

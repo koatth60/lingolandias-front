@@ -4,11 +4,12 @@ import dayjs from "dayjs";
 import isToday from "dayjs/plugin/isToday";
 import isTomorrow from "dayjs/plugin/isTomorrow";
 import { FiCalendar, FiClock, FiVideo } from "react-icons/fi";
+import EventActionsMenu from "./EventActionsMenu";
 
 dayjs.extend(isToday);
 dayjs.extend(isTomorrow);
 
-const MobileClassList = ({ events, onEventClick, user }) => {
+const MobileClassList = ({ events, onEventClick, onEditTime, onManageParticipants, user }) => {
   const { t, i18n } = useTranslation();
 
   // Group events by day, sorted chronologically, only future events
@@ -72,8 +73,8 @@ const MobileClassList = ({ events, onEventClick, user }) => {
                   ev.start > new Date();
 
                 return (
+                  <div key={`${ev.eventId}-${i}`} className="relative">
                   <button
-                    key={`${ev.eventId}-${i}`}
                     onClick={() => onEventClick(ev)}
                     className="w-full text-left rounded-xl p-3.5 transition-all duration-150 active:scale-[0.98]
                                border border-gray-200 dark:border-white/10
@@ -151,22 +152,35 @@ const MobileClassList = ({ events, onEventClick, user }) => {
                         </div>
                       </div>
 
-                      {/* Join icon */}
-                      <div
-                        className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center"
-                        style={{
-                          background: isNow
-                            ? "linear-gradient(135deg, #26D9A1, #1fa07a)"
-                            : "linear-gradient(135deg, #9E2FD0, #7b22a8)",
-                          boxShadow: isNow
-                            ? "0 2px 8px rgba(38,217,161,0.35)"
-                            : "0 2px 8px rgba(158,47,208,0.25)",
-                        }}
-                      >
-                        <FiVideo size={14} className="text-white" />
+                      {/* Join icon + (teachers) the "..." menu, stacked so
+                          neither one has to float over the other — this used
+                          to be a separate absolutely-positioned corner overlay
+                          that visibly collided with this same button. */}
+                      <div className="flex-shrink-0 flex flex-col items-center gap-1">
+                        {user.role === "teacher" && (
+                          <EventActionsMenu
+                            alwaysVisible
+                            onEditTime={() => onEditTime(ev)}
+                            onManageParticipants={() => onManageParticipants(ev)}
+                          />
+                        )}
+                        <div
+                          className="w-9 h-9 rounded-xl flex items-center justify-center"
+                          style={{
+                            background: isNow
+                              ? "linear-gradient(135deg, #26D9A1, #1fa07a)"
+                              : "linear-gradient(135deg, #9E2FD0, #7b22a8)",
+                            boxShadow: isNow
+                              ? "0 2px 8px rgba(38,217,161,0.35)"
+                              : "0 2px 8px rgba(158,47,208,0.25)",
+                          }}
+                        >
+                          <FiVideo size={14} className="text-white" />
+                        </div>
                       </div>
                     </div>
                   </button>
+                  </div>
                 );
               })}
             </div>

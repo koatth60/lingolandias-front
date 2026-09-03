@@ -1,5 +1,6 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import "dayjs/locale/es";
 import "dayjs/locale/pl";
@@ -8,6 +9,9 @@ import { InfoCard } from "./InfoCard";
 import { UpcomingClass } from "./UpcomingClass";
 import { getNextClasses } from "../../data/helpers";
 import { handleJoinClass } from "../../data/joinClassHandler";
+import { setStudentSchedules, setTeacherSchedules, setStudentTeacher } from "../../redux/userSlice";
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const LANGUAGE_TIPS = [
   { lang: "Spanish",  word: "Perseverancia", meaning: "Perseverance",   sentence: "La perseverancia es la clave del éxito." },
@@ -50,13 +54,44 @@ const UserHomePage = () => {
   const user = useSelector((state) => state.user.userInfo.user);
   const nextClasses = getNextClasses(user);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { t, i18n } = useTranslation();
+
+  // "Next Sessions" reads user.teacherSchedules/studentSchedules straight out
+  // of Redux, which is only ever set at login (or via a live socket event
+  // that requires the Schedule page to be mounted to catch — see
+  // schedule.jsx). A class renamed/regrouped from Messages while this user
+  // never had Schedule open left this card showing the old raw name
+  // forever. schedule.jsx already solved this exact problem for itself with
+  // a mount-time refetch — mirrored here so Home is just as fresh.
+  useEffect(() => {
+    if (!user?.id) return;
+    const token = localStorage.getItem("token");
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    if (user.role === "user") {
+      fetch(`${BACKEND_URL}/users/student-profile/${user.id}`, { headers })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (!data) return;
+          if (Array.isArray(data.studentSchedules)) dispatch(setStudentSchedules(data.studentSchedules));
+          dispatch(setStudentTeacher(data.teacher ?? null));
+        })
+        .catch((err) => console.error("Failed to refresh student profile:", err));
+    } else if (user.role === "teacher") {
+      fetch(`${BACKEND_URL}/users/teacher-profile/${user.id}`, { headers })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data && Array.isArray(data.teacherSchedules)) dispatch(setTeacherSchedules(data.teacherSchedules));
+        })
+        .catch((err) => console.error("Failed to refresh teacher profile:", err));
+    }
+  }, [user?.id, user?.role]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Advances once per calendar day (UTC epoch days), cycles through the full tips array
   const tip = LANGUAGE_TIPS[Math.floor(Date.now() / 86400000) % LANGUAGE_TIPS.length];
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+    <main className="max-w-7xl mx-auto px-3 sm:px-6 py-8 space-y-8">
 
       {/* ── Hero banner ── */}
       <section className="relative rounded-2xl overflow-hidden shadow-sm dark:shadow-none" style={{ border: "1px solid rgba(158,47,208,0.12)" }}>
@@ -76,7 +111,7 @@ const UserHomePage = () => {
           className="absolute bottom-[-40px] left-[8%] w-[180px] h-[180px] rounded-full pointer-events-none"
           style={{ background: "radial-gradient(circle, rgba(38,217,161,0.12), transparent 70%)" }}
         />
-        <div className="relative z-10 px-6 sm:px-10 py-10">
+        <div className="relative z-10 px-4 sm:px-10 py-8 sm:py-10">
           <div className="flex items-center gap-2 mb-3">
             <div
               className="w-2 h-2 rounded-full bg-[#26D9A1] flex-shrink-0"
@@ -139,7 +174,7 @@ const UserHomePage = () => {
           />
           <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#9E2FD0] via-[#F6B82E] to-[#26D9A1] opacity-70" />
 
-          <div className="relative z-10 px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center gap-5">
+          <div className="relative z-10 px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center gap-5">
             <div className="flex-shrink-0">
               <p className="text-[10px] font-bold tracking-widest text-[#9E2FD0] uppercase mb-1">
                 {t("home.wordOfDay", { lang: tip.lang })}
@@ -200,17 +235,25 @@ const UserHomePage = () => {
                 user.role === "teacher"
                   ? classSession.nextOccurrence
                   : classSession.occurrence;
+              const otherUserId = user.role === "user" ? user.teacher?.id : classSession.studentId;
+              const otherUserName = user.role === "teacher" ? classSession.studentName : classSession.teacherName;
+              // A group class overrides its title for every viewer, same as
+              // the Calendar page — otherwise this card and the Calendar show
+              // two different names for what's actually the same class.
+              const displayName = classSession.groupName || otherUserName;
               return (
                 <UpcomingClass
                   key={`${classSession.id}-${displayDate.format()}`}
                   time={displayDate.format("h:mm A")}
-                  teacher={
-                    user.role === "teacher"
-                      ? classSession.studentName
-                      : classSession.teacherName
-                  }
+                  teacher={displayName}
                   date={displayDate.locale(i18n.language).format("D MMM")}
                   onJoin={() => handleJoinClass({ user, classSession, navigate })}
+                  onMessage={
+                    otherUserId
+                      ? () => navigate("/messages", { state: { openDmWithUserId: otherUserId, openDmWithName: otherUserName } })
+                      : undefined
+                  }
+                  onViewCalendar={() => navigate("/schedule", { state: { focusDate: displayDate.toISOString() } })}
                 />
               );
             })}

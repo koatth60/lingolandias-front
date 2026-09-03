@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useDispatch } from "react-redux";
 import axios from "axios";
-import { BsEmojiSmile, BsThreeDots } from "react-icons/bs";
-import { FiSend, FiMessageSquare, FiEdit2, FiX, FiPaperclip, FiDownload, FiFile } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
+import { BsEmojiSmile, BsThreeDots, BsType, BsTypeBold, BsTypeItalic, BsTypeStrikethrough, BsCodeSlash } from "react-icons/bs";
+import { FiSend, FiMessageSquare, FiEdit2, FiX, FiPaperclip, FiDownload, FiFile, FiUsers, FiUserPlus, FiUserMinus, FiLogOut } from "react-icons/fi";
 import { FaComments } from "react-icons/fa";
 import EmojiPicker from "emoji-picker-react";
 import MessageOptionsCard from "./MessageOptionsCard";
@@ -9,7 +11,12 @@ import MessageReactions from "./MessageReactions";
 import useConversationChat from "../../hooks/useConversationChat";
 import useDeleteConversationMessage from "../../hooks/useDeleteConversationMessage";
 import { socket } from "../../socket";
+import { activeRoomRef } from "../../state/activeRoom";
+import { clearConversationUnread } from "../../redux/notificationsSlice";
+import { renderInlineFormatting } from "../../utils/inlineFormatting.jsx";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
+const SYSTEM_MESSAGE_TYPES = ["member_added", "member_removed", "member_left", "group_renamed"];
 
 const CallChatWindow = ({
   username,
@@ -20,9 +27,12 @@ const CallChatWindow = ({
   userUrl,
   onClose,
 }) => {
+  const { t } = useTranslation();
+  const dispatch = useDispatch();
 
   const [message, setMessage] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showFormatMenu, setShowFormatMenu] = useState(false);
   const [editingMsg, setEditingMsg] = useState(null);
   const [typingUsers, setTypingUsers] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -51,6 +61,23 @@ const CallChatWindow = ({
   useEffect(() => {
     markConversationRead();
   }, [room, markConversationRead]);
+
+  // Shared with NotificationsListener — a message arriving in the SAME
+  // conversation as this open call chat panel shouldn't ding or bump the
+  // sidebar/tab badge, exactly like an open Messages chat window already
+  // doesn't (see messages.jsx's identical effect).
+  useEffect(() => {
+    activeRoomRef.current = room || null;
+    return () => { activeRoomRef.current = null; };
+  }, [room]);
+
+  // Opening this panel is the "I've read it" moment — clears the shared
+  // unread count immediately (same as messages.jsx's handleChatSelect)
+  // instead of waiting on the server round trip from markConversationRead
+  // above, which is what actually persists lastReadAt.
+  useEffect(() => {
+    if (room) dispatch(clearConversationUnread(room));
+  }, [room, dispatch]);
 
   useEffect(() => {
     if (!room || chatMessages.length === 0) return;
@@ -140,11 +167,37 @@ const CallChatWindow = ({
     }
   };
 
+  // Slack-style single-char delimiters — *bold*, _italic_, ~strike~, `code` —
+  // wraps the current selection, or (nothing selected) drops the cursor
+  // between an empty pair so typing continues inside it.
+  const wrapSelection = (delimiter) => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const selected = message.slice(start, end);
+    const before = message.slice(0, start);
+    const after = message.slice(end);
+    const next = `${before}${delimiter}${selected}${delimiter}${after}`;
+    setMessage(next);
+    requestAnimationFrame(() => {
+      ta.focus();
+      if (selected) {
+        ta.setSelectionRange(start, start + delimiter.length * 2 + selected.length);
+      } else {
+        const pos = start + delimiter.length;
+        ta.setSelectionRange(pos, pos);
+      }
+    });
+  };
+
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
     }
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === "b") { e.preventDefault(); wrapSelection("*"); }
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === "i") { e.preventDefault(); wrapSelection("_"); }
   };
 
   const handleEmojiClick = (emojiObject) => {
@@ -153,8 +206,7 @@ const CallChatWindow = ({
   };
 
   // ── File upload ──
-  const handleFileSelect = async (e) => {
-    const file = e.target.files[0];
+  const uploadAndSendFile = async (file) => {
     if (!file || !socket || !room) return;
     setIsUploading(true);
     try {
@@ -167,7 +219,28 @@ const CallChatWindow = ({
       console.error("File upload failed:", err);
     } finally {
       setIsUploading(false);
-      e.target.value = "";
+    }
+  };
+
+  const handleFileSelect = async (e) => {
+    await uploadAndSendFile(e.target.files[0]);
+    e.target.value = "";
+  };
+
+  // Ctrl/Cmd+V a screenshot or a copied image straight into the composer —
+  // same upload-and-send path as the paperclip button.
+  const handlePaste = (e) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of items) {
+      if (item.type.startsWith("image/")) {
+        const pastedFile = item.getAsFile();
+        if (pastedFile) {
+          e.preventDefault();
+          uploadAndSendFile(pastedFile);
+        }
+        return;
+      }
     }
   };
 
@@ -237,26 +310,58 @@ const CallChatWindow = ({
     return /^https?:\/\/\S*\/chat-uploads\//i.test(trimmed) ? trimmed : null;
   };
 
-  const formatMessageWithLinks = (text) => {
+  // @[Display Name](userId) markup — same convention as ChatWindowComponent's
+  // copy of this formatter. No @ picker lives in the call chat panel, but a
+  // mention sent from Messages still shows up here (same conversation), so it
+  // must still render as a chip instead of raw markup.
+  const mentionRegex = /@\[([^\]]+)\]\(([0-9a-f-]{36})\)/g;
+
+  const formatMessageWithLinks = (text, isSender) => {
     if (!text) return text;
-    const parts = [];
-    let lastIndex = 0;
-    const regex = /https?:\/\/[^\s]+/g;
-    let match;
-    while ((match = regex.exec(text)) !== null) {
-      if (match.index > lastIndex) parts.push(text.slice(lastIndex, match.index));
-      parts.push(
-        <a key={match.index} href={match[0]} target="_blank" rel="noopener noreferrer"
-          className="underline break-all hover:opacity-80 transition-opacity"
-          style={{ color: "inherit", textDecorationColor: "rgba(255,255,255,0.6)" }}
-          onClick={(e) => e.stopPropagation()}>
-          {match[0]}
-        </a>
-      );
-      lastIndex = regex.lastIndex;
-    }
-    if (lastIndex < text.length) parts.push(text.slice(lastIndex));
-    return parts.length > 0 ? parts : text;
+    let mentionKey = 0;
+    return text.split(mentionRegex).map((part, i, arr) => {
+      // matchAll-via-split alternates: text, name, id, text, name, id, ...
+      if (i % 3 === 1) {
+        const name = part;
+        const id = arr[i + 1];
+        const isMe = id === userId;
+        return (
+          <span
+            key={`mention-${mentionKey++}`}
+            className="font-semibold rounded px-1"
+            style={
+              isMe
+                ? { background: "rgba(246,184,46,0.35)", color: "inherit" }
+                : isSender
+                ? { background: "rgba(255,255,255,0.25)", color: "inherit" }
+                : { background: "rgba(158,47,208,0.15)", color: "inherit" }
+            }
+          >
+            @{name}
+          </span>
+        );
+      }
+      if (i % 3 === 2) return null; // the id half of the pair above, already consumed
+      return renderInlineFormatting(part, `fmt-${i}`, "underline break-all hover:opacity-80 transition-opacity");
+    });
+  };
+
+  // "X added Y" system messages read as a mention of Y — style their name as
+  // the same @chip a real mention gets. Works off the already-translated
+  // sentence so the surrounding wording stays localized.
+  const renderSystemTextWithTag = (translatedText, targetName) => {
+    if (!targetName) return translatedText;
+    const idx = translatedText.indexOf(targetName);
+    if (idx === -1) return translatedText;
+    return (
+      <>
+        {translatedText.slice(0, idx)}
+        <span className="font-semibold rounded px-1" style={{ background: "rgba(158,47,208,0.15)", color: "inherit" }}>
+          @{targetName}
+        </span>
+        {translatedText.slice(idx + targetName.length)}
+      </>
+    );
   };
 
   const displayName = chatName || "Group Chat";
@@ -300,7 +405,7 @@ const CallChatWindow = ({
 
       {/* ── Messages ── */}
       <div ref={scrollContainerRef}
-        className={`flex-1 bg-gray-50 dark:bg-black/20 overflow-y-auto ${
+        className={`flex-1 bg-gray-50 dark:bg-black/20 overflow-y-auto overflow-x-hidden ${
           chatMessages.length === 0 ? "flex items-center justify-center" : "p-4 sm:p-5"
         }`}
         style={{ minHeight: 0 }}>
@@ -328,6 +433,50 @@ const CallChatWindow = ({
             const legacyFileUrl = !msg.fileUrl ? extractLegacyFileUrl(msg.message) : null;
             const effectiveFileUrl = msg.fileUrl || legacyFileUrl;
             const effectiveMessage = legacyFileUrl ? "" : msg.message;
+
+            if (SYSTEM_MESSAGE_TYPES.includes(msg.messageType)) {
+              const meta = msg.metadata || {};
+              let icon = <FiUsers size={12} className="text-gray-400 flex-shrink-0" />;
+              let text = "";
+              if (msg.messageType === "member_added") {
+                icon = <FiUserPlus size={12} className="text-[#26D9A1] flex-shrink-0" />;
+                text = renderSystemTextWithTag(
+                  t("messagesExtra.systemMemberAdded", { actor: msg.username, target: meta.targetName }),
+                  meta.targetName
+                );
+              } else if (msg.messageType === "member_removed") {
+                icon = <FiUserMinus size={12} className="text-red-400 flex-shrink-0" />;
+                text = renderSystemTextWithTag(
+                  t("messagesExtra.systemMemberRemoved", { actor: msg.username, target: meta.targetName }),
+                  meta.targetName
+                );
+              } else if (msg.messageType === "member_left") {
+                icon = <FiLogOut size={12} className="text-gray-400 flex-shrink-0" />;
+                text = t("messagesExtra.systemMemberLeft", { actor: msg.username });
+              } else if (msg.messageType === "group_renamed") {
+                icon = <FiEdit2 size={12} className="text-[#9E2FD0] flex-shrink-0" />;
+                text = t("messagesExtra.systemGroupRenamed", { actor: msg.username, oldName: meta.oldName, newName: meta.newName });
+              }
+              return (
+                <div key={index}>
+                  {showTimestamp && (
+                    <div className="flex items-center gap-3 my-4">
+                      <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
+                      <span className="text-[10px] font-medium px-3 py-1 rounded-full text-gray-500 dark:text-gray-400 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10">
+                        {formatTimestamp(msg.timestamp)}
+                      </span>
+                      <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
+                    </div>
+                  )}
+                  <li className="flex justify-center my-1">
+                    <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-100 dark:bg-white/5">
+                      {icon}
+                      <span className="text-[11px] text-gray-500 dark:text-gray-400">{text}</span>
+                    </div>
+                  </li>
+                </div>
+              );
+            }
 
             return (
               <div key={index}>
@@ -383,7 +532,7 @@ const CallChatWindow = ({
                         {effectiveFileUrl && renderFile(effectiveFileUrl, true)}
                         {effectiveMessage && (
                           <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-                            {formatMessageWithLinks(effectiveMessage)}
+                            {formatMessageWithLinks(effectiveMessage, true)}
                             {msg.editedAt && <span className="text-[10px] text-white/60 ml-1">(edited)</span>}
                           </p>
                         )}
@@ -411,7 +560,7 @@ const CallChatWindow = ({
                         {effectiveFileUrl && renderFile(effectiveFileUrl, false)}
                         {effectiveMessage && (
                           <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-                            {formatMessageWithLinks(effectiveMessage)}
+                            {formatMessageWithLinks(effectiveMessage, false)}
                             {msg.editedAt && <span className="text-[10px] text-gray-400 dark:text-gray-500 ml-1">(edited)</span>}
                           </p>
                         )}
@@ -461,20 +610,29 @@ const CallChatWindow = ({
             </button>
           </div>
         )}
-        <div className="flex items-end gap-2 bg-gray-50 dark:bg-white/5 rounded-xl px-3 py-2 border border-gray-200 dark:border-white/10 focus-within:border-[rgba(158,47,208,0.5)] dark:focus-within:border-[rgba(158,47,208,0.4)] transition-colors">
-          {/* Emoji */}
-          <button onClick={() => setShowEmojiPicker((p) => !p)}
-            className="flex-shrink-0 text-gray-400 hover:text-[#F6B82E] transition-colors self-end mb-0.5">
-            <BsEmojiSmile size={18} />
-          </button>
-          {/* File attach */}
-          <button onClick={() => fileInputRef.current?.click()} disabled={isUploading}
-            className="flex-shrink-0 text-gray-400 hover:text-purple-500 disabled:opacity-40 transition-colors self-end mb-0.5"
-            title="Attach file">
-            <FiPaperclip size={17} className={isUploading ? "animate-pulse" : ""} />
-          </button>
-          <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileSelect}
-            accept="image/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip" />
+        <div className="flex items-end gap-1.5 bg-gray-50 dark:bg-white/5 rounded-xl px-3 py-2 border border-gray-200 dark:border-white/10 focus-within:border-[rgba(158,47,208,0.5)] dark:focus-within:border-[rgba(158,47,208,0.4)] transition-colors">
+          <div className="flex items-center gap-0.5 flex-shrink-0 self-end mb-0.5">
+            {/* Emoji */}
+            <button onClick={() => { setShowEmojiPicker((p) => !p); setShowFormatMenu(false); }}
+              className="p-1 text-gray-400 hover:text-[#F6B82E] transition-colors">
+              <BsEmojiSmile size={18} />
+            </button>
+            <button
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => { setShowFormatMenu((p) => !p); setShowEmojiPicker(false); }}
+              title={t("chatWindow.formatText")}
+              className="p-1 text-gray-400 hover:text-purple-500 transition-colors">
+              <BsType size={17} />
+            </button>
+            {/* File attach */}
+            <button onClick={() => fileInputRef.current?.click()} disabled={isUploading}
+              className="p-1 text-gray-400 hover:text-purple-500 disabled:opacity-40 transition-colors"
+              title="Attach file">
+              <FiPaperclip size={16} className={isUploading ? "animate-pulse" : ""} />
+            </button>
+            <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileSelect}
+              accept="image/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip" />
+          </div>
           {/* Textarea */}
           <textarea
             ref={textareaRef}
@@ -482,6 +640,7 @@ const CallChatWindow = ({
             value={message}
             onChange={handleInput}
             onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
             rows={1}
             className="flex-1 bg-transparent resize-none outline-none text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 leading-relaxed py-1"
             style={{ minHeight: "32px", maxHeight: "112px", overflowY: "hidden" }}
@@ -498,6 +657,32 @@ const CallChatWindow = ({
           <div className="absolute bottom-full right-3 mb-2 z-20">
             <div className="rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 shadow-xl">
               <EmojiPicker onEmojiClick={handleEmojiClick} />
+            </div>
+          </div>
+        )}
+
+        {showFormatMenu && (
+          <div className="absolute bottom-full left-3 mb-2 z-20">
+            <div className="flex items-center gap-1 p-1.5 rounded-xl bg-white dark:bg-[#1a1a2e]
+                            border border-gray-200 dark:border-white/10 shadow-xl">
+              {[
+                { delimiter: "*", icon: BsTypeBold, label: t("chatWindow.formatBold") },
+                { delimiter: "_", icon: BsTypeItalic, label: t("chatWindow.formatItalic") },
+                { delimiter: "~", icon: BsTypeStrikethrough, label: t("chatWindow.formatStrike") },
+                { delimiter: "`", icon: BsCodeSlash, label: t("chatWindow.formatCode") },
+              ].map(({ delimiter, icon: Icon, label }) => (
+                <button
+                  key={delimiter}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => wrapSelection(delimiter)}
+                  title={label}
+                  className="p-2 rounded-lg text-gray-600 dark:text-gray-300
+                             hover:text-purple-600 dark:hover:text-purple-400
+                             hover:bg-purple-50 dark:hover:bg-white/10 transition-colors"
+                >
+                  <Icon size={16} />
+                </button>
+              ))}
             </div>
           </div>
         )}

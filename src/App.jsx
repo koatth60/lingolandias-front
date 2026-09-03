@@ -4,30 +4,36 @@ import { useEffect, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import Login from './components/login/login';
 import RequireAuth from './components/auth/requireAuth';
-import GlobalNotificationHandler from './components/common/GlobalNotificationHandler';
+import UnreadTabTitle from './components/common/UnreadTabTitle';
+import NotificationsListener from './components/common/NotificationsListener';
 import IncomingCallBanner from './components/common/IncomingCallBanner';
+import UpdateAvailableBanner from './components/common/UpdateAvailableBanner';
 import FilePreviewModal from './components/common/FilePreviewModal';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import { UploadProvider } from './context/UploadContext';
 import UploadStatusBar from './components/common/UploadStatusBar';
 
-// Lazy-load all post-login routes — keeps initial bundle small
-const Home         = lazy(() => import('./sections/home'));
-const Profile      = lazy(() => import('./sections/profile'));
-const Admin        = lazy(() => import('./components/admin/admin'));
-const Shchedule    = lazy(() => import('./components/schedule/schedule'));
+// Lazy-load all post-login routes — keeps initial bundle small. The sidebar
+// nav routes are imported from routePrefetch.js's shared map instead of an
+// inline import() here, so that file and this one can never drift apart —
+// dashboard.jsx uses the exact same functions to warm a chunk on hover.
+import { routeImports } from './routePrefetch';
+const Home         = lazy(routeImports['/home']);
+const Profile      = lazy(routeImports['/profile']);
+const Admin        = lazy(routeImports['/admin']);
+const Shchedule    = lazy(routeImports['/schedule']);
 const JitsiClassRoom = lazy(() => import('./components/classroom/JitsiClassRoom'));
-const Messages     = lazy(() => import('./sections/messages'));
-const Support      = lazy(() => import('./sections/support'));
-const HelpCenter   = lazy(() => import('./components/help-center/HelpCenter'));
-const Settings     = lazy(() => import('./components/settings/Settings'));
+const Messages     = lazy(routeImports['/messages']);
+const Support      = lazy(routeImports['/support']);
+const HelpCenter   = lazy(routeImports['/help-center']);
+const Settings     = lazy(routeImports['/settings']);
 const ForgotPassword = lazy(() => import('./components/login/forgotPassword'));
 const ResetPassword  = lazy(() => import('./components/login/resetPassword'));
-const Trello       = lazy(() => import('./sections/trello'));
-const AdminTrello  = lazy(() => import('./sections/adminTrello'));
-const AdminMeetingLogs = lazy(() => import('./sections/adminMeetingLogs'));
-const Analytics    = lazy(() => import('./sections/analytics'));
-const Recordings   = lazy(() => import('./sections/recordings'));
+const Trello       = lazy(routeImports['/trello']);
+const AdminTrello  = lazy(routeImports['/admin-trello']);
+const AdminMeetingLogs = lazy(routeImports['/admin-meeting-logs']);
+const Analytics    = lazy(routeImports['/analytics']);
+const Recordings   = lazy(routeImports['/recordings']);
 import { useSelector } from 'react-redux';
 import { ToastContainer, Slide } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -62,8 +68,10 @@ function App() {
     <div className="bg-brand-light dark:bg-brand-dark min-h-screen">
       <UploadStatusBar />
       <Router>
-        <GlobalNotificationHandler />
+        <UnreadTabTitle />
+        <NotificationsListener />
         <IncomingCallBanner />
+        <UpdateAvailableBanner />
         <FilePreviewModal />
         <ToastContainer
           position="bottom-left"

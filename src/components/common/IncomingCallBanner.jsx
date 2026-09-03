@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { FiPhone, FiPhoneOff, FiUsers } from "react-icons/fi";
+import { FiPhone, FiPhoneOff, FiUsers, FiX } from "react-icons/fi";
 import { socket } from "../../socket";
 import useRingtone from "../../hooks/useRingtone";
 import { CALL_RING_TIMEOUT_MS } from "../../constants";
@@ -85,7 +85,7 @@ const IncomingCallBanner = () => {
   return (
     <div className="fixed bottom-4 right-4 z-[9999] w-[92vw] max-w-sm px-2 sm:px-0">
       <div
-        className="flex items-center gap-3 px-4 py-3.5 rounded-2xl shadow-2xl"
+        className="relative flex items-center gap-3 px-4 py-3.5 rounded-2xl shadow-2xl"
         style={{
           backdropFilter: "blur(14px)",
           background: "rgba(13,10,30,0.94)",
@@ -93,6 +93,19 @@ const IncomingCallBanner = () => {
           boxShadow: "0 8px 32px rgba(158,47,208,0.35)",
         }}
       >
+        {/* Just closes the banner — no callDeclined, no "missed call" logged.
+            For when you're already on the call (the other side joined right
+            around the same time you did) and this is a stale/redundant ring,
+            not an unwanted one. Decline below is for genuinely turning down
+            a call — the two need different consequences on the caller's end. */}
+        <button
+          onClick={dismiss}
+          title="Dismiss"
+          className="absolute -top-2 -right-2 w-5 h-5 rounded-full flex items-center justify-center text-gray-300 hover:text-white transition-colors"
+          style={{ background: "rgba(60,55,80,0.95)", border: "1px solid rgba(158,47,208,0.3)" }}
+        >
+          <FiX size={11} />
+        </button>
         <div className="relative flex-shrink-0">
           <div
             className="w-11 h-11 rounded-full flex items-center justify-center text-white text-sm font-bold"

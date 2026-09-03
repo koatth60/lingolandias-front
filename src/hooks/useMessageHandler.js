@@ -73,6 +73,7 @@ const useMessageHandler = (socket, room, username, email) => {
     uploading,
     error,
     file,
+    setFile,
     sendMessage,
     handleFileChange,
     uploadFile,

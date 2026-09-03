@@ -194,16 +194,35 @@
     "account": "Account",
     "darkMode": "Dark Mode",
     "notificationSound": "Notification Sound",
+    "testSound": "Play a test sound",
+    "messageNotifications": "Desktop Notifications for Messages",
     "classReminders": "Class Reminders",
     "language": "Language",
     "changePassword": "Change Password",
     "logout": "Logout",
     "browserNoSupport": "Your browser does not support push notifications.",
-    "allowNotifications": "Please allow notifications in your browser to enable class reminders.",
+    "allowNotifications": "Please allow notifications in your browser to enable this.",
     "remindersEnabled": "Class reminders enabled!",
     "remindersFailed": "Failed to enable notifications. Please try again.",
     "remindersDisabled": "Class reminders disabled.",
-    "remindersDisableFailed": "Failed to disable notifications."
+    "remindersDisableFailed": "Failed to disable notifications.",
+    "messageNotificationsEnabled": "Desktop notifications for messages enabled!",
+    "messageNotificationsDisabled": "Desktop notifications for messages disabled.",
+    "desktopApp": "Desktop App",
+    "desktopAppTitle": "Install Lingolandias",
+    "desktopAppDesc": "Get it as its own app — its own window and icon, launch it straight into your chats and classes.",
+    "installApp": "Install Lingolandias",
+    "appAlreadyInstalled": "Already installed on this device",
+    "appInstalled": "Lingolandias installed!",
+    "installUnavailable": "Installation isn't available in this browser yet. Try Chrome, Edge, or Brave.",
+    "desktopInstallerTitle": "Prefer a real desktop app?",
+    "desktopInstallerDesc": "A native Windows app, separate from your browser. Opens automatically every time you turn on your computer — no extra setup needed.",
+    "desktopInstallerStep1": "Download the installer below.",
+    "desktopInstallerStep2": "Run it — it installs itself and opens right away.",
+    "desktopInstallerStep3": "Done. From now on it opens by itself every time you turn on your PC.",
+    "desktopInstallerButton": "Download installer",
+    "desktopInstallerSmartscreen": "Windows may show \"Windows protected your PC\" the first time — that's normal for new apps. Click \"More info\" then \"Run anyway\".",
+    "desktopInstallerNote": "This is separate from the app you may have already installed from your browser above — you can keep both, or use just this one."
   },
   "changePassword": {
     "title": "Change Password",
@@ -300,7 +319,10 @@
     "noStudents": "No students assigned yet",
     "noTeacher": "No teacher assigned yet",
     "contactAdmin": "Contact an administrator to get students assigned to you.",
-    "contactAdminStudent": "Contact an administrator to get a teacher assigned to you."
+    "contactAdminStudent": "Contact an administrator to get a teacher assigned to you.",
+    "eventMenuLabel": "Event options",
+    "editTimeMenuItem": "Edit time",
+    "manageParticipantsMenuItem": "Participants"
   },
   "mobileSchedule": {
     "upcomingClasses": "Upcoming Classes",
@@ -337,7 +359,11 @@
     "update": "Update",
     "cancel": "Cancel",
     "editEvent": "Edit Event",
-    "closeCalendar": "Close Calendar"
+    "closeCalendar": "Close Calendar",
+    "addPersonButton": "Add person to this time slot",
+    "addPersonHint": "Keeps this exact time — no new slot needed.",
+    "personAdded": "Person added to the class!",
+    "addPersonFailed": "Couldn't add this person. Please try again."
   },
   "messages": {
     "title": "Messages",
@@ -406,12 +432,16 @@
     "ebooksTitle": "Cultural & Language E-books"
   },
   "upcomingClass": {
-    "join": "Join"
+    "join": "Join",
+    "message": "Message",
+    "viewInCalendar": "View in calendar"
   },
   "errorBoundary": {
     "message": "Something went wrong."
   },
   "common": {
+    "updateAvailable": "A new version is available",
+    "refreshNow": "Refresh",
     "cancel": "Cancel",
     "save": "Save",
     "delete": "Delete",
@@ -468,6 +498,9 @@
     "deleteGroupConfirm": "Delete group",
     "deleteGroupFailed": "Couldn't delete the group.",
     "addPeople": "Add people",
+    "mentionAddNotMemberTitle": "Add {{name}} to the group?",
+    "mentionAddNotMemberWarning": "{{name}} isn't a member of this group yet. They'll be added so they can see and reply to this mention.",
+    "mentionAddConfirm": "Add to group",
     "shareHistoryToggle": "Share full message history with them",
     "cancel": "Cancel",
     "loadMoreChats": "Load more chats",
@@ -486,7 +519,17 @@
     "addToClassWarning": "{{name}} will be added to your scheduled class for everyone. You can rename the class below.",
     "addToClassConfirm": "Add to class",
     "skipScheduling": "Not now",
-    "deleteScheduledGroupWarning": "\"{{name}}\" is a scheduled class — deleting it cancels the class and removes it from everyone's calendar, and deletes all its messages. This can't be undone."
+    "deleteScheduledGroupWarning": "\"{{name}}\" is a scheduled class — deleting it cancels the class and removes it from everyone's calendar, and deletes all its messages. This can't be undone.",
+    "removeMember": "Remove from group",
+    "leaveGroup": "Leave group",
+    "confirmRemoveMember": "Remove {{name}} from this group?",
+    "confirmLeaveGroup": "Leave this group?",
+    "removeMemberConfirm": "Remove",
+    "leaveGroupConfirm": "Leave",
+    "systemMemberAdded": "{{actor}} added {{target}}",
+    "systemMemberRemoved": "{{actor}} removed {{target}}",
+    "systemMemberLeft": "{{actor}} left the chat",
+    "systemGroupRenamed": "{{actor}} renamed the group from \"{{oldName}}\" to \"{{newName}}\""
   },
   "toolbar": {
     "classesSchedule": "Classes Schedule",
@@ -547,6 +590,11 @@
     "readyToSend": "Ready to send.",
     "uploading": "Uploading...",
     "typePlaceholder": "Type a message...",
+    "formatText": "Format text",
+    "formatBold": "Bold",
+    "formatItalic": "Italic",
+    "formatStrike": "Strikethrough",
+    "formatCode": "Code",
     "activeNow": "Active now",
     "noMessages": "No messages yet — say hi!",
     "editing": "Editing message",

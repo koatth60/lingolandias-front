@@ -7,13 +7,12 @@
 // "Messages" label) copied from the old chat sidebar, which made no sense
 // once there's no chat list under it — the calendar right below already has
 // its own title, so this is just the dropdown, right-aligned.
-import Swal from "sweetalert2";
 import { useTranslation } from "react-i18next";
-import { FiEdit, FiUsers, FiVideo, FiXCircle } from "react-icons/fi";
+import { FiUsers, FiVideo } from "react-icons/fi";
 import Dropdown from "./Dropdown";
 import { meetingRooms } from "../../constants";
 
-const ScheduleActionsBar = ({ user, handleJoinMeeting, setEditingEvent, editingEvent, loading }) => {
+const ScheduleActionsBar = ({ user, handleJoinMeeting, loading }) => {
   const { t } = useTranslation();
 
   return (
@@ -23,32 +22,6 @@ const ScheduleActionsBar = ({ user, handleJoinMeeting, setEditingEvent, editingE
           buttonClassName="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold text-white rounded-lg transition-opacity hover:opacity-85"
           buttonStyle={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 2px 8px rgba(158,47,208,0.35)" }}
         >
-          {(user.role === "teacher" || user.role === "admin") && (
-            <button
-              onClick={() => {
-                setEditingEvent((prev) => !prev);
-                if (!editingEvent) {
-                  Swal.fire({
-                    title: t("chatList.editModeTitle"),
-                    text: t("chatList.editModeText"),
-                    icon: "info",
-                    confirmButtonText: t("chatList.editModeConfirm"),
-                    background: "#1a1a2e",
-                    color: "#fff",
-                    confirmButtonColor: "#9E2FD0",
-                  });
-                }
-              }}
-              className="block w-full text-left px-4 py-2 text-sm font-semibold text-[#9E2FD0] dark:text-[#c084fc] hover:bg-[#9E2FD0]/5 dark:hover:bg-white/5 flex items-center"
-              role="menuitem"
-            >
-              {editingEvent ? (
-                <><FiXCircle className="mr-2" /> {t("chatList.cancelEdit")}</>
-              ) : (
-                <><FiEdit className="mr-2" /> {t("chatList.editCalendar")}</>
-              )}
-            </button>
-          )}
           {(user.role === "teacher" || user.role === "user") && (
             <button
               onClick={() => handleJoinMeeting()}

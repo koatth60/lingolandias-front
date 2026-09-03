@@ -310,7 +310,9 @@ const ChatListComponent = ({
                     {chat.type !== "dm" && lastMsg.username ? (
                       <span className="font-medium text-gray-600 dark:text-gray-300">{lastMsg.username}: </span>
                     ) : null}
-                    {lastMsg.content}
+                    {/* Plain-text preview, so @[Name](id) mention markup is
+                        stripped down to "@Name" instead of showing raw text. */}
+                    {lastMsg.content.replace(/@\[([^\]]+)\]\([0-9a-f-]{36}\)/g, "@$1")}
                   </p>
                 ) : (
                   <div className="flex items-center gap-1.5 mt-0.5">

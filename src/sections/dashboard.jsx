@@ -10,16 +10,14 @@ import {
   FiRadio,
   FiGrid, FiLogOut, FiBarChart2, FiActivity
 } from "react-icons/fi";
-import { fetchUnreadMessages } from "../redux/messageSlice";
 import { socket } from "../socket";
 import { toast } from "react-toastify";
-import { fetchMessagesForTeacher, fetchUnreadCountsForStudent } from "../redux/chatSlice";
 import { updateUserStatus } from "../redux/userSlice";
 import logo from "../assets/logos/logo3.png";
 import { useLogout } from "../hooks/customHooks";
 import { logout } from "../redux/userSlice";
-import useNotificationSound from "../hooks/useNotificationSound";
-import { activeRoomRef } from "../state/activeRoom";
+import { selectTotalUnread } from "../redux/notificationsSlice";
+import { prefetchRoute } from "../routePrefetch";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -32,44 +30,16 @@ const Dashboard = () => {
   const logoutAndNavigate = useLogout();
   const user = useSelector((state) => state.user.userInfo.user);
   const isSidebarOpen = useSelector((state) => state.sidebar.isSidebarOpen);
-  const { totalUnread, unreadCounts } = useSelector((state) => state.messages);
+  const { unreadCounts } = useSelector((state) => state.messages);
   const supportUnreadCount = unreadCounts?.supportRoom || 0;
-  const [conversationsUnread, setConversationsUnread] = useState(0);
-  const playSound = useNotificationSound();
-  const soundEnabled = user?.settings?.notificationSound !== false;
+  // Both fed by NotificationsListener (mounted once at the App level, not
+  // here) — this component only renders the badges, it no longer owns any
+  // of the socket listeners or fetches behind them.
+  const conversationsUnread = useSelector(selectTotalUnread);
 
   useEffect(() => {
     setActiveLink(location.pathname);
   }, [location]);
-
-  useEffect(() => {
-    if (user?.id) {
-      dispatch(fetchUnreadMessages(user.id));
-    }
-  }, [user?.id, dispatch]);
-
-  useEffect(() => {
-    if (user?.role === 'teacher' && user?.students?.length > 0) {
-      dispatch(fetchMessagesForTeacher());
-    } else if (user?.role === 'user') {
-      dispatch(fetchUnreadCountsForStudent());
-    }
-  }, [user?.role, user?.students, dispatch]);
-
-  const fetchConversationsUnread = async () => {
-    if (!user?.id) return;
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`${BACKEND_URL}/conversations?userId=${user.id}&limit=200`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      if (!res.ok) return;
-      const data = await res.json();
-      setConversationsUnread(data.conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0));
-    } catch (_) {}
-  };
-
-  useEffect(() => { fetchConversationsUnread(); }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Was creating its own raw `io(BACKEND_URL)` connection on every mount —
   // Dashboard is the shared layout every page renders, so every single
@@ -86,7 +56,14 @@ const Dashboard = () => {
     if (user?.id) {
       socket.on("userStatus", (data) => {
         const { id, online, name } = data;
-        if (id !== user.id) {
+        // A backgrounded tab still receives every queued userStatus event on
+        // reconnect/focus — toasting each one turns a normal status backlog
+        // (several people logging in/out while you were away) into a long
+        // trickle of toasts, since react-toastify's `limit` only caps how
+        // many show AT ONCE, not the queue behind them. Nobody needs to be
+        // told "X went online 10 minutes ago" after the fact — only toast
+        // for a change that's actually happening while someone's looking.
+        if (id !== user.id && document.visibilityState === "visible") {
           toast(
             <div>
               <b>{name}</b> is now {online}
@@ -96,38 +73,16 @@ const Dashboard = () => {
         }
         dispatch(updateUserStatus({ id, online }));
       });
-      socket.on("newUnreadGlobalMessage", () => {
-        dispatch(fetchUnreadMessages(user.id));
-      });
-      socket.on("newUnreadSupportMessage", () => {
-        dispatch(fetchUnreadMessages(user.id));
-      });
-      const handleNewConversationMessage = (data) => {
-        fetchConversationsUnread();
-        // Server only emits this to members other than the sender, so any
-        // event we receive here is genuinely someone else's message. Skip
-        // the room the user already has open — its own chat window handles
-        // that case visually, a sound on top would be redundant.
-        if (soundEnabled && data?.conversationId !== activeRoomRef.current) {
-          playSound();
-        }
-      };
-      socket.on("newConversationMessage", handleNewConversationMessage);
-      socket.on("newConversation", fetchConversationsUnread);
     }
     return () => {
       if (user?.id) {
         socket.off("userStatus");
-        socket.off("newUnreadGlobalMessage");
-        socket.off("newUnreadSupportMessage");
-        socket.off("newConversationMessage");
-        socket.off("newConversation", fetchConversationsUnread);
         // Deliberately no socket.disconnect() — this is the shared
         // singleton every other part of the app relies on staying
         // connected; its lifecycle belongs to useGlobalSocket alone.
       }
     };
-  }, [user?.id, dispatch, soundEnabled, playSound]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user?.id, dispatch]);
 
   const handleLogout = async () => {
     dispatch(logout());
@@ -152,7 +107,7 @@ const Dashboard = () => {
       // looked like a bug. New-message badges now live only on Messages.
       : { to: "/schedule", icon: FiCalendar, text: t("nav.schedule") },
     // { to: "/learning", icon: FiBookOpen, text: t("nav.learning") }, // Hidden — work in progress
-    { to: "/messages", icon: FiMessageSquare, text: t("nav.messages"), unread: totalUnread + conversationsUnread },
+    { to: "/messages", icon: FiMessageSquare, text: t("nav.messages"), unread: conversationsUnread },
     ...(user?.role === "teacher" || user?.role === "user"
       ? [{ to: "/recordings", icon: FiVideo, text: t("recordings.title") }]
       : []),
@@ -339,6 +294,9 @@ const Dashboard = () => {
                     <li key={item.to}>
                       <Link
                         to={item.to}
+                        onMouseEnter={() => prefetchRoute(item.to)}
+                        onFocus={() => prefetchRoute(item.to)}
+                        onTouchStart={() => prefetchRoute(item.to)}
                         className={`relative flex items-center rounded-xl transition-colors duration-200 ${
                           isSidebarOpen ? "px-3 py-2.5 gap-3" : "p-2.5 justify-center"
                         } ${
@@ -407,6 +365,9 @@ const Dashboard = () => {
                     <Link
                       key={item.to}
                       to={item.to}
+                      onMouseEnter={() => prefetchRoute(item.to)}
+                      onFocus={() => prefetchRoute(item.to)}
+                      onTouchStart={() => prefetchRoute(item.to)}
                       className={`relative flex items-center rounded-xl transition-colors duration-200 ${
                         isSidebarOpen ? "px-3 py-2.5 gap-3" : "p-2.5 justify-center"
                       } ${

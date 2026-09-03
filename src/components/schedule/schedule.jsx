@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Calendar, dayjsLocalizer } from "react-big-calendar";
 import Dashboard from "../../sections/dashboard";
@@ -38,7 +38,9 @@ import {
 } from "../../redux/userSlice";
 import { socket } from "../../socket";
 import { meetingRooms, teacherChats } from "../../constants";
-import EditEventModal from "./EditEventModal";
+import EditEventTimeModal from "./EditEventTimeModal";
+import EventParticipantsModal from "./EventParticipantsModal";
+import EventActionsMenu from "./EventActionsMenu";
 import Dropdown from "./Dropdown";
 import TeacherPanel from "./TeacherPanel";
 import AdminMeetingRooms from "./AdminMeetingRooms";
@@ -57,14 +59,27 @@ const Schedule = () => {
   const [teacherInfo, setTeacherInfo] = useState({});
   const [chatRoom, setChatRoom] = useState("");
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingEvent, setEditingEvent] = useState(false);
+  const [editTimeEvent, setEditTimeEvent] = useState(null);
+  const [participantsEvent, setParticipantsEvent] = useState(null);
   const [mobileChatOpen, setMobileChatOpen] = useState(false);
   const [teacherPanelOpen, setTeacherPanelOpen] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const unreadCountsByRoom = useSelector((state) => state.chat.unreadCountsByRoom);
   const studentUnreadCount = useSelector((state) => state.chat.studentUnreadCount);
+
+  // One-shot deep link from Home's "Next Sessions" calendar icon — jump the
+  // calendar to that session's week on arrival, mirroring the openDmWithUserId
+  // pattern already used by messages.jsx for the "message this person" link.
+  const [initialFocusDate] = useState(() =>
+    location.state?.focusDate ? dayjs(location.state.focusDate) : null
+  );
+  useEffect(() => {
+    if (location.state?.focusDate) {
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state?.focusDate]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Total unread for the chat FAB badge
   const chatUnreadCount = user.role === "teacher"
@@ -74,10 +89,13 @@ const Schedule = () => {
   // Tracks whatever the calendar is currently displaying — recurring classes are
   // projected only within this window (see useFormattedEvents/scheduleProjection),
   // updated live as the calendar is navigated instead of a fixed cutoff.
-  const [calendarRange, setCalendarRange] = useState(() => ({
-    start: dayjs().startOf("week").toDate(),
-    end: dayjs().add(6, "week").toDate(),
-  }));
+  const [calendarRange, setCalendarRange] = useState(() => {
+    const base = initialFocusDate || dayjs();
+    return {
+      start: base.startOf("week").toDate(),
+      end: base.add(6, "week").toDate(),
+    };
+  });
   const events = useFormattedEvents(user, calendarRange);
 
   const {
@@ -85,13 +103,19 @@ const Schedule = () => {
     handleEventEdit,
     handleEventDetailsChange,
     handleSubmitEvent,
-    openModalFrom,
-    setOpenModalFrom,
-    handleSelectSlot,
-  } = useEventEdit(undefined, () => {
-    setIsModalOpen(false);
-    setEditingEvent(false);
-  });
+    setSelectedDate,
+  } = useEventEdit(undefined, () => setEditTimeEvent(null));
+
+  // Opened from an event's "..." menu — jumps straight into editing THIS
+  // occurrence's time, no page-level "Edit Calendar" toggle or mini-calendar
+  // slot-click detour needed first.
+  const openEditTime = (event) => {
+    handleEventEdit(event);
+    setSelectedDate(event.start);
+    setEditTimeEvent(event);
+  };
+
+  const openParticipants = (event) => setParticipantsEvent(event);
 
   useEffect(() => {
     if (user.role === "teacher") {
@@ -223,16 +247,24 @@ const Schedule = () => {
   const localizer = dayjsLocalizer(dayjs);
 
   const CustomEvent = ({ event }) => (
-    <div className="flex items-center justify-center text-center h-full text-[10px] sm:text-[13px] flex-wrap gap-1">
+    <div className="group relative flex items-center justify-center text-center h-full w-full text-[10px] sm:text-[13px] flex-wrap gap-1">
       {event.isGroupClass && <FiUsers size={10} className="flex-shrink-0" />}
       <span>{event.title}</span>
+      {user.role === "teacher" && (
+        <EventActionsMenu
+          onEditTime={() => openEditTime(event)}
+          onManageParticipants={() => openParticipants(event)}
+        />
+      )}
     </div>
   );
 
-  // Wraps CustomToolbar so it can render the Actions dropdown (Edit Calendar
-  // / Group Class / teacher-meeting shortcuts) right in its own toolbar row,
-  // next to the Week/Day/Agenda switcher — react-big-calendar only passes a
-  // fixed prop set to `toolbar`, so this closure is how extra props get in.
+  // Wraps CustomToolbar so it can render the Actions dropdown (Group Class /
+  // teacher-meeting shortcuts) right in its own toolbar row, next to the
+  // Week/Day/Agenda switcher — react-big-calendar only passes a fixed prop
+  // set to `toolbar`, so this closure is how extra props get in. Time/
+  // participant editing used to live behind this dropdown's "Edit Calendar"
+  // toggle — that's now the per-event "..." menu (see EventActionsMenu).
   const CustomToolbarWithActions = (toolbarProps) => (
     <CustomToolbar
       {...toolbarProps}
@@ -241,8 +273,6 @@ const Schedule = () => {
           <ScheduleActionsBar
             user={user}
             handleJoinMeeting={handleJoinMeeting}
-            setEditingEvent={setEditingEvent}
-            editingEvent={editingEvent}
             loading={loading}
           />
         )
@@ -251,35 +281,30 @@ const Schedule = () => {
   );
 
   const handleEventClick = (event) => {
-    if (editingEvent) {
-      handleEventEdit(event);
-      setIsModalOpen(true);
-    } else {
-      const roomId = event.roomId || event.studentId;
-      const userName = user.name;
-      const email = user.email;
+    const roomId = event.roomId || event.studentId;
+    const userName = user.name;
+    const email = user.email;
 
-      // A class scheduled from a group chat has no single "other side" to
-      // ring directly — roomId is the conversation id, and the ring falls
-      // back to the room's existing conversation members (same convention
-      // handleJoinMeeting already uses for the teacher's own multi-student room).
-      if (event.isGroupClass) {
-        navigate("/classroom", {
-          state: { roomId, chatRoomId: roomId, userName, email, fromMeeting: false, chatName: event.title, chatType: "group" },
-        });
-        return;
-      }
-
-      const student = user.students?.find((s) => s.id === event.studentId);
-      const chatName = student?.name;
-      // otherUserId lets the incoming-call ring reach the other side
-      // directly even if roomId doesn't correspond to a real conversations
-      // row yet — same convention as joinClassHandler.js's shared flow.
-      const otherUserId = user.role === "user" ? user.teacher?.id : event.studentId;
+    // A class scheduled from a group chat has no single "other side" to
+    // ring directly — roomId is the conversation id, and the ring falls
+    // back to the room's existing conversation members (same convention
+    // handleJoinMeeting already uses for the teacher's own multi-student room).
+    if (event.isGroupClass) {
       navigate("/classroom", {
-        state: { roomId, chatRoomId: roomId, userName, email, fromMeeting: false, chatName, chatType: "private", otherUserId },
+        state: { roomId, chatRoomId: roomId, userName, email, fromMeeting: false, chatName: event.title, chatType: "group" },
       });
+      return;
     }
+
+    const student = user.students?.find((s) => s.id === event.studentId);
+    const chatName = student?.name;
+    // otherUserId lets the incoming-call ring reach the other side
+    // directly even if roomId doesn't correspond to a real conversations
+    // row yet — same convention as joinClassHandler.js's shared flow.
+    const otherUserId = user.role === "user" ? user.teacher?.id : event.studentId;
+    navigate("/classroom", {
+      state: { roomId, chatRoomId: roomId, userName, email, fromMeeting: false, chatName, chatType: "private", otherUserId },
+    });
   };
 
   const handleJoinMeeting = (roomName = null) => {
@@ -383,6 +408,7 @@ const Schedule = () => {
                             events={events}
                             startAccessor="start"
                             endAccessor="end"
+                            defaultDate={initialFocusDate ? initialFocusDate.toDate() : undefined}
                             defaultView="week"
                             step={60}
                             timeslots={1}
@@ -459,6 +485,8 @@ const Schedule = () => {
                         <MobileClassList
                           events={events}
                           onEventClick={handleEventClick}
+                          onEditTime={openEditTime}
+                          onManageParticipants={openParticipants}
                           user={user}
                         />
                       </div>
@@ -573,8 +601,6 @@ const Schedule = () => {
                             teacherChat={teacherChat}
                             email={user.email}
                             handleJoinMeeting={handleJoinMeeting}
-                            setEditingEvent={setEditingEvent}
-                            editingEvent={editingEvent}
                             loading={loading}
                           />
                         ) : (
@@ -645,19 +671,27 @@ const Schedule = () => {
           </div>
         )}
 
-        <EditEventModal
-          isModalOpen={isModalOpen}
-          localizer={localizer}
-          handleEventClick={handleEventClick}
-          handleSelectSlot={handleSelectSlot}
-          openModalFrom={openModalFrom}
-          handleSubmitEvent={handleSubmitEvent}
-          eventDetails={eventDetails}
-          handleEventDetailsChange={handleEventDetailsChange}
-          setOpenModalFrom={setOpenModalFrom}
-          setIsModalOpen={setIsModalOpen}
-          setEditingEvent={setEditingEvent}
-        />
+        {editTimeEvent && (
+          <EditEventTimeModal
+            eventTitle={editTimeEvent.title}
+            eventDetails={eventDetails}
+            handleEventDetailsChange={handleEventDetailsChange}
+            handleSubmitEvent={handleSubmitEvent}
+            onClose={() => setEditTimeEvent(null)}
+          />
+        )}
+
+        {participantsEvent && (
+          <EventParticipantsModal
+            key={participantsEvent.roomId || participantsEvent.studentId}
+            roomId={participantsEvent.roomId}
+            studentId={participantsEvent.studentId}
+            initialName={participantsEvent.title}
+            isGroupClass={!!participantsEvent.isGroupClass}
+            user={user}
+            onClose={() => setParticipantsEvent(null)}
+          />
+        )}
       </div>
     </div>
   );

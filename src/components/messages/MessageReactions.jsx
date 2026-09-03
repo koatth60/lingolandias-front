@@ -30,10 +30,19 @@ const MessageReactions = ({ reactions, currentUserId, onToggle, align = "start" 
     setPickerOpen(false);
   };
 
+  // When there are no reactions, the hover-only trigger button still needs
+  // to render (so hovering the message can reveal it), but its normal-flow
+  // height was pushing every single message apart — collapsing this wrapper
+  // to h-0 with overflow-visible keeps the button interactive/visible on
+  // hover without it (or the mt-1 gap) reserving any space when idle.
+  const hasReactions = entries.length > 0;
+
   return (
     <div
       ref={wrapperRef}
-      className={`relative flex flex-wrap items-center gap-1 mt-1 ${align === "end" ? "justify-end" : ""}`}
+      className={`relative flex flex-wrap items-center gap-1 ${
+        hasReactions ? "mt-1" : "h-0 overflow-visible"
+      } ${align === "end" ? "justify-end" : ""}`}
     >
       {entries.map(([emoji, reactors]) => {
         const mine = currentUserId && reactors.some((r) => r.id === currentUserId);

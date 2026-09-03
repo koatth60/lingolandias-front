@@ -194,16 +194,35 @@
     "account": "Cuenta",
     "darkMode": "Modo Oscuro",
     "notificationSound": "Sonido de Notificación",
+    "testSound": "Reproducir sonido de prueba",
+    "messageNotifications": "Notificaciones de escritorio para mensajes",
     "classReminders": "Recordatorios de Clase",
     "language": "Idioma",
     "changePassword": "Cambiar Contraseña",
     "logout": "Cerrar Sesión",
     "browserNoSupport": "Tu navegador no soporta notificaciones push.",
-    "allowNotifications": "Por favor, permite las notificaciones en tu navegador para habilitar los recordatorios de clase.",
+    "allowNotifications": "Por favor, permite las notificaciones en tu navegador para habilitar esto.",
     "remindersEnabled": "¡Recordatorios de clase habilitados!",
     "remindersFailed": "Error al habilitar las notificaciones. Por favor, inténtalo de nuevo.",
     "remindersDisabled": "Recordatorios de clase desactivados.",
-    "remindersDisableFailed": "Error al desactivar las notificaciones."
+    "remindersDisableFailed": "Error al desactivar las notificaciones.",
+    "messageNotificationsEnabled": "¡Notificaciones de escritorio para mensajes activadas!",
+    "messageNotificationsDisabled": "Notificaciones de escritorio para mensajes desactivadas.",
+    "desktopApp": "App de Escritorio",
+    "desktopAppTitle": "Instalar Lingolandias",
+    "desktopAppDesc": "Tenla como su propia aplicación — con su propia ventana e ícono, y ábrela directo en tus chats y clases.",
+    "installApp": "Instalar Lingolandias",
+    "appAlreadyInstalled": "Ya está instalada en este dispositivo",
+    "appInstalled": "¡Lingolandias instalada!",
+    "installUnavailable": "La instalación aún no está disponible en este navegador. Prueba con Chrome, Edge o Brave.",
+    "desktopInstallerTitle": "¿Prefieres una app de escritorio de verdad?",
+    "desktopInstallerDesc": "Una app nativa de Windows, separada del navegador. Se abre sola cada vez que enciendes tu computadora — sin configurar nada extra.",
+    "desktopInstallerStep1": "Descarga el instalador de abajo.",
+    "desktopInstallerStep2": "Ábrelo — se instala solo y se abre de inmediato.",
+    "desktopInstallerStep3": "Listo. Desde ahora se abre sola cada vez que enciendes tu PC.",
+    "desktopInstallerButton": "Descargar instalador",
+    "desktopInstallerSmartscreen": "Windows puede mostrarte \"Windows protegió tu PC\" la primera vez — es normal en apps nuevas. Dale \"Más información\" y luego \"Ejecutar de todas formas\".",
+    "desktopInstallerNote": "Esto es aparte de la app que ya hayas instalado desde el navegador arriba — puedes tener las dos, o usar solo esta."
   },
   "changePassword": {
     "title": "Cambiar Contraseña",
@@ -300,7 +319,10 @@
     "noStudents": "No hay estudiantes asignados aún",
     "noTeacher": "No hay profesor asignado aún",
     "contactAdmin": "Contacta a un administrador para que te asignen estudiantes.",
-    "contactAdminStudent": "Contacta a un administrador para que te asignen un profesor."
+    "contactAdminStudent": "Contacta a un administrador para que te asignen un profesor.",
+    "eventMenuLabel": "Opciones del evento",
+    "editTimeMenuItem": "Editar horario",
+    "manageParticipantsMenuItem": "Participantes"
   },
   "mobileSchedule": {
     "upcomingClasses": "Próximas Clases",
@@ -337,7 +359,11 @@
     "update": "Actualizar",
     "cancel": "Cancelar",
     "editEvent": "Editar Evento",
-    "closeCalendar": "Cerrar Calendario"
+    "closeCalendar": "Cerrar Calendario",
+    "addPersonButton": "Agregar persona a este horario",
+    "addPersonHint": "Mantiene exactamente este horario — no se crea un slot nuevo.",
+    "personAdded": "¡Persona agregada a la clase!",
+    "addPersonFailed": "No se pudo agregar a esta persona. Intenta de nuevo."
   },
   "messages": {
     "title": "Mensajes",
@@ -406,12 +432,16 @@
     "ebooksTitle": "Libros Electrónicos de Cultura e Idiomas"
   },
   "upcomingClass": {
-    "join": "Unirse"
+    "join": "Unirse",
+    "message": "Mensaje",
+    "viewInCalendar": "Ver en calendario"
   },
   "errorBoundary": {
     "message": "Algo salió mal."
   },
   "common": {
+    "updateAvailable": "Hay una nueva versión disponible",
+    "refreshNow": "Actualizar",
     "cancel": "Cancelar",
     "save": "Guardar",
     "delete": "Eliminar",
@@ -468,6 +498,9 @@
     "deleteGroupConfirm": "Borrar grupo",
     "deleteGroupFailed": "No se pudo borrar el grupo.",
     "addPeople": "Agregar personas",
+    "mentionAddNotMemberTitle": "¿Agregar a {{name}} al grupo?",
+    "mentionAddNotMemberWarning": "{{name}} todavía no es miembro de este grupo. Se le agregará para que pueda ver y responder a esta mención.",
+    "mentionAddConfirm": "Agregar al grupo",
     "shareHistoryToggle": "Compartir todo el historial con ellos",
     "cancel": "Cancelar",
     "loadMoreChats": "Cargar más chats",
@@ -486,7 +519,17 @@
     "addToClassWarning": "{{name}} será agregado(a) a tu clase programada para todos. Puedes renombrar la clase abajo.",
     "addToClassConfirm": "Agregar a la clase",
     "skipScheduling": "Ahora no",
-    "deleteScheduledGroupWarning": "\"{{name}}\" es una clase programada — borrarla cancela la clase y la elimina del calendario de todos, además de borrar todos sus mensajes. Esto no se puede deshacer."
+    "deleteScheduledGroupWarning": "\"{{name}}\" es una clase programada — borrarla cancela la clase y la elimina del calendario de todos, además de borrar todos sus mensajes. Esto no se puede deshacer.",
+    "removeMember": "Quitar del grupo",
+    "leaveGroup": "Salir del grupo",
+    "confirmRemoveMember": "¿Quitar a {{name}} de este grupo?",
+    "confirmLeaveGroup": "¿Salir de este grupo?",
+    "removeMemberConfirm": "Quitar",
+    "leaveGroupConfirm": "Salir",
+    "systemMemberAdded": "{{actor}} agregó a {{target}}",
+    "systemMemberRemoved": "{{actor}} quitó a {{target}}",
+    "systemMemberLeft": "{{actor}} salió del chat",
+    "systemGroupRenamed": "{{actor}} renombró el grupo de \"{{oldName}}\" a \"{{newName}}\""
   },
   "toolbar": {
     "classesSchedule": "Horario de Clases",
@@ -547,6 +590,11 @@
     "readyToSend": "Listo para enviar.",
     "uploading": "Subiendo...",
     "typePlaceholder": "Escribe un mensaje...",
+    "formatText": "Formato de texto",
+    "formatBold": "Negrita",
+    "formatItalic": "Cursiva",
+    "formatStrike": "Tachado",
+    "formatCode": "Código",
     "activeNow": "Activo ahora",
     "noMessages": "Sin mensajes aún — ¡di hola!",
     "editing": "Editando mensaje",

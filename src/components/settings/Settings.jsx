@@ -4,19 +4,71 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   FiMoon, FiBell, FiBellOff, FiUser, FiEye,
-  FiShield, FiLogOut, FiGlobe, FiSun, FiCheck, FiChevronDown,
+  FiShield, FiLogOut, FiGlobe, FiSun, FiCheck, FiChevronDown, FiPlay, FiMessageSquare,
+  FiMonitor, FiDownload, FiZap, FiAlertTriangle,
 } from "react-icons/fi";
 import { toast } from "react-toastify";
 import Dashboard from "../../sections/dashboard";
 import Navbar from "../layout/navbar";
 import { updateUserSettings, logout } from "../../redux/userSlice";
 import ChangePasswordModal from "./ChangePasswordModal";
+import useNotificationSound from "../../hooks/useNotificationSound";
+import useInstallPrompt from "../../hooks/useInstallPrompt";
 
 function urlBase64ToUint8Array(base64String) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
   const rawData = window.atob(base64);
   return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)));
+}
+
+// Shared by both push-backed toggles below (class reminders, message
+// notifications) — a browser has exactly ONE push subscription per origin,
+// so "enabling" either one just needs a subscription to exist; calling
+// pushManager.subscribe() again with the same key when one already exists
+// is safe and returns the existing subscription rather than duplicating it.
+async function subscribeToPush() {
+  if (!("Notification" in window) || !("serviceWorker" in navigator)) {
+    throw new Error("unsupported");
+  }
+  const permission = await Notification.requestPermission();
+  if (permission !== "granted") {
+    throw new Error("denied");
+  }
+  const registration = await navigator.serviceWorker.register("/sw.js");
+  await navigator.serviceWorker.ready;
+
+  const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/push/vapid-public-key`);
+  const { publicKey } = await res.json();
+
+  const subscription = await registration.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: urlBase64ToUint8Array(publicKey),
+  });
+
+  await fetch(`${import.meta.env.VITE_BACKEND_URL}/push/subscribe`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+    body: JSON.stringify(subscription),
+  });
+}
+
+// Only call this once BOTH push-backed toggles are off — see the two
+// handlers below — since unsubscribing tears down the device's one and only
+// subscription, which the other toggle also relies on.
+async function unsubscribeFromPush() {
+  const registration = await navigator.serviceWorker.getRegistration("/sw.js");
+  if (registration) {
+    const subscription = await registration.pushManager.getSubscription();
+    if (subscription) await subscription.unsubscribe();
+  }
+  await fetch(`${import.meta.env.VITE_BACKEND_URL}/push/unsubscribe`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+  });
 }
 
 const glassCard = {
@@ -150,11 +202,20 @@ const Settings = () => {
   const darkMode = userInfo?.user?.settings?.darkMode || false;
   const notificationSound = userInfo?.user?.settings?.notificationSound !== false;
   const classReminders = userInfo?.user?.settings?.classReminders === true;
+  const messageNotifications = userInfo?.user?.settings?.messageNotifications === true;
   const language = userInfo?.user?.settings?.language || i18n.language || "en";
+  const playTestSound = useNotificationSound();
+  const { canInstall, isInstalled, promptInstall } = useInstallPrompt();
+
+  const handleInstallApp = async () => {
+    const outcome = await promptInstall();
+    if (outcome === "accepted") toast.success(t("settings.appInstalled"));
+  };
 
   const TABS = [
     { id: "appearance",    label: t("settings.appearance"),   icon: FiEye  },
     { id: "notifications", label: t("settings.notifications"), icon: FiBell },
+    { id: "app",           label: t("settings.desktopApp"),    icon: FiMonitor },
     { id: "account",       label: t("settings.account"),       icon: FiUser },
   ];
 
@@ -187,66 +248,50 @@ const Settings = () => {
     dispatch(updateUserSettings({ language: newLang }));
   };
 
+  const handlePushToggleError = (err) => {
+    if (err?.message === "unsupported") toast.error(t("settings.browserNoSupport"));
+    else if (err?.message === "denied") toast.error(t("settings.allowNotifications"));
+    else toast.error(t("settings.remindersFailed"));
+  };
+
   const handleClassRemindersToggle = async () => {
     const newValue = !classReminders;
 
     if (newValue) {
-      if (!("Notification" in window) || !("serviceWorker" in navigator)) {
-        toast.error(t("settings.browserNoSupport"));
-        return;
-      }
-
-      const permission = await Notification.requestPermission();
-      if (permission !== "granted") {
-        toast.error(t("settings.allowNotifications"));
-        return;
-      }
-
       try {
-        const registration = await navigator.serviceWorker.register("/sw.js");
-        await navigator.serviceWorker.ready;
-
-        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/push/vapid-public-key`);
-        const { publicKey } = await res.json();
-
-        const subscription = await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(publicKey),
-        });
-
-        await fetch(`${import.meta.env.VITE_BACKEND_URL}/push/subscribe`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify(subscription),
-        });
-
+        await subscribeToPush();
         dispatch(updateUserSettings({ classReminders: true }));
         toast.success(t("settings.remindersEnabled"));
-      } catch {
-        toast.error(t("settings.remindersFailed"));
+      } catch (err) {
+        handlePushToggleError(err);
       }
     } else {
+      dispatch(updateUserSettings({ classReminders: false }));
+      toast.success(t("settings.remindersDisabled"));
+      // The device's one push subscription is shared with messageNotifications
+      // — only tear it down once neither toggle needs it anymore.
+      if (!messageNotifications) {
+        try { await unsubscribeFromPush(); } catch { /* best-effort cleanup */ }
+      }
+    }
+  };
+
+  const handleMessageNotificationsToggle = async () => {
+    const newValue = !messageNotifications;
+
+    if (newValue) {
       try {
-        const registration = await navigator.serviceWorker.getRegistration("/sw.js");
-        if (registration) {
-          const subscription = await registration.pushManager.getSubscription();
-          if (subscription) await subscription.unsubscribe();
-        }
-
-        await fetch(`${import.meta.env.VITE_BACKEND_URL}/push/unsubscribe`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-
-        dispatch(updateUserSettings({ classReminders: false }));
-        toast.success(t("settings.remindersDisabled"));
-      } catch {
-        toast.error(t("settings.remindersDisableFailed"));
+        await subscribeToPush();
+        dispatch(updateUserSettings({ messageNotifications: true }));
+        toast.success(t("settings.messageNotificationsEnabled"));
+      } catch (err) {
+        handlePushToggleError(err);
+      }
+    } else {
+      dispatch(updateUserSettings({ messageNotifications: false }));
+      toast.success(t("settings.messageNotificationsDisabled"));
+      if (!classReminders) {
+        try { await unsubscribeFromPush(); } catch { /* best-effort cleanup */ }
       }
     }
   };
@@ -259,6 +304,7 @@ const Settings = () => {
   const accentForTab = {
     appearance: "#9E2FD0",
     notifications: "#26D9A1",
+    app: "#60A5FA",
     account: "#F6B82E",
   };
 
@@ -285,11 +331,99 @@ const Settings = () => {
               <h2 className="text-base font-extrabold text-gray-800 dark:text-white">{t("settings.notifications")}</h2>
             </div>
             <SettingRow icon={notificationSound ? FiBell : FiBellOff} label={t("settings.notificationSound")}>
-              <BrandToggle checked={notificationSound} onChange={handleNotificationSoundToggle} />
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={playTestSound}
+                  title={t("settings.testSound")}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 dark:text-gray-300 hover:text-[#9E2FD0] hover:bg-[#9E2FD0]/8 transition-colors"
+                >
+                  <FiPlay size={13} />
+                </button>
+                <BrandToggle checked={notificationSound} onChange={handleNotificationSoundToggle} />
+              </div>
+            </SettingRow>
+            <SettingRow icon={FiMessageSquare} label={t("settings.messageNotifications")}>
+              <BrandToggle checked={messageNotifications} onChange={handleMessageNotificationsToggle} />
             </SettingRow>
             <SettingRow icon={FiBell} label={t("settings.classReminders")}>
               <BrandToggle checked={classReminders} onChange={handleClassRemindersToggle} />
             </SettingRow>
+          </div>
+        );
+
+      case "app":
+        return (
+          <div>
+            <div className="flex items-center gap-2 mb-5">
+              <FiMonitor size={15} style={{ color: "#60A5FA" }} />
+              <h2 className="text-base font-extrabold text-gray-800 dark:text-white">{t("settings.desktopApp")}</h2>
+            </div>
+            <div
+              className="flex flex-col items-center text-center gap-4 py-6 px-4 rounded-2xl"
+              style={{ background: "rgba(158,47,208,0.05)", border: "1px solid rgba(158,47,208,0.12)" }}
+            >
+              <img src="/icons/icon-96.png" alt="" className="w-16 h-16 rounded-2xl shadow-lg" />
+              <div>
+                <p className="font-bold text-gray-800 dark:text-white">{t("settings.desktopAppTitle")}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-xs">
+                  {t("settings.desktopAppDesc")}
+                </p>
+              </div>
+
+              {isInstalled ? (
+                <span className="flex items-center gap-2 text-sm font-semibold text-[#26D9A1]">
+                  <FiCheck size={16} /> {t("settings.appAlreadyInstalled")}
+                </span>
+              ) : canInstall ? (
+                <button
+                  onClick={handleInstallApp}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 4px 15px rgba(158,47,208,0.3)" }}
+                >
+                  <FiDownload size={16} /> {t("settings.installApp")}
+                </button>
+              ) : (
+                <p className="text-xs text-gray-400 max-w-xs">{t("settings.installUnavailable")}</p>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 mt-8 mb-5">
+              <FiZap size={15} style={{ color: "#26D9A1" }} />
+              <h2 className="text-base font-extrabold text-gray-800 dark:text-white">{t("settings.desktopInstallerTitle")}</h2>
+            </div>
+            <div
+              className="flex flex-col items-center text-center gap-4 py-6 px-4 rounded-2xl"
+              style={{ background: "rgba(38,217,161,0.05)", border: "1px solid rgba(38,217,161,0.12)" }}
+            >
+              <FiMonitor size={40} style={{ color: "#26D9A1" }} />
+              <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm">
+                {t("settings.desktopInstallerDesc")}
+              </p>
+
+              <ol className="text-sm text-gray-600 dark:text-gray-300 text-left space-y-1.5 max-w-xs">
+                <li><span className="font-bold text-[#26D9A1]">1.</span> {t("settings.desktopInstallerStep1")}</li>
+                <li><span className="font-bold text-[#26D9A1]">2.</span> {t("settings.desktopInstallerStep2")}</li>
+                <li><span className="font-bold text-[#26D9A1]">3.</span> {t("settings.desktopInstallerStep3")}</li>
+              </ol>
+
+              <div
+                className="flex items-start gap-2 text-left text-xs text-gray-500 dark:text-gray-400 max-w-xs py-2.5 px-3 rounded-lg"
+                style={{ background: "rgba(246,184,46,0.08)", border: "1px solid rgba(246,184,46,0.2)" }}
+              >
+                <FiAlertTriangle size={14} className="flex-shrink-0 mt-0.5" style={{ color: "#F6B82E" }} />
+                <span>{t("settings.desktopInstallerSmartscreen")}</span>
+              </div>
+
+              <a
+                href="https://lingolandias.com/app/Lingolandias-Setup.exe"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
+                style={{ background: "linear-gradient(135deg, #26D9A1, #1fa07a)", boxShadow: "0 4px 15px rgba(38,217,161,0.3)" }}
+              >
+                <FiDownload size={16} /> {t("settings.desktopInstallerButton")}
+              </a>
+              <p className="text-xs text-gray-400 max-w-xs">{t("settings.desktopInstallerNote")}</p>
+            </div>
           </div>
         );
 

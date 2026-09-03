@@ -7,7 +7,20 @@ import { useSelector } from "react-redux";
 import useRecording from "../../hooks/useRecording";
 import { teacherChats, CALL_RING_TIMEOUT_MS } from "../../constants";
 import { socket } from "../../socket";
+import { selectUnreadForConversation } from "../../redux/notificationsSlice";
 
+// lingo-chat: a genuine Jitsi customToolbarButtons entry — rendered natively
+// INSIDE Jitsi's own toolbar, so it gets perfect spacing/centering for free
+// (participates in Jitsi's own flex layout, recenters correctly when the
+// chat panel opens/closes, exactly like microphone/camera/hangup do).
+// Static icon, no badge baked in — confirmed by reading the deployed
+// app.bundle.min.js directly that customToolbarButtons' icon is only
+// re-readable live behind a feature gate (`ot()`) our self-hosted deployment
+// doesn't pass; executeCommand("overwriteConfig", …) reaches Jitsi and is
+// silently dropped for this specific key. The badge is a separate, tiny,
+// click-through overlay drawn on top of this button from our own page (see
+// the render below) — NOT a replacement button, so lingo-chat's own spacing
+// and click handling stay 100% native.
 const CHAT_ICON = `data:image/svg+xml;base64,${btoa(
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg>'
 )}`;
@@ -86,6 +99,9 @@ const JitsiClassRoom = () => {
   } : null;
 
   const { userName, roomId, chatRoomId, chatName, email, chatType, otherUserId } = location.state || stateFromPush || {};
+  // Drives the small click-through badge overlaid on top of lingo-chat's
+  // native icon (see the render below) — the native icon itself is static.
+  const chatUnreadCount = useSelector(selectUnreadForConversation(chatRoomId || roomId));
   const domain = JITSI_DOMAIN;
   const isTeacherMeetingRoom = TEACHER_MEETING_ROOM_IDS.includes(roomId);
   // Tag the 3 priority admins' displayName so other clients in the room can identify
@@ -128,6 +144,44 @@ const JitsiClassRoom = () => {
 
   const navigate = useNavigate();
   const [showChat, setShowChat] = useState(false);
+  // The chat toggle in the toolbar above is one of Jitsi's own
+  // customToolbarButtons — it renders INSIDE the Jitsi iframe, so there's no
+  // way to overlay a live unread badge directly on it (cross-origin, not our
+  // DOM). This toast is the substitute: a small "new message" pill rendered
+  // by us, on our own page, that appears while the chat panel is closed and
+  // opens it on click — same information a badge would give, without
+  // depending on iframe internals we don't control.
+  const [messageToast, setMessageToast] = useState(null);
+  const messageToastTimeoutRef = useRef(null);
+
+  // Server only emits this to members other than the sender — see
+  // NotificationsListener, which handles the badge/sound for every OTHER
+  // page. This is the call-page-specific piece: a toast for messages in
+  // THIS call's own conversation, shown only while its chat panel is closed
+  // (CallChatWindow's own activeRoomRef effect already covers "panel open").
+  useEffect(() => {
+    const room = chatRoomId || roomId;
+    if (!room) return;
+    const handleNewMessage = (data) => {
+      if (data?.conversationId !== room || showChatRef.current) return;
+      setMessageToast({ sender: data.sender, preview: data.preview });
+      clearTimeout(messageToastTimeoutRef.current);
+      messageToastTimeoutRef.current = setTimeout(() => setMessageToast(null), 6000);
+    };
+    socket.on("newConversationMessage", handleNewMessage);
+    return () => {
+      socket.off("newConversationMessage", handleNewMessage);
+      clearTimeout(messageToastTimeoutRef.current);
+    };
+  }, [chatRoomId, roomId]);
+
+  const openChatFromToast = () => {
+    setMessageToast(null);
+    clearTimeout(messageToastTimeoutRef.current);
+    showChatRef.current = true;
+    setShowChat(true);
+  };
+
   const [loading,  setLoading]  = useState(true);
   const [loadStuck, setLoadStuck] = useState(false);
   const [mediaBlocked, setMediaBlocked] = useState(false);
@@ -335,6 +389,16 @@ const JitsiClassRoom = () => {
   const closeChat = () => {
     showChatRef.current = false;
     setShowChat(false);
+  };
+
+  const toggleChat = () => {
+    const next = !showChatRef.current;
+    showChatRef.current = next;
+    setShowChat(next);
+    if (next) {
+      setMessageToast(null);
+      clearTimeout(messageToastTimeoutRef.current);
+    }
   };
 
   const TURN_SERVERS = [
@@ -690,14 +754,9 @@ const JitsiClassRoom = () => {
             });
 
             externalApi.addEventListener("toolbarButtonClicked", ({ key }) => {
-              // Diagnostic: confirms the click is even reaching this listener, and what
-              // state/props the chat panel would render with — added to chase a report
-              // of "chat button does nothing" that couldn't be reproduced from code alone.
-              logEvent("toolbar_button_clicked", { key, chatType, room: chatRoomId || roomId, willShow: !showChatRef.current });
+              logEvent("toolbar_button_clicked", { key, chatType, room: chatRoomId || roomId });
               if (key === "lingo-chat") {
-                const next = !showChatRef.current;
-                showChatRef.current = next;
-                setShowChat(next);
+                toggleChat();
               } else if (key === "lingo-record") {
                 toggleRecording();
               }
@@ -771,6 +830,58 @@ const JitsiClassRoom = () => {
           </div>
         )}
 
+        {/* New-message toast — substitutes for a badge on Jitsi's own chat
+            toggle button, which renders inside its iframe and can't carry
+            one. Only shown while the chat panel is closed. */}
+        {messageToast && !showChat && (
+          <button
+            onClick={openChatFromToast}
+            className="absolute top-4 right-4 z-20 flex items-center gap-2.5 pl-3 pr-4 py-2.5 rounded-2xl text-left transition-transform hover:scale-[1.02] active:scale-[0.98] chat-slide-in"
+            style={{
+              background: "linear-gradient(135deg, rgba(158,47,208,0.92), rgba(123,34,168,0.92))",
+              backdropFilter: "blur(8px)",
+              boxShadow: "0 4px 20px rgba(158,47,208,0.4)",
+              maxWidth: "280px",
+            }}
+          >
+            <span className="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center flex-shrink-0">
+              💬
+            </span>
+            <span className="min-w-0">
+              <span className="block text-white text-xs font-bold truncate">{messageToast.sender}</span>
+              <span className="block text-white/80 text-[11px] truncate">{messageToast.preview}</span>
+            </span>
+          </button>
+        )}
+
+        {/* Unread badge for lingo-chat — a tiny, click-through dot drawn on
+            top of the native button's corner, NOT a replacement for it.
+            lingo-chat itself stays a real, natively-spaced Jitsi toolbar
+            button (perfect layout, real click handling); this only adds the
+            number Jitsi won't let us bake into that button's own icon live.
+            `pointer-events: none` so it never steals the click — the real
+            button underneath still opens the chat exactly as before.
+            Position uses the same measured-off-the-real-toolbar math as the
+            icon itself (see the historical note above): centered on this
+            video-area container (which is what actually shrinks/recenters
+            when the chat panel opens, not the full viewport), one icon pitch
+            (~56px) right of center for teacher/admin (7 icons), one and a
+            half pitches (~84px) for a student (6 icons, no record button) —
+            nudged up and right from the icon's own center to land on its
+            top-right corner. */}
+        {user.role !== "admin" && !showChat && chatUnreadCount > 0 && (
+          <span
+            className="absolute z-20 pointer-events-none min-w-[19px] h-[19px] px-[4px] rounded-full bg-red-500 text-white text-[11px] font-bold flex items-center justify-center border-2 border-black/50"
+            style={{
+              bottom: "38px",
+              left: `calc(50% + ${(user.role === "teacher" ? 56 : 84) + 9}px)`,
+              transform: "translateX(-50%)",
+            }}
+          >
+            {chatUnreadCount > 9 ? "9+" : chatUnreadCount}
+          </span>
+        )}
+
         {/* Upload status is now shown globally by UploadStatusBar in App.jsx */}
       </div>
 
@@ -805,14 +916,6 @@ const JitsiClassRoom = () => {
               chatName={chatName}
               onClose={closeChat}
             />
-            {/* Floating close pill — mobile only */}
-            <button
-              onClick={closeChat}
-              className="lg:hidden absolute bottom-24 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-5 py-2 rounded-full text-white text-sm font-semibold shadow-xl"
-              style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}
-            >
-              ✕ Close Chat
-            </button>
           </div>
         )}
       </div>

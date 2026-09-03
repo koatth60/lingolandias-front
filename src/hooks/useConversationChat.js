@@ -83,21 +83,40 @@ const useConversationChat = (socket, conversationId, user) => {
   useEffect(() => {
     currentIdRef.current = conversationId;
     const cached = messageCache.get(conversationId);
-    setChatMessages(cached || []);
+    if (cached) {
+      setChatMessages(cached);
+      setHasMore(true);
+      setIsLoading(false);
+      return;
+    }
+    setChatMessages([]);
     setHasMore(true);
-    // Sin nada en caché todavía no sabemos si el chat está realmente vacío o
-    // solo no se ha cargado en esta sesión — isLoading distingue ambos casos
-    // para no mostrar "no hay mensajes" mientras el primer fetch está en vuelo.
-    setIsLoading(!!conversationId && !cached);
-  }, [conversationId]);
+    // Sin nada en memoria todavía no sabemos si el chat está realmente vacío
+    // o solo no se ha cargado en esta sesión — isLoading distingue ambos
+    // casos para no mostrar "no hay mensajes" mientras el primer fetch está
+    // en vuelo.
+    setIsLoading(!!conversationId);
+    if (!conversationId) return;
+    // Pestaña recién abierta (sin nada en memoria) — antes de que termine el
+    // fetch de red de más abajo, intenta con lo que haya quedado guardado en
+    // disco de una sesión anterior, para no mostrar spinner en frío en cada
+    // reapertura del navegador.
+    messageCache.getPersisted(user?.id, conversationId).then((persisted) => {
+      if (currentIdRef.current !== conversationId) return; // ya cambió de chat
+      if (persisted) {
+        setChatMessages(persisted);
+        setIsLoading(false);
+      }
+    });
+  }, [conversationId, user?.id]);
 
   // Keeps the cache in sync with whatever's actually shown — covers fetches,
   // socket-driven edits/deletes/reactions, and the sender's own optimistic
   // send, all in one place instead of duplicating this in every handler.
   useEffect(() => {
     if (!conversationId) return;
-    messageCache.set(conversationId, chatMessages);
-  }, [conversationId, chatMessages]);
+    messageCache.set(conversationId, chatMessages, user?.id);
+  }, [conversationId, chatMessages, user?.id]);
 
   useEffect(() => {
     if (!socket || !conversationId || !user?.name) return;

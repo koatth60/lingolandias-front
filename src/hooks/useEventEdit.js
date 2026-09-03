@@ -13,6 +13,9 @@ const useEventEdit = (studentId, onSuccess) => {
     start: '',
     end: '',
     eventId: '',
+    studentId: '',
+    roomId: null,
+    groupName: null,
   });
 
   const [selectedDate, setSelectedDate] = useState(null);
@@ -27,6 +30,9 @@ const useEventEdit = (studentId, onSuccess) => {
       start: dayjs(event.start).format('HH:mm'), // Format to 24-hour format
       end: dayjs(event.end).format('HH:mm'),
       eventId: event.eventId,
+      studentId: event.studentId,
+      roomId: event.roomId || null,
+      groupName: event.groupName || null,
     });
     setIsEditing(true); // Set editing mode to true
   };
@@ -153,6 +159,7 @@ const useEventEdit = (studentId, onSuccess) => {
     handleSubmitEvent, // Submit the form and update the event
     setIsEditing, // Optionally, set isEditing to false if needed (e.g., on cancel)
     handleSelectSlot,
+    setSelectedDate, // Lets a caller skip the slot-picker step and set the day directly
   };
 };
 

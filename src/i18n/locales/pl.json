@@ -194,16 +194,35 @@
     "account": "Konto",
     "darkMode": "Tryb Ciemny",
     "notificationSound": "Dźwięk Powiadomień",
+    "testSound": "Odtwórz dźwięk testowy",
+    "messageNotifications": "Powiadomienia pulpitu dla wiadomości",
     "classReminders": "Przypomnienia o Zajęciach",
     "language": "Język",
     "changePassword": "Zmień Hasło",
     "logout": "Wyloguj się",
     "browserNoSupport": "Twoja przeglądarka nie obsługuje powiadomień push.",
-    "allowNotifications": "Zezwól na powiadomienia w przeglądarce, aby włączyć przypomnienia o zajęciach.",
+    "allowNotifications": "Zezwól na powiadomienia w przeglądarce, aby to włączyć.",
     "remindersEnabled": "Przypomnienia o zajęciach włączone!",
     "remindersFailed": "Nie udało się włączyć powiadomień. Spróbuj ponownie.",
     "remindersDisabled": "Przypomnienia o zajęciach wyłączone.",
-    "remindersDisableFailed": "Nie udało się wyłączyć powiadomień."
+    "remindersDisableFailed": "Nie udało się wyłączyć powiadomień.",
+    "messageNotificationsEnabled": "Powiadomienia pulpitu dla wiadomości włączone!",
+    "messageNotificationsDisabled": "Powiadomienia pulpitu dla wiadomości wyłączone.",
+    "desktopApp": "Aplikacja Desktopowa",
+    "desktopAppTitle": "Zainstaluj Lingolandias",
+    "desktopAppDesc": "Zainstaluj jako osobną aplikację — z własnym oknem i ikoną, otwierającą się od razu w Twoich czatach i zajęciach.",
+    "installApp": "Zainstaluj Lingolandias",
+    "appAlreadyInstalled": "Już zainstalowano na tym urządzeniu",
+    "appInstalled": "Lingolandias zainstalowana!",
+    "installUnavailable": "Instalacja nie jest jeszcze dostępna w tej przeglądarce. Spróbuj Chrome, Edge lub Brave.",
+    "desktopInstallerTitle": "Wolisz prawdziwą aplikację na komputer?",
+    "desktopInstallerDesc": "Natywna aplikacja Windows, oddzielna od przeglądarki. Otwiera się sama za każdym razem, gdy włączasz komputer — bez dodatkowej konfiguracji.",
+    "desktopInstallerStep1": "Pobierz instalator poniżej.",
+    "desktopInstallerStep2": "Uruchom go — zainstaluje się sam i od razu się otworzy.",
+    "desktopInstallerStep3": "Gotowe. Od teraz otwiera się sama za każdym razem, gdy włączasz komputer.",
+    "desktopInstallerButton": "Pobierz instalator",
+    "desktopInstallerSmartscreen": "Windows może pokazać \"Windows chronił Twój komputer\" za pierwszym razem — to normalne dla nowych aplikacji. Kliknij \"Więcej informacji\", a potem \"Uruchom mimo to\".",
+    "desktopInstallerNote": "To jest oddzielne od aplikacji, którą mogłeś już zainstalować z przeglądarki powyżej — możesz mieć obie, albo używać tylko tej."
   },
   "changePassword": {
     "title": "Zmień Hasło",
@@ -300,7 +319,10 @@
     "noStudents": "Brak przypisanych studentów",
     "noTeacher": "Brak przypisanego nauczyciela",
     "contactAdmin": "Skontaktuj się z administratorem, aby przypisano Ci studentów.",
-    "contactAdminStudent": "Skontaktuj się z administratorem, aby przypisano Ci nauczyciela."
+    "contactAdminStudent": "Skontaktuj się z administratorem, aby przypisano Ci nauczyciela.",
+    "eventMenuLabel": "Opcje wydarzenia",
+    "editTimeMenuItem": "Edytuj godzinę",
+    "manageParticipantsMenuItem": "Uczestnicy"
   },
   "mobileSchedule": {
     "upcomingClasses": "Nadchodzące Zajęcia",
@@ -337,7 +359,11 @@
     "update": "Aktualizuj",
     "cancel": "Anuluj",
     "editEvent": "Edytuj Wydarzenie",
-    "closeCalendar": "Zamknij Kalendarz"
+    "closeCalendar": "Zamknij Kalendarz",
+    "addPersonButton": "Dodaj osobę do tego terminu",
+    "addPersonHint": "Zachowuje dokładnie ten termin — nie trzeba tworzyć nowego.",
+    "personAdded": "Osoba dodana do zajęć!",
+    "addPersonFailed": "Nie udało się dodać tej osoby. Spróbuj ponownie."
   },
   "messages": {
     "title": "Wiadomości",
@@ -406,12 +432,16 @@
     "ebooksTitle": "E-Booki Kulturalne i Językowe"
   },
   "upcomingClass": {
-    "join": "Dołącz"
+    "join": "Dołącz",
+    "message": "Wiadomość",
+    "viewInCalendar": "Zobacz w kalendarzu"
   },
   "errorBoundary": {
     "message": "Coś poszło nie tak."
   },
   "common": {
+    "updateAvailable": "Dostępna jest nowa wersja",
+    "refreshNow": "Odśwież",
     "cancel": "Anuluj",
     "save": "Zapisz",
     "delete": "Usuń",
@@ -468,6 +498,9 @@
     "deleteGroupConfirm": "Usuń grupę",
     "deleteGroupFailed": "Nie udało się usunąć grupy.",
     "addPeople": "Dodaj osoby",
+    "mentionAddNotMemberTitle": "Dodać {{name}} do grupy?",
+    "mentionAddNotMemberWarning": "{{name}} nie jest jeszcze członkiem tej grupy. Zostanie dodany, aby mógł zobaczyć tę wzmiankę i na nią odpowiedzieć.",
+    "mentionAddConfirm": "Dodaj do grupy",
     "shareHistoryToggle": "Udostępnij pełną historię wiadomości",
     "cancel": "Anuluj",
     "loadMoreChats": "Załaduj więcej czatów",
@@ -486,7 +519,17 @@
     "addToClassWarning": "{{name}} zostanie dodany(a) do zaplanowanych zajęć dla wszystkich. Możesz zmienić nazwę zajęć poniżej.",
     "addToClassConfirm": "Dodaj do zajęć",
     "skipScheduling": "Nie teraz",
-    "deleteScheduledGroupWarning": "\"{{name}}\" to zaplanowane zajęcia — usunięcie ich anuluje zajęcia i usuwa je z kalendarza wszystkich, a także usuwa wszystkie wiadomości. Tej operacji nie można cofnąć."
+    "deleteScheduledGroupWarning": "\"{{name}}\" to zaplanowane zajęcia — usunięcie ich anuluje zajęcia i usuwa je z kalendarza wszystkich, a także usuwa wszystkie wiadomości. Tej operacji nie można cofnąć.",
+    "removeMember": "Usuń z grupy",
+    "leaveGroup": "Opuść grupę",
+    "confirmRemoveMember": "Usunąć {{name}} z tej grupy?",
+    "confirmLeaveGroup": "Opuścić tę grupę?",
+    "removeMemberConfirm": "Usuń",
+    "leaveGroupConfirm": "Opuść",
+    "systemMemberAdded": "{{actor}} dodał(a) {{target}}",
+    "systemMemberRemoved": "{{actor}} usunął(ęła) {{target}}",
+    "systemMemberLeft": "{{actor}} opuścił(a) czat",
+    "systemGroupRenamed": "{{actor}} zmienił(a) nazwę grupy z \"{{oldName}}\" na \"{{newName}}\""
   },
   "toolbar": {
     "classesSchedule": "Harmonogram Zajęć",
@@ -547,6 +590,11 @@
     "readyToSend": "Gotowe do wysłania.",
     "uploading": "Przesyłanie...",
     "typePlaceholder": "Napisz wiadomość...",
+    "formatText": "Formatuj tekst",
+    "formatBold": "Pogrubienie",
+    "formatItalic": "Kursywa",
+    "formatStrike": "Przekreślenie",
+    "formatCode": "Kod",
     "activeNow": "Aktywny teraz",
     "noMessages": "Brak wiadomości — przywitaj się!",
     "editing": "Edytowanie wiadomości",

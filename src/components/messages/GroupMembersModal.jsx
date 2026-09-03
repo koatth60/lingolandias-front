@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FiX, FiUsers, FiEdit2, FiCheck, FiUserPlus, FiSearch, FiCalendar } from "react-icons/fi";
+import { FiX, FiUsers, FiEdit2, FiCheck, FiUserPlus, FiSearch, FiCalendar, FiUserMinus, FiLogOut } from "react-icons/fi";
 import useUserSearch from "../../hooks/useUserSearch";
 import AvatarPicker from "./AvatarPicker";
 
@@ -34,6 +34,10 @@ const GroupMembersModal = ({
   onChangeAvatar,
   onAddMember,
   onScheduleClass,
+  onRemoveMember,
+  pendingClassConfirm,
+  onConfirmAddToClass,
+  onCancelAddToClass,
 }) => {
   const { t } = useTranslation();
   const [editingName, setEditingName] = useState(false);
@@ -41,11 +45,19 @@ const GroupMembersModal = ({
   const [showAddPeople, setShowAddPeople] = useState(false);
   const [query, setQuery] = useState("");
   const [shareHistory, setShareHistory] = useState(true);
+  const [classNameInput, setClassNameInput] = useState("");
+  const [confirmRemoveId, setConfirmRemoveId] = useState(null);
   const { results, loading } = useUserSearch(query, currentUserId);
   const existingMemberIds = new Set(members.map((m) => m.id));
+  const isOwner = members.find((m) => m.id === currentUserId)?.memberRole === "owner";
+  const canRemove = (m) => chatType === "group" && (m.id === currentUserId || (isOwner && m.id !== currentUserId));
 
   const canManage = CAN_MANAGE_TYPES.includes(chatType);
   const canScheduleClass = currentUserRole === "teacher" && chatType === "group" && !linkedToSchedule;
+
+  useEffect(() => {
+    if (pendingClassConfirm) setClassNameInput(pendingClassConfirm.defaultGroupName || "");
+  }, [pendingClassConfirm]);
 
   const submitRename = () => {
     if (nameInput.trim() && nameInput.trim() !== groupName) onRename(nameInput.trim());
@@ -101,36 +113,101 @@ const GroupMembersModal = ({
             {t("messagesExtra.membersCount", { count: members.length })}
           </p>
 
-          {!showAddPeople ? (
+          {pendingClassConfirm ? (
+            <div>
+              <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-1">
+                {t("messagesExtra.addToClassTitle")}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                {t("messagesExtra.addToClassWarning", { name: pendingClassConfirm.personName })}
+              </p>
+              <input
+                autoFocus
+                type="text"
+                value={classNameInput}
+                onChange={(e) => setClassNameInput(e.target.value)}
+                className="w-full px-3 py-2.5 mb-3 rounded-xl text-sm bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-[#9E2FD0]/20 text-gray-900 dark:text-white outline-none focus:border-[#9E2FD0]"
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={() => onConfirmAddToClass(classNameInput)}
+                  className="flex-1 py-2.5 rounded-xl font-medium text-white transition-all"
+                  style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}
+                >
+                  {t("messagesExtra.addToClassConfirm")}
+                </button>
+                <button
+                  onClick={onCancelAddToClass}
+                  className="flex-1 py-2.5 rounded-xl font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 transition-all"
+                >
+                  {t("messagesExtra.skipScheduling")}
+                </button>
+              </div>
+            </div>
+          ) : !showAddPeople ? (
             <>
               <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar space-y-1">
-                {members.map((m) => (
-                  <div
-                    key={m.id}
-                    onClick={() => onViewProfile(m.id)}
-                    className="flex items-center gap-2.5 px-2 py-2 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
-                  >
-                    {m.avatarUrl ? (
-                      <img src={m.avatarUrl} alt={m.name} className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
-                    ) : (
-                      <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}>
-                        {getInitials(m.name, m.lastName)}
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-gray-800 dark:text-gray-100 truncate">
-                        {m.name} {m.lastName}
-                        {m.memberRole === "owner" && (
-                          <span className="ml-1.5 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-[#F6B82E]/15 text-[#d4a017] dark:text-[#F6B82E]">
-                            {t("messagesExtra.groupOwner")}
-                          </span>
-                        )}
+                {members.map((m) =>
+                  confirmRemoveId === m.id ? (
+                    <div key={m.id} className="px-2.5 py-2.5 rounded-xl bg-red-50 dark:bg-red-500/10 space-y-2">
+                      <p className="text-xs text-gray-700 dark:text-gray-200">
+                        {m.id === currentUserId
+                          ? t("messagesExtra.confirmLeaveGroup")
+                          : t("messagesExtra.confirmRemoveMember", { name: `${m.name} ${m.lastName}`.trim() })}
                       </p>
-                      <p className="text-[10px] text-gray-400">{t(ROLE_LABEL_KEY[m.role] || "profileCard.roleStudent")}</p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => { onRemoveMember(m.id); setConfirmRemoveId(null); }}
+                          className="flex-1 py-1.5 rounded-lg text-xs font-medium text-white bg-red-500 hover:bg-red-600 transition-colors"
+                        >
+                          {m.id === currentUserId ? t("messagesExtra.leaveGroupConfirm") : t("messagesExtra.removeMemberConfirm")}
+                        </button>
+                        <button
+                          onClick={() => setConfirmRemoveId(null)}
+                          className="flex-1 py-1.5 rounded-lg text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors"
+                        >
+                          {t("messagesExtra.cancel")}
+                        </button>
+                      </div>
                     </div>
-                    <span className={`w-2 h-2 rounded-full flex-shrink-0 ${m.online === "online" ? "bg-[#26D9A1]" : "bg-gray-300 dark:bg-gray-600"}`} />
-                  </div>
-                ))}
+                  ) : (
+                    <div
+                      key={m.id}
+                      className="flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                    >
+                      <div className="flex items-center gap-2.5 flex-1 min-w-0 cursor-pointer" onClick={() => onViewProfile(m.id)}>
+                        {m.avatarUrl ? (
+                          <img src={m.avatarUrl} alt={m.name} className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
+                        ) : (
+                          <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}>
+                            {getInitials(m.name, m.lastName)}
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-gray-800 dark:text-gray-100 truncate">
+                            {m.name} {m.lastName}
+                            {m.memberRole === "owner" && (
+                              <span className="ml-1.5 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-[#F6B82E]/15 text-[#d4a017] dark:text-[#F6B82E]">
+                                {t("messagesExtra.groupOwner")}
+                              </span>
+                            )}
+                          </p>
+                          <p className="text-[10px] text-gray-400">{t(ROLE_LABEL_KEY[m.role] || "profileCard.roleStudent")}</p>
+                        </div>
+                      </div>
+                      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${m.online === "online" ? "bg-[#26D9A1]" : "bg-gray-300 dark:bg-gray-600"}`} />
+                      {canRemove(m) && (
+                        <button
+                          onClick={() => setConfirmRemoveId(m.id)}
+                          title={m.id === currentUserId ? t("messagesExtra.leaveGroup") : t("messagesExtra.removeMember")}
+                          className="p-1 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 flex-shrink-0"
+                        >
+                          {m.id === currentUserId ? <FiLogOut size={13} /> : <FiUserMinus size={13} />}
+                        </button>
+                      )}
+                    </div>
+                  )
+                )}
               </div>
               {canManage && (
                 <button

@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
-import { FiCalendar, FiUser, FiArrowRight } from 'react-icons/fi';
+import { FiCalendar, FiUser, FiArrowRight, FiMessageSquare } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
 
-export const UpcomingClass = ({ time, teacher, date, onJoin }) => {
+export const UpcomingClass = ({ time, teacher, date, onJoin, onMessage, onViewCalendar }) => {
   const { t } = useTranslation();
   return (
   <div
@@ -33,13 +33,33 @@ export const UpcomingClass = ({ time, teacher, date, onJoin }) => {
           </p>
         </div>
       </div>
-      <button
-        onClick={onJoin}
-        className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white text-xs font-bold transition-opacity hover:opacity-85"
-        style={{ background: 'linear-gradient(135deg, #9E2FD0, #7b22a8)', boxShadow: '0 3px 10px rgba(158,47,208,0.35)' }}
-      >
-        {t("upcomingClass.join")} <FiArrowRight size={12} />
-      </button>
+      <div className="flex-shrink-0 flex items-center gap-1.5">
+        {onMessage && (
+          <button
+            onClick={onMessage}
+            title={t("upcomingClass.message")}
+            className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-[#9E2FD0] hover:bg-[#9E2FD0]/10 transition-colors"
+          >
+            <FiMessageSquare size={14} />
+          </button>
+        )}
+        {onViewCalendar && (
+          <button
+            onClick={onViewCalendar}
+            title={t("upcomingClass.viewInCalendar")}
+            className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-[#26D9A1] hover:bg-[#26D9A1]/10 transition-colors"
+          >
+            <FiCalendar size={14} />
+          </button>
+        )}
+        <button
+          onClick={onJoin}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white text-xs font-bold transition-opacity hover:opacity-85"
+          style={{ background: 'linear-gradient(135deg, #9E2FD0, #7b22a8)', boxShadow: '0 3px 10px rgba(158,47,208,0.35)' }}
+        >
+          {t("upcomingClass.join")} <FiArrowRight size={12} />
+        </button>
+      </div>
     </div>
   </div>
   );
@@ -50,4 +70,6 @@ UpcomingClass.propTypes = {
   teacher: PropTypes.string.isRequired,
   date: PropTypes.string.isRequired,
   onJoin: PropTypes.func.isRequired,
+  onMessage: PropTypes.func,
+  onViewCalendar: PropTypes.func,
 };

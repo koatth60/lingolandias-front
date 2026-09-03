@@ -1,24 +1,39 @@
 import React from "react";
 import { FiMusic, FiFile, FiFileText, FiDownload, FiVideo } from "react-icons/fi";
+import { renderInlineFormatting } from "../utils/inlineFormatting.jsx";
 
 const useMessageFormatter = (onFileClick) => {
-  const formatMessageWithLinks = (text, isSender) => {
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    return text.split(urlRegex).map((part, index) =>
-      urlRegex.test(part) ? (
-        <a
-          key={index}
-          href={part}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`${isSender ? "text-white " : "text-blue-600 underline"}`}
-        >
-          {part}
-        </a>
-      ) : (
-        part
-      )
-    );
+  // @[Display Name](userId) markup, inserted by the @ mention picker (see
+  // ChatWindowComponent) — rendered as a styled chip instead of raw markup.
+  // Highlighted differently when it's the viewer's own id, same idea as
+  // Slack/Teams bolding a mention of you specifically.
+  const mentionRegex = /@\[([^\]]+)\]\(([0-9a-f-]{36})\)/g;
+
+  const formatMessageWithLinks = (text, isSender, currentUserId) => {
+    let mentionKey = 0;
+    return text.split(mentionRegex).map((part, i, arr) => {
+      // matchAll-via-split alternates: text, name, id, text, name, id, ...
+      if (i % 3 === 1) {
+        const name = part;
+        const id = arr[i + 1];
+        const isMe = id === currentUserId;
+        return (
+          <span
+            key={`mention-${mentionKey++}`}
+            className="font-semibold rounded px-1"
+            style={
+              isMe
+                ? { background: "rgba(246,184,46,0.25)", color: "inherit" }
+                : { background: "rgba(158,47,208,0.15)", color: "inherit" }
+            }
+          >
+            @{name}
+          </span>
+        );
+      }
+      if (i % 3 === 2) return null; // the id half of the pair above, already consumed
+      return renderInlineFormatting(part, `fmt-${i}`, isSender ? "text-white underline" : "text-blue-600 underline");
+    });
   };
 
   const formatTimestamp = (timestamp) => {

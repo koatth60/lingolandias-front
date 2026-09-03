@@ -6,6 +6,7 @@ import messageReducer from '../redux/messageSlice'; // Existing messages reducer
 import chatReducer from '../redux/chatSlice'; // New chat reducer
 import filePreviewReducer from './filePreviewSlice';
 import schedulesReducer from './schedulesSlice';
+import notificationsReducer from './notificationsSlice';
 
 // Intercept failed settings saves and notify the user
 const settingsListener = createListenerMiddleware();
@@ -70,6 +71,7 @@ const store = configureStore({
     chat: chatReducer,
     filePreview: filePreviewReducer,
     schedules: schedulesReducer,
+    notifications: notificationsReducer,
   },
   preloadedState: persistedState,
   middleware: (getDefaultMiddleware) =>

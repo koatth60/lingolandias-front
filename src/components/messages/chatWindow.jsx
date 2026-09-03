@@ -3,8 +3,8 @@ import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import Swal from "sweetalert2";
 import EmojiPicker from "emoji-picker-react";
-import { BsEmojiSmile, BsPaperclip, BsThreeDots } from "react-icons/bs";
-import { FiX, FiArrowLeft, FiMessageSquare, FiSend, FiDownload, FiEye, FiBell, FiBellOff, FiTrash2, FiEdit2, FiArrowDown, FiCornerUpLeft } from "react-icons/fi";
+import { BsEmojiSmile, BsPaperclip, BsThreeDots, BsType, BsTypeBold, BsTypeItalic, BsTypeStrikethrough, BsCodeSlash } from "react-icons/bs";
+import { FiX, FiArrowLeft, FiMessageSquare, FiSend, FiDownload, FiEye, FiBell, FiBellOff, FiTrash2, FiEdit2, FiArrowDown, FiCornerUpLeft, FiUsers, FiUserPlus, FiUserMinus, FiLogOut } from "react-icons/fi";
 import { updateUserSettings } from "../../redux/userSlice";
 import useDeleteMessage from "../../hooks/useDeleteMessage";
 import useSocketManager from "../../hooks/useSocketManager";
@@ -23,6 +23,8 @@ const FILE_EXTS = new Set([
   "mp4","mov","webm","avi","mkv",
   "pdf","doc","docx","xls","xlsx","ppt","pptx","txt","zip","rar","csv",
 ]);
+
+const SYSTEM_MESSAGE_TYPES = ["member_added", "member_removed", "member_left", "group_renamed"];
 
 const ChatWindow = ({
   username,
@@ -64,11 +66,29 @@ const ChatWindow = ({
     uploading,
     error,
     file,
+    setFile,
     sendMessage,
     handleFileChange,
     uploadFile,
     clearFile,
   } = useMessageHandler(socket, room, username, email);
+
+  // Ctrl/Cmd+V a screenshot or a copied image straight into the composer —
+  // stages it the same way picking one via the paperclip button does.
+  const handlePaste = (e) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of items) {
+      if (item.type.startsWith("image/")) {
+        const pastedFile = item.getAsFile();
+        if (pastedFile) {
+          e.preventDefault();
+          setFile(pastedFile);
+        }
+        return;
+      }
+    }
+  };
 
   const handleClearFile = () => {
     clearFile();
@@ -134,6 +154,28 @@ const ChatWindow = ({
   const { formatMessageWithLinks, formatTimestamp, renderFileMessage, isImageUrl } =
     useMessageFormatter(handleFileClick);
 
+  // Reply-quote previews are plain text (no chip rendering), so @[Name](id)
+  // mention markup needs to collapse to "@Name" instead of showing raw text.
+  const stripMentionMarkup = (text) => (text || "").replace(/@\[([^\]]+)\]\([0-9a-f-]{36}\)/g, "@$1");
+
+  // "X added Y" system messages read as a mention of Y — style their name as
+  // the same @chip a real mention gets. Works off the already-translated
+  // sentence so the surrounding wording stays localized.
+  const renderSystemTextWithTag = (translatedText, targetName) => {
+    if (!targetName) return translatedText;
+    const idx = translatedText.indexOf(targetName);
+    if (idx === -1) return translatedText;
+    return (
+      <>
+        {translatedText.slice(0, idx)}
+        <span className="font-semibold rounded px-1" style={{ background: "rgba(158,47,208,0.15)", color: "inherit" }}>
+          @{targetName}
+        </span>
+        {translatedText.slice(idx + targetName.length)}
+      </>
+    );
+  };
+
   const [editingMsg, setEditingMsg] = useState(null);
 
   const handleSend = (msg, setMsg, reset) => {
@@ -162,6 +204,38 @@ const ChatWindow = ({
     handleEmojiClick,
     resetTextarea,
   } = useChatInput(handleSend);
+
+  const [showFormatMenu, setShowFormatMenu] = useState(false);
+
+  // Slack-style single-char delimiters — *bold*, _italic_, ~strike~, `code` —
+  // wraps the current selection, or (nothing selected) drops the cursor
+  // between an empty pair so typing continues inside it.
+  const wrapSelection = (delimiter) => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const selected = message.slice(start, end);
+    const before = message.slice(0, start);
+    const after = message.slice(end);
+    const next = `${before}${delimiter}${selected}${delimiter}${after}`;
+    setMessage(next);
+    requestAnimationFrame(() => {
+      ta.focus();
+      if (selected) {
+        ta.setSelectionRange(start, start + delimiter.length * 2 + selected.length);
+      } else {
+        const pos = start + delimiter.length;
+        ta.setSelectionRange(pos, pos);
+      }
+    });
+  };
+
+  const handleKeyDownWithFormatting = (e) => {
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === "b") { e.preventDefault(); wrapSelection("*"); return; }
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === "i") { e.preventDefault(); wrapSelection("_"); return; }
+    handleKeyDown(e);
+  };
 
   const handleInputWithTyping = (e) => {
     handleInput(e);
@@ -463,6 +537,53 @@ const ChatWindow = ({
               index > 0 &&
               allMessages[index - 1].email === msg.email;
 
+            if (SYSTEM_MESSAGE_TYPES.includes(msg.messageType)) {
+              const meta = msg.metadata || {};
+              let icon = <FiUsers size={12} className="text-gray-400 flex-shrink-0" />;
+              let text = "";
+              if (msg.messageType === "member_added") {
+                icon = <FiUserPlus size={12} className="text-[#26D9A1] flex-shrink-0" />;
+                text = renderSystemTextWithTag(
+                  t("messagesExtra.systemMemberAdded", { actor: msg.username, target: meta.targetName }),
+                  meta.targetName
+                );
+              } else if (msg.messageType === "member_removed") {
+                icon = <FiUserMinus size={12} className="text-red-400 flex-shrink-0" />;
+                text = renderSystemTextWithTag(
+                  t("messagesExtra.systemMemberRemoved", { actor: msg.username, target: meta.targetName }),
+                  meta.targetName
+                );
+              } else if (msg.messageType === "member_left") {
+                icon = <FiLogOut size={12} className="text-gray-400 flex-shrink-0" />;
+                text = t("messagesExtra.systemMemberLeft", { actor: msg.username });
+              } else if (msg.messageType === "group_renamed") {
+                icon = <FiEdit2 size={12} className="text-[#9E2FD0] flex-shrink-0" />;
+                text = t("messagesExtra.systemGroupRenamed", { actor: msg.username, oldName: meta.oldName, newName: meta.newName });
+              }
+              return (
+                <div key={index} className="mt-3">
+                  {showTimestamp && (
+                    <div className="flex items-center gap-3 my-4">
+                      <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
+                      <span className="text-[10px] font-medium px-3 py-1 rounded-full
+                                       text-gray-500 dark:text-gray-400
+                                       bg-white dark:bg-white/5
+                                       border border-gray-200 dark:border-white/10">
+                        {formatTimestamp(msg.timestamp)}
+                      </span>
+                      <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
+                    </div>
+                  )}
+                  <li className="flex justify-center my-1">
+                    <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-100 dark:bg-white/5">
+                      {icon}
+                      <span className="text-[11px] text-gray-500 dark:text-gray-400">{text}</span>
+                    </div>
+                  </li>
+                </div>
+              );
+            }
+
             return (
               <div key={index} className={isGrouped ? "mt-1" : "mt-3"}>
                 {showTimestamp && (
@@ -536,7 +657,7 @@ const ChatWindow = ({
                           {msg.replyTo.username}
                         </p>
                         <p className={`line-clamp-2 text-[11px] ${isSender ? "text-white/70" : "text-gray-500 dark:text-gray-400"}`}>
-                          {msg.replyTo.message.startsWith("http") ? "📎 File" : msg.replyTo.message}
+                          {msg.replyTo.message.startsWith("http") ? "📎 File" : stripMentionMarkup(msg.replyTo.message)}
                         </p>
                       </div>
                     )}
@@ -688,7 +809,7 @@ const ChatWindow = ({
               <div className="min-w-0">
                 <p className="text-[10px] font-semibold text-[#9E2FD0] dark:text-purple-300">{replyTo.username}</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                  {replyTo.message.startsWith("http") ? "📎 File" : replyTo.message}
+                  {replyTo.message.startsWith("http") ? "📎 File" : stripMentionMarkup(replyTo.message)}
                 </p>
               </div>
             </div>
@@ -726,7 +847,8 @@ const ChatWindow = ({
             placeholder={t("chatWindow.typePlaceholder")}
             value={message}
             onChange={handleInputWithTyping}
-            onKeyDown={handleKeyDown}
+            onKeyDown={handleKeyDownWithFormatting}
+            onPaste={handlePaste}
             className="flex-1 bg-transparent resize-none outline-none
                        text-sm text-gray-900 dark:text-white
                        placeholder-gray-400 dark:placeholder-gray-500
@@ -735,12 +857,20 @@ const ChatWindow = ({
             disabled={!!file}
             rows={1}
           />
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-1 flex-shrink-0">
             <button
-              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              onClick={() => { setShowEmojiPicker(!showEmojiPicker); setShowFormatMenu(false); }}
               className="text-gray-400 hover:text-[#F6B82E] transition-colors"
             >
               <BsEmojiSmile size={18} />
+            </button>
+            <button
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => { setShowFormatMenu((p) => !p); setShowEmojiPicker(false); }}
+              title={t("chatWindow.formatText")}
+              className="text-gray-400 hover:text-purple-500 transition-colors"
+            >
+              <BsType size={18} />
             </button>
             <label
               htmlFor="fileInput"
@@ -778,6 +908,32 @@ const ChatWindow = ({
           <div className="absolute bottom-full right-3 mb-2 z-20">
             <div className="rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 shadow-xl">
               <EmojiPicker onEmojiClick={handleEmojiClick} />
+            </div>
+          </div>
+        )}
+
+        {showFormatMenu && (
+          <div className="absolute bottom-full left-3 mb-2 z-20">
+            <div className="flex items-center gap-1 p-1.5 rounded-xl bg-white dark:bg-[#1a1a2e]
+                            border border-gray-200 dark:border-white/10 shadow-xl">
+              {[
+                { delimiter: "*", icon: BsTypeBold, label: t("chatWindow.formatBold") },
+                { delimiter: "_", icon: BsTypeItalic, label: t("chatWindow.formatItalic") },
+                { delimiter: "~", icon: BsTypeStrikethrough, label: t("chatWindow.formatStrike") },
+                { delimiter: "`", icon: BsCodeSlash, label: t("chatWindow.formatCode") },
+              ].map(({ delimiter, icon: Icon, label }) => (
+                <button
+                  key={delimiter}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => wrapSelection(delimiter)}
+                  title={label}
+                  className="p-2 rounded-lg text-gray-600 dark:text-gray-300
+                             hover:text-purple-600 dark:hover:text-purple-400
+                             hover:bg-purple-50 dark:hover:bg-white/10 transition-colors"
+                >
+                  <Icon size={16} />
+                </button>
+              ))}
             </div>
           </div>
         )}

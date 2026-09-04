@@ -84,6 +84,32 @@ export const uploadAvatar = createAsyncThunk(
   }
 );
 
+// Async action to upload a profile cover/banner image
+export const uploadCover = createAsyncThunk(
+  "user/uploadCover",
+  async (formData, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/upload/cover`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to upload cover image");
+      }
+
+      const result = await response.json();
+      return result.user;
+    } catch (error) {
+      console.error("Upload cover error:", error);
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 export const updateUserSettings = createAsyncThunk(
   "user/updateUserSettings",
   async (settingsData, { rejectWithValue }) => {
@@ -378,7 +404,26 @@ const userSlice = createSlice({
         state.status = "failed";
         state.error = action.payload || action.error.message;
       })
-      
+
+      .addCase(uploadCover.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(uploadCover.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.userInfo.user = {
+          ...state.userInfo.user,
+          ...action.payload,
+        };
+      })
+      .addCase(uploadCover.rejected, (state, action) => {
+        console.error(
+          "Cover upload failed:",
+          action.payload || action.error.message
+        );
+        state.status = "failed";
+        state.error = action.payload || action.error.message;
+      })
+
       .addCase(updateUserSettings.pending, (state, action) => {
         state.status = "loading";
         // Optimistic update so the UI reflects the change immediately

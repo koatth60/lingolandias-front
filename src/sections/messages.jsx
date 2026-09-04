@@ -299,7 +299,15 @@ const Messages = () => {
   useEffect(() => {
     const targetId = location.state?.openDmWithUserId;
     if (!targetId || !user?.id) return;
-    startDmWith({ id: targetId, name: location.state?.openDmWithName || "", lastName: "" });
+    startDmWith({
+      id: targetId,
+      name: location.state?.openDmWithName || "",
+      lastName: location.state?.openDmWithLastName || "",
+      // Carried through so promptScheduleForStudentDm still offers to
+      // schedule a class when this DM was opened from outside Messages
+      // (a profile popup, the Home "message" button, etc).
+      role: location.state?.openDmWithRole,
+    });
     navigate(location.pathname, { replace: true, state: {} });
   }, [location.state?.openDmWithUserId]); // eslint-disable-line react-hooks/exhaustive-deps
 

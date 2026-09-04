@@ -166,6 +166,7 @@
     "myAccount": "My Account",
     "userInformation": "User Information",
     "contactInformation": "Contact Information",
+    "location": "Location",
     "aboutMe": "About Me",
     "name": "Name",
     "lastName": "Last Name",
@@ -176,6 +177,11 @@
     "country": "Country",
     "postalCode": "Postal Code",
     "biography": "Biography",
+    "biographyPlaceholder": "Write something about yourself, your interests, your goals learning the language...",
+    "changeCover": "Change cover photo",
+    "classesTaught": "Classes taught",
+    "classesTaken": "Classes taken",
+    "memberSince": "Member since",
     "myLearning": "My Learning",
     "myTeacher": "My Teacher",
     "notAssigned": "Not Assigned",
@@ -666,6 +672,13 @@
     "roleAdmin": "Admin",
     "roleTeacher": "Teacher",
     "roleStudent": "Student",
-    "sendMessage": "Send message"
+    "sendMessage": "Send message",
+    "activeNow": "Active now",
+    "offline": "Offline",
+    "learning": "Learning",
+    "teaches": "Teaches",
+    "classesTaught": "Classes taught",
+    "classesTaken": "Classes taken",
+    "memberSince": "Member since"
   }
 }

@@ -166,6 +166,7 @@
     "myAccount": "Mi Cuenta",
     "userInformation": "Información de Usuario",
     "contactInformation": "Información de Contacto",
+    "location": "Ubicación",
     "aboutMe": "Sobre Mí",
     "name": "Nombre",
     "lastName": "Apellido",
@@ -176,6 +177,11 @@
     "country": "País",
     "postalCode": "Código Postal",
     "biography": "Biografía",
+    "biographyPlaceholder": "Cuéntanos algo sobre ti, tus intereses, tus metas aprendiendo el idioma...",
+    "changeCover": "Cambiar foto de portada",
+    "classesTaught": "Clases dictadas",
+    "classesTaken": "Clases tomadas",
+    "memberSince": "Miembro desde",
     "myLearning": "Mi Aprendizaje",
     "myTeacher": "Mi Profesor",
     "notAssigned": "No Asignado",
@@ -666,6 +672,13 @@
     "roleAdmin": "Administrador",
     "roleTeacher": "Profesor",
     "roleStudent": "Estudiante",
-    "sendMessage": "Enviar mensaje"
+    "sendMessage": "Enviar mensaje",
+    "activeNow": "Activo ahora",
+    "offline": "Desconectado",
+    "learning": "Aprende",
+    "teaches": "Enseña",
+    "classesTaught": "Clases dictadas",
+    "classesTaken": "Clases tomadas",
+    "memberSince": "Miembro desde"
   }
 }

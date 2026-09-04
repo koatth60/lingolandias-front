@@ -166,6 +166,7 @@
     "myAccount": "Moje Konto",
     "userInformation": "Informacje o Użytkowniku",
     "contactInformation": "Dane Kontaktowe",
+    "location": "Lokalizacja",
     "aboutMe": "O Mnie",
     "name": "Imię",
     "lastName": "Nazwisko",
@@ -176,6 +177,11 @@
     "country": "Kraj",
     "postalCode": "Kod Pocztowy",
     "biography": "Biografia",
+    "biographyPlaceholder": "Napisz coś o sobie, swoich zainteresowaniach, celach w nauce języka...",
+    "changeCover": "Zmień zdjęcie w tle",
+    "classesTaught": "Poprowadzone zajęcia",
+    "classesTaken": "Odbyte zajęcia",
+    "memberSince": "Członek od",
     "myLearning": "Moja Nauka",
     "myTeacher": "Mój Nauczyciel",
     "notAssigned": "Nieprzypisany",
@@ -666,6 +672,13 @@
     "roleAdmin": "Administrator",
     "roleTeacher": "Nauczyciel",
     "roleStudent": "Uczeń",
-    "sendMessage": "Wyślij wiadomość"
+    "sendMessage": "Wyślij wiadomość",
+    "activeNow": "Aktywny teraz",
+    "offline": "Offline",
+    "learning": "Uczy się",
+    "teaches": "Naucza",
+    "classesTaught": "Poprowadzone zajęcia",
+    "classesTaken": "Odbyte zajęcia",
+    "memberSince": "Członek od"
   }
 }

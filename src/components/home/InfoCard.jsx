@@ -3,7 +3,7 @@ import { FiHelpCircle } from 'react-icons/fi';
 
 export const InfoCard = ({ question, answer }) => (
   <div
-    className="relative rounded-xl overflow-hidden transition-transform duration-200 hover:-translate-y-1 shadow-sm dark:shadow-none"
+    className="relative w-full rounded-xl overflow-hidden transition-transform duration-200 hover:-translate-y-1 shadow-sm dark:shadow-none"
     style={{ border: '1px solid rgba(158,47,208,0.15)' }}
   >
     <div className="dark:hidden absolute inset-0 bg-white" />

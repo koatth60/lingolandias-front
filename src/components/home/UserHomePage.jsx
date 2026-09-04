@@ -91,10 +91,10 @@ const UserHomePage = () => {
   const tip = LANGUAGE_TIPS[Math.floor(Date.now() / 86400000) % LANGUAGE_TIPS.length];
 
   return (
-    <main className="max-w-7xl mx-auto px-3 sm:px-6 py-8 space-y-8">
+    <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
 
       {/* ── Hero banner ── */}
-      <section className="relative rounded-2xl overflow-hidden shadow-sm dark:shadow-none" style={{ border: "1px solid rgba(158,47,208,0.12)" }}>
+      <section className="relative w-full rounded-2xl overflow-hidden shadow-sm dark:shadow-none" style={{ border: "1px solid rgba(158,47,208,0.12)" }}>
         <div className="dark:hidden absolute inset-0 bg-white" />
         <div
           className="hidden dark:block absolute inset-0"
@@ -111,7 +111,7 @@ const UserHomePage = () => {
           className="absolute bottom-[-40px] left-[8%] w-[180px] h-[180px] rounded-full pointer-events-none"
           style={{ background: "radial-gradient(circle, rgba(38,217,161,0.12), transparent 70%)" }}
         />
-        <div className="relative z-10 px-4 sm:px-10 py-8 sm:py-10">
+        <div className="relative z-10 px-6 sm:px-10 py-10">
           <div className="flex items-center gap-2 mb-3">
             <div
               className="w-2 h-2 rounded-full bg-[#26D9A1] flex-shrink-0"
@@ -129,7 +129,7 @@ const UserHomePage = () => {
       </section>
 
       {/* ── Quick navigation ── */}
-      <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <section className="w-full grid grid-cols-1 sm:grid-cols-3 gap-4">
         {QUICK_NAV_CONFIG.map(({ icon: Icon, labelKey, descKey, href, gradient, shadow }) => (
           <a
             key={labelKey}
@@ -162,9 +162,9 @@ const UserHomePage = () => {
       </section>
 
       {/* ── Word of the day ── */}
-      <section>
+      <section className="w-full">
         <div
-          className="relative rounded-2xl overflow-hidden shadow-sm dark:shadow-none"
+          className="relative w-full rounded-2xl overflow-hidden shadow-sm dark:shadow-none"
           style={{ border: "1px solid rgba(158,47,208,0.18)" }}
         >
           <div className="dark:hidden absolute inset-0 bg-white" />
@@ -174,7 +174,7 @@ const UserHomePage = () => {
           />
           <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#9E2FD0] via-[#F6B82E] to-[#26D9A1] opacity-70" />
 
-          <div className="relative z-10 px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center gap-5">
+          <div className="relative z-10 px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center gap-5">
             <div className="flex-shrink-0">
               <p className="text-[10px] font-bold tracking-widest text-[#9E2FD0] uppercase mb-1">
                 {t("home.wordOfDay", { lang: tip.lang })}
@@ -191,33 +191,35 @@ const UserHomePage = () => {
       </section>
 
       {/* ── FAQ + Next Sessions ── */}
-      <div className="grid lg:grid-cols-3 gap-8">
+      <div className="w-full grid grid-cols-1 lg:grid-cols-3 gap-8">
 
         {/* FAQ */}
-        <section className="lg:col-span-2">
+        <section className="w-full min-w-0 lg:col-span-2">
           <h2 className="text-base font-bold text-gray-800 dark:text-white tracking-tight mb-4 flex items-center gap-2">
             <span className="inline-block w-1 h-4 rounded-full flex-shrink-0" style={{ background: "linear-gradient(to bottom, #9E2FD0, #F6B82E)" }} />
             <FiHelpCircle size={15} className="text-[#9E2FD0]" />
             {t("home.faq")}
           </h2>
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
             {FAQ_KEYS.map(({ qKey, aKey }) => (
-              <InfoCard key={qKey} question={t(qKey)} answer={t(aKey)} />
+              <div key={qKey} className="w-full min-w-0">
+                <InfoCard question={t(qKey)} answer={t(aKey)} />
+              </div>
             ))}
           </div>
         </section>
 
         {/* Next Sessions */}
-        <section>
+        <section className="w-full min-w-0">
           <h2 className="text-base font-bold text-gray-800 dark:text-white tracking-tight mb-4 flex items-center gap-2">
             <span className="inline-block w-1 h-4 rounded-full flex-shrink-0" style={{ background: "linear-gradient(to bottom, #26D9A1, #9E2FD0)" }} />
             <FiCalendar size={15} className="text-[#26D9A1]" />
             {t("home.nextSessions")}
           </h2>
-          <div className="space-y-3">
+          <div className="w-full space-y-3">
             {nextClasses.length === 0 && (
               <div
-                className="relative rounded-xl px-5 py-8 text-center overflow-hidden shadow-sm dark:shadow-none"
+                className="relative w-full rounded-xl px-5 py-8 text-center overflow-hidden shadow-sm dark:shadow-none"
                 style={{ border: "1px solid rgba(158,47,208,0.15)" }}
               >
                 <div className="dark:hidden absolute inset-0 bg-white" />

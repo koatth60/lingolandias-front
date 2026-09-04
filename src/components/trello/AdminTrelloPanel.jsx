@@ -3,8 +3,6 @@ import { getAllBoardsAdmin, getLists } from '../../data/trelloApi';
 import { useSelector } from 'react-redux';
 import { getBgStyle } from './trelloConfig';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:2000';
-
 const BoardPreviewModal = ({ board, onClose }) => {
   const [lists, setLists] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -75,9 +73,13 @@ const BoardPreviewModal = ({ board, onClose }) => {
   );
 };
 
+const ROLE_BADGE = {
+  admin: { label: 'Admin', className: 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400' },
+  teacher: { label: 'Teacher', className: 'bg-[#9E2FD0]/10 text-[#9E2FD0] dark:bg-[#9E2FD0]/15 dark:text-purple-300' },
+};
+
 const AdminTrelloPanel = () => {
   const [boards, setBoards] = useState([]);
-  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedBoard, setSelectedBoard] = useState(null);
   const [filterTeacher, setFilterTeacher] = useState('');
@@ -85,33 +87,23 @@ const AdminTrelloPanel = () => {
   const user = useSelector((state) => state.user.userInfo.user);
 
   useEffect(() => {
-    Promise.all([
-      getAllBoardsAdmin(),
-      fetch(BACKEND_URL + '/users/teachers', {
-        headers: { Authorization: 'Bearer ' + localStorage.getItem('token') },
-      })
-        .then((r) => r.json())
-        .catch(() => []),
-    ])
-      .then(([b, u]) => {
-        setBoards(b || []);
-        setUsers(Array.isArray(u) ? u : (u.users || u.data || []));
-      })
+    getAllBoardsAdmin()
+      .then((b) => setBoards(b || []))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
-  // Group boards by userId
+  // Group boards by userId — owner name/role now comes straight from the
+  // backend (joined against the real user, whatever their role), so no
+  // separate teachers-only lookup or truncated-UUID fallback is needed.
   const grouped = boards.reduce((acc, board) => {
     if (!acc[board.userId]) acc[board.userId] = [];
     acc[board.userId].push(board);
     return acc;
   }, {});
 
-  const getTeacherName = (userId) => {
-    const u = users.find((u) => u.id === userId);
-    return u ? u.name + ' ' + u.lastName : userId.slice(0, 8) + '...';
-  };
+  const getTeacherName = (userId) => grouped[userId]?.[0]?.ownerName || 'Unknown user';
+  const getTeacherRole = (userId) => grouped[userId]?.[0]?.ownerRole;
 
   const filteredBoards = boards.filter((b) => {
     const teacherName = getTeacherName(b.userId).toLowerCase();
@@ -206,7 +198,14 @@ const AdminTrelloPanel = () => {
                       {getTeacherName(userId).charAt(0)}
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-800 dark:text-white">{getTeacherName(userId)}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-gray-800 dark:text-white">{getTeacherName(userId)}</h3>
+                        {ROLE_BADGE[getTeacherRole(userId)] && (
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${ROLE_BADGE[getTeacherRole(userId)].className}`}>
+                            {ROLE_BADGE[getTeacherRole(userId)].label}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-gray-400 dark:text-gray-500">{teacherBoards.length} board{teacherBoards.length !== 1 ? 's' : ''}</p>
                     </div>
                   </div>

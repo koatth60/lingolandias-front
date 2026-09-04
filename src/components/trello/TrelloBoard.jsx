@@ -1,9 +1,18 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
 import {
+  DndContext, DragOverlay, closestCorners,
+  PointerSensor, useSensor, useSensors,
+} from '@dnd-kit/core';
+import {
+  SortableContext, useSortable, arrayMove,
+  horizontalListSortingStrategy, verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import {
   getLists, createList, updateList, deleteList,
-  createCard, updateCard, deleteCard, moveCard,
+  createCard, updateCard, deleteCard, moveCard, reorderCards, reorderLists,
   updateBoard,
 } from '../../data/trelloApi';
 import TrelloCardDetail from './TrelloCardDetail';
@@ -158,6 +167,141 @@ const BoardSettingsModal = ({ board, onClose, onUpdated }) => {
   );
 };
 
+// ─── Small icons ──────────────────────────────────────────────────────────────
+const ClockIcon = () => (
+  <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+const ChecklistIcon = () => (
+  <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+const CommentIcon = () => (
+  <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+  </svg>
+);
+const GripIcon = () => (
+  <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+    <circle cx="6" cy="5" r="1.3" /><circle cx="14" cy="5" r="1.3" />
+    <circle cx="6" cy="10" r="1.3" /><circle cx="14" cy="10" r="1.3" />
+    <circle cx="6" cy="15" r="1.3" /><circle cx="14" cy="15" r="1.3" />
+  </svg>
+);
+
+const parseJSONArr = (v) => { try { return v ? JSON.parse(v) : []; } catch { return []; } };
+
+// ─── Card ─────────────────────────────────────────────────────────────────────
+// The whole card is the drag handle (matches real Trello) — dnd-kit's pointer
+// activation constraint (see `sensors` in TrelloBoard) means a plain click
+// with no real movement still opens the detail modal instead of eating every
+// click as a drag.
+const TrelloCardItem = ({ card, onClick }) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: card.id,
+    data: { type: 'card', listId: card.listId },
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.35 : 1,
+  };
+
+  const cardLabels = parseCardLabels(card.label);
+  const checklist = parseJSONArr(card.checklist);
+  const comments = parseJSONArr(card.comments);
+  const checklistDone = checklist.filter((i) => i.done).length;
+  const checklistComplete = checklist.length > 0 && checklistDone === checklist.length;
+  const isOverdue = card.dueDate && !checklistComplete && new Date(card.dueDate) < new Date();
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      onClick={() => !isDragging && onClick()}
+      className="bg-white dark:bg-[#212a3a] rounded-xl border border-gray-100 dark:border-white/5 shadow-sm p-3 cursor-grab active:cursor-grabbing hover:shadow-md hover:border-[#9E2FD0]/30 hover:-translate-y-0.5 transition-all duration-150 touch-none"
+    >
+      {cardLabels.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-2">
+          {cardLabels.map((lbl) => (
+            <span
+              key={lbl.name}
+              className="h-1.5 w-8 rounded-full"
+              style={{ backgroundColor: lbl.color }}
+              title={lbl.name}
+            />
+          ))}
+        </div>
+      )}
+      <p className="text-sm text-gray-800 dark:text-gray-100 font-medium leading-snug line-clamp-3">{card.name}</p>
+      {card.description && (
+        <p
+          className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2"
+          dangerouslySetInnerHTML={{ __html: card.description }}
+        />
+      )}
+      {(card.dueDate || checklist.length > 0 || comments.length > 0) && (
+        <div className="flex items-center gap-2.5 mt-2.5 flex-wrap">
+          {card.dueDate && (
+            <span
+              className={`inline-flex items-center gap-1 text-[11px] font-semibold px-1.5 py-0.5 rounded-md ${
+                isOverdue
+                  ? 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400'
+                  : checklistComplete
+                  ? 'bg-green-50 text-green-600 dark:bg-green-500/10 dark:text-green-400'
+                  : 'text-gray-400 dark:text-gray-500'
+              }`}
+            >
+              <ClockIcon />
+              {new Date(card.dueDate).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
+            </span>
+          )}
+          {checklist.length > 0 && (
+            <span
+              className={`inline-flex items-center gap-1 text-[11px] font-semibold px-1.5 py-0.5 rounded-md ${
+                checklistComplete
+                  ? 'bg-green-50 text-green-600 dark:bg-green-500/10 dark:text-green-400'
+                  : 'text-gray-400 dark:text-gray-500'
+              }`}
+            >
+              <ChecklistIcon />
+              {checklistDone}/{checklist.length}
+            </span>
+          )}
+          {comments.length > 0 && (
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-gray-400 dark:text-gray-500 px-1.5 py-0.5 rounded-md">
+              <CommentIcon />
+              {comments.length}
+            </span>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Inert visual clone rendered inside DragOverlay — no useSortable hook here,
+// DragOverlay portals a floating copy that isn't itself part of the sortable
+// tree.
+const CardGhost = ({ card }) => {
+  const cardLabels = parseCardLabels(card.label);
+  return (
+    <div className="bg-white dark:bg-[#212a3a] rounded-xl border border-[#9E2FD0]/40 shadow-2xl p-3 w-72 rotate-2 cursor-grabbing">
+      {cardLabels.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-2">
+          {cardLabels.map((lbl) => <span key={lbl.name} className="h-1.5 w-8 rounded-full" style={{ backgroundColor: lbl.color }} />)}
+        </div>
+      )}
+      <p className="text-sm text-gray-800 dark:text-gray-100 font-medium leading-snug line-clamp-3">{card.name}</p>
+    </div>
+  );
+};
+
 // ─── TrelloList column ───────────────────────────────────────────────────────
 const TrelloListColumn = ({
   list,
@@ -165,9 +309,6 @@ const TrelloListColumn = ({
   onCardClick,
   onDeleteList,
   onRenameList,
-  onDragStart,
-  onDragOver,
-  onDrop,
   fontFamily,
 }) => {
   const [addingCard, setAddingCard] = useState(false);
@@ -175,6 +316,11 @@ const TrelloListColumn = ({
   const [renaming, setRenaming] = useState(false);
   const [listName, setListName] = useState(list.name);
   const inputRef = useRef(null);
+
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: list.id,
+    data: { type: 'list' },
+  });
 
   useEffect(() => {
     if (addingCard && inputRef.current) inputRef.current.focus();
@@ -194,10 +340,12 @@ const TrelloListColumn = ({
     setRenaming(false);
   };
 
-  const cards = (list.cards || []).sort((a, b) => a.position - b.position);
+  const cards = list.cards || [];
+  const cardIds = useMemo(() => cards.map((c) => c.id), [cards]);
 
   return (
     <div
+      ref={setNodeRef}
       className="flex-shrink-0 w-72 flex flex-col rounded-2xl max-h-full"
       style={{
         fontFamily,
@@ -206,12 +354,21 @@ const TrelloListColumn = ({
         WebkitBackdropFilter: 'blur(8px)',
         boxShadow: '0 4px 24px rgba(0,0,0,0.12)',
         border: '1px solid rgba(255,255,255,0.4)',
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
       }}
-      onDragOver={(e) => { e.preventDefault(); onDragOver(list.id); }}
-      onDrop={() => onDrop(list.id)}
     >
       {/* List header */}
-      <div className="px-3 py-2.5 flex items-center justify-between">
+      <div className="px-2 py-2.5 flex items-center gap-1">
+        <button
+          {...attributes}
+          {...listeners}
+          className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1 rounded cursor-grab active:cursor-grabbing touch-none flex-shrink-0"
+          title="Drag to reorder list"
+        >
+          <GripIcon />
+        </button>
         {renaming ? (
           <input
             autoFocus
@@ -230,7 +387,7 @@ const TrelloListColumn = ({
             {list.name}
           </h4>
         )}
-        <div className="flex items-center gap-1 ml-2">
+        <div className="flex items-center gap-1 ml-1">
           <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded-full">
             {cards.length}
           </span>
@@ -248,49 +405,18 @@ const TrelloListColumn = ({
 
       {/* Cards */}
       <div className="flex-1 overflow-y-auto px-2 space-y-2 py-1 min-h-[40px]">
-        {cards.map((card) => (
-          <div
-            key={card.id}
-            draggable
-            onDragStart={() => onDragStart(card)}
-            onClick={() => onCardClick(card, list)}
-            className="bg-white rounded-xl border border-gray-100 p-3 cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-150 group"
-          >
-            {(() => {
-              const cardLabels = parseCardLabels(card.label);
-              return cardLabels.length > 0 ? (
-                <div className="flex flex-wrap gap-1 mb-2">
-                  {cardLabels.map((lbl) => (
-                    <span
-                      key={lbl.name}
-                      className="px-2 py-0.5 rounded-full text-[10px] font-bold text-white leading-tight"
-                      style={{ backgroundColor: lbl.color }}
-                    >
-                      {lbl.name}
-                    </span>
-                  ))}
-                </div>
-              ) : null;
-            })()}
-            <p className="text-sm text-gray-800 font-medium line-clamp-3">{card.name}</p>
-            {card.description && (
-              <p
-                className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2"
-                dangerouslySetInnerHTML={{ __html: card.description }}
-              />
-            )}
-            {card.dueDate && (
-              <div className="flex items-center gap-1 mt-2">
-                <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span className="text-xs text-gray-400">
-                  {new Date(card.dueDate).toLocaleDateString()}
-                </span>
-              </div>
-            )}
-          </div>
-        ))}
+        <SortableContext items={cardIds} strategy={verticalListSortingStrategy}>
+          {cards.map((card) => (
+            <TrelloCardItem
+              key={card.id}
+              card={{ ...card, listId: list.id }}
+              onClick={() => onCardClick(card, list)}
+            />
+          ))}
+        </SortableContext>
+        {cards.length === 0 && !addingCard && (
+          <div className="text-center py-3 text-xs text-gray-400 dark:text-gray-500 select-none">No cards yet</div>
+        )}
       </div>
 
       {/* Add card */}
@@ -336,8 +462,20 @@ const TrelloBoard = ({ board, onBack, onBoardUpdated }) => {
   const [showSettings, setShowSettings] = useState(false);
   const [selectedCard, setSelectedCard] = useState(null);
   const [selectedCardList, setSelectedCardList] = useState(null);
-  const draggingCardRef = useRef(null);
-  const dragOverListRef = useRef(null);
+  const [activeCard, setActiveCard] = useState(null);
+  const [activeList, setActiveList] = useState(null);
+  // Snapshot of the card's origin list + that list's card-id order taken at
+  // drag start — onDragOver already mutates `lists` live as the pointer
+  // crosses between lists (for the visual "cards shuffle as you drag" feel),
+  // so by dragEnd this is the only way left to know whether a cross-list
+  // move happened and what the source list needs re-persisted as.
+  const dragStartRef = useRef(null);
+
+  const sensors = useSensors(
+    // A small movement threshold so a plain click (open the card) doesn't
+    // get eaten as a drag — only real pointer movement starts one.
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+  );
 
   useEffect(() => {
     loadLists();
@@ -462,20 +600,122 @@ const TrelloBoard = ({ board, onBack, onBoardUpdated }) => {
     }
   };
 
-  // Drag and drop handlers
-  const handleDragStart = (card) => {
-    draggingCardRef.current = card;
+  // ─── Drag and drop (dnd-kit) ──────────────────────────────────────────────
+  const findListIdForCard = (cardId, source = lists) =>
+    source.find((l) => (l.cards || []).some((c) => c.id === cardId))?.id;
+
+  const handleDragStart = (event) => {
+    const { active } = event;
+    if (active.data.current?.type === 'list') {
+      setActiveList(lists.find((l) => l.id === active.id) || null);
+      dragStartRef.current = null;
+      return;
+    }
+    const listId = findListIdForCard(active.id);
+    const list = lists.find((l) => l.id === listId);
+    setActiveCard(list?.cards.find((c) => c.id === active.id) || null);
+    // Snapshot the origin list + its card order so dragEnd can tell whether
+    // a cross-list move happened and re-persist the source list's positions.
+    dragStartRef.current = list ? { listId, cardIds: (list.cards || []).map((c) => c.id) } : null;
   };
 
-  const handleDragOver = (listId) => {
-    dragOverListRef.current = listId;
+  // Only relevant for cards — moves the dragged card into whatever list the
+  // pointer is currently over so the board visually reshuffles live as you
+  // drag, the same way Trello itself behaves. List reordering doesn't need
+  // this: they all share one row/SortableContext, so dnd-kit handles the
+  // live preview itself and the actual reorder happens in dragEnd.
+  const handleDragOver = (event) => {
+    const { active, over } = event;
+    if (!over || active.data.current?.type === 'list') return;
+    const activeId = active.id;
+    const overId = over.id;
+    if (activeId === overId) return;
+
+    const activeListId = findListIdForCard(activeId);
+    const overListId = findListIdForCard(overId) || (lists.some((l) => l.id === overId) ? overId : null);
+    if (!activeListId || !overListId || activeListId === overListId) return;
+
+    setLists((prev) => {
+      const activeListIdx = prev.findIndex((l) => l.id === activeListId);
+      const overListIdx = prev.findIndex((l) => l.id === overListId);
+      if (activeListIdx === -1 || overListIdx === -1) return prev;
+      const activeCards = [...(prev[activeListIdx].cards || [])];
+      const overCards = [...(prev[overListIdx].cards || [])];
+      const activeCardIdx = activeCards.findIndex((c) => c.id === activeId);
+      if (activeCardIdx === -1) return prev;
+      const [movedCard] = activeCards.splice(activeCardIdx, 1);
+      const overCardIdx = overCards.findIndex((c) => c.id === overId);
+      const insertAt = overCardIdx >= 0 ? overCardIdx : overCards.length;
+      overCards.splice(insertAt, 0, movedCard);
+      const next = [...prev];
+      next[activeListIdx] = { ...next[activeListIdx], cards: activeCards };
+      next[overListIdx] = { ...next[overListIdx], cards: overCards };
+      return next;
+    });
   };
 
-  const handleDrop = (targetListId) => {
-    const card = draggingCardRef.current;
-    if (!card || card.listId === targetListId) return;
-    handleCardMoved(card.id, targetListId);
-    draggingCardRef.current = null;
+  const handleDragEnd = async (event) => {
+    const { active, over } = event;
+    setActiveCard(null);
+    setActiveList(null);
+    if (!over) { dragStartRef.current = null; return; }
+
+    // ── List reordering ──
+    if (active.data.current?.type === 'list') {
+      // Collision detection doesn't know a list drag should only ever land on
+      // another list — it considers every registered droppable, cards
+      // included, so dropping anywhere over a list's card area resolves
+      // `over.id` to that CARD's id instead of the list's. Same fallback the
+      // card branch above already uses: resolve back to the parent list.
+      const overListId = lists.some((l) => l.id === over.id) ? over.id : findListIdForCard(over.id);
+      if (!overListId || active.id === overListId) return;
+      const oldIndex = lists.findIndex((l) => l.id === active.id);
+      const newIndex = lists.findIndex((l) => l.id === overListId);
+      if (oldIndex === -1 || newIndex === -1) return;
+      const reordered = arrayMove(lists, oldIndex, newIndex);
+      setLists(reordered);
+      try {
+        await reorderLists(board.id, reordered.map((l) => l.id));
+      } catch (err) {
+        toast.error('Failed to reorder lists: ' + (err?.response?.data?.message || err.message));
+      }
+      return;
+    }
+
+    // ── Card reordering / cross-list move ──
+    const activeId = active.id;
+    const startedAt = dragStartRef.current;
+    dragStartRef.current = null;
+    const currentListId = findListIdForCard(activeId);
+    if (!currentListId) return;
+
+    const currentCards = lists.find((l) => l.id === currentListId)?.cards || [];
+    const oldIndex = currentCards.findIndex((c) => c.id === activeId);
+    let newIndex = currentCards.findIndex((c) => c.id === over.id);
+    if (newIndex === -1) newIndex = currentCards.length - 1;
+    const finalCards = oldIndex !== -1 && oldIndex !== newIndex
+      ? arrayMove(currentCards, oldIndex, newIndex)
+      : currentCards;
+
+    setLists((prev) => prev.map((l) => (l.id === currentListId ? { ...l, cards: finalCards } : l)));
+
+    const crossListMove = startedAt && startedAt.listId !== currentListId;
+    if (!crossListMove && oldIndex === newIndex) return; // nothing actually changed
+
+    try {
+      if (crossListMove) {
+        const finalIndex = finalCards.findIndex((c) => c.id === activeId);
+        await moveCard(activeId, currentListId, finalIndex);
+        await reorderCards(currentListId, finalCards.map((c) => c.id));
+        const remainingSourceIds = startedAt.cardIds.filter((id) => id !== activeId);
+        if (remainingSourceIds.length) await reorderCards(startedAt.listId, remainingSourceIds);
+      } else {
+        await reorderCards(currentListId, finalCards.map((c) => c.id));
+      }
+    } catch (err) {
+      toast.error('Failed to save new order: ' + (err?.response?.data?.message || err.message));
+      loadLists(); // resync with the server if persisting the drag failed
+    }
   };
 
   const bgStyle = {
@@ -518,55 +758,73 @@ const TrelloBoard = ({ board, onBack, onBoardUpdated }) => {
           <div className="h-10 w-10 rounded-full border-4 border-white/40 border-t-white animate-spin" />
         </div>
       ) : (
-        <div className="flex-1 overflow-x-auto">
-          <div className="flex gap-4 p-6 items-start min-h-full h-full">
-            {lists.map((list) => (
-              <TrelloListColumn
-                key={list.id}
-                list={list}
-                onAddCard={handleAddCard}
-                onCardClick={handleCardClick}
-                onDeleteList={handleDeleteList}
-                onRenameList={handleRenameList}
-                onDragStart={handleDragStart}
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
-                fontFamily={board.fontFamily}
-              />
-            ))}
-
-            {/* Add list */}
-            <div className="flex-shrink-0 w-72">
-              {addingList ? (
-                <div className="bg-gray-100 dark:bg-[#111827] rounded-2xl p-3 border border-gray-200 dark:border-gray-700 space-y-2">
-                  <input
-                    autoFocus
-                    type="text"
-                    value={newListName}
-                    onChange={(e) => setNewListName(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter') handleAddList(); if (e.key === 'Escape') setAddingList(false); }}
-                    placeholder="Enter list name..."
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-[#9E2FD0] bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none"
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCorners}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+        >
+          <div className="flex-1 overflow-x-auto">
+            <div className="flex gap-4 p-6 items-start min-h-full h-full">
+              <SortableContext items={lists.map((l) => l.id)} strategy={horizontalListSortingStrategy}>
+                {lists.map((list) => (
+                  <TrelloListColumn
+                    key={list.id}
+                    list={list}
+                    onAddCard={handleAddCard}
+                    onCardClick={handleCardClick}
+                    onDeleteList={handleDeleteList}
+                    onRenameList={handleRenameList}
+                    fontFamily={board.fontFamily}
                   />
-                  <div className="flex gap-1">
-                    <button onClick={handleAddList} className="bg-[#9E2FD0] hover:bg-[#8a27b5] text-white text-xs px-3 py-1.5 rounded-lg transition">Add list</button>
-                    <button onClick={() => { setAddingList(false); setNewListName(''); }} className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white text-xs px-2 py-1.5 rounded-lg transition">Cancel</button>
+                ))}
+              </SortableContext>
+
+              {/* Add list */}
+              <div className="flex-shrink-0 w-72">
+                {addingList ? (
+                  <div className="bg-gray-100 dark:bg-[#111827] rounded-2xl p-3 border border-gray-200 dark:border-gray-700 space-y-2">
+                    <input
+                      autoFocus
+                      type="text"
+                      value={newListName}
+                      onChange={(e) => setNewListName(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') handleAddList(); if (e.key === 'Escape') setAddingList(false); }}
+                      placeholder="Enter list name..."
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-[#9E2FD0] bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none"
+                    />
+                    <div className="flex gap-1">
+                      <button onClick={handleAddList} className="bg-[#9E2FD0] hover:bg-[#8a27b5] text-white text-xs px-3 py-1.5 rounded-lg transition">Add list</button>
+                      <button onClick={() => { setAddingList(false); setNewListName(''); }} className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white text-xs px-2 py-1.5 rounded-lg transition">Cancel</button>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <button
-                  onClick={() => setAddingList(true)}
-                  className="w-full flex items-center gap-2 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 text-sm font-medium px-4 py-3 rounded-2xl transition"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                  </svg>
-                  Add another list
-                </button>
-              )}
+                ) : (
+                  <button
+                    onClick={() => setAddingList(true)}
+                    className="w-full flex items-center gap-2 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 text-sm font-medium px-4 py-3 rounded-2xl transition"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add another list
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+
+          <DragOverlay>
+            {activeCard ? <CardGhost card={activeCard} /> : null}
+            {activeList ? (
+              <div className="w-72 rounded-2xl rotate-1 shadow-2xl opacity-90" style={{ background: 'rgba(235,236,240,0.98)', border: '1px solid rgba(158,47,208,0.4)' }}>
+                <div className="px-3 py-2.5">
+                  <h4 className="font-bold text-gray-800 text-sm truncate">{activeList.name}</h4>
+                </div>
+              </div>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
       )}
 
       {showSettings && (

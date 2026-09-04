@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import {
   FiMoon, FiBell, FiBellOff, FiUser, FiEye,
   FiShield, FiLogOut, FiGlobe, FiSun, FiCheck, FiChevronDown, FiPlay, FiMessageSquare,
-  FiMonitor, FiDownload, FiZap, FiAlertTriangle,
+  FiMonitor, FiDownload, FiZap, FiAlertTriangle, FiClock,
 } from "react-icons/fi";
 import { toast } from "react-toastify";
 import Dashboard from "../../sections/dashboard";
@@ -203,6 +203,8 @@ const Settings = () => {
   const notificationSound = userInfo?.user?.settings?.notificationSound !== false;
   const classReminders = userInfo?.user?.settings?.classReminders === true;
   const messageNotifications = userInfo?.user?.settings?.messageNotifications === true;
+  const cardDueReminders = userInfo?.user?.settings?.cardDueReminders === true;
+  const canUseTrello = ["teacher", "admin"].includes(userInfo?.user?.role);
   const language = userInfo?.user?.settings?.language || i18n.language || "en";
   const playTestSound = useNotificationSound();
   const { canInstall, isInstalled, promptInstall } = useInstallPrompt();
@@ -219,7 +221,7 @@ const Settings = () => {
     { id: "account",       label: t("settings.account"),       icon: FiUser },
   ];
 
-  const SettingRow = ({ icon: Icon, label, children }) => (
+  const SettingRow = ({ icon: Icon, label, description, children }) => (
     <div className="flex items-center justify-between gap-4 py-4 border-b border-black/5 dark:border-white/5 last:border-0">
       <div className="flex items-center gap-3 min-w-0">
         <div
@@ -228,7 +230,12 @@ const Settings = () => {
         >
           <Icon size={14} style={{ color: "#9E2FD0" }} />
         </div>
-        <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 truncate">{label}</span>
+        <div className="min-w-0">
+          <span className="block text-sm font-semibold text-gray-700 dark:text-gray-200 truncate">{label}</span>
+          {description && (
+            <span className="block text-xs text-gray-400 dark:text-gray-500 truncate">{description}</span>
+          )}
+        </div>
       </div>
       <div className="flex-shrink-0">{children}</div>
     </div>
@@ -268,9 +275,9 @@ const Settings = () => {
     } else {
       dispatch(updateUserSettings({ classReminders: false }));
       toast.success(t("settings.remindersDisabled"));
-      // The device's one push subscription is shared with messageNotifications
-      // — only tear it down once neither toggle needs it anymore.
-      if (!messageNotifications) {
+      // The device's one push subscription is shared across the three
+      // push-backed toggles — only tear it down once none of them need it.
+      if (!messageNotifications && !cardDueReminders) {
         try { await unsubscribeFromPush(); } catch { /* best-effort cleanup */ }
       }
     }
@@ -290,7 +297,27 @@ const Settings = () => {
     } else {
       dispatch(updateUserSettings({ messageNotifications: false }));
       toast.success(t("settings.messageNotificationsDisabled"));
-      if (!classReminders) {
+      if (!classReminders && !cardDueReminders) {
+        try { await unsubscribeFromPush(); } catch { /* best-effort cleanup */ }
+      }
+    }
+  };
+
+  const handleCardDueRemindersToggle = async () => {
+    const newValue = !cardDueReminders;
+
+    if (newValue) {
+      try {
+        await subscribeToPush();
+        dispatch(updateUserSettings({ cardDueReminders: true }));
+        toast.success(t("settings.cardDueRemindersEnabled"));
+      } catch (err) {
+        handlePushToggleError(err);
+      }
+    } else {
+      dispatch(updateUserSettings({ cardDueReminders: false }));
+      toast.success(t("settings.cardDueRemindersDisabled"));
+      if (!classReminders && !messageNotifications) {
         try { await unsubscribeFromPush(); } catch { /* best-effort cleanup */ }
       }
     }
@@ -343,12 +370,25 @@ const Settings = () => {
                 <BrandToggle checked={notificationSound} onChange={handleNotificationSoundToggle} />
               </div>
             </SettingRow>
-            <SettingRow icon={FiMessageSquare} label={t("settings.messageNotifications")}>
+            <SettingRow
+              icon={FiMessageSquare}
+              label={t("settings.messageNotifications")}
+              description={t("settings.messageNotificationsDesc")}
+            >
               <BrandToggle checked={messageNotifications} onChange={handleMessageNotificationsToggle} />
             </SettingRow>
             <SettingRow icon={FiBell} label={t("settings.classReminders")}>
               <BrandToggle checked={classReminders} onChange={handleClassRemindersToggle} />
             </SettingRow>
+            {canUseTrello && (
+              <SettingRow
+                icon={FiClock}
+                label={t("settings.cardDueReminders")}
+                description={t("settings.cardDueRemindersDesc")}
+              >
+                <BrandToggle checked={cardDueReminders} onChange={handleCardDueRemindersToggle} />
+              </SettingRow>
+            )}
           </div>
         );
 

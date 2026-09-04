@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { getBoards, createBoard, deleteBoard } from '../../data/trelloApi';
 import TrelloBoard from './TrelloBoard';
+import TrelloImportModal from './TrelloImportModal';
 import { BACKGROUND_PRESETS, FONT_OPTIONS, PHOTO_PRESETS, getBgStyle } from './trelloConfig';
 
 export { BACKGROUND_PRESETS, FONT_OPTIONS, getBgStyle };
@@ -220,10 +221,25 @@ const TrelloDashboard = () => {
   const [showCreate, setShowCreate] = useState(false);
   const [activeBoard, setActiveBoard] = useState(null);
   const [search, setSearch] = useState('');
+  const [showImport, setShowImport] = useState(false);
+  const [importToken, setImportToken] = useState(null);
 
   useEffect(() => {
     if (userId) loadBoards();
   }, [userId]);
+
+  // Trello's authorize flow redirects back here with the token in the URL
+  // *fragment* (e.g. /trello#token=abc123) rather than a query param, so it
+  // never gets sent to our own server on the redirect itself. Catch it once
+  // on mount, then strip it from the address bar.
+  useEffect(() => {
+    const match = window.location.hash.match(/token=([^&]+)/);
+    if (match) {
+      setImportToken(decodeURIComponent(match[1]));
+      setShowImport(true);
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
+  }, []);
 
   const loadBoards = async () => {
     setLoading(true);
@@ -286,15 +302,24 @@ const TrelloDashboard = () => {
               {user?.name ? `Welcome back, ${user.name.split(' ')[0]} ·` : ''} {boards.length} board{boards.length !== 1 ? 's' : ''} in your workspace
             </p>
           </div>
-          <button
-            onClick={() => setShowCreate(true)}
-            className="absolute top-5 right-5 flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white font-semibold px-4 py-2 rounded-xl border border-white/30 transition text-sm"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-            </svg>
-            New board
-          </button>
+          <div className="absolute top-5 right-5 flex items-center gap-2">
+            <button
+              onClick={() => setShowImport(true)}
+              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold px-4 py-2 rounded-xl border border-white/30 transition text-sm"
+              title="Copy your boards from a real Trello account"
+            >
+              Migrate from Trello
+            </button>
+            <button
+              onClick={() => setShowCreate(true)}
+              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white font-semibold px-4 py-2 rounded-xl border border-white/30 transition text-sm"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+              </svg>
+              New board
+            </button>
+          </div>
         </div>
       </div>
 
@@ -414,6 +439,15 @@ const TrelloDashboard = () => {
           userId={userId}
           onClose={() => setShowCreate(false)}
           onCreated={(b) => setBoards((prev) => [...prev, b])}
+        />
+      )}
+
+      {showImport && (
+        <TrelloImportModal
+          userId={userId}
+          initialToken={importToken}
+          onClose={() => { setShowImport(false); setImportToken(null); }}
+          onImported={(b) => setBoards((prev) => [...prev, b])}
         />
       )}
     </div>

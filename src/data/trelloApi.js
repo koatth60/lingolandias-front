@@ -50,6 +50,16 @@ export const moveCard = (cardId, listId, position) =>
 export const reorderCards = (listId, orderedIds) =>
   axios.put(`${API}/trello/lists/${listId}/cards/reorder`, { orderedIds }).then((r) => r.data);
 
+// ─── IMPORT FROM REAL TRELLO ───────────────────────────────────────────────
+// One-time migration, not a live sync — the token never leaves the browser
+// except as a query/body param on these two calls.
+
+export const getRemoteTrelloBoards = (token) =>
+  axios.get(`${API}/trello/import/remote-boards`, { params: { token } }).then((r) => r.data.boards);
+
+export const importTrelloBoard = (userId, token, remoteBoardId) =>
+  axios.post(`${API}/trello/import/board`, { userId, token, remoteBoardId }).then((r) => r.data.board);
+
 // ─── ADMIN ───────────────────────────────────────────────────────────────────
 
 export const getAllBoardsAdmin = () =>

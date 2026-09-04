@@ -388,6 +388,8 @@ const Settings = () => {
               )}
             </div>
 
+            {/* Desktop .exe installer (Electron-packaged) — hidden for now,
+                revisit before shipping again. See Lingolandias-Setup.exe on the VPS.
             <div className="flex items-center gap-2 mt-8 mb-5">
               <FiZap size={15} style={{ color: "#26D9A1" }} />
               <h2 className="text-base font-extrabold text-gray-800 dark:text-white">{t("settings.desktopInstallerTitle")}</h2>
@@ -424,6 +426,7 @@ const Settings = () => {
               </a>
               <p className="text-xs text-gray-400 max-w-xs">{t("settings.desktopInstallerNote")}</p>
             </div>
+            */}
           </div>
         );
 

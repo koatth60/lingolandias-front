@@ -32,16 +32,21 @@ const MessageReactions = ({ reactions, currentUserId, onToggle, align = "start" 
 
   // When there are no reactions, the hover-only trigger button still needs
   // to render (so hovering the message can reveal it), but its normal-flow
-  // height was pushing every single message apart — collapsing this wrapper
-  // to h-0 with overflow-visible keeps the button interactive/visible on
-  // hover without it (or the mt-1 gap) reserving any space when idle.
+  // height was pushing every single message apart. Taking it out of flow
+  // with absolute positioning (instead of the old h-0/overflow-visible
+  // trick) keeps this wrapper's own footprint at zero either way — the old
+  // trick let the button visually spill onto whatever rendered right below
+  // it (e.g. the sender's own "Sent"/"Seen" label), since a 0-height box's
+  // overflowing child still occupies the space just past it. Anchored here
+  // instead, it hovers on the bubble's own bottom corner, which it's
+  // sitting right under anyway.
   const hasReactions = entries.length > 0;
 
   return (
     <div
       ref={wrapperRef}
       className={`relative flex flex-wrap items-center gap-1 ${
-        hasReactions ? "mt-1" : "h-0 overflow-visible"
+        hasReactions ? "mt-1" : ""
       } ${align === "end" ? "justify-end" : ""}`}
     >
       {entries.map(([emoji, reactors]) => {
@@ -67,7 +72,9 @@ const MessageReactions = ({ reactions, currentUserId, onToggle, align = "start" 
 
       <button
         onClick={() => setPickerOpen((v) => !v)}
-        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full text-gray-400 hover:text-[#9E2FD0] hover:bg-gray-100 dark:hover:bg-white/5"
+        className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full text-gray-400 hover:text-[#9E2FD0] hover:bg-gray-100 dark:hover:bg-white/5 ${
+          hasReactions ? "" : `absolute -top-6 ${align === "end" ? "right-0" : "left-0"}`
+        }`}
       >
         <FiSmile size={13} />
       </button>

@@ -8,7 +8,8 @@ import { useSelector } from "react-redux";
 import StudentAssignment from "./studentAssignment";
 import RemoveStudent from "./RemoveStudent";
 import DisplayAllStudents from "./DisplayAllStudents";
-import { FiUserPlus, FiUserX, FiUsers, FiBookOpen, FiGrid } from "react-icons/fi";
+import TeacherSchedulesViewer from "./TeacherSchedulesViewer";
+import { FiUserPlus, FiUserX, FiUsers, FiBookOpen, FiGrid, FiCalendar } from "react-icons/fi";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -146,6 +147,20 @@ const Admin = () => {
             <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, #26D9A1, #9E2FD0, transparent)" }} />
             <div className="relative z-10 p-4 sm:p-6">
               <DisplayAllStudents refreshKey={refreshKey} />
+            </div>
+          </div>
+
+          {/* ── Teacher Schedules ── */}
+          <div className="relative rounded-2xl overflow-hidden" style={glassCard}>
+            <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
+            <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.65)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
+            <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, #9E2FD0, #F6B82E, transparent)" }} />
+            <div className="relative z-10 p-4 sm:p-6">
+              <h3 className="text-base font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                <FiCalendar style={{ color: "#9E2FD0" }} />
+                {t("admin.teacherSchedulesTitle")}
+              </h3>
+              <TeacherSchedulesViewer teachers={teachers} />
             </div>
           </div>
 

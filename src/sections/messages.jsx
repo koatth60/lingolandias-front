@@ -338,13 +338,14 @@ const Messages = () => {
       notifyNewConversation(conversation.id, [user.id, ...memberIds]);
       fetchConversations();
       if (scheduleAsClass && user.role === "teacher") {
-        // Only actual students can have a class scheduled for them — another
-        // teacher or an admin included in the group is never a "student to
+        // Only actual students (or invitados, who behave like a student for
+        // scheduling) can have a class scheduled for them — another teacher
+        // or an admin included in the group is never a "student to
         // schedule," and would otherwise silently create a Schedule row
         // nobody can ever see (their own calendar never reads rows where
         // they're listed as the student).
         const students = (members || [])
-          .filter((m) => m.role === "user")
+          .filter((m) => m.role === "user" || m.role === "invitado")
           .map((m) => ({ id: m.id, name: `${m.name} ${m.lastName}`.trim() }));
         if (students.length) {
           setPendingSchedule({ conversationId: conversation.id, groupName: name, students });
@@ -363,8 +364,8 @@ const Messages = () => {
     try {
       const res = await fetch(`${BACKEND_URL}/conversations/${conversationId}/members?userId=${user.id}`, { headers: authHeaders() });
       const allMembers = res.ok ? await res.json() : [];
-      // Only real students — see the same note in handleCreateGroup.
-      return allMembers.filter((m) => m.role === "user").map((m) => ({ id: m.id, name: `${m.name} ${m.lastName}`.trim() }));
+      // Only real students (or invitados) — see the same note in handleCreateGroup.
+      return allMembers.filter((m) => m.role === "user" || m.role === "invitado").map((m) => ({ id: m.id, name: `${m.name} ${m.lastName}`.trim() }));
     } catch (err) {
       console.error("Error fetching members for scheduling:", err);
       return [];

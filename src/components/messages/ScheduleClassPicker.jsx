@@ -110,8 +110,12 @@ const ScheduleClassPicker = ({ teacherId, students, defaultName, onClose, onConf
   const [groupName, setGroupName] = useState(defaultName || "");
   const [submitting, setSubmitting] = useState(false);
 
-  const handleSelectSlot = ({ start: slotStart }) => {
+  const handleSelectSlot = ({ start: slotStart, end: slotEnd }) => {
     setSelectedDate(slotStart);
+    // Prefills the exact clicked time instead of leaving both fields blank —
+    // the teacher already told us the time by clicking that slot.
+    setStart(dayjs(slotStart).format("HH:mm"));
+    setEnd(dayjs(slotEnd).format("HH:mm"));
     setDetailsOpen(true);
   };
 

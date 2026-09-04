@@ -14,6 +14,7 @@ const ROLE_LABEL_KEY = {
   admin: "profileCard.roleAdmin",
   teacher: "profileCard.roleTeacher",
   user: "profileCard.roleStudent",
+  invitado: "profileCard.roleInvitado",
 };
 
 // Legacy fixed rooms (general/teacher/support) are read-only — membership is

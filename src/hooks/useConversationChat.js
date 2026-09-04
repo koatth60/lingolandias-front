@@ -118,10 +118,33 @@ const useConversationChat = (socket, conversationId, user) => {
     messageCache.set(conversationId, chatMessages, user?.id);
   }, [conversationId, chatMessages, user?.id]);
 
+  // Confirmed by an incoming echo, cleared here; if the echo never arrives
+  // (dropped emit, or the socket disconnects right after sending), the timer
+  // itself flips the placeholder to _failed so it never hangs as "sending…"
+  // forever.
+  const pendingTimersRef = useRef(new Map());
+  const clearPendingTimer = (tempId) => {
+    const timer = pendingTimersRef.current.get(tempId);
+    if (timer) {
+      clearTimeout(timer);
+      pendingTimersRef.current.delete(tempId);
+    }
+  };
+
   useEffect(() => {
     if (!socket || !conversationId || !user?.name) return;
     socket.emit("join", { username: user.name, room: conversationId });
     fetchMessages();
+
+    // A dropped wifi connection means any message the other side sent while
+    // we were offline was broadcast into the void — the live socket event
+    // for it never reaches us and nothing else re-syncs afterward. Refetch
+    // on every reconnect (not just the initial mount) to close that gap.
+    const handleReconnect = () => {
+      socket.emit("join", { username: user.name, room: conversationId });
+      fetchMessages();
+    };
+    socket.on("connect", handleReconnect);
 
     const handleMessage = (data) => {
       if (data.conversationId !== conversationId) return;
@@ -134,6 +157,7 @@ const useConversationChat = (socket, conversationId, user) => {
             Math.abs(new Date(m.timestamp) - new Date(data.timestamp)) < 10000
         );
         if (idx !== -1) {
+          clearPendingTimer(prev[idx].id);
           const updated = [...prev];
           updated[idx] = data;
           return updated;
@@ -162,7 +186,15 @@ const useConversationChat = (socket, conversationId, user) => {
     const handleChatError = ({ reason }) => {
       console.error("[conversation] Server rejected message:", reason);
       if (reason !== "rate_limited") {
-        setChatMessages((prev) => prev.filter((m) => !m._pending));
+        // Marked failed instead of removed — the user's typed text stays on
+        // screen with a retry option instead of silently vanishing.
+        setChatMessages((prev) =>
+          prev.map((m) => {
+            if (!m._pending) return m;
+            clearPendingTimer(m.id);
+            return { ...m, _pending: false, _failed: true };
+          })
+        );
       }
     };
 
@@ -173,11 +205,14 @@ const useConversationChat = (socket, conversationId, user) => {
     socket.on("chatError", handleChatError);
 
     return () => {
+      socket.off("connect", handleReconnect);
       socket.off("conversationMessage", handleMessage);
       socket.off("conversationMessageEdited", handleEdited);
       socket.off("conversationMessageDeleted", handleDeleted);
       socket.off("messageReactionUpdated", handleReactionUpdated);
       socket.off("chatError", handleChatError);
+      pendingTimersRef.current.forEach(clearTimeout);
+      pendingTimersRef.current.clear();
     };
   }, [conversationId, socket, user?.name, fetchMessages]);
 
@@ -186,11 +221,18 @@ const useConversationChat = (socket, conversationId, user) => {
   // ChatWindowComponent's handleSendMessage).
   const sendMessage = (message, replyTo, fileUrl, targetId) => {
     const id = targetId || conversationId;
-    if (!id || !socket || !socket.connected || !user) return;
+    if (!id || !user) return;
     const timestamp = new Date();
+    const tempId = `pending-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    // Sin conexión, el emit ni siquiera sale — antes esto no hacía nada
+    // visible y el mensaje escrito simplemente desaparecía. Ahora se muestra
+    // igual, ya marcado como fallido, para que quede claro y se pueda
+    // reintentar apenas vuelva la conexión.
+    const offline = !socket || !socket.connected;
     const optimistic = {
-      _pending: true,
-      id: `pending-${Date.now()}`,
+      _pending: !offline,
+      _failed: offline,
+      id: tempId,
       conversationId: id,
       senderId: user.id,
       username: user.name,
@@ -202,6 +244,7 @@ const useConversationChat = (socket, conversationId, user) => {
     if (replyTo) optimistic.replyTo = replyTo;
     if (fileUrl) optimistic.fileUrl = fileUrl;
     setChatMessages((prev) => [...prev, optimistic]);
+    if (offline) return;
 
     socket.emit("sendConversationMessage", {
       conversationId: id,
@@ -213,6 +256,28 @@ const useConversationChat = (socket, conversationId, user) => {
       replyTo,
       fileUrl,
     });
+
+    // No delivery ack exists on this event — if the server echo never comes
+    // back (e.g. the connection drops between emit and broadcast) this is
+    // the only thing that keeps a message from sitting as "sending…" forever.
+    const timer = setTimeout(() => {
+      setChatMessages((prev) =>
+        prev.map((m) => (m.id === tempId && m._pending ? { ...m, _pending: false, _failed: true } : m))
+      );
+      pendingTimersRef.current.delete(tempId);
+    }, 10000);
+    pendingTimersRef.current.set(tempId, timer);
+  };
+
+  // Re-sends a message that ended up _failed (offline at send time, no ack
+  // within the timeout, or a server chatError) — drops the old placeholder
+  // and runs it back through sendMessage for a fresh attempt.
+  const retryMessage = (tempId) => {
+    const target = chatMessages.find((m) => m.id === tempId);
+    if (!target) return;
+    clearPendingTimer(tempId);
+    setChatMessages((prev) => prev.filter((m) => m.id !== tempId));
+    sendMessage(target.message, target.replyTo, target.fileUrl, target.conversationId);
   };
 
   const toggleReaction = (messageId, emoji) => {
@@ -220,7 +285,7 @@ const useConversationChat = (socket, conversationId, user) => {
     socket.emit("toggleReaction", { conversationId, messageId, emoji, userName: user?.name });
   };
 
-  return { chatMessages, setChatMessages, sendMessage, loadOlderMessages, hasMore, loadingMore, toggleReaction, isLoading };
+  return { chatMessages, setChatMessages, sendMessage, retryMessage, loadOlderMessages, hasMore, loadingMore, toggleReaction, isLoading };
 };
 
 export default useConversationChat;

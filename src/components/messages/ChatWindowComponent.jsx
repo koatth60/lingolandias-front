@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import axios from "axios";
 import send from "../../assets/logos/send.png";
 import { BsEmojiSmile, BsThreeDots, BsType, BsTypeBold, BsTypeItalic, BsTypeStrikethrough, BsCodeSlash } from "react-icons/bs";
-import { FiVideo, FiChevronLeft, FiEdit2, FiX, FiPaperclip, FiDownload, FiFile, FiMusic, FiFileText, FiCornerUpLeft, FiArrowDown, FiUsers, FiPhoneMissed, FiUserPlus, FiUserMinus, FiLogOut, FiMic, FiSquare, FiTrash2, FiPlus } from "react-icons/fi";
+import { FiVideo, FiChevronLeft, FiEdit2, FiX, FiPaperclip, FiDownload, FiFile, FiMusic, FiFileText, FiCornerUpLeft, FiArrowDown, FiUsers, FiPhoneMissed, FiUserPlus, FiUserMinus, FiLogOut, FiMic, FiSquare, FiTrash2, FiPlus, FiAlertCircle } from "react-icons/fi";
 
 const SYSTEM_MESSAGE_TYPES = ["member_added", "member_removed", "member_left", "group_renamed"];
 import { FaComments } from "react-icons/fa";
@@ -76,7 +76,7 @@ const ChatWindowComponent = ({
   const user = useSelector((state) => state.user.userInfo?.user);
 
   const currentUser = { id: userId, name: username, email, avatarUrl: userUrl };
-  const { chatMessages, setChatMessages, sendMessage, loadOlderMessages, hasMore, loadingMore, toggleReaction, isLoading } = useConversationChat(
+  const { chatMessages, setChatMessages, sendMessage, retryMessage, loadOlderMessages, hasMore, loadingMore, toggleReaction, isLoading } = useConversationChat(
     socket, room, currentUser
   );
 
@@ -1128,7 +1128,7 @@ const ChatWindowComponent = ({
                             isImageOnly ? "overflow-hidden"
                             : isFileOnly ? ""
                             : "px-4 py-2.5 text-white text-sm leading-relaxed"
-                          }`}
+                          } ${msg._pending ? "opacity-60" : ""} ${msg._failed ? "ring-2 ring-red-400/70" : ""}`}
                           style={isImageOnly
                             ? { boxShadow: "0 4px 16px rgba(0,0,0,0.25)" }
                             : isFileOnly ? {}
@@ -1166,10 +1166,22 @@ const ChatWindowComponent = ({
                         onToggle={(emoji) => toggleReaction(msg.id, emoji)}
                         align="end"
                       />
-                        {isLastOwnMessage && chatType === "dm" && (
-                          <span className={`text-[10px] mt-0.5 mr-1 ${isSeen ? "text-[#9E2FD0]" : "text-gray-400"}`}>
-                            {isSeen ? t("chatWindow.seen") : t("chatWindow.sent")}
-                          </span>
+                        {msg._failed ? (
+                          <button
+                            onClick={() => retryMessage(msg.id)}
+                            className="flex items-center gap-1 text-[10px] mt-0.5 mr-1 text-red-500 hover:text-red-600 hover:underline"
+                          >
+                            <FiAlertCircle size={11} />
+                            {t("chatWindow.failedToSend")} · {t("chatWindow.retry")}
+                          </button>
+                        ) : msg._pending ? (
+                          <span className="text-[10px] mt-0.5 mr-1 text-gray-400">{t("chatWindow.sending")}</span>
+                        ) : (
+                          isLastOwnMessage && chatType === "dm" && (
+                            <span className={`text-[10px] mt-0.5 mr-1 ${isSeen ? "text-[#9E2FD0]" : "text-gray-400"}`}>
+                              {isSeen ? t("chatWindow.seen") : t("chatWindow.sent")}
+                            </span>
+                          )
                         )}
                       </div>
                     ) : (

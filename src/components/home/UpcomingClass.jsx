@@ -6,7 +6,7 @@ export const UpcomingClass = ({ time, teacher, date, onJoin, onMessage, onViewCa
   const { t } = useTranslation();
   return (
   <div
-    className="relative rounded-xl overflow-hidden transition-all duration-200 hover:-translate-y-0.5 shadow-sm dark:shadow-none"
+    className="relative w-full rounded-xl overflow-hidden transition-all duration-200 hover:-translate-y-0.5 shadow-sm dark:shadow-none"
     style={{ border: '1px solid rgba(158,47,208,0.15)' }}
   >
     <div className="dark:hidden absolute inset-0 bg-white" />
@@ -16,16 +16,16 @@ export const UpcomingClass = ({ time, teacher, date, onJoin, onMessage, onViewCa
     />
 
     <div className="relative z-10 p-4 flex items-center justify-between gap-3">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-1 min-w-0">
         <div className="flex-shrink-0 text-center min-w-[44px]">
           <p className="text-base font-extrabold text-[#9E2FD0] leading-none">{time.split(' ')[0]}</p>
           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">{time.split(' ')[1]}</p>
         </div>
         <div className="w-px h-8 bg-gradient-to-b from-transparent via-[#9E2FD0]/25 to-transparent flex-shrink-0" />
-        <div>
+        <div className="min-w-0">
           <p className="text-sm font-semibold text-gray-800 dark:text-white flex items-center gap-1.5">
             <FiUser size={12} className="text-gray-400 flex-shrink-0" />
-            {teacher}
+            <span className="truncate">{teacher}</span>
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mt-0.5">
             <FiCalendar size={11} className="text-gray-400 flex-shrink-0" />

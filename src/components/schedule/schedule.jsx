@@ -44,6 +44,7 @@ import EventActionsMenu from "./EventActionsMenu";
 import Dropdown from "./Dropdown";
 import TeacherPanel from "./TeacherPanel";
 import AdminMeetingRooms from "./AdminMeetingRooms";
+import NewClassModal from "./NewClassModal";
 import { FiMessageSquare, FiX, FiUsers, FiChevronDown } from "react-icons/fi";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -54,7 +55,7 @@ const Schedule = () => {
   const header = user.role === "admin" ? t("schedule.meetingRooms") : t("schedule.mySchedule");
   const isChatVisible =
     (user.role === "teacher" && user.students && user.students.length > 0) ||
-    (user.role === "user" && user.teacher);
+    ((user.role === "user" || user.role === "invitado") && user.teacher);
   const [teacherChat, setTeacherChat] = useState([]);
   const [teacherInfo, setTeacherInfo] = useState({});
   const [chatRoom, setChatRoom] = useState("");
@@ -63,6 +64,7 @@ const Schedule = () => {
   const [participantsEvent, setParticipantsEvent] = useState(null);
   const [mobileChatOpen, setMobileChatOpen] = useState(false);
   const [teacherPanelOpen, setTeacherPanelOpen] = useState(false);
+  const [newClassSlot, setNewClassSlot] = useState(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -117,12 +119,20 @@ const Schedule = () => {
 
   const openParticipants = (event) => setParticipantsEvent(event);
 
+  // Complementary to scheduling a class from a chat (Messages) — clicking an
+  // empty slot on the teacher's own calendar goes straight to "who's coming
+  // and at what time" since the time is already implied by the click.
+  const handleSelectSlot = ({ start: slotStart, end: slotEnd }) => {
+    if (user.role !== "teacher") return;
+    setNewClassSlot({ start: slotStart, end: slotEnd });
+  };
+
   useEffect(() => {
     if (user.role === "teacher") {
       setTeacherChat(user.students);
       setTeacherInfo(user.teacher);
       setChatRoom(user.id);
-    } else if (user.role === "user") {
+    } else if (user.role === "user" || user.role === "invitado") {
       setChatRoom(user.id);
     }
 
@@ -134,7 +144,7 @@ const Schedule = () => {
   // On mount: students fetch their full profile (teacher + schedules) so any
   // changes made while the tab was closed are applied immediately.
   useEffect(() => {
-    if (user.role === 'user' && user.id) {
+    if ((user.role === 'user' || user.role === 'invitado') && user.id) {
       const token = localStorage.getItem("token");
       fetch(`${BACKEND_URL}/users/student-profile/${user.id}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -183,13 +193,13 @@ const Schedule = () => {
       const handleNewChat = () => {
         if (user.role === 'teacher') {
           dispatch(fetchMessagesForTeacher());
-        } else if (user.role === 'user') {
+        } else if (user.role === 'user' || user.role === 'invitado') {
           dispatch(fetchUnreadCountsForStudent());
         }
       };
 
       const handleScheduleUpdated = ({ studentId, teacherId, action, schedule, eventIds }) => {
-        if (user.role === 'user' && user.id === studentId) {
+        if ((user.role === 'user' || user.role === 'invitado') && user.id === studentId) {
           if (action === 'add') dispatch(addStudentSchedule(schedule));
           else if (action === 'remove') dispatch(removeStudentSchedules(eventIds));
           else if (action === 'modify') dispatch(updateStudentSchedule(schedule));
@@ -210,7 +220,7 @@ const Schedule = () => {
       const handleStudentAssigned = ({ teacherId, studentId, schedules, student, teacher }) => {
         if (user.role === 'teacher' && user.id === teacherId) {
           dispatch(addStudentToTeacher({ student, schedules }));
-        } else if (user.role === 'user' && user.id === studentId) {
+        } else if ((user.role === 'user' || user.role === 'invitado') && user.id === studentId) {
           dispatch(setStudentTeacher(teacher));
           schedules.forEach(s => dispatch(addStudentSchedule(s)));
         }
@@ -220,7 +230,7 @@ const Schedule = () => {
         if (user.role === 'teacher' && user.id === teacherId) {
           studentIds.forEach(id => dispatch(removeStudent(id)));
           dispatch(removeTeacherSchedules(deletedScheduleIds));
-        } else if (user.role === 'user' && studentIds.includes(user.id)) {
+        } else if ((user.role === 'user' || user.role === 'invitado') && studentIds.includes(user.id)) {
           dispatch(setStudentTeacher(null));
           dispatch(removeStudentSchedules(deletedScheduleIds));
         }
@@ -301,7 +311,7 @@ const Schedule = () => {
     // otherUserId lets the incoming-call ring reach the other side
     // directly even if roomId doesn't correspond to a real conversations
     // row yet — same convention as joinClassHandler.js's shared flow.
-    const otherUserId = user.role === "user" ? user.teacher?.id : event.studentId;
+    const otherUserId = (user.role === "user" || user.role === "invitado") ? user.teacher?.id : event.studentId;
     navigate("/classroom", {
       state: { roomId, chatRoomId: roomId, userName, email, fromMeeting: false, chatName, chatType: "private", otherUserId },
     });
@@ -319,14 +329,14 @@ const Schedule = () => {
       else if (roomName === meetingRooms.polish) { roomId = teacherChats.polish.id; chatName = teacherChats.polish.name; }
     } else {
       if (user.role === "teacher") { roomId = user.id; }
-      else if (user.role === "user") { roomId = user.teacher.id; }
+      else if (user.role === "user" || user.role === "invitado") { roomId = user.teacher.id; }
     }
 
     // Only the student side has one specific "other side" to ring directly —
     // a teacher's own room can have several different students join it, so
     // there's no single otherUserId to target there; the incoming-call ring
     // falls back to the room's existing conversation members in that case.
-    const otherUserId = !roomName && user.role === "user" ? user.teacher?.id : undefined;
+    const otherUserId = !roomName && (user.role === "user" || user.role === "invitado") ? user.teacher?.id : undefined;
     const params = { roomId, chatRoomId: roomId, userName, email, fromMeeting: true, chatName, chatType: roomName ? "teacher" : "group", otherUserId };
 
     navigate("/classroom", { state: params });
@@ -375,7 +385,7 @@ const Schedule = () => {
             <>
               {/* ── Calendar (desktop) / Class list (mobile) ── */}
               <div className="lg:flex-grow">
-                {events.length > 0 ? (
+                {events.length > 0 || user.role === "teacher" ? (
                   <>
                     {/* Desktop: full calendar */}
                     <div
@@ -413,6 +423,8 @@ const Schedule = () => {
                             step={60}
                             timeslots={1}
                             onSelectEvent={handleEventClick}
+                            selectable={user.role === "teacher"}
+                            onSelectSlot={handleSelectSlot}
                             onRangeChange={(range) => setCalendarRange(normalizeCalendarRange(range))}
                             eventPropGetter={(event) => ({
                               style: {
@@ -690,6 +702,22 @@ const Schedule = () => {
             isGroupClass={!!participantsEvent.isGroupClass}
             user={user}
             onClose={() => setParticipantsEvent(null)}
+          />
+        )}
+
+        {newClassSlot && (
+          <NewClassModal
+            show
+            teacherId={user.id}
+            teacherName={`${user.name} ${user.lastName}`}
+            teacherEmail={user.email}
+            teacherAvatarUrl={user.avatarUrl}
+            initialStart={newClassSlot.start}
+            initialEnd={newClassSlot.end}
+            onClose={() => setNewClassSlot(null)}
+            onCreated={(schedules) => {
+              schedules.forEach((s) => dispatch(addTeacherSchedule(s)));
+            }}
           />
         )}
       </div>

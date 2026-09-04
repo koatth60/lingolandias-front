@@ -68,7 +68,7 @@ const UserHomePage = () => {
     if (!user?.id) return;
     const token = localStorage.getItem("token");
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
-    if (user.role === "user") {
+    if (user.role === "user" || user.role === "invitado") {
       fetch(`${BACKEND_URL}/users/student-profile/${user.id}`, { headers })
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => {

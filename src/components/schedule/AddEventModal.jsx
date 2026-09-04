@@ -1,220 +1,259 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import Swal from "sweetalert2";
-import { FiX, FiCalendar } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
+import { Calendar, dayjsLocalizer, Navigate } from "react-big-calendar";
+import "react-big-calendar/lib/css/react-big-calendar.css";
+import { FiX, FiCalendar, FiClock, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import TimeInput from "../common/TimeInput";
+import { projectSchedules, normalizeCalendarRange } from "../../utils/scheduleProjection";
 
-const AddEventModal = ({
-  student,
-  teacherId,
-  teacherName,
-  onClose,
-  onConfirm,
-  isOpen,
-}) => {
-  const [eventDetails, setEventDetails] = useState({
-    date: "",
-    start: "",
-    end: "",
-  });
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
+const CalendarToolbar = ({ label, onNavigate, onView, view }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-[#13102a] border-b border-gray-200 dark:border-white/[0.08] flex-wrap gap-3">
+      <div className="flex items-center gap-2">
+        <button onClick={() => onNavigate(Navigate.PREVIOUS)} className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:border-purple-400 hover:text-purple-600 dark:hover:text-purple-400 transition-all">
+          <FiChevronLeft size={18} />
+        </button>
+        <button onClick={() => onNavigate(Navigate.TODAY)} className="px-4 h-9 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:border-purple-400 hover:text-purple-600 dark:hover:text-purple-400 transition-all">
+          {t("common.today")}
+        </button>
+        <button onClick={() => onNavigate(Navigate.NEXT)} className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:border-purple-400 hover:text-purple-600 dark:hover:text-purple-400 transition-all">
+          <FiChevronRight size={18} />
+        </button>
+      </div>
+      <span className="text-base font-extrabold text-gray-900 dark:text-white">{label}</span>
+      <div className="flex items-center gap-1 p-1 rounded-xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10">
+        {["month", "week"].map((v) => (
+          <button
+            key={v}
+            onClick={() => onView(v)}
+            className={`px-4 h-8 rounded-lg text-sm font-bold capitalize transition-all ${
+              view === v ? "text-white shadow-md" : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white"
+            }`}
+            style={view === v ? { background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" } : {}}
+          >
+            {v}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Shows the teacher's own busy schedule (so they see conflicts) and lets them
+// click an empty slot instead of typing a date by hand — same pattern as
+// ScheduleClassPicker (Messages) / EventTimeModal (admin's assign-student),
+// now applied here too so every "pick a time for a class" screen behaves the
+// same way: click a slot, get its exact time prefilled, just fine-tune it.
+const AddEventModal = ({ student, teacherId, teacherName, onClose, onConfirm, isOpen }) => {
+  const { t } = useTranslation();
+  const localizer = useMemo(() => dayjsLocalizer(dayjs), []);
+  const [calendarRange, setCalendarRange] = useState(() => ({
+    start: dayjs().startOf("week").toDate(),
+    end: dayjs().endOf("week").toDate(),
+  }));
+  const [teacherSchedules, setTeacherSchedules] = useState([]);
+  const [loadingSchedules, setLoadingSchedules] = useState(true);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [start, setStart] = useState("");
+  const [end, setEnd] = useState("");
   const [recurrenceWeeks, setRecurrenceWeeks] = useState(1);
+
+  // Reset to a clean slate every time the modal opens (it stays mounted
+  // between opens, driven by `isOpen`, so state from a previous student/open
+  // must not leak into the next one).
+  useEffect(() => {
+    if (!isOpen) return;
+    setCalendarRange({ start: dayjs().startOf("week").toDate(), end: dayjs().endOf("week").toDate() });
+    setSelectedDate(null);
+    setDetailsOpen(false);
+    setStart("");
+    setEnd("");
+    setRecurrenceWeeks(1);
+  }, [isOpen, student?.id]);
+
+  useEffect(() => {
+    if (!isOpen || !teacherId) return;
+    const token = localStorage.getItem("token");
+    setLoadingSchedules(true);
+    fetch(`${BACKEND_URL}/users/teacher-profile/${teacherId}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+      .then((res) => (res.ok ? res.json() : { teacherSchedules: [] }))
+      .then((data) => setTeacherSchedules(Array.isArray(data.teacherSchedules) ? data.teacherSchedules : []))
+      .catch((err) => console.error("Error fetching teacher availability:", err))
+      .finally(() => setLoadingSchedules(false));
+  }, [isOpen, teacherId]);
+
+  const busyEvents = useMemo(
+    () => projectSchedules(teacherSchedules || [], { rangeStart: calendarRange.start, rangeEnd: calendarRange.end, nameKey: "studentName" }),
+    [teacherSchedules, calendarRange],
+  );
 
   if (!student || !isOpen) {
     return null;
   }
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setEventDetails((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleTimeChange = (name) => (value) => {
-    setEventDetails((prev) => ({ ...prev, [name]: value }));
+  const handleSelectSlot = ({ start: slotStart, end: slotEnd }) => {
+    setSelectedDate(slotStart);
+    setStart(dayjs(slotStart).format("HH:mm"));
+    setEnd(dayjs(slotEnd).format("HH:mm"));
+    setDetailsOpen(true);
   };
 
   const handleSubmit = () => {
-    const { date, start, end } = eventDetails;
-
-    if (!date || !start || !end) {
-      Swal.fire({
-        title: "Error",
-        text: "Please fill in all fields.",
-        icon: "error",
-        background: '#1a1a2e',
-        color: '#fff',
-        confirmButtonColor: '#9E2FD0',
-      });
+    if (!selectedDate || !start || !end) {
+      Swal.fire({ title: t("common.error"), text: "Please fill in all fields.", icon: "error", confirmButtonColor: "#9E2FD0" });
       return;
     }
-
-    // "HH:MM" strings sort lexicographically the same as chronologically since both are zero-padded
     if (end <= start) {
-      Swal.fire({
-        title: "Error",
-        text: "End time must be after start time.",
-        icon: "error",
-        background: '#1a1a2e',
-        color: '#fff',
-        confirmButtonColor: '#9E2FD0',
-      });
+      Swal.fire({ title: t("common.error"), text: t("addEvent.endBeforeStart"), icon: "error", confirmButtonColor: "#9E2FD0" });
       return;
     }
 
     const [startHours, startMinutes] = start.split(":").map(Number);
     const [endHours, endMinutes] = end.split(":").map(Number);
+    const startDateTime = dayjs(selectedDate).hour(startHours).minute(startMinutes).second(0);
+    const endDateTime = dayjs(selectedDate).hour(endHours).minute(endMinutes).second(0);
 
-    const startDateTime = dayjs(date)
-      .hour(startHours)
-      .minute(startMinutes)
-      .second(0);
-    const endDateTime = dayjs(date)
-      .hour(endHours)
-      .minute(endMinutes)
-      .second(0);
-
-    const payload = {
+    onConfirm({
       studentId: student.id,
-      teacherId: teacherId,
+      teacherId,
       studentName: `${student.name} ${student.lastName}`,
-      teacherName: teacherName,
+      teacherName,
       initialDateTime: startDateTime.toDate(),
       startTime: startDateTime.toDate(),
       endTime: endDateTime.toDate(),
       dayOfWeek: startDateTime.format("dddd"),
       recurrenceWeeks,
-    };
-    onConfirm(payload);
+    });
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div 
-        className="relative w-full max-w-md rounded-2xl shadow-2xl overflow-hidden"
-        style={{
-          background: 'linear-gradient(135deg, #ffffff 0%, #f5f5f5 55%, #f0f0f0 100%)'
-        }}
+    <div
+      className="fixed inset-0 flex items-center justify-center p-3 sm:p-6"
+      style={{ background: "rgba(0,0,0,0.70)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", zIndex: 99999 }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div
+        className="relative w-full rounded-2xl bg-white dark:bg-[#0d0a1e] flex flex-col"
+        style={{ maxWidth: "min(1100px, 96vw)", height: "min(800px, 90vh)", border: "1px solid rgba(158,47,208,0.30)", boxShadow: "0 32px 80px rgba(0,0,0,0.5)", zIndex: 100000 }}
       >
-        {/* Dark mode gradient */}
-        <div className="dark:block hidden absolute inset-0" style={{ 
-          background: 'linear-gradient(135deg, #0d0a1e 0%, #1a1a2e 55%, #110e28 100%)'
-        }} />
+        <div className="absolute top-0 left-0 w-full h-[3px] rounded-t-2xl" style={{ background: "linear-gradient(90deg, #9E2FD0, #F6B82E, #26D9A1)" }} />
 
-        {/* Ambient glow orbs */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none hidden dark:block">
-          <div className="absolute w-48 h-48 rounded-full bg-[#9E2FD0]/10 blur-3xl -top-24 -left-24" />
-          <div className="absolute w-48 h-48 rounded-full bg-[#F6B82E]/10 blur-3xl -bottom-24 -right-24" />
+        <div className="flex items-center justify-between px-6 pt-5 pb-4 flex-shrink-0 border-b border-gray-100 dark:border-white/[0.07]">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}>
+              <FiCalendar size={16} className="text-white" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="text-base font-extrabold text-gray-900 dark:text-white leading-tight">Add Event</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+                for <span className="font-semibold text-[#9E2FD0]">{student.name} {student.lastName}</span>
+              </p>
+            </div>
+          </div>
+          <button onClick={onClose} className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-all flex-shrink-0">
+            <FiX size={18} />
+          </button>
         </div>
 
-        {/* Content */}
-        <div className="relative z-10 p-6">
-          {/* Header */}
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-[#9E2FD0] to-[#F6B82E] bg-clip-text text-transparent dark:text-white">
-              Add Event
-            </h2>
-            <button
-              onClick={onClose}
-              className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
-            >
-              <FiX size={20} />
-            </button>
-          </div>
-
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
-            for <span className="font-semibold text-[#9E2FD0]">{student.name} {student.lastName}</span>
-          </p>
-
-          <div className="space-y-5">
-            {/* Date Input */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Date
-              </label>
-              <div className="relative">
-                <FiCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                <input
-                  type="date"
-                  name="date"
-                  value={eventDetails.date}
-                  onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-[#9E2FD0]/20 text-gray-900 dark:text-white focus:border-[#9E2FD0] focus:ring-1 focus:ring-[#9E2FD0] transition-all outline-none"
-                />
-              </div>
+        <div className="flex-1 overflow-hidden p-4 relative">
+          {loadingSchedules && (
+            <div className="absolute inset-4 z-10 flex items-center justify-center rounded-xl bg-white/70 dark:bg-black/40 backdrop-blur-sm">
+              <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "#9E2FD0", borderTopColor: "transparent" }} />
             </div>
-
-            {/* Start Time */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Start Time (HH:MM)
-              </label>
-              <TimeInput
-                value={eventDetails.start}
-                onChange={handleTimeChange("start")}
-                className="w-full px-4 py-3"
-              />
-            </div>
-
-            {/* End Time */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                End Time (HH:MM)
-              </label>
-              <TimeInput
-                value={eventDetails.end}
-                onChange={handleTimeChange("end")}
-                className="w-full px-4 py-3"
-              />
-            </div>
-
-            {/* Recurrence */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Repeats
-              </label>
-              <div className="flex gap-2">
-                {[
-                  { value: 1, label: "Every week" },
-                  { value: 2, label: "Every 2 weeks" },
-                ].map((opt) => (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => setRecurrenceWeeks(opt.value)}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                      recurrenceWeeks === opt.value
-                        ? "text-white"
-                        : "text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-[#9E2FD0]/20"
-                    }`}
-                    style={recurrenceWeeks === opt.value ? { background: 'linear-gradient(135deg, #9E2FD0, #7b22a8)' } : {}}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Buttons */}
-          <div className="flex gap-3 mt-8">
-            <button
-              onClick={onClose}
-              className="flex-1 py-3 px-4 rounded-xl bg-gray-200 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-white/10 transition-all font-medium"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSubmit}
-              className="flex-1 py-3 px-4 rounded-xl font-medium text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
-              style={{
-                background: 'linear-gradient(135deg, #9E2FD0, #7b22a8)',
-                boxShadow: '0 4px 15px rgba(158,47,208,0.3)',
+          )}
+          <div className="rbc-admin-cal h-full rounded-xl overflow-hidden border border-gray-200 dark:border-white/[0.07]">
+            <Calendar
+              localizer={localizer}
+              events={busyEvents}
+              startAccessor="start"
+              endAccessor="end"
+              style={{ height: "100%", width: "100%" }}
+              views={["month", "week"]}
+              defaultView="week"
+              defaultDate={new Date()}
+              onRangeChange={(range) => setCalendarRange(normalizeCalendarRange(range))}
+              components={{ toolbar: CalendarToolbar }}
+              formats={{
+                timeGutterFormat: "HH:mm",
+                eventTimeRangeFormat: ({ start: s, end: e }) => `${dayjs(s).format("HH:mm")} – ${dayjs(e).format("HH:mm")}`,
               }}
-            >
-              Add Event
-            </button>
+              selectable={!loadingSchedules}
+              onSelectSlot={handleSelectSlot}
+              eventPropGetter={() => ({
+                style: { background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", border: "none", borderRadius: 6, color: "#fff", fontSize: 12, fontWeight: 600, padding: "2px 6px" },
+              })}
+            />
           </div>
         </div>
       </div>
+
+      {detailsOpen && (
+        <div
+          className="fixed inset-0 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.70)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", zIndex: 100001 }}
+          onClick={(e) => { if (e.target === e.currentTarget) setDetailsOpen(false); }}
+        >
+          <div className="relative w-full max-w-sm rounded-2xl bg-white dark:bg-[#0d0a1e]" style={{ border: "1px solid rgba(158,47,208,0.30)", boxShadow: "0 32px 64px rgba(0,0,0,0.5)", zIndex: 100002 }}>
+            <div className="absolute top-0 left-0 w-full h-[2px] rounded-t-2xl" style={{ background: "linear-gradient(90deg, #F6B82E, #9E2FD0)" }} />
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-base font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
+                  <FiClock size={15} style={{ color: "#F6B82E" }} />
+                  {selectedDate ? dayjs(selectedDate).format("dddd, MMMM D") : ""}
+                </h3>
+                <button onClick={() => setDetailsOpen(false)} className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-all">
+                  <FiX size={15} />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">{t("addEvent.startTime")}</label>
+                  <TimeInput value={start} onChange={setStart} className="w-full px-4 py-2.5" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">{t("addEvent.endTime")}</label>
+                  <TimeInput value={end} onChange={setEnd} className="w-full px-4 py-2.5" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">{t("addEvent.recurrence")}</label>
+                  <div className="flex gap-2">
+                    {[{ value: 1, label: t("addEvent.everyWeek") }, { value: 2, label: t("addEvent.everyTwoWeeks") }].map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setRecurrenceWeeks(opt.value)}
+                        className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all duration-200 ${
+                          recurrenceWeeks === opt.value ? "text-white" : "text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-white/10"
+                        }`}
+                        style={recurrenceWeeks === opt.value ? { background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" } : {}}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  className="w-full py-3 rounded-xl text-white text-sm font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
+                  style={{ background: "linear-gradient(135deg, #F6B82E, #d4981a)", boxShadow: "0 4px 14px rgba(246,184,46,0.28)" }}
+                >
+                  <FiClock size={14} /> Add Event
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

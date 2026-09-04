@@ -22,7 +22,7 @@ const useFormattedEvents = (user, range) => {
     let events = [];
     if (user.role === "teacher" && user.teacherSchedules) {
       events = projectSchedules(user.teacherSchedules, { rangeStart, rangeEnd, nameKey: "studentName" });
-    } else if (user.role === "user" && user.studentSchedules) {
+    } else if ((user.role === "user" || user.role === "invitado") && user.studentSchedules) {
       events = projectSchedules(user.studentSchedules, { rangeStart, rangeEnd, nameKey: "teacherName" });
     }
     // A class tied to a group chat shows the same title for every viewer —

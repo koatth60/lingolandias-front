@@ -8,7 +8,7 @@ import {
   FiHome, FiCalendar, FiBookOpen, FiMessageSquare, FiUser,
   FiSettings, FiHelpCircle, FiUsers, FiChevronLeft, FiVideo,
   FiRadio,
-  FiGrid, FiLogOut, FiBarChart2, FiActivity
+  FiGrid, FiLogOut, FiBarChart2, FiActivity, FiUserPlus
 } from "react-icons/fi";
 import { socket } from "../socket";
 import { toast } from "react-toastify";
@@ -116,6 +116,9 @@ const Dashboard = () => {
       : []),
     ...(user?.role === 'teacher' || user?.role === 'admin'
       ? [{ to: '/trello', icon: FiGrid, text: 'Trello 2.0' }]
+      : []),
+    ...(user?.role === 'teacher'
+      ? [{ to: '/invitados', icon: FiUserPlus, text: t('nav.invitados') }]
       : []),
     ...(user?.role === 'admin'
       ? [{ to: '/analytics', icon: FiBarChart2, text: 'Analytics' }]

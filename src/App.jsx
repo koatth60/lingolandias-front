@@ -34,6 +34,7 @@ const AdminTrello  = lazy(routeImports['/admin-trello']);
 const AdminMeetingLogs = lazy(routeImports['/admin-meeting-logs']);
 const Analytics    = lazy(routeImports['/analytics']);
 const Recordings   = lazy(routeImports['/recordings']);
+const Invitados    = lazy(routeImports['/invitados']);
 import { useSelector } from 'react-redux';
 import { ToastContainer, Slide } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -173,6 +174,14 @@ function App() {
             element={
               <RequireAuth>
                 <Trello />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/invitados"
+            element={
+              <RequireAuth role="teacher">
+                <Invitados />
               </RequireAuth>
             }
           />

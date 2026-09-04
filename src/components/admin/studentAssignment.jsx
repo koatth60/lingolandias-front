@@ -64,10 +64,10 @@ const CalendarToolbar = ({ label, onNavigate, onView, view }) => {
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-const EventTimeModal = ({ selectedDate, onClose, onAdd }) => {
+const EventTimeModal = ({ selectedDate, initialStart, initialEnd, onClose, onAdd }) => {
   const { t } = useTranslation();
-  const [start, setStart] = useState("");
-  const [end, setEnd] = useState("");
+  const [start, setStart] = useState(initialStart ? dayjs(initialStart).format("HH:mm") : "");
+  const [end, setEnd] = useState(initialEnd ? dayjs(initialEnd).format("HH:mm") : "");
   const [recurrenceWeeks, setRecurrenceWeeks] = useState(1);
 
   const handleAdd = () => {
@@ -226,6 +226,7 @@ const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedSlotEnd, setSelectedSlotEnd] = useState(null);
   const [eventModalOpen, setEventModalOpen] = useState(false);
   const [events, setEvents] = useState([]);
   const [teachersEvents, setTeachersEvents] = useState([]);
@@ -311,8 +312,9 @@ const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
     setIsCalendarOpen(true);
   };
 
-  const handleSelectSlot = ({ start }) => {
+  const handleSelectSlot = ({ start, end }) => {
     setSelectedDate(start);
+    setSelectedSlotEnd(end);
     setEventModalOpen(true);
   };
 
@@ -606,6 +608,8 @@ const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
       {eventModalOpen && (
         <EventTimeModal
           selectedDate={selectedDate}
+          initialStart={selectedDate}
+          initialEnd={selectedSlotEnd}
           onClose={() => setEventModalOpen(false)}
           onAdd={handleAddEvent}
         />

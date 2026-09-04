@@ -30,7 +30,7 @@ const AdminHomeDashboard = () => {
   const allSchedules = useSelector(selectAllSchedules);
   const allUsers = useSelector(selectAllUsers);
 
-  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001/api";
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -63,14 +63,29 @@ const AdminHomeDashboard = () => {
     [activeSection, todaysClasses]
   );
 
-  // Join class as admin observer — room is the student's ID, unless this is a
-  // group class booked with an explicit shared room
+  // Join class as a silent admin observer — room is the student's ID for a
+  // 1:1 class, or the class's own shared roomId for a group class. Passes
+  // the same full param set the real teacher/student join flow uses
+  // (joinClassHandler.js) so the in-call chat panel resolves the right
+  // conversation — safe to do even though admin isn't a real participant,
+  // since JitsiClassRoom skips the "ensure DM"/"ring the other side" side
+  // effects entirely for role==='admin'.
   const handleJoinClass = (classItem) => {
+    const roomId = classItem.roomId || classItem.studentId;
     navigate("/classroom", {
       state: {
-        roomId: classItem.roomId || classItem.studentId,
+        roomId,
+        chatRoomId: roomId,
+        otherUserId: classItem.studentId,
+        chatName: classItem.groupName || classItem.studentName,
+        chatType: classItem.groupName ? "group" : "private",
         userName: admin.name,
         email: admin.email,
+        // Tells JitsiClassRoom to join camera/mic muted by default — the
+        // admin is here to observe, not participate. Note this is not full
+        // invisibility: Jitsi still shows a (muted) tile for them in the
+        // room unless/until the server's own "visitor" mode is set up.
+        observer: true,
       },
     });
   };

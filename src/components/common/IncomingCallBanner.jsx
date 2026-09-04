@@ -24,7 +24,12 @@ const IncomingCallBanner = () => {
   const timeoutRef = useRef(null);
 
   useEffect(() => {
-    if (!user) return;
+    // Admins can join any class from the admin dashboard to observe, but are
+    // never an actual call participant — the server already excludes admins
+    // when resolving who to ring (see videocalls.gateaway's excludeAdmins),
+    // this is just a second line of defense so an admin's own client never
+    // shows a ring even if some other path ever slips through.
+    if (!user || user.role === "admin") return;
     const handleCallStarted = (data) => {
       if (data.callerId === user.id) return; // safety net, server already excludes the caller
       setIncomingCall(data);

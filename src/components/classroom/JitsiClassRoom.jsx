@@ -98,7 +98,7 @@ const JitsiClassRoom = () => {
     otherUserId: searchParams.get("callerId") || undefined,
   } : null;
 
-  const { userName, roomId, chatRoomId, chatName, email, chatType, otherUserId } = location.state || stateFromPush || {};
+  const { userName, roomId, chatRoomId, chatName, email, chatType, otherUserId, observer } = location.state || stateFromPush || {};
   // Drives the small click-through badge overlaid on top of lingo-chat's
   // native icon (see the render below) — the native icon itself is static.
   const chatUnreadCount = useSelector(selectUnreadForConversation(chatRoomId || roomId));
@@ -135,6 +135,10 @@ const JitsiClassRoom = () => {
   useEffect(() => {
     if (!user?.id || !roomId || !otherUserId) return;
     if (chatType !== "private" && chatType !== "dm") return;
+    // An admin joining to observe from the dashboard is never one of the two
+    // real participants — forcing them into this conversation's membership
+    // would corrupt the actual teacher/student DM.
+    if (user.role === "admin") return;
     fetch(`${BACKEND_URL}/conversations/dm/ensure`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -440,8 +444,10 @@ const JitsiClassRoom = () => {
 
   const options = {
     configOverwrite: {
-      startWithAudioMuted: bothMediaUnavailable,
-      startWithVideoMuted: bothMediaUnavailable,
+      // An admin observing from the dashboard is here to watch, not
+      // participate — always joins muted regardless of device availability.
+      startWithAudioMuted: bothMediaUnavailable || observer,
+      startWithVideoMuted: bothMediaUnavailable || observer,
       disableModeratorIndicator: true,
       // Disable DTX — prevents crackling at silence/speech transitions
       enableOpusDtx: false,
@@ -647,7 +653,10 @@ const JitsiClassRoom = () => {
               try {
                 if (
                   !callStartedNotifiedRef.current &&
-                  ["group", "dm", "private"].includes(chatType)
+                  ["group", "dm", "private"].includes(chatType) &&
+                  // An admin observing a class from the dashboard shouldn't
+                  // ring the real teacher/student — they're just watching.
+                  user?.role !== "admin"
                 ) {
                   const others = externalApi.getParticipantsInfo();
                   logEvent("call_ring_check", { chatType, othersCount: others.length });

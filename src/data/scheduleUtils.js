@@ -37,6 +37,11 @@ export const organizeClassesByLanguage = (todaysSchedules, usersData) => {
       scheduleId: schedule.id,
       teacherId: teacher.id,
       studentId: student.id,
+      // A group class carries its own shared roomId/groupName — without
+      // these, joining a group class from the admin dashboard would
+      // incorrectly fall back to the 1:1 studentId room.
+      roomId: schedule.roomId,
+      groupName: schedule.groupName,
       startTime: schedule.startTime,
       endTime: schedule.endTime,
       actualDay: getDayNameFromDate(schedule.initialDateTime || schedule.startTime),

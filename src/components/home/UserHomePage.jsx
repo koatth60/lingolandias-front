@@ -250,7 +250,16 @@ const UserHomePage = () => {
                   onJoin={() => handleJoinClass({ user, classSession, navigate })}
                   onMessage={
                     otherUserId
-                      ? () => navigate("/messages", { state: { openDmWithUserId: otherUserId, openDmWithName: otherUserName } })
+                      ? () => navigate("/messages", {
+                          state: {
+                            openDmWithUserId: otherUserId,
+                            openDmWithName: otherUserName,
+                            // The other person on a class card is always the
+                            // opposite role of the viewer — lets Messages'
+                            // teacher->student "schedule a class?" prompt fire.
+                            openDmWithRole: user.role === "teacher" ? "user" : "teacher",
+                          },
+                        })
                       : undefined
                   }
                   onViewCalendar={() => navigate("/schedule", { state: { focusDate: displayDate.toISOString() } })}

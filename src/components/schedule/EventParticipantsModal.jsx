@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import Swal from "sweetalert2";
@@ -22,6 +23,7 @@ const authHeaders = () => {
 const EventParticipantsModal = ({ roomId, studentId, initialName, isGroupClass, user, onClose }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [resolvedRoomId, setResolvedRoomId] = useState(roomId || null);
   const [conversation, setConversation] = useState({
     type: isGroupClass ? "group" : "dm",
@@ -188,13 +190,28 @@ const EventParticipantsModal = ({ roomId, studentId, initialName, isGroupClass, 
     }
   };
 
+  const handleMessageFromProfile = (person) => {
+    setViewingProfile(null);
+    onClose();
+    navigate("/messages", {
+      state: {
+        openDmWithUserId: person.id,
+        openDmWithName: person.name,
+        openDmWithLastName: person.lastName || "",
+        // Lets Messages' teacher->student "schedule a class?" prompt fire
+        // correctly even though this DM was opened from the Calendar.
+        openDmWithRole: person.role,
+      },
+    });
+  };
+
   if (viewingProfile) {
     return (
       <ProfileCard
         user={viewingProfile}
         isSelf={viewingProfile.id === user.id}
         onClose={() => setViewingProfile(null)}
-        onMessage={() => setViewingProfile(null)}
+        onMessage={handleMessageFromProfile}
       />
     );
   }

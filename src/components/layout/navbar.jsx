@@ -9,8 +9,7 @@ import { toggleSidebar } from "../../redux/sidebarSlice";
 import { messageCache } from "../../state/messageCache";
 import { conversationListCache } from "../../state/conversationListCache";
 import ThemeToggleButton from "../buttons/ThemeToggleButton";
-import TutorialModal from "../tutorial/TutorialModal";
-import { FiChevronDown, FiMenu, FiChevronLeft, FiUser, FiSettings, FiHelpCircle, FiLogOut, FiPlay } from "react-icons/fi";
+import { FiChevronDown, FiMenu, FiChevronLeft, FiUser, FiSettings, FiHelpCircle, FiLogOut, FiBookOpen } from "react-icons/fi";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -20,17 +19,9 @@ const Navbar = ({ header }) => {
   const user = useSelector((state) => state.user.userInfo.user);
   const isSidebarOpen = useSelector((state) => state.sidebar.isSidebarOpen);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [tutorialOpen, setTutorialOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   const logoutAndNavigate = useLogout();
-
-  // Auto-show tutorial on first login (watchedTutorial === false, not admin)
-  useEffect(() => {
-    if (user && user.role !== 'admin' && !user.settings?.watchedTutorial) {
-      setTutorialOpen(true);
-    }
-  }, [user?.id]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -258,6 +249,9 @@ const Navbar = ({ header }) => {
                       { href: '/profile', label: t("navbar.profile"), icon: FiUser },
                       { href: '/settings', label: t("navbar.settings"), icon: FiSettings },
                       { href: '/help-center', label: t("navbar.helpCenter"), icon: FiHelpCircle },
+                      ...(user?.role !== 'admin'
+                        ? [{ href: '/course', label: t("nav.course"), icon: FiBookOpen }]
+                        : []),
                     ].map(({ href, label, icon: Icon }, i) => (
                       <a
                         key={href}
@@ -269,16 +263,6 @@ const Navbar = ({ header }) => {
                         {label}
                       </a>
                     ))}
-                    {user?.role !== 'admin' && (
-                      <button
-                        onClick={() => { setTutorialOpen(true); setIsDropdownOpen(false); }}
-                        className="w-full text-left flex items-center gap-2.5 px-4 py-2.5 sm:py-2 text-sm text-[#9E2FD0] dark:text-[#c084fc] hover:bg-[#9E2FD0]/8 dark:hover:bg-[#9E2FD0]/15 transition-colors duration-200"
-                        style={{ animation: 'navbarItemFadeIn 0.2s ease-out 270ms both' }}
-                      >
-                        <FiPlay size={14} className="flex-shrink-0 opacity-80" />
-                        {t("navbar.watchTutorial")}
-                      </button>
-                    )}
                   </div>
 
                   {/* Gradient divider */}
@@ -302,8 +286,6 @@ const Navbar = ({ header }) => {
         </div>
       </div>
     </header>
-
-    {tutorialOpen && <TutorialModal onClose={() => setTutorialOpen(false)} />}
   </>
   );
 };

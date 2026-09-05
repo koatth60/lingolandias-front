@@ -629,9 +629,15 @@ const ChatWindowComponent = ({
   // they read, and seeded from their persisted lastReadAt when the window
   // first opens so a page reload doesn't lose the checkmark.
   const [otherReadAt, setOtherReadAt] = useState(null);
+  // Real online/offline for the other DM participant — the header used to
+  // hardcode "Active now" unconditionally, showing everyone as online even
+  // when they hadn't connected in months. Seeded from their persisted
+  // status here, then kept live via the 'userStatus' socket broadcast below.
+  const [otherOnline, setOtherOnline] = useState(null);
 
   useEffect(() => {
     setOtherReadAt(null);
+    setOtherOnline(null);
     if (chatType !== "dm" || !room || !otherUserId) return;
     let cancelled = false;
     fetch(`${BACKEND_URL}/conversations/${room}/members?userId=${userId}`, {
@@ -642,10 +648,20 @@ const ChatWindowComponent = ({
         if (cancelled) return;
         const other = members.find((m) => m.id === otherUserId);
         if (other?.lastReadAt) setOtherReadAt(other.lastReadAt);
+        if (other) setOtherOnline(other.online === "online");
       })
       .catch(() => {});
     return () => { cancelled = true; };
   }, [room, chatType, otherUserId, userId]);
+
+  useEffect(() => {
+    if (!socket || chatType !== "dm" || !otherUserId) return;
+    const handleUserStatus = ({ id, online }) => {
+      if (id === otherUserId) setOtherOnline(online === "online");
+    };
+    socket.on("userStatus", handleUserStatus);
+    return () => socket.off("userStatus", handleUserStatus);
+  }, [socket, chatType, otherUserId]);
 
   useEffect(() => {
     setMentionCandidates([]);
@@ -893,11 +909,15 @@ const ChatWindowComponent = ({
               </button>
             )}
           </div>
-          {/* Online indicator */}
-          <span className="flex items-center gap-1 mt-0.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#26D9A1]" />
-            <span className="text-[11px] font-medium text-[#26D9A1]">{t("chatWindow.activeNow")}</span>
-          </span>
+          {/* Online indicator — only meaningful for a 1:1 DM with a known peer */}
+          {chatType === "dm" && otherOnline !== null && (
+            <span className="flex items-center gap-1 mt-0.5">
+              <span className={`w-1.5 h-1.5 rounded-full ${otherOnline ? "bg-[#26D9A1]" : "bg-gray-400 dark:bg-gray-500"}`} />
+              <span className={`text-[11px] font-medium ${otherOnline ? "text-[#26D9A1]" : "text-gray-400 dark:text-gray-500"}`}>
+                {t(otherOnline ? "chatWindow.activeNow" : "chatWindow.offline")}
+              </span>
+            </span>
+          )}
         </div>
 
         {/* Close button */}

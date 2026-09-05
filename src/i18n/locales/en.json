@@ -12,21 +12,49 @@
     "logout": "Logout",
     "online": "Online",
     "learning": "Learning",
-    "invitados": "Invitados"
+    "invitados": "Guests",
+    "course": "Platform Tour"
   },
   "navbar": {
     "profile": "Profile",
     "settings": "Settings",
     "helpCenter": "Help Center",
     "logout": "Logout",
-    "online": "Online",
-    "watchTutorial": "Watch Tutorial"
+    "online": "Online"
   },
-  "tutorial": {
-    "title": "Welcome to Lingo Academy!",
-    "subtitleTeacher": "Learn how to manage your classes and students",
-    "subtitleStudent": "Learn how to navigate your learning platform",
-    "close": "Got it!"
+  "course": {
+    "pageTitle": "Platform Tour",
+    "subtitleTeacher": "Short videos covering every part of your teacher panel.",
+    "subtitleStudent": "Short videos covering every part of the platform.",
+    "progress": "{{done}} of {{total}} watched",
+    "complete": "Tour completed",
+    "markWatched": "Mark as watched",
+    "markUnwatched": "Mark as unwatched",
+    "videoOf": "Video {{current}} of {{total}}",
+    "next": "Next",
+    "previous": "Previous",
+    "sectionsTitle": "Sections",
+    "celebrationTitle": "You finished the platform tour!",
+    "celebrationBody": "You now know every corner of Lingolandias. Come back anytime to rewatch a section.",
+    "celebrationCta": "Back to sections",
+    "announcementBadge": "New",
+    "announcementTitle": "There's a new Crash Course",
+    "announcementBodyTeacher": "We put together a short video course covering every part of your teacher panel. You'll find it anytime in the sidebar.",
+    "announcementBodyStudent": "We put together a short video course covering every part of the platform. You'll find it anytime in the sidebar.",
+    "announcementCta": "Watch now",
+    "announcementDismiss": "Maybe later",
+    "items": {
+      "welcome": { "title": "Welcome", "desc": "Get oriented in Lingolandias." },
+      "schedule": { "title": "My Schedule", "desc": "View and manage your classes on the calendar." },
+      "messages": { "title": "Messages", "desc": "Chats, groups, mentions, and scheduling a class from a conversation." },
+      "recordings": { "title": "Class Recordings", "desc": "Find and rewatch your past sessions." },
+      "support": { "title": "Support", "desc": "Reach the Lingolandias team directly." },
+      "trello": { "title": "Trello 2.0", "desc": "Plan lessons with boards and cards — or migrate your real Trello." },
+      "guests": { "title": "Guests", "desc": "Bring outside experts into your classes." },
+      "profile": { "title": "Profile", "desc": "Manage your info and see your students." },
+      "settings": { "title": "Settings", "desc": "Dark mode, notifications, language, and account." },
+      "help-center": { "title": "Help Center", "desc": "FAQs and a direct line to support." }
+    }
   },
   "login": {
     "welcomeBack": "Welcome back",
@@ -320,7 +348,7 @@
   "newClassModal": {
     "title": "New class",
     "peopleLabel": "Who's coming",
-    "searchPlaceholder": "Search students or invitados...",
+    "searchPlaceholder": "Search students or guests...",
     "nameLabel": "Class name (optional for a single student)",
     "namePlaceholder": "e.g. Advanced Group",
     "create": "Create class",
@@ -329,22 +357,22 @@
     "existingLinkNote": "You already have a class with this person — this adds another time slot to that same chat."
   },
   "invitadosPanel": {
-    "title": "Invitados",
+    "title": "Guests",
     "subtitle": "Create and manage your guest accounts",
-    "create": "Create invitado",
-    "empty": "You haven't created any invitados yet.",
-    "createTitle": "New invitado",
+    "create": "Create guest",
+    "empty": "You haven't created any guests yet.",
+    "createTitle": "New guest",
     "createSubtitle": "A password will be generated automatically",
     "firstName": "First Name",
     "lastName": "Last Name",
     "email": "Email Address",
     "cancel": "Cancel",
     "submit": "Create",
-    "createdSuccess": "Invitado created and notified by chat!",
-    "deleteConfirmTitle": "Remove this invitado?",
+    "createdSuccess": "Guest created and notified by chat!",
+    "deleteConfirmTitle": "Remove this guest?",
     "deleteConfirmText": "This will permanently delete {{name}}'s account and chat history.",
     "deleteConfirmButton": "Remove",
-    "deleteSuccess": "Invitado removed successfully.",
+    "deleteSuccess": "Guest removed successfully.",
     "createdAt": "Added {{date}}"
   },
   "deleteModal": {

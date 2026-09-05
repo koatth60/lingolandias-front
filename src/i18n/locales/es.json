@@ -12,21 +12,49 @@
     "logout": "Cerrar Sesión",
     "online": "En Línea",
     "learning": "Aprendizaje",
-    "invitados": "Invitados"
+    "invitados": "Invitados",
+    "course": "Tour de la Plataforma"
   },
   "navbar": {
     "profile": "Perfil",
     "settings": "Configuración",
     "helpCenter": "Centro de Ayuda",
     "logout": "Cerrar Sesión",
-    "online": "En Línea",
-    "watchTutorial": "Ver Tutorial"
+    "online": "En Línea"
   },
-  "tutorial": {
-    "title": "¡Bienvenido a Lingo Academy!",
-    "subtitleTeacher": "Aprende a gestionar tus clases y alumnos",
-    "subtitleStudent": "Aprende a navegar por tu plataforma de aprendizaje",
-    "close": "¡Entendido!"
+  "course": {
+    "pageTitle": "Tour de la Plataforma",
+    "subtitleTeacher": "Videos cortos que cubren cada parte de tu panel de profesor.",
+    "subtitleStudent": "Videos cortos que cubren cada parte de la plataforma.",
+    "progress": "{{done}} de {{total}} vistos",
+    "complete": "Tour completado",
+    "markWatched": "Marcar como visto",
+    "markUnwatched": "Marcar como no visto",
+    "videoOf": "Video {{current}} de {{total}}",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "sectionsTitle": "Secciones",
+    "celebrationTitle": "¡Completaste el tour de la plataforma!",
+    "celebrationBody": "Ahora conoces cada rincón de Lingolandias. Vuelve cuando quieras para repasar una sección.",
+    "celebrationCta": "Volver a las secciones",
+    "announcementBadge": "Nuevo",
+    "announcementTitle": "Hay un nuevo Curso Rápido",
+    "announcementBodyTeacher": "Preparamos una serie de videos cortos que cubren cada parte de tu panel de profesor. Lo encuentras cuando quieras en el menú lateral.",
+    "announcementBodyStudent": "Preparamos una serie de videos cortos que cubren cada parte de la plataforma. Lo encuentras cuando quieras en el menú lateral.",
+    "announcementCta": "Ver ahora",
+    "announcementDismiss": "Más tarde",
+    "items": {
+      "welcome": { "title": "Bienvenida", "desc": "Oriéntate en Lingolandias." },
+      "schedule": { "title": "Mi Horario", "desc": "Consulta y gestiona tus clases en el calendario." },
+      "messages": { "title": "Mensajes", "desc": "Chats, grupos, menciones y agendar una clase desde una conversación." },
+      "recordings": { "title": "Grabaciones de Clases", "desc": "Encuentra y vuelve a ver tus sesiones pasadas." },
+      "support": { "title": "Soporte", "desc": "Contacta directamente al equipo de Lingolandias." },
+      "trello": { "title": "Trello 2.0", "desc": "Planifica tus clases con tableros y tarjetas — o migra tu Trello real." },
+      "guests": { "title": "Invitados", "desc": "Trae expertos externos a tus clases." },
+      "profile": { "title": "Perfil", "desc": "Gestiona tu información y consulta a tus alumnos." },
+      "settings": { "title": "Configuración", "desc": "Modo oscuro, notificaciones, idioma y cuenta." },
+      "help-center": { "title": "Centro de Ayuda", "desc": "Preguntas frecuentes y contacto directo con soporte." }
+    }
   },
   "login": {
     "welcomeBack": "Bienvenido de nuevo",

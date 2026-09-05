@@ -26,6 +26,7 @@ export const routeImports = {
   "/analytics": () => import("./sections/analytics"),
   "/recordings": () => import("./sections/recordings"),
   "/invitados": () => import("./sections/invitados"),
+  "/course": () => import("./sections/course"),
 };
 
 export const prefetchRoute = (path) => {

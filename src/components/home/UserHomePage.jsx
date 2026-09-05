@@ -7,6 +7,7 @@ import "dayjs/locale/pl";
 import { FiCalendar, FiMessageSquare, FiBookOpen, FiArrowRight, FiHelpCircle } from "react-icons/fi";
 import { InfoCard } from "./InfoCard";
 import { UpcomingClass } from "./UpcomingClass";
+import CourseAnnouncementBanner from "./CourseAnnouncementBanner";
 import { getNextClasses } from "../../data/helpers";
 import { handleJoinClass } from "../../data/joinClassHandler";
 import { setStudentSchedules, setTeacherSchedules, setStudentTeacher } from "../../redux/userSlice";
@@ -128,6 +129,8 @@ const UserHomePage = () => {
         </div>
       </section>
 
+      <CourseAnnouncementBanner />
+
       {/* ── Quick navigation ── */}
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {QUICK_NAV_CONFIG.map(({ icon: Icon, labelKey, descKey, href, gradient, shadow }) => (
@@ -235,7 +238,9 @@ const UserHomePage = () => {
                 user.role === "teacher"
                   ? classSession.nextOccurrence
                   : classSession.occurrence;
-              const otherUserId = user.role === "user" ? user.teacher?.id : classSession.studentId;
+              // invitado behaves like a student here too, same as schedule.jsx's
+              // pattern — its "other party" is always its assigned teacher.
+              const otherUserId = (user.role === "user" || user.role === "invitado") ? user.teacher?.id : classSession.studentId;
               const otherUserName = user.role === "teacher" ? classSession.studentName : classSession.teacherName;
               // A group class overrides its title for every viewer, same as
               // the Calendar page — otherwise this card and the Calendar show

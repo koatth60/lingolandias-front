@@ -163,6 +163,23 @@ const Messages = () => {
     };
   }, [fetchConversations]);
 
+  // 'newConversationMessage' above deliberately excludes the sender (it also
+  // drives the unread badge/sound, which shouldn't fire for your own
+  // message) — so sending a message never refreshed your OWN sidebar
+  // preview/order, leaving it stuck on whatever was last there until
+  // something else happened to trigger a refetch. 'conversationMessage' is
+  // the room-scoped event that delivers the message into the open window
+  // instead, which the sender is always in — filtering it to your own
+  // messages gives the sidebar the same live update without duplicating the
+  // refresh recipients already get from 'newConversationMessage'.
+  useEffect(() => {
+    const handleOwnMessage = (msg) => {
+      if (msg?.senderId === user?.id) fetchConversations();
+    };
+    socket.on("conversationMessage", handleOwnMessage);
+    return () => socket.off("conversationMessage", handleOwnMessage);
+  }, [fetchConversations, user?.id]);
+
   // Live name/type changes (member added/removed shifting the auto-computed
   // name, a group collapsing back into a plain 1:1 DM, a deliberate rename)
   // — without this, only whoever triggered the change sees it update; anyone

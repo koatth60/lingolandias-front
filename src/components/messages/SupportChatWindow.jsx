@@ -3,18 +3,31 @@ import { socket } from "../../socket";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { BsEmojiSmile, BsThreeDots } from "react-icons/bs";
-import { FiSend, FiRadio } from "react-icons/fi";
+import { FiSend, FiRadio, FiPaperclip, FiX, FiEdit2, FiFile, FiFileText, FiMusic, FiVideo, FiDownload, FiCornerUpLeft } from "react-icons/fi";
 import { HiShieldCheck } from "react-icons/hi2";
 import axios from "axios";
 import EmojiPicker from "emoji-picker-react";
 import MessageOptionsCard from "./MessageOptionsCard";
-import useDeleteMessage from "../../hooks/useDeleteMessage";
+import AudioPlayer from "./AudioPlayer";
+import MessageReactions from "./MessageReactions";
 import useMessageFormatter from "../../hooks/useMessageFormatter";
 import { fetchUnreadMessages } from "../../redux/messageSlice";
 import useNotificationSound from "../../hooks/useNotificationSound";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const SUPPORT_ROOM = "uuid-support";
+
+const IMAGE_EXTS = new Set(["jpg", "jpeg", "png", "gif", "webp", "svg"]);
+const AUDIO_EXTS = new Set(["mp3", "wav", "ogg", "m4a", "aac", "flac", "weba"]);
+const VIDEO_EXTS = new Set(["mp4", "mov", "webm", "avi", "mkv"]);
+
+const getFileExt = (url) => url.split("?")[0].split(".").pop().toLowerCase();
+const getFileName = (url) => {
+  const raw = url.split("?")[0];
+  let full = raw.split("/").pop();
+  try { full = decodeURIComponent(full); } catch { /* keep */ }
+  return full.replace(/^\d{10,13}-/, "") || full;
+};
 
 const SupportChatWindow = () => {
   const { t, i18n } = useTranslation();
@@ -25,16 +38,23 @@ const SupportChatWindow = () => {
   const [message, setMessage] = useState("");
   const [chatMessages, setChatMessages] = useState([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [openMessageId, setOpenMessageId] = useState(null);
+  const [editingMsg, setEditingMsg] = useState(null);
+  const [stagedFile, setStagedFile] = useState(null); // { file, previewUrl }
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDraggingFile, setIsDraggingFile] = useState(false);
+  const [replyTo, setReplyTo] = useState(null);
+  const [typingUsers, setTypingUsers] = useState([]);
 
   const scrollRef = useRef(null);
   const textareaRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const dragCounterRef = useRef(0);
+  const typingTimeoutRef = useRef(null);
   const soundEnabledRef = useRef(soundEnabled);
   soundEnabledRef.current = soundEnabled;
 
   const playSound = useNotificationSound();
-
-  const { handleDeleteMessage, toggleOptionsMenu, openMessageId } =
-    useDeleteMessage(setChatMessages, socket, SUPPORT_ROOM, "deleteSupportChat", "supportChatDeleted");
 
   const { formatMessageWithLinks } = useMessageFormatter(() => {});
 
@@ -62,7 +82,9 @@ const SupportChatWindow = () => {
         userId: user.id,
       }, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
       dispatch(fetchUnreadMessages(user.id));
-    } catch (e) {}
+    } catch (e) {
+      console.error("Error marking support chat as read:", e);
+    }
   };
 
   useEffect(() => {
@@ -80,13 +102,39 @@ const SupportChatWindow = () => {
     const handleSupportChatDeleted = (data) => {
       setChatMessages((prev) => prev.filter((m) => m.id !== data.messageId));
     };
+    const handleSupportChatEdited = (data) => {
+      setChatMessages((prev) =>
+        prev.map((m) => (m.id === data.messageId ? { ...m, message: data.newMessage, editedAt: data.editedAt } : m))
+      );
+    };
+    const handleReactionUpdated = (data) => {
+      if (data.room !== SUPPORT_ROOM) return;
+      setChatMessages((prev) =>
+        prev.map((m) => (m.id === data.messageId ? { ...m, reactions: data.reactions } : m))
+      );
+    };
+    const handleTyping = ({ username: who }) => {
+      if (who && who !== user?.name) {
+        setTypingUsers((prev) => (prev.includes(who) ? prev : [...prev, who]));
+      }
+    };
+    const handleStopTyping = () => setTypingUsers([]);
 
     socket.on("supportChat", handleSupportChat);
     socket.on("supportChatDeleted", handleSupportChatDeleted);
+    socket.on("globalChatEdited", handleSupportChatEdited);
+    socket.on("globalChatReactionUpdated", handleReactionUpdated);
+    socket.on("typing", handleTyping);
+    socket.on("stopTyping", handleStopTyping);
 
     return () => {
       socket.off("supportChat", handleSupportChat);
       socket.off("supportChatDeleted", handleSupportChatDeleted);
+      socket.off("globalChatEdited", handleSupportChatEdited);
+      socket.off("globalChatReactionUpdated", handleReactionUpdated);
+      socket.off("typing", handleTyping);
+      socket.off("stopTyping", handleStopTyping);
+      clearTimeout(typingTimeoutRef.current);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
@@ -97,8 +145,53 @@ const SupportChatWindow = () => {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [chatMessages]);
 
-  const sendMessage = () => {
-    if (!message.trim() || !socket) return;
+  useEffect(() => {
+    if (editingMsg) {
+      setMessage(editingMsg.message);
+      textareaRef.current?.focus();
+    }
+  }, [editingMsg]);
+
+  const resetComposer = () => {
+    setMessage("");
+    setEditingMsg(null);
+    setReplyTo(null);
+    if (textareaRef.current) textareaRef.current.style.height = "32px";
+  };
+
+  const sendMessage = async () => {
+    if (!socket) return;
+
+    if (editingMsg) {
+      const trimmed = message.trim();
+      if (!trimmed) return;
+      socket.emit("editGlobalChat", { messageId: editingMsg.id, room: SUPPORT_ROOM, newMessage: trimmed });
+      setChatMessages((prev) =>
+        prev.map((m) => (m.id === editingMsg.id ? { ...m, message: trimmed, editedAt: new Date().toISOString() } : m))
+      );
+      resetComposer();
+      return;
+    }
+
+    if (!message.trim() && !stagedFile) return;
+
+    let fileUrl;
+    if (stagedFile) {
+      setIsUploading(true);
+      try {
+        const formData = new FormData();
+        formData.append("file", stagedFile.file);
+        const res = await axios.post(`${BACKEND_URL}/upload/chat-upload`, formData);
+        fileUrl = res.data.fileUrl;
+        if (stagedFile.previewUrl) URL.revokeObjectURL(stagedFile.previewUrl);
+      } catch (err) {
+        console.error("Support chat file upload failed:", err);
+        setIsUploading(false);
+        return;
+      }
+      setIsUploading(false);
+    }
+
     socket.emit("supportChat", {
       username: user.name,
       email: user.email,
@@ -106,11 +199,12 @@ const SupportChatWindow = () => {
       message: message.trim(),
       userRole: user.role,
       userUrl: user.avatarUrl || null,
+      fileUrl,
+      replyTo: replyTo ? { id: replyTo.id, message: replyTo.message, username: replyTo.username } : undefined,
     });
-    setMessage("");
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "32px";
-    }
+    setStagedFile(null);
+    socket.emit("stopTyping", { room: SUPPORT_ROOM });
+    resetComposer();
   };
 
   const handleKeyDown = (e) => {
@@ -127,11 +221,150 @@ const SupportChatWindow = () => {
       ta.style.height = "32px";
       ta.style.height = `${Math.min(ta.scrollHeight, 112)}px`;
     }
+    if (socket && user?.name && !editingMsg) {
+      socket.emit("typing", { room: SUPPORT_ROOM, username: user.name });
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = setTimeout(() => {
+        socket.emit("stopTyping", { room: SUPPORT_ROOM });
+      }, 2000);
+    }
   };
 
   const handleEmojiClick = (emojiObject) => {
     setMessage((prev) => prev + emojiObject.emoji);
     setShowEmojiPicker(false);
+  };
+
+  const toggleOptionsMenu = (id) => setOpenMessageId((prev) => (prev === id ? null : id));
+
+  const handleEditClick = (msg) => {
+    setOpenMessageId(null);
+    setReplyTo(null);
+    setEditingMsg(msg);
+  };
+
+  const handleCancelEdit = () => resetComposer();
+
+  const handleReplyClick = (msg) => {
+    setEditingMsg(null);
+    setReplyTo({ id: msg.id, message: msg.fileUrl && !msg.message ? "📎 File" : msg.message, username: msg.username });
+    textareaRef.current?.focus();
+  };
+
+  const handleCancelReply = () => setReplyTo(null);
+
+  const toggleReaction = (messageId, emoji) => {
+    socket.emit("toggleGlobalChatReaction", { messageId, room: SUPPORT_ROOM, emoji, userName: user.name });
+  };
+
+  const handleDeleteMessage = async (messageId) => {
+    setOpenMessageId(null);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${BACKEND_URL}/chat/delete-global-chat/${messageId}`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!response.ok) {
+        console.error("Failed to delete support message:", response.statusText);
+        return;
+      }
+      setChatMessages((prev) => prev.filter((m) => m.id !== messageId));
+      socket.emit("deleteSupportChat", { messageId });
+    } catch (error) {
+      console.error("Error deleting support message:", error);
+    }
+  };
+
+  // ── File staging (picker + drag&drop) ──
+  const stageFile = (file) => {
+    if (!file) return;
+    const previewUrl = file.type.startsWith("image/") ? URL.createObjectURL(file) : null;
+    setStagedFile({ file, previewUrl });
+  };
+
+  const handleFileInputChange = (e) => {
+    stageFile(e.target.files?.[0]);
+    e.target.value = null;
+  };
+
+  const handleRemoveStagedFile = () => {
+    if (stagedFile?.previewUrl) URL.revokeObjectURL(stagedFile.previewUrl);
+    setStagedFile(null);
+  };
+
+  const handleDragEnter = (e) => {
+    e.preventDefault();
+    if (!e.dataTransfer.types.includes("Files")) return;
+    dragCounterRef.current += 1;
+    setIsDraggingFile(true);
+  };
+  const handleDragOver = (e) => e.preventDefault();
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    dragCounterRef.current -= 1;
+    if (dragCounterRef.current <= 0) {
+      dragCounterRef.current = 0;
+      setIsDraggingFile(false);
+    }
+  };
+  const handleDrop = (e) => {
+    e.preventDefault();
+    dragCounterRef.current = 0;
+    setIsDraggingFile(false);
+    stageFile(e.dataTransfer.files?.[0]);
+  };
+
+  // ── File render (inside a message bubble) ──
+  const renderFile = (fileUrl, isSender) => {
+    const ext = getFileExt(fileUrl);
+    const fileName = getFileName(fileUrl);
+
+    if (IMAGE_EXTS.has(ext)) {
+      return (
+        <a href={fileUrl} target="_blank" rel="noopener noreferrer">
+          <img src={fileUrl} alt="shared" className="block w-full max-h-64 object-cover rounded-lg cursor-pointer hover:opacity-95 transition-opacity" />
+        </a>
+      );
+    }
+    if (AUDIO_EXTS.has(ext)) {
+      return (
+        <div className="rounded-xl min-w-[200px] px-3 py-2.5" style={{ background: "rgba(246,184,46,0.10)", border: "1px solid rgba(246,184,46,0.30)" }}>
+          <div className="flex items-center gap-1.5 mb-2">
+            <FiMusic size={11} className="flex-shrink-0" style={{ color: "#d4950a" }} />
+            <p className="text-[11px] font-semibold truncate flex-1 min-w-0 text-gray-800 dark:text-gray-100">{fileName}</p>
+          </div>
+          <AudioPlayer src={fileUrl} variant="voiceNote" isSender={isSender} />
+        </div>
+      );
+    }
+    if (VIDEO_EXTS.has(ext)) {
+      return (
+        <div className="rounded-xl overflow-hidden max-w-[280px]">
+          <video src={fileUrl} controls className="w-full max-h-48 object-contain bg-black" />
+          <div className="px-2.5 py-1.5 flex items-center gap-1.5" style={{ background: "rgba(246,184,46,0.10)" }}>
+            <FiVideo size={11} style={{ color: "#d4950a" }} />
+            <span className="text-[11px] truncate text-gray-700 dark:text-gray-300">{fileName}</span>
+          </div>
+        </div>
+      );
+    }
+    const FileIconComp = ["doc", "docx", "txt", "pdf", "csv"].includes(ext) ? FiFileText : FiFile;
+    return (
+      <a href={fileUrl} target="_blank" rel="noopener noreferrer"
+        className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all min-w-[190px] max-w-[260px] no-underline"
+        style={{ background: "rgba(246,184,46,0.10)", border: "1px solid rgba(246,184,46,0.30)" }}>
+        <div className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center"
+          style={{ background: "linear-gradient(135deg, #F6B82E, #d4950a)" }}>
+          <FileIconComp size={14} className="text-white" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] font-semibold truncate text-gray-800 dark:text-gray-100">{fileName}</p>
+          <p className="text-[9px] uppercase font-bold text-gray-400">{ext}</p>
+        </div>
+        <FiDownload size={13} className="flex-shrink-0 text-gray-400" />
+      </a>
+    );
   };
 
   const formatTimestamp = (ts) => {
@@ -161,7 +394,23 @@ const SupportChatWindow = () => {
   const isAdmin = (msg) => msg.userRole === "admin";
 
   return (
-    <div className="w-full h-full flex flex-col bg-white dark:bg-[#0f0c26] transition-colors duration-300 relative overflow-hidden">
+    <div
+      className="w-full h-full flex flex-col bg-white dark:bg-[#0f0c26] transition-colors duration-300 relative overflow-hidden"
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+
+      {/* Drag-and-drop overlay */}
+      {isDraggingFile && (
+        <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none bg-[#F6B82E]/10 dark:bg-[#F6B82E]/15 backdrop-blur-[1px]">
+          <div className="flex flex-col items-center gap-2 px-6 py-5 rounded-2xl border-2 border-dashed" style={{ borderColor: "#F6B82E", background: "rgba(255,255,255,0.9)" }}>
+            <FiPaperclip size={22} style={{ color: "#F6B82E" }} />
+            <p className="text-sm font-semibold" style={{ color: "#d4950a" }}>{t("chatWindow.dropFilesHere")}</p>
+          </div>
+        </div>
+      )}
 
       {/* Ambient orbs */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden hidden dark:block" aria-hidden="true">
@@ -266,7 +515,14 @@ const SupportChatWindow = () => {
                     )}
 
                     {isSender ? (
-                      <div className="flex items-end gap-1.5 max-w-[80%]">
+                      <div className="flex flex-col items-end max-w-[80%]">
+                      <div className="flex items-end gap-1.5">
+                        {/* Reply trigger */}
+                        <button onClick={() => handleReplyClick(msg)}
+                          className="self-end mb-0.5 p-1.5 rounded-full text-gray-400 opacity-0 group-hover:opacity-100
+                                     hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-white/10 transition-all">
+                          <FiCornerUpLeft size={12} />
+                        </button>
                         {/* Options */}
                         <div className="relative self-end mb-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button onClick={() => toggleOptionsMenu(msg.id)}
@@ -276,13 +532,15 @@ const SupportChatWindow = () => {
                           {openMessageId === msg.id && (
                             <div className="absolute bottom-full right-0 mb-1 z-20">
                               <MessageOptionsCard
+                                onEdit={() => handleEditClick(msg)}
                                 onDelete={() => handleDeleteMessage(msg.id)}
+                                onClose={() => setOpenMessageId(null)}
                               />
                             </div>
                           )}
                         </div>
                         {/* Sender bubble */}
-                        <div className="px-3.5 py-2 rounded-2xl rounded-br-sm text-white text-sm leading-relaxed shadow-md"
+                        <div className="rounded-2xl rounded-br-sm text-white text-sm leading-relaxed shadow-md overflow-hidden"
                           style={{
                             background: user?.role === "admin"
                               ? "linear-gradient(135deg, #F6B82E, #d4950a)"
@@ -291,14 +549,35 @@ const SupportChatWindow = () => {
                               ? "0 3px 10px rgba(246,184,46,0.30)"
                               : "0 3px 10px rgba(158,47,208,0.30)",
                           }}>
-                          {user?.role === "admin" && (
-                            <div className="flex items-center gap-1 mb-1 opacity-80">
-                              <HiShieldCheck size={11} />
-                              <span className="text-[9px] font-bold tracking-wider uppercase">{t("supportChat.adminBadge")}</span>
-                            </div>
-                          )}
-                          <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{formatMessageWithLinks(msg.message, true)}</p>
+                          <div className="px-3.5 py-2">
+                            {user?.role === "admin" && (
+                              <div className="flex items-center gap-1 mb-1 opacity-80">
+                                <HiShieldCheck size={11} />
+                                <span className="text-[9px] font-bold tracking-wider uppercase">{t("supportChat.adminBadge")}</span>
+                              </div>
+                            )}
+                            {msg.replyTo && (
+                              <div className="mb-1.5 pl-2 border-l-2 border-white/50 rounded bg-white/10 text-xs" style={{ padding: "4px 6px" }}>
+                                <p className="font-semibold text-[10px] mb-0.5 text-white/80">{msg.replyTo.username}</p>
+                                <p className="line-clamp-2 text-[11px] text-white/70">{msg.replyTo.message}</p>
+                              </div>
+                            )}
+                            {msg.fileUrl && <div className="mb-1.5">{renderFile(msg.fileUrl, true)}</div>}
+                            {msg.message && (
+                              <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{formatMessageWithLinks(msg.message, true)}</p>
+                            )}
+                            {msg.editedAt && (
+                              <p className="text-[9px] opacity-70 mt-0.5">{t("chatWindow.edited")}</p>
+                            )}
+                          </div>
                         </div>
+                      </div>
+                      <MessageReactions
+                        reactions={msg.reactions}
+                        currentUserId={user?.id}
+                        onToggle={(emoji) => toggleReaction(msg.id, emoji)}
+                        align="end"
+                      />
                       </div>
                     ) : (
                       <div className="max-w-[80%]">
@@ -323,19 +602,61 @@ const SupportChatWindow = () => {
                           </div>
                         )}
                         {/* Receiver bubble */}
-                        {adminMsg ? (
-                          <div className="px-3.5 py-2 rounded-2xl rounded-bl-sm text-white text-sm leading-relaxed shadow-md"
-                            style={{
-                              background: "linear-gradient(135deg, #F6B82E, #d4950a)",
-                              boxShadow: "0 3px 10px rgba(246,184,46,0.30)",
-                            }}>
-                            <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{formatMessageWithLinks(msg.message, true)}</p>
-                          </div>
-                        ) : (
-                          <div className="px-3.5 py-2 rounded-2xl rounded-bl-sm text-sm leading-relaxed shadow-sm bg-white dark:bg-white/[0.07] text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-white/10">
-                            <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{formatMessageWithLinks(msg.message, false)}</p>
-                          </div>
-                        )}
+                        <div className="relative">
+                          {adminMsg ? (
+                            <div className="rounded-2xl rounded-bl-sm text-white text-sm leading-relaxed shadow-md overflow-hidden"
+                              style={{
+                                background: "linear-gradient(135deg, #F6B82E, #d4950a)",
+                                boxShadow: "0 3px 10px rgba(246,184,46,0.30)",
+                              }}>
+                              <div className="px-3.5 py-2">
+                                {msg.replyTo && (
+                                  <div className="mb-1.5 pl-2 border-l-2 border-white/50 rounded bg-white/10 text-xs" style={{ padding: "4px 6px" }}>
+                                    <p className="font-semibold text-[10px] mb-0.5 text-white/80">{msg.replyTo.username}</p>
+                                    <p className="line-clamp-2 text-[11px] text-white/70">{msg.replyTo.message}</p>
+                                  </div>
+                                )}
+                                {msg.fileUrl && <div className="mb-1.5">{renderFile(msg.fileUrl, false)}</div>}
+                                {msg.message && (
+                                  <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{formatMessageWithLinks(msg.message, true)}</p>
+                                )}
+                                {msg.editedAt && <p className="text-[9px] opacity-70 mt-0.5">{t("chatWindow.edited")}</p>}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="rounded-2xl rounded-bl-sm text-sm leading-relaxed shadow-sm bg-white dark:bg-white/[0.07] text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-white/10 overflow-hidden">
+                              <div className="px-3.5 py-2">
+                                {msg.replyTo && (
+                                  <div className="mb-1.5 pl-2 border-l-2 border-[#F6B82E]/60 rounded bg-[#F6B82E]/5 dark:bg-white/5 text-xs" style={{ padding: "4px 6px" }}>
+                                    <p className="font-semibold text-[10px] mb-0.5" style={{ color: "#d4950a" }}>{msg.replyTo.username}</p>
+                                    <p className="line-clamp-2 text-[11px] text-gray-500 dark:text-gray-400">{msg.replyTo.message}</p>
+                                  </div>
+                                )}
+                                {msg.fileUrl && <div className="mb-1.5">{renderFile(msg.fileUrl, false)}</div>}
+                                {msg.message && (
+                                  <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{formatMessageWithLinks(msg.message, false)}</p>
+                                )}
+                                {msg.editedAt && <p className="text-[9px] opacity-60 mt-0.5">{t("chatWindow.edited")}</p>}
+                              </div>
+                            </div>
+                          )}
+                          {/* Reply trigger — positioned relative to bubble only */}
+                          <button
+                            onClick={() => handleReplyClick(msg)}
+                            className="absolute left-full top-1/2 -translate-y-1/2 ml-1
+                                       opacity-0 group-hover:opacity-100 transition-opacity
+                                       p-1.5 rounded-full text-gray-400
+                                       hover:text-amber-500 dark:hover:text-amber-400
+                                       hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+                            <FiCornerUpLeft size={13} />
+                          </button>
+                        </div>
+                        <MessageReactions
+                          reactions={msg.reactions}
+                          currentUserId={user?.id}
+                          onToggle={(emoji) => toggleReaction(msg.id, emoji)}
+                          align="start"
+                        />
                       </div>
                     )}
                   </li>
@@ -346,14 +667,88 @@ const SupportChatWindow = () => {
         </div>
       </div>
 
+      {/* Typing indicator */}
+      {typingUsers.length > 0 && (
+        <div className="relative z-10 px-5 pb-1 flex-shrink-0">
+          <span className="text-[11px] text-gray-500 dark:text-gray-400 italic">
+            {typingUsers.join(", ")} {typingUsers.length === 1 ? t("chatWindow.isTyping") : t("chatWindow.areTyping")}
+            <span className="inline-flex gap-0.5 ml-1">
+              <span className="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-500 animate-bounce" style={{ animationDelay: "0ms" }} />
+              <span className="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-500 animate-bounce" style={{ animationDelay: "150ms" }} />
+              <span className="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-500 animate-bounce" style={{ animationDelay: "300ms" }} />
+            </span>
+          </span>
+        </div>
+      )}
+
       {/* ── Input ── */}
       <div className="relative flex-shrink-0 z-10 p-3 bg-white dark:bg-[#0f0c26] border-t border-gray-100 dark:border-[rgba(246,184,46,0.10)]">
+
+        {/* Editing banner */}
+        {editingMsg && (
+          <div className="flex items-center justify-between gap-2 px-3 py-1.5 mb-2 rounded-lg"
+            style={{ background: "rgba(246,184,46,0.10)", border: "1px solid rgba(246,184,46,0.30)" }}>
+            <div className="flex items-center gap-1.5 text-xs" style={{ color: "#d4950a" }}>
+              <FiEdit2 size={12} />
+              <span>{t("chatWindow.editing")}</span>
+            </div>
+            <button onClick={handleCancelEdit} className="text-gray-400 hover:text-gray-600 flex-shrink-0">
+              <FiX size={14} />
+            </button>
+          </div>
+        )}
+
+        {/* Reply banner */}
+        {replyTo && !editingMsg && (
+          <div className="flex items-center justify-between gap-2 px-3 py-1.5 mb-2 rounded-lg"
+            style={{ background: "rgba(158,47,208,0.06)", border: "1px solid rgba(158,47,208,0.20)" }}>
+            <div className="flex items-center gap-1.5 min-w-0">
+              <FiCornerUpLeft size={12} className="flex-shrink-0" style={{ color: "#9E2FD0" }} />
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold" style={{ color: "#9E2FD0" }}>{replyTo.username}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{replyTo.message}</p>
+              </div>
+            </div>
+            <button onClick={handleCancelReply} className="text-gray-400 hover:text-gray-600 flex-shrink-0">
+              <FiX size={14} />
+            </button>
+          </div>
+        )}
+
+        {/* Staged file preview */}
+        {stagedFile && !editingMsg && (
+          <div className="flex items-center gap-2 px-3 py-2 mb-2 rounded-lg"
+            style={{ background: "rgba(246,184,46,0.10)", border: "1px solid rgba(246,184,46,0.30)" }}>
+            {stagedFile.previewUrl ? (
+              <img src={stagedFile.previewUrl} alt="preview" className="w-9 h-9 rounded-lg object-cover flex-shrink-0" />
+            ) : (
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "linear-gradient(135deg, #F6B82E, #d4950a)" }}>
+                <FiFile size={14} className="text-white" />
+              </div>
+            )}
+            <p className="text-xs font-medium truncate flex-1 min-w-0 text-gray-700 dark:text-gray-200">{stagedFile.file.name}</p>
+            <button onClick={handleRemoveStagedFile} className="text-gray-400 hover:text-gray-600 flex-shrink-0">
+              <FiX size={14} />
+            </button>
+          </div>
+        )}
+
         <div className="flex items-end gap-2 bg-gray-50 dark:bg-white/5 rounded-xl px-3 py-2 border border-gray-200 dark:border-white/10 focus-within:border-[rgba(246,184,46,0.5)] dark:focus-within:border-[rgba(246,184,46,0.4)] transition-colors">
           <button onClick={() => setShowEmojiPicker((p) => !p)}
             className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg
                        text-gray-400 hover:text-amber-500 transition-colors self-end">
             <BsEmojiSmile size={18} />
           </button>
+          {!editingMsg && (
+            <>
+              <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileInputChange} />
+              <button onClick={() => fileInputRef.current?.click()}
+                className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg
+                           text-gray-400 hover:text-amber-500 transition-colors self-end">
+                <FiPaperclip size={17} />
+              </button>
+            </>
+          )}
           <textarea
             ref={textareaRef}
             placeholder={user?.role === "admin" ? t("supportChat.placeholderAdmin") : t("supportChat.placeholderUser")}
@@ -367,11 +762,15 @@ const SupportChatWindow = () => {
           />
           <button
             onClick={sendMessage}
-            disabled={!message.trim()}
+            disabled={(!message.trim() && !stagedFile) || isUploading}
             className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:opacity-90 active:scale-95 disabled:opacity-30 self-end"
             style={{ background: "linear-gradient(135deg, #F6B82E, #d4950a)", boxShadow: "0 2px 8px rgba(246,184,46,0.35)" }}
           >
-            <FiSend size={13} className="text-white" />
+            {isUploading ? (
+              <div className="w-3.5 h-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+            ) : (
+              <FiSend size={13} className="text-white" />
+            )}
           </button>
         </div>
 

@@ -35,6 +35,7 @@ const AdminMeetingLogs = lazy(routeImports['/admin-meeting-logs']);
 const Analytics    = lazy(routeImports['/analytics']);
 const Recordings   = lazy(routeImports['/recordings']);
 const Invitados    = lazy(routeImports['/invitados']);
+const Course       = lazy(routeImports['/course']);
 import { useSelector } from 'react-redux';
 import { ToastContainer, Slide } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -182,6 +183,14 @@ function App() {
             element={
               <RequireAuth role="teacher">
                 <Invitados />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/course"
+            element={
+              <RequireAuth>
+                <Course />
               </RequireAuth>
             }
           />

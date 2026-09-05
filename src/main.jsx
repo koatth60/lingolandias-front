@@ -1,11 +1,23 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import * as Sentry from "@sentry/react";
 import App from "./App.jsx";
 import { Provider } from "react-redux";
 import store from "./redux/store.js";
 import "./index.css";
 import { ThemeProvider } from "./context/ThemeContext.jsx";
 import "./i18n/index.js";
+
+// No-ops with no DSN set, so local dev stays silent by default. Also covers
+// uncaught errors/rejections outside React's tree (event handlers, sockets) —
+// ErrorBoundary.jsx separately reports render-tree errors it catches.
+if (import.meta.env.VITE_SENTRY_DSN) {
+  Sentry.init({
+    dsn: import.meta.env.VITE_SENTRY_DSN,
+    environment: import.meta.env.MODE,
+    tracesSampleRate: 0.1,
+  });
+}
 
 // Registered unconditionally (not just when a user opts into push
 // notifications in Settings) — a controlling service worker is one of the

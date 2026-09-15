@@ -13,11 +13,12 @@ const dedupeById = (list) => {
   });
 };
 
-// Same shape/behavior as useGlobalChat, but talks to the unified
-// /conversations API + sendConversationMessage socket events instead of the
-// legacy /chat + chat/globalChat pair — used for every conversation type now
-// (dm, group, general, teacher, support) since Fase 1 migrated them all into
-// one model.
+// Talks to the unified /conversations API + sendConversationMessage socket
+// events instead of the legacy /chat + chat/globalChat pair (that whole
+// legacy stack — useGlobalChat, useSocketManager, the old chatWindow.jsx —
+// was deleted once confirmed dead: nothing rendered it any more). Used for
+// every conversation type now (dm, group, general, teacher, support) since
+// Fase 1 migrated them all into one model.
 const useConversationChat = (socket, conversationId, user) => {
   const [chatMessages, setChatMessages] = useState([]);
   const [hasMore, setHasMore] = useState(true);

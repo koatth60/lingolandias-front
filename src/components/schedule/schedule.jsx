@@ -4,8 +4,6 @@ import { useTranslation } from "react-i18next";
 import { Calendar, dayjsLocalizer } from "react-big-calendar";
 import Dashboard from "../../sections/dashboard";
 import Navbar from "../layout/navbar";
-import ChatWindow from "../messages/chatWindow";
-import MainChat from "../buttons/chatList";
 import MobileClassList from "./MobileClassList";
 import useFormattedEvents from "../../hooks/useFormattedEvents";
 import { normalizeCalendarRange } from "../../utils/scheduleProjection";
@@ -45,7 +43,7 @@ import Dropdown from "./Dropdown";
 import TeacherPanel from "./TeacherPanel";
 import AdminMeetingRooms from "./AdminMeetingRooms";
 import NewClassModal from "./NewClassModal";
-import { FiMessageSquare, FiX, FiUsers, FiChevronDown } from "react-icons/fi";
+import { FiMessageSquare, FiUsers, FiChevronDown } from "react-icons/fi";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -56,20 +54,15 @@ const Schedule = () => {
   const isChatVisible =
     (user.role === "teacher" && user.students && user.students.length > 0) ||
     ((user.role === "user" || user.role === "invitado") && user.teacher);
-  const [teacherChat, setTeacherChat] = useState([]);
   const [teacherInfo, setTeacherInfo] = useState({});
-  const [chatRoom, setChatRoom] = useState("");
   const [loading, setLoading] = useState(true);
   const [editTimeEvent, setEditTimeEvent] = useState(null);
   const [participantsEvent, setParticipantsEvent] = useState(null);
-  const [mobileChatOpen, setMobileChatOpen] = useState(false);
   const [teacherPanelOpen, setTeacherPanelOpen] = useState(false);
   const [newClassSlot, setNewClassSlot] = useState(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const unreadCountsByRoom = useSelector((state) => state.chat.unreadCountsByRoom);
-  const studentUnreadCount = useSelector((state) => state.chat.studentUnreadCount);
 
   // One-shot deep link from Home's "Next Sessions" calendar icon — jump the
   // calendar to that session's week on arrival, mirroring the openDmWithUserId
@@ -82,11 +75,6 @@ const Schedule = () => {
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location.state?.focusDate]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Total unread for the chat FAB badge
-  const chatUnreadCount = user.role === "teacher"
-    ? Object.values(unreadCountsByRoom).reduce((sum, c) => sum + c, 0)
-    : studentUnreadCount || 0;
 
   // Tracks whatever the calendar is currently displaying — recurring classes are
   // projected only within this window (see useFormattedEvents/scheduleProjection),
@@ -129,11 +117,7 @@ const Schedule = () => {
 
   useEffect(() => {
     if (user.role === "teacher") {
-      setTeacherChat(user.students);
       setTeacherInfo(user.teacher);
-      setChatRoom(user.id);
-    } else if (user.role === "user" || user.role === "invitado") {
-      setChatRoom(user.id);
     }
 
     if (events !== undefined) {
@@ -536,100 +520,6 @@ const Schedule = () => {
                   </div>
                 )}
               </div>
-
-              {/*
-                Chat sidebar hidden — Messages now owns 1:1/group chat.
-                Kept here commented (not deleted) in case it comes back later.
-                "Edit Calendar" / "Group Class" / teacher-meeting-room
-                shortcuts were extracted into ScheduleActionsBar below so
-                they don't disappear along with it.
-
-              {isChatVisible && (
-                <div className="w-full xl:w-[350px] flex-shrink-0 hidden xl:block">
-                  {user.role === "teacher" ? (
-                    <MainChat
-                      user={user}
-                      username={user.name}
-                      teacherChat={teacherChat}
-                      email={user.email}
-                      handleJoinMeeting={handleJoinMeeting}
-                      setEditingEvent={setEditingEvent}
-                      editingEvent={editingEvent}
-                      loading={loading}
-                    />
-                  ) : (
-                    <ChatWindow
-                      username={user.name}
-                      room={chatRoom}
-                      email={user.email}
-                      peerInfo={user.teacher}
-                      handleJoinMeeting={handleJoinMeeting}
-                    />
-                  )}
-                </div>
-              )}
-              */}
-
-              {/* ── Mobile chat FAB + full-screen overlay — hidden, see note above */}
-              {false && isChatVisible && (
-                <>
-                  {!mobileChatOpen && (
-                    <button
-                      onClick={() => setMobileChatOpen(true)}
-                      className="xl:hidden fixed right-6 z-40 w-14 h-14 rounded-full flex items-center justify-center shadow-xl active:scale-95 transition-transform"
-                      style={{
-                        bottom: user.role === "teacher" ? "5.5rem" : "1.5rem",
-                        background: "linear-gradient(135deg, #9E2FD0, #7b22a8)",
-                        boxShadow: "0 4px 20px rgba(158,47,208,0.45)",
-                      }}
-                    >
-                      <FiMessageSquare size={22} className="text-white" />
-                      {chatUnreadCount > 0 && (
-                        <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] px-1 rounded-full bg-[#26D9A1] text-white text-[10px] font-bold flex items-center justify-center">
-                          {chatUnreadCount > 9 ? "9+" : chatUnreadCount}
-                        </span>
-                      )}
-                    </button>
-                  )}
-
-                  {mobileChatOpen && (
-                    <div className="xl:hidden fixed inset-0 z-50 flex flex-col bg-white dark:bg-[#0f0d24]">
-                      <div className="flex-shrink-0 flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-white/10">
-                        <span className="text-sm font-bold text-gray-700 dark:text-white">
-                          {t("mobileSchedule.chat")}
-                        </span>
-                        <button
-                          onClick={() => setMobileChatOpen(false)}
-                          className="p-2 rounded-lg text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
-                        >
-                          <FiX size={20} />
-                        </button>
-                      </div>
-                      <div className="flex-1 min-h-0">
-                        {user.role === "teacher" ? (
-                          <MainChat
-                            user={user}
-                            username={user.name}
-                            teacherChat={teacherChat}
-                            email={user.email}
-                            handleJoinMeeting={handleJoinMeeting}
-                            loading={loading}
-                          />
-                        ) : (
-                          <ChatWindow
-                            username={user.name}
-                            room={chatRoom}
-                            email={user.email}
-                            peerInfo={user.teacher}
-                            handleJoinMeeting={handleJoinMeeting}
-                            height="100%"
-                          />
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
             </>
           )}
         </div>

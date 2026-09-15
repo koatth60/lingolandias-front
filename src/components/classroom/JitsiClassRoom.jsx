@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { JitsiMeeting } from "@jitsi/react-sdk";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import ChatWindow from "../messages/chatWindow";
 import CallChatWindow from "../messages/CallChatWindow";
 import { useSelector } from "react-redux";
 import useRecording from "../../hooks/useRecording";
@@ -248,8 +247,10 @@ const JitsiClassRoom = () => {
   }, []);
 
   // 1:1 class chat used to run entirely on the old, pre-migration chats
-  // table (see legacy ChatWindow below) — completely disconnected from the
-  // unified conversation a student and teacher already share in Messages.
+  // table (via a legacy ChatWindow component, since deleted — dead code that
+  // never actually rendered anywhere by the time it went) — completely
+  // disconnected from the unified conversation a student and teacher already
+  // share in Messages.
   // roomId here already follows the same convention Fase 1's migration used
   // for that conversation's id (the student's own userId), so it's reused
   // directly below instead of re-resolving it — an earlier version of this
@@ -932,10 +933,11 @@ const JitsiClassRoom = () => {
                 here eventually needs the same shared history as Messages,
                 and any entry point that forgets to set chatType (e.g. the
                 admin "observe a class" join) was silently falling back to
-                the legacy, disconnected ChatWindow below. That fallback was
-                the actual source of the split-history reports: two people
-                in the same call, one on each component, each writing to a
-                different table. */}
+                a legacy, disconnected ChatWindow component (since deleted —
+                it never actually mounted here by the time that happened).
+                That fallback was the actual source of the split-history
+                reports: two people in the same call, one on each component,
+                each writing to a different table. */}
             <CallChatWindow
               username={userName}
               email={email}

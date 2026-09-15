@@ -183,18 +183,29 @@ const useConversationChat = (socket, conversationId, user) => {
       );
     };
 
-    const handleChatError = ({ reason, messageId }) => {
-      console.error("[conversation] Server rejected message:", reason, messageId || "");
+    const handleChatError = ({ reason, messageId, tempId }) => {
+      console.error("[conversation] Server rejected message:", reason, messageId || tempId || "");
       if (reason === "rate_limited") return;
       // 'not_allowed' refers to an edit/delete of an existing message, not to
-      // anything pending — failing every in-flight message because of it
-      // would be wrong.
+      // anything pending.
       if (reason === "not_allowed") return;
-      // Marked failed instead of removed — the user's typed text stays on
-      // screen with a retry option instead of silently vanishing.
+
+      // chatError is one shared event name on one shared socket — every
+      // handler in the gateway emits it (join, registerUser, supportChat,
+      // this hook's own sendConversationMessage…), so this listener can
+      // receive a rejection that has nothing to do with a message this
+      // conversation sent. tempId is how sendConversationMessage's own
+      // rejections identify themselves: every one of its chatError emissions
+      // now carries the tempId of the exact optimistic message that
+      // triggered it. Without a match here, the error belongs to some other
+      // handler and none of this conversation's pending messages should move
+      // — that used to fail everything pending on ANY chatError, so one
+      // rejected message (or even an unrelated join/support-chat failure)
+      // marked every other in-flight message as failed too.
+      if (!tempId) return;
       setChatMessages((prev) =>
         prev.map((m) => {
-          if (!m._pending) return m;
+          if (m.id !== tempId || !m._pending) return m;
           clearPendingTimer(m.id);
           return { ...m, _pending: false, _failed: true };
         })
@@ -262,6 +273,9 @@ const useConversationChat = (socket, conversationId, user) => {
       message,
       replyTo,
       fileUrl,
+      // Echoed back on chatError so a rejection can fail just this message —
+      // see handleChatError below.
+      tempId,
     });
 
     // No delivery ack exists on this event — if the server echo never comes

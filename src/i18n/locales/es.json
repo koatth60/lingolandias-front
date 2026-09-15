@@ -694,6 +694,8 @@
       "network": "Sin conexión. El archivo no se envió — inténtalo cuando vuelvas a tener red.",
       "too_large_for_server": "El servidor rechazó el archivo por tamaño. Avisa de esto — no debería pasar.",
       "file_type_blocked": "No se pueden compartir archivos ejecutables en el chat.",
+      "file_too_large": "Ese archivo supera el límite de 2 GB para adjuntos del chat.",
+      "too_many_uploads": "Demasiadas subidas seguidas. Espera un minuto e inténtalo otra vez.",
       "session_expired": "Tu sesión expiró. Recarga la página e inicia sesión otra vez.",
       "presign_failed": "No se pudo iniciar la subida. Inténtalo en un momento.",
       "direct_upload_blocked": "El navegador bloqueó la subida. Inténtalo de nuevo.",

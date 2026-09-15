@@ -694,6 +694,8 @@
       "network": "Brak połączenia. Plik nie został wysłany — spróbuj ponownie po odzyskaniu sieci.",
       "too_large_for_server": "Serwer odrzucił plik jako zbyt duży. Zgłoś to — nie powinno się zdarzyć.",
       "file_type_blocked": "Plików wykonywalnych nie można udostępniać na czacie.",
+      "file_too_large": "Ten plik przekracza limit 2 GB dla załączników czatu.",
+      "too_many_uploads": "Zbyt wiele przesyłań naraz. Odczekaj minutę i spróbuj ponownie.",
       "session_expired": "Twoja sesja wygasła. Odśwież stronę i zaloguj się ponownie.",
       "presign_failed": "Nie udało się rozpocząć wysyłania. Spróbuj za chwilę.",
       "direct_upload_blocked": "Przeglądarka zablokowała wysyłanie. Spróbuj ponownie.",

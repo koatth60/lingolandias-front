@@ -23,18 +23,33 @@ const authHeaders = () => {
  * this is XHR — a teacher sending a 700 MB class recording needs to see that
  * something is happening.
  */
-const putToS3 = (uploadUrl, file, onProgress, signal) =>
+const putToS3 = (uploadUrl, file, contentType, onProgress, signal) =>
   new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open("PUT", uploadUrl, true);
-    if (file.type) xhr.setRequestHeader("Content-Type", file.type);
+    // Always send exactly the value the presign was signed with. Content-Type
+    // is part of the signature's SignedHeaders, so sending a different one —
+    // or none at all — makes S3 reject the PUT with 403 SignatureDoesNotMatch.
+    // That is what happened whenever the browser could not infer a type from
+    // the extension (`file.type === ""`, common for .mkv, .srt, .sub, .pages
+    // and .pptx on some systems): the server defaulted the signature to
+    // application/octet-stream while the browser sent no header at all.
+    xhr.setRequestHeader("Content-Type", contentType);
 
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable && onProgress) onProgress(e.loaded / e.total);
     };
     xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) resolve();
-      else reject(new UploadError("upload_failed", `S3 responded ${xhr.status}`));
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve();
+        return;
+      }
+      // Any refusal from S3 — a signature mismatch, an expired URL, a bucket
+      // policy change — is recoverable by going through our own server
+      // instead. Previously this produced a plain "upload_failed", which was
+      // the one code that did NOT trigger the fallback, so the attachment
+      // died with no second attempt.
+      reject(new UploadError("direct_upload_blocked", `S3 responded ${xhr.status}`));
     };
     xhr.onerror = () =>
       // A failure with no status at all is almost always the bucket's CORS
@@ -113,16 +128,34 @@ const uploadViaBackend = (file, onProgress, signal) =>
  * happened" was the reported symptom rather than any error message.
  */
 export const uploadChatFile = async (file, { onProgress, signal } = {}) => {
+  // Resolved once and used for BOTH the presign request and the PUT header.
+  // Deriving it twice — or letting the backend apply its own default — is how
+  // the two ended up disagreeing and breaking every extension the browser
+  // could not type.
+  const contentType = file.type || "application/octet-stream";
+
   let presign;
   try {
     const res = await fetch(`${BACKEND_URL}/upload/chat-presign`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...authHeaders() },
-      body: JSON.stringify({ filename: file.name, contentType: file.type }),
+      body: JSON.stringify({ filename: file.name, contentType, size: file.size }),
       signal,
     });
-    if (res.status === 400) throw new UploadError("file_type_blocked");
+    if (res.status === 400) {
+      // The server distinguishes "too large" from "blocked type"; fall back to
+      // the blocked-type message only when it says nothing more specific.
+      let code = "file_type_blocked";
+      try {
+        const body = await res.json();
+        if (body?.code) code = body.code;
+      } catch {
+        /* no JSON body */
+      }
+      throw new UploadError(code);
+    }
     if (res.status === 401) throw new UploadError("session_expired");
+    if (res.status === 429) throw new UploadError("too_many_uploads");
     if (!res.ok) throw new UploadError("presign_failed");
     presign = await res.json();
   } catch (err) {
@@ -132,7 +165,7 @@ export const uploadChatFile = async (file, { onProgress, signal } = {}) => {
   }
 
   try {
-    await putToS3(presign.uploadUrl, file, onProgress, signal);
+    await putToS3(presign.uploadUrl, file, contentType, onProgress, signal);
     return presign.fileUrl;
   } catch (err) {
     if (err instanceof UploadError && err.code === "aborted") throw err;

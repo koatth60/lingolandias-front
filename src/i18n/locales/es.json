@@ -687,7 +687,18 @@
     "clearText": "Todos los mensajes se eliminarán permanentemente y no podrán recuperarse.",
     "clearConfirm": "Sí, borrar todo",
     "clearCancel": "Cancelar",
-    "fileTooBig": "El archivo es demasiado grande. El tamaño máximo es 10 MB.",
+    "uploading": "Subiendo {{name}}…",
+    "uploadFailedTitle": "Error al subir",
+    "uploadError": {
+      "upload_failed": "No se pudo subir el archivo. Revisa tu conexión y vuelve a pulsar enviar.",
+      "network": "Sin conexión. El archivo no se envió — inténtalo cuando vuelvas a tener red.",
+      "too_large_for_server": "El servidor rechazó el archivo por tamaño. Avisa de esto — no debería pasar.",
+      "file_type_blocked": "No se pueden compartir archivos ejecutables en el chat.",
+      "session_expired": "Tu sesión expiró. Recarga la página e inicia sesión otra vez.",
+      "presign_failed": "No se pudo iniciar la subida. Inténtalo en un momento.",
+      "direct_upload_blocked": "El navegador bloqueó la subida. Inténtalo de nuevo.",
+      "aborted": "Subida cancelada."
+    },
     "noActiveMembers": "Nadie en la sala ahora mismo"
   },
   "roomData": {

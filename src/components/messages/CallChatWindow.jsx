@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useDispatch } from "react-redux";
-import axios from "axios";
 import { useTranslation } from "react-i18next";
 import { BsEmojiSmile, BsThreeDots, BsType, BsTypeBold, BsTypeItalic, BsTypeStrikethrough, BsCodeSlash } from "react-icons/bs";
 import { FiSend, FiMessageSquare, FiEdit2, FiX, FiPaperclip, FiDownload, FiFile, FiMusic, FiUsers, FiUserPlus, FiUserMinus, FiLogOut } from "react-icons/fi";
@@ -15,7 +14,8 @@ import { socket } from "../../socket";
 import { activeRoomRef } from "../../state/activeRoom";
 import { clearConversationUnread } from "../../redux/notificationsSlice";
 import { renderInlineFormatting } from "../../utils/inlineFormatting.jsx";
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+import { uploadChatFile } from "../../data/uploadApi.js";
+import UploadStatus from "./UploadStatus";
 
 const SYSTEM_MESSAGE_TYPES = ["member_added", "member_removed", "member_left", "group_renamed"];
 
@@ -38,6 +38,8 @@ const CallChatWindow = ({
   const [typingUsers, setTypingUsers] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [stagedFiles, setStagedFiles] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState(null); // { name, ratio }
+  const [uploadErrorCode, setUploadErrorCode] = useState(null);
   const [isDraggingFile, setIsDraggingFile] = useState(false);
   const dragCounterRef = useRef(0);
 
@@ -274,22 +276,33 @@ const CallChatWindow = ({
     if (files && files.length) Array.from(files).forEach(addStagedFile);
   };
 
+  // Mirrors ChatWindowComponent.sendStagedFiles — presigned direct-to-S3
+  // upload, no size limit, and a file that fails stays staged for a retry
+  // instead of silently disappearing.
   const sendStagedFiles = async () => {
     if (!socket || !room) return;
     setIsUploading(true);
+    setUploadErrorCode(null);
+    const failed = [];
     try {
       for (const staged of stagedFiles) {
-        const formData = new FormData();
-        formData.append("file", staged.file);
-        const res = await axios.post(`${BACKEND_URL}/upload/chat-upload`, formData);
-        sendConversationMessage("", undefined, res.data.fileUrl);
-        if (staged.previewUrl) URL.revokeObjectURL(staged.previewUrl);
+        setUploadProgress({ name: staged.name, ratio: 0 });
+        try {
+          const fileUrl = await uploadChatFile(staged.file, {
+            onProgress: (ratio) => setUploadProgress({ name: staged.name, ratio }),
+          });
+          sendConversationMessage("", undefined, fileUrl);
+          if (staged.previewUrl) URL.revokeObjectURL(staged.previewUrl);
+        } catch (err) {
+          console.error("File upload failed:", staged.name, err);
+          failed.push({ ...staged, error: err?.code || "upload_failed" });
+        }
       }
-    } catch (err) {
-      console.error("File upload failed:", err);
     } finally {
       setIsUploading(false);
-      setStagedFiles([]);
+      setUploadProgress(null);
+      setStagedFiles(failed);
+      if (failed.length) setUploadErrorCode(failed[0].error);
     }
   };
 
@@ -677,6 +690,11 @@ const CallChatWindow = ({
 
       {/* ── Input ── */}
       <div className="relative flex-shrink-0 p-3 bg-white dark:bg-[#0f0d24] border-t border-gray-100 dark:border-[rgba(158,47,208,0.12)]">
+        <UploadStatus
+          progress={uploadProgress}
+          errorCode={uploadErrorCode}
+          onDismissError={() => setUploadErrorCode(null)}
+        />
         {stagedFiles.length > 0 && (
           <div className="flex items-center gap-2 mb-2 overflow-x-auto pb-1">
             {stagedFiles.map((f) => (
@@ -732,8 +750,9 @@ const CallChatWindow = ({
               title="Attach file">
               <FiPaperclip size={16} className={isUploading ? "animate-pulse" : ""} />
             </button>
+            {/* See ChatWindowComponent: no accept filter, no size cap. */}
             <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileSelect}
-              accept="image/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip" />
+              accept="*/*" />
           </div>
           {/* Textarea */}
           <textarea

@@ -183,19 +183,22 @@ const useConversationChat = (socket, conversationId, user) => {
       );
     };
 
-    const handleChatError = ({ reason }) => {
-      console.error("[conversation] Server rejected message:", reason);
-      if (reason !== "rate_limited") {
-        // Marked failed instead of removed — the user's typed text stays on
-        // screen with a retry option instead of silently vanishing.
-        setChatMessages((prev) =>
-          prev.map((m) => {
-            if (!m._pending) return m;
-            clearPendingTimer(m.id);
-            return { ...m, _pending: false, _failed: true };
-          })
-        );
-      }
+    const handleChatError = ({ reason, messageId }) => {
+      console.error("[conversation] Server rejected message:", reason, messageId || "");
+      if (reason === "rate_limited") return;
+      // 'not_allowed' refers to an edit/delete of an existing message, not to
+      // anything pending — failing every in-flight message because of it
+      // would be wrong.
+      if (reason === "not_allowed") return;
+      // Marked failed instead of removed — the user's typed text stays on
+      // screen with a retry option instead of silently vanishing.
+      setChatMessages((prev) =>
+        prev.map((m) => {
+          if (!m._pending) return m;
+          clearPendingTimer(m.id);
+          return { ...m, _pending: false, _failed: true };
+        })
+      );
     };
 
     socket.on("conversationMessage", handleMessage);
@@ -205,6 +208,10 @@ const useConversationChat = (socket, conversationId, user) => {
     socket.on("chatError", handleChatError);
 
     return () => {
+      // The server no longer evicts a socket from every other room on join
+      // (that was breaking live delivery whenever two chat views were open at
+      // once), so each view has to announce its own exit.
+      socket.emit("leave", { room: conversationId });
       socket.off("connect", handleReconnect);
       socket.off("conversationMessage", handleMessage);
       socket.off("conversationMessageEdited", handleEdited);

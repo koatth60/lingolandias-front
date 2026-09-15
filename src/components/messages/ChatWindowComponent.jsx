@@ -1,7 +1,6 @@
 // ChatWindowComponent.jsx
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import axios from "axios";
 import send from "../../assets/logos/send.png";
 import { BsEmojiSmile, BsThreeDots, BsType, BsTypeBold, BsTypeItalic, BsTypeStrikethrough, BsCodeSlash } from "react-icons/bs";
 import { FiVideo, FiChevronLeft, FiEdit2, FiX, FiPaperclip, FiDownload, FiFile, FiMusic, FiFileText, FiCornerUpLeft, FiArrowDown, FiUsers, FiPhoneMissed, FiUserPlus, FiUserMinus, FiLogOut, FiMic, FiSquare, FiTrash2, FiPlus, FiAlertCircle } from "react-icons/fi";
@@ -24,9 +23,10 @@ import Swal from "sweetalert2";
 import { renderInlineFormatting } from "../../utils/inlineFormatting.jsx";
 import useVoiceRecorder from "../../hooks/useVoiceRecorder.js";
 import { getDraft, setDraft } from "../../state/messageDrafts.js";
+import { uploadChatFile, formatBytes } from "../../data/uploadApi.js";
+import UploadStatus from "./UploadStatus";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB
 const IMAGE_EXTS = new Set(["jpg", "jpeg", "png", "gif", "webp", "svg"]);
 // "weba" (not "webm") for voice notes recorded via MediaRecorder — sharing
 // the "webm" extension with VIDEO_EXTS below would make a real .webm video
@@ -97,6 +97,9 @@ const ChatWindowComponent = ({
   const [replyTo, setReplyTo] = useState(null);
   const [showFormatMenu, setShowFormatMenu] = useState(false);
   const [stagedFiles, setStagedFiles] = useState([]);
+  // { id, name, ratio } for the attachment currently going up, or null.
+  const [uploadProgress, setUploadProgress] = useState(null);
+  const [uploadErrorCode, setUploadErrorCode] = useState(null);
   const [showMoreOptions, setShowMoreOptions] = useState(false);
 
   // ── Per-conversation draft (WhatsApp-style) ──
@@ -435,12 +438,12 @@ const ChatWindowComponent = ({
   // like chatWindow.jsx's existing single-file "ready to send" preview, but
   // for several files at once, all going out together on the next Send tap
   // instead of firing off as its own message the instant it's picked.
+  // No size check: attachments upload straight to S3 via a presigned PUT
+  // (see data/uploadApi.js), so there is no request-body ceiling to stay
+  // under. The old 10 MB cap existed because the file used to be posted
+  // through nginx and buffered in the API process.
   const addStagedFile = (file) => {
     if (!file) return;
-    if (file.size > MAX_FILE_BYTES) {
-      alert(t("chatWindow.fileTooBig"));
-      return;
-    }
     setStagedFiles((prev) => [
       ...prev,
       {
@@ -448,6 +451,7 @@ const ChatWindowComponent = ({
         file,
         previewUrl: file.type.startsWith("image/") ? URL.createObjectURL(file) : null,
         name: file.name,
+        size: file.size,
       },
     ]);
   };
@@ -499,22 +503,38 @@ const ChatWindowComponent = ({
   // through sendMessage() (see handleSendMessage) for the same optimistic
   // local placeholder a typed message gets, instead of only appearing after
   // the round trip back from the server's broadcast.
+  // Uploads each staged file, one at a time, and sends each as its own
+  // message. A file that fails is KEPT staged with an error on it so the user
+  // can retry — the previous version logged to the console and cleared the
+  // whole tray in a `finally`, so a failed attachment silently vanished with
+  // no message and no error. That was the actual reported bug ("I attach the
+  // PDF, press send, and nothing happens").
   const sendStagedFiles = async (targetRoom) => {
     setIsUploading(true);
+    setUploadErrorCode(null);
+    const failed = [];
     try {
       for (const staged of stagedFiles) {
-        const formData = new FormData();
-        formData.append("file", staged.file);
-        const res = await axios.post(`${BACKEND_URL}/upload/chat-upload`, formData);
-        sendMessage("", undefined, res.data.fileUrl, targetRoom);
-        if (staged.previewUrl) URL.revokeObjectURL(staged.previewUrl);
+        setUploadProgress({ id: staged.id, name: staged.name, ratio: 0 });
+        try {
+          const fileUrl = await uploadChatFile(staged.file, {
+            onProgress: (ratio) =>
+              setUploadProgress({ id: staged.id, name: staged.name, ratio }),
+          });
+          sendMessage("", undefined, fileUrl, targetRoom);
+          if (staged.previewUrl) URL.revokeObjectURL(staged.previewUrl);
+        } catch (err) {
+          console.error("File upload failed:", staged.name, err);
+          failed.push({ ...staged, error: err?.code || "upload_failed" });
+        }
       }
-    } catch (err) {
-      console.error("File upload failed:", err);
     } finally {
       setIsUploading(false);
-      setStagedFiles([]);
+      setUploadProgress(null);
+      setStagedFiles(failed);
     }
+
+    if (failed.length) setUploadErrorCode(failed[0].error);
   };
 
   // ── File helpers ──
@@ -640,7 +660,7 @@ const ChatWindowComponent = ({
     setOtherOnline(null);
     if (chatType !== "dm" || !room || !otherUserId) return;
     let cancelled = false;
-    fetch(`${BACKEND_URL}/conversations/${room}/members?userId=${userId}`, {
+    fetch(`${BACKEND_URL}/conversations/${room}/members`, {
       headers: localStorage.getItem("token") ? { Authorization: `Bearer ${localStorage.getItem("token")}` } : {},
     })
       .then((res) => (res.ok ? res.json() : []))
@@ -667,7 +687,7 @@ const ChatWindowComponent = ({
     setMentionCandidates([]);
     if (chatType !== "group" || !room) return;
     let cancelled = false;
-    fetch(`${BACKEND_URL}/conversations/${room}/members?userId=${userId}`, {
+    fetch(`${BACKEND_URL}/conversations/${room}/members`, {
       headers: localStorage.getItem("token") ? { Authorization: `Bearer ${localStorage.getItem("token")}` } : {},
     })
       .then((res) => (res.ok ? res.json() : []))
@@ -874,8 +894,14 @@ const ChatWindowComponent = ({
         </button>
 
         {/* Avatar icon */}
-        <div className="w-9 h-9 rounded-2xl flex items-center justify-center flex-shrink-0
-                        bg-purple-100 dark:bg-purple-500/20 border border-purple-200 dark:border-purple-500/30">
+        <div
+          onClick={() => {
+            if (chatType === "dm" && otherUserId) onViewProfile?.(otherUserId);
+            else if (chatType === "group") onViewGroupMembers?.();
+          }}
+          className={`w-9 h-9 rounded-2xl flex items-center justify-center flex-shrink-0
+                        bg-purple-100 dark:bg-purple-500/20 border border-purple-200 dark:border-purple-500/30
+                        ${chatType === "dm" || chatType === "group" ? "cursor-pointer hover:bg-purple-200 dark:hover:bg-purple-500/30 transition-colors" : ""}`}>
           <FaComments className="text-purple-600 dark:text-purple-400" size={15} />
         </div>
 
@@ -1338,20 +1364,32 @@ const ChatWindowComponent = ({
             </div>
           </div>
         )}
-        {/* Staged files — attached/pasted, waiting on the next Send tap */}
+        {/* Staged files — attached/pasted, waiting on the next Send tap.
+            A file that failed to upload stays here with a red border instead
+            of disappearing, so Send retries it. */}
         {stagedFiles.length > 0 && (
           <div className="flex items-center gap-2 mb-2 overflow-x-auto pb-1">
             {stagedFiles.map((f) => (
-              <div key={f.id} className="relative flex-shrink-0">
+              <div key={f.id} className="relative flex-shrink-0"
+                title={f.error ? t(`chatWindow.uploadError.${f.error}`, { defaultValue: t("chatWindow.uploadError.upload_failed") }) : f.name}>
                 {f.previewUrl ? (
                   <img src={f.previewUrl} alt={f.name}
-                    className="w-14 h-14 rounded-lg object-cover border border-gray-200 dark:border-white/10" />
+                    className={`w-14 h-14 rounded-lg object-cover border ${
+                      f.error ? "border-red-400 ring-1 ring-red-400" : "border-gray-200 dark:border-white/10"
+                    }`} />
                 ) : (
-                  <div className="w-14 h-14 rounded-lg flex flex-col items-center justify-center gap-0.5 px-1
-                                  bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10">
-                    <FiFile size={16} className="text-gray-400" />
+                  <div className={`w-14 h-14 rounded-lg flex flex-col items-center justify-center gap-0.5 px-1
+                                  bg-gray-100 dark:bg-white/5 border ${
+                                    f.error ? "border-red-400 ring-1 ring-red-400" : "border-gray-200 dark:border-white/10"
+                                  }`}>
+                    <FiFile size={16} className={f.error ? "text-red-400" : "text-gray-400"} />
                     <span className="text-[8px] text-gray-500 dark:text-gray-400 truncate w-full text-center">{f.name}</span>
                   </div>
+                )}
+                {typeof f.size === "number" && (
+                  <span className="absolute -bottom-1 left-0 right-0 text-[8px] text-center text-gray-500 dark:text-gray-400">
+                    {formatBytes(f.size)}
+                  </span>
                 )}
                 <button
                   onClick={() => removeStagedFile(f.id)}
@@ -1363,6 +1401,14 @@ const ChatWindowComponent = ({
             ))}
           </div>
         )}
+        {/* Progress + failure banner. Without the progress bar a large
+            attachment looks frozen; without the banner a failed upload is
+            indistinguishable from a successful one that sent nothing. */}
+        <UploadStatus
+          progress={uploadProgress}
+          errorCode={uploadErrorCode}
+          onDismissError={() => setUploadErrorCode(null)}
+        />
         {/* Editing banner */}
         {editingMsg && (
           <div className="flex items-center justify-between gap-2 px-3 py-1.5 mb-2 rounded-lg
@@ -1438,8 +1484,11 @@ const ChatWindowComponent = ({
                            disabled:opacity-40 transition-colors duration-150" title="Attach file">
                 <FiPaperclip size={17} className={isUploading ? "animate-pulse" : ""} />
               </button>
+              {/* No `accept` filter. The old list had no video/* entry at all, so
+                  the picker silently hid every video (and .pptx) — a teacher could
+                  not even select the file. Executables are refused server-side. */}
               <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileSelect}
-                accept="image/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip" />
+                accept="*/*" />
             </div>
 
             {/* Voice note — cancel (discard) only shows up mid-recording */}

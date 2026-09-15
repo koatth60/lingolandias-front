@@ -687,7 +687,18 @@
     "clearText": "Wszystkie wiadomości zostaną trwale usunięte i nie będzie można ich odzyskać.",
     "clearConfirm": "Tak, wyczyść wszystko",
     "clearCancel": "Anuluj",
-    "fileTooBig": "Plik jest za duży. Maksymalny rozmiar to 10 MB.",
+    "uploading": "Wysyłanie {{name}}…",
+    "uploadFailedTitle": "Błąd wysyłania",
+    "uploadError": {
+      "upload_failed": "Nie udało się wysłać pliku. Sprawdź połączenie i naciśnij wyślij ponownie.",
+      "network": "Brak połączenia. Plik nie został wysłany — spróbuj ponownie po odzyskaniu sieci.",
+      "too_large_for_server": "Serwer odrzucił plik jako zbyt duży. Zgłoś to — nie powinno się zdarzyć.",
+      "file_type_blocked": "Plików wykonywalnych nie można udostępniać na czacie.",
+      "session_expired": "Twoja sesja wygasła. Odśwież stronę i zaloguj się ponownie.",
+      "presign_failed": "Nie udało się rozpocząć wysyłania. Spróbuj za chwilę.",
+      "direct_upload_blocked": "Przeglądarka zablokowała wysyłanie. Spróbuj ponownie.",
+      "aborted": "Wysyłanie anulowane."
+    },
     "noActiveMembers": "Nikogo teraz nie ma w pokoju"
   },
   "roomData": {

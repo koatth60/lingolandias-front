@@ -13,6 +13,8 @@ import MessageReactions from "./MessageReactions";
 import useMessageFormatter from "../../hooks/useMessageFormatter";
 import { fetchUnreadMessages } from "../../redux/messageSlice";
 import useNotificationSound from "../../hooks/useNotificationSound";
+import { uploadChatFile } from "../../data/uploadApi.js";
+import UploadStatus from "./UploadStatus";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const SUPPORT_ROOM = "uuid-support";
@@ -42,6 +44,8 @@ const SupportChatWindow = () => {
   const [editingMsg, setEditingMsg] = useState(null);
   const [stagedFile, setStagedFile] = useState(null); // { file, previewUrl }
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(null); // 0..1 while uploading
+  const [uploadErrorCode, setUploadErrorCode] = useState(null);
   const [isDraggingFile, setIsDraggingFile] = useState(false);
   const [replyTo, setReplyTo] = useState(null);
   const [typingUsers, setTypingUsers] = useState([]);
@@ -178,18 +182,24 @@ const SupportChatWindow = () => {
     let fileUrl;
     if (stagedFile) {
       setIsUploading(true);
+      setUploadErrorCode(null);
       try {
-        const formData = new FormData();
-        formData.append("file", stagedFile.file);
-        const res = await axios.post(`${BACKEND_URL}/upload/chat-upload`, formData);
-        fileUrl = res.data.fileUrl;
+        // Presigned direct-to-S3 upload: no size limit, and the failure is
+        // now shown to the user instead of only logged (the attachment used
+        // to vanish with no explanation).
+        fileUrl = await uploadChatFile(stagedFile.file, {
+          onProgress: (ratio) => setUploadProgress(ratio),
+        });
         if (stagedFile.previewUrl) URL.revokeObjectURL(stagedFile.previewUrl);
       } catch (err) {
         console.error("Support chat file upload failed:", err);
         setIsUploading(false);
+        setUploadProgress(null);
+        setUploadErrorCode(err?.code || "upload_failed");
         return;
       }
       setIsUploading(false);
+      setUploadProgress(null);
     }
 
     socket.emit("supportChat", {
@@ -716,6 +726,11 @@ const SupportChatWindow = () => {
         )}
 
         {/* Staged file preview */}
+        <UploadStatus
+          progress={uploadProgress === null ? null : { name: stagedFile?.file?.name || "", ratio: uploadProgress }}
+          errorCode={uploadErrorCode}
+          onDismissError={() => setUploadErrorCode(null)}
+        />
         {stagedFile && !editingMsg && (
           <div className="flex items-center gap-2 px-3 py-2 mb-2 rounded-lg"
             style={{ background: "rgba(246,184,46,0.10)", border: "1px solid rgba(246,184,46,0.30)" }}>

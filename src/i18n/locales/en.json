@@ -687,7 +687,18 @@
     "clearText": "All messages will be permanently deleted and cannot be recovered.",
     "clearConfirm": "Yes, clear all",
     "clearCancel": "Cancel",
-    "fileTooBig": "File is too large. Maximum size is 10 MB.",
+    "uploading": "Uploading {{name}}…",
+    "uploadFailedTitle": "Upload failed",
+    "uploadError": {
+      "upload_failed": "The file could not be uploaded. Check your connection and press send again.",
+      "network": "No connection. The file was not sent — try again when you are back online.",
+      "too_large_for_server": "The server rejected this file as too large. Please report this — it should not happen.",
+      "file_type_blocked": "Executable files cannot be shared in chat.",
+      "session_expired": "Your session expired. Reload the page and sign in again.",
+      "presign_failed": "Could not start the upload. Try again in a moment.",
+      "direct_upload_blocked": "The upload was blocked by the browser. Try again.",
+      "aborted": "Upload cancelled."
+    },
     "noActiveMembers": "No one in the room right now"
   },
   "roomData": {

@@ -390,6 +390,26 @@ const JitsiClassRoom = () => {
     );
   }
 
+  // roomId only ever comes from router navigation state (or the push-notification
+  // query-param fallback above) — it's never persisted. A hard reload or iOS Safari
+  // restoring this page from its cache loses it, and JitsiMeeting would otherwise
+  // mount with roomName=undefined and crash inside @jitsi/react-sdk's getAppId()
+  // (roomName.split('/')) before we ever get a chance to show an error.
+  if (!roomId) {
+    return (
+      <div className="meeting-full-height flex flex-col items-center justify-center gap-4 bg-black text-white">
+        <p>Couldn't load this meeting. Please go back and join again.</p>
+        <button
+          onClick={() => navigate(user.role === "admin" ? "/home" : "/schedule")}
+          className="px-4 py-2 rounded-full text-white text-sm font-semibold"
+          style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}
+        >
+          Go back
+        </button>
+      </div>
+    );
+  }
+
   const closeChat = () => {
     showChatRef.current = false;
     setShowChat(false);

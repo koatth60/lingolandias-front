@@ -3,7 +3,6 @@ import { toast } from 'react-toastify';
 import userReducer, { updateUserSettings, logout } from '../redux/userSlice';
 import sidebarReducer from '../redux/sidebarSlice';
 import messageReducer from '../redux/messageSlice'; // Existing messages reducer
-import chatReducer from '../redux/chatSlice'; // New chat reducer
 import filePreviewReducer from './filePreviewSlice';
 import schedulesReducer from './schedulesSlice';
 import notificationsReducer from './notificationsSlice';
@@ -54,6 +53,15 @@ const loadState = () => {
       delete state.user.status;
       delete state.user.error;
     }
+    // 'chat' is a retired slice (see redux/chatSlice.js's deletion) — every
+    // existing user's localStorage still has it from before, and handing a
+    // key with no matching reducer to configureStore as preloadedState logs
+    // an "Unexpected key 'chat'" warning on every single load. Drop it here
+    // rather than leaving that warning for the lifetime of the browser
+    // profile that wrote it.
+    if (state && 'chat' in state) {
+      delete state.chat;
+    }
     return state;
   } catch (e) {
     console.error('Could not load state', e);
@@ -68,7 +76,6 @@ const store = configureStore({
     user: userReducer,
     sidebar: sidebarReducer,
     messages: messageReducer,
-    chat: chatReducer,
     filePreview: filePreviewReducer,
     schedules: schedulesReducer,
     notifications: notificationsReducer,
@@ -84,7 +91,6 @@ store.subscribe(() => {
     user: userRest,
     sidebar: store.getState().sidebar,
     messages: store.getState().messages,
-    chat: store.getState().chat,
   });
 });
 
@@ -95,7 +101,6 @@ export const flushStateNow = () => {
     user: userRest,
     sidebar: store.getState().sidebar,
     messages: store.getState().messages,
-    chat: store.getState().chat,
   });
 };
 

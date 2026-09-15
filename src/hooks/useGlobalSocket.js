@@ -1,13 +1,14 @@
 import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchMessagesForTeacher,
-  fetchUnreadCountsForStudent,
-} from "../redux/chatSlice";
+import { useSelector } from "react-redux";
 import { socket } from "../socket";
 
+// Registers this user's presence on the shared socket the moment they're
+// logged in — mounted once at the app/dashboard level, independent of
+// whichever chat view (if any) happens to be open. Without this running
+// globally, presence (and therefore canJoinRoom/resolveSocketUserId on the
+// gateway) would only exist while some chat component happened to be
+// mounted.
 const useGlobalSocket = () => {
-  const dispatch = useDispatch();
   const user = useSelector((state) => state.user.userInfo?.user);
 
   useEffect(() => {
@@ -24,32 +25,13 @@ const useGlobalSocket = () => {
 
       socket.on('connect', handleConnect);
 
-      const handleNewChat = () => {
-        if (user.role === "teacher") {
-          dispatch(fetchMessagesForTeacher());
-        } else if (user.role === "user") {
-          dispatch(fetchUnreadCountsForStudent());
-        }
-      };
-
-      const handleChatMessagesRead = () => {
-        if (user.role === "teacher") {
-          dispatch(fetchMessagesForTeacher());
-        }
-      };
-
-      socket.on("newChat", handleNewChat);
-      socket.on("chatMessagesRead", handleChatMessagesRead);
-
       return () => {
         socket.off('connect', handleConnect);
-        socket.off("newChat", handleNewChat);
-        socket.off("chatMessagesRead", handleChatMessagesRead);
       };
     } else if (socket.connected) {
       socket.disconnect();
     }
-  }, [user, dispatch]);
+  }, [user]);
 };
 
 export default useGlobalSocket;

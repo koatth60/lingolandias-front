@@ -18,10 +18,6 @@ import "react-perfect-scrollbar/dist/css/styles.css";
 import CustomToolbar from "./customToolBar";
 import ScheduleActionsBar from "./ScheduleActionsBar";
 import {
-  fetchMessagesForTeacher,
-  fetchUnreadCountsForStudent,
-} from "../../redux/chatSlice";
-import {
   addStudentSchedule,
   removeStudentSchedules,
   updateStudentSchedule,
@@ -174,14 +170,6 @@ const Schedule = () => {
 
   useEffect(() => {
     if (user?.id) {
-      const handleNewChat = () => {
-        if (user.role === 'teacher') {
-          dispatch(fetchMessagesForTeacher());
-        } else if (user.role === 'user' || user.role === 'invitado') {
-          dispatch(fetchUnreadCountsForStudent());
-        }
-      };
-
       const handleScheduleUpdated = ({ studentId, teacherId, action, schedule, eventIds }) => {
         if ((user.role === 'user' || user.role === 'invitado') && user.id === studentId) {
           if (action === 'add') dispatch(addStudentSchedule(schedule));
@@ -220,13 +208,11 @@ const Schedule = () => {
         }
       };
 
-      socket.on("newChat", handleNewChat);
       socket.on("scheduleUpdated", handleScheduleUpdated);
       socket.on("studentAssigned", handleStudentAssigned);
       socket.on("studentRemoved", handleStudentRemoved);
 
       return () => {
-        socket.off("newChat", handleNewChat);
         socket.off("scheduleUpdated", handleScheduleUpdated);
         socket.off("studentAssigned", handleStudentAssigned);
         socket.off("studentRemoved", handleStudentRemoved);

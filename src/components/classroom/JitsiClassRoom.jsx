@@ -508,6 +508,13 @@ const JitsiClassRoom = () => {
       p2p: {
         enabled: true,
         stunServers: TURN_SERVERS,
+        // The server's custom config.js reassigns config.p2p and drops its codec order,
+        // which leaves 1:1 (P2P) calls on the library default AV1-first. AV1 software
+        // encoding saturates weaker laptops, and the CPU limit makes the browser drop the
+        // sent resolution, so the other side sees a blurry picture. Mobile keeps H264
+        // first because phones encode it in hardware.
+        codecPreferenceOrder: ["VP9", "VP8", "H264"],
+        mobileCodecPreferenceOrder: ["H264", "VP8", "VP9"],
       },
       iceServers: TURN_SERVERS,
       constraints: {
@@ -519,9 +526,11 @@ const JitsiClassRoom = () => {
           sampleRate: 48000,
           sampleSize: 16,
         },
+        // 720p capture. At 480p the library files the stream under its "standard"
+        // bitrate tier, and the picture looks soft once it fills the screen.
         video: {
-          height: { ideal: 480, max: 720, min: 180 },
-          width: { ideal: 854, max: 1280, min: 320 },
+          height: { ideal: 720, max: 720, min: 180 },
+          width: { ideal: 1280, max: 1280, min: 320 },
         },
       },
       // Screenshare — VP9 + high bitrate floor prevents adaptive encoder from blurring slides/text
@@ -534,14 +543,26 @@ const JitsiClassRoom = () => {
         },
       },
       enableLayerSuspension: true,
-      // Prefer VP9 but allow fallback — enforcing VP9 on clients without hardware decoding causes high CPU → audio dropouts
+      // Bridge (JVB) calls. The deployed lib-jitsi-meet only reads bitrate caps from
+      // videoQuality.<codec>.maxBitratesVideo. The old top-level
+      // maxBitratesVideo: { VP9: ... } shape was silently ignored, so every call ran on
+      // the library defaults (VP9 camera at 480p capped at 300 kbps). These values are
+      // ceilings only; bandwidth estimation still lowers them on weak connections.
+      // AV1 is left out of both lists for the same CPU reason as in p2p above.
       videoQuality: {
-        preferredCodec: "VP9",
-        enforcePreferredCodec: false,
-        maxBitratesVideo: {
-          VP9: { low: 200000, standard: 700000, high: 2000000 },
-          VP8: { low: 200000, standard: 700000, high: 2000000 },
-          H264: { low: 200000, standard: 700000, high: 2000000 },
+        codecPreferenceOrder: ["VP9", "VP8", "H264"],
+        mobileCodecPreferenceOrder: ["VP8", "VP9", "H264"],
+        // Library default is already on; set explicitly because the server's custom
+        // config.js replaces the whole videoQuality object.
+        enableAdaptiveMode: true,
+        vp9: {
+          maxBitratesVideo: { low: 150000, standard: 600000, high: 1500000, fullHd: 2500000, ssHigh: 2500000 },
+        },
+        vp8: {
+          maxBitratesVideo: { low: 200000, standard: 800000, high: 2000000, fullHd: 3000000, ssHigh: 2500000 },
+        },
+        h264: {
+          maxBitratesVideo: { low: 200000, standard: 800000, high: 2000000, fullHd: 3000000, ssHigh: 2500000 },
         },
       },
       // Disable simulcast for screenshare — simulcast layers fight over bitrate and blur the top layer

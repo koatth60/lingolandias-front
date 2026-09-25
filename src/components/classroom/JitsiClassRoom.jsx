@@ -533,8 +533,13 @@ const JitsiClassRoom = () => {
           width: { ideal: 1280, max: 1280, min: 320 },
         },
       },
-      // Screenshare — VP9 + high bitrate floor prevents adaptive encoder from blurring slides/text
-      desktopSharingFrameRate: { min: 5, max: 30 },
+      // Screenshare in "detail" mode. The deployed lib-jitsi-meet keys everything off
+      // desktopSharingFrameRate.max: above 5 it sets contentHint "motion" (the browser keeps
+      // fps and drops resolution under load, so slides go blurry) and leaves the capture size
+      // to Chrome, which re-renders a shared tab at a smaller size and makes Canva relayout
+      // (the flicker seen when sharing a tab). At 5 or below it sets contentHint "detail" and
+      // captures at full native size. Slides don't need more than 5 fps.
+      desktopSharingFrameRate: { min: 5, max: 5 },
       desktopSharingConstraints: {
         video: {
           height: { ideal: 1080, max: 1080 },

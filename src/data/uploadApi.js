@@ -112,6 +112,46 @@ const uploadViaBackend = (file, onProgress, signal) =>
     xhr.send(formData);
   });
 
+// Attachments up to this size are copied into memory the moment they are
+// staged. Bigger ones (long class recordings) keep the reference to disk.
+const SNAPSHOT_MAX_BYTES = 200 * 1024 * 1024;
+
+/**
+ * True if the browser can still read the file's bytes. A File from the picker
+ * or a drop is only a reference to the file on disk: if the original is moved,
+ * deleted or modified after it was attached (a macOS screenshot dragged from
+ * the floating thumbnail, a file in a syncing iCloud/Drive folder, a download
+ * still being written), Chrome refuses to read it and every upload fails with
+ * a bare XHR error — indistinguishable from being offline.
+ */
+const isReadable = async (file) => {
+  try {
+    await file.slice(0, 1).arrayBuffer();
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Returns an in-memory copy of `file` so the upload no longer depends on the
+ * original staying untouched on disk between attaching and pressing send.
+ * Never throws: if the copy can't be made (too big, or already unreadable),
+ * the original is returned and uploadChatFile reports it as file_unreadable.
+ */
+export const snapshotFile = async (file) => {
+  if (!file || file.size > SNAPSHOT_MAX_BYTES) return file;
+  try {
+    const bytes = await file.arrayBuffer();
+    return new File([bytes], file.name, {
+      type: file.type,
+      lastModified: file.lastModified,
+    });
+  } catch {
+    return file;
+  }
+};
+
 /**
  * Uploads a chat attachment and resolves with its public URL.
  *
@@ -133,6 +173,23 @@ export const uploadChatFile = async (file, { onProgress, signal } = {}) => {
   // the two ended up disagreeing and breaking every extension the browser
   // could not type.
   const contentType = file.type || "application/octet-stream";
+
+  // Checked up front so an unreadable file gets its own message instead of
+  // "no connection" — both upload routes fail on it with the same bare XHR
+  // error a dropped network produces.
+  if (!(await isReadable(file))) throw new UploadError("file_unreadable");
+
+  // The file can also become unreadable mid-flight, after the check above.
+  const viaBackend = async () => {
+    try {
+      return await uploadViaBackend(file, onProgress, signal);
+    } catch (err) {
+      if (err instanceof UploadError && err.code === "network" && !(await isReadable(file))) {
+        throw new UploadError("file_unreadable", err);
+      }
+      throw err;
+    }
+  };
 
   let presign;
   try {
@@ -161,7 +218,7 @@ export const uploadChatFile = async (file, { onProgress, signal } = {}) => {
   } catch (err) {
     if (err instanceof UploadError && err.code !== "presign_failed") throw err;
     // Couldn't get a presigned URL at all — fall back rather than fail.
-    return uploadViaBackend(file, onProgress, signal);
+    return viaBackend();
   }
 
   try {
@@ -170,7 +227,7 @@ export const uploadChatFile = async (file, { onProgress, signal } = {}) => {
   } catch (err) {
     if (err instanceof UploadError && err.code === "aborted") throw err;
     if (err instanceof UploadError && err.code === "direct_upload_blocked") {
-      return uploadViaBackend(file, onProgress, signal);
+      return viaBackend();
     }
     throw err;
   }

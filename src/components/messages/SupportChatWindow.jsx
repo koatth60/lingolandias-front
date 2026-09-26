@@ -13,7 +13,7 @@ import MessageReactions from "./MessageReactions";
 import useMessageFormatter from "../../hooks/useMessageFormatter";
 import { fetchUnreadMessages } from "../../redux/messageSlice";
 import useNotificationSound from "../../hooks/useNotificationSound";
-import { uploadChatFile } from "../../data/uploadApi.js";
+import { uploadChatFile, snapshotFile } from "../../data/uploadApi.js";
 import UploadStatus from "./UploadStatus";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -287,8 +287,11 @@ const SupportChatWindow = () => {
   };
 
   // ── File staging (picker + drag&drop) ──
-  const stageFile = (file) => {
-    if (!file) return;
+  // In-memory copy first (snapshotFile) so moving or re-saving the original
+  // before Send no longer breaks the upload.
+  const stageFile = async (picked) => {
+    if (!picked) return;
+    const file = await snapshotFile(picked);
     const previewUrl = file.type.startsWith("image/") ? URL.createObjectURL(file) : null;
     setStagedFile({ file, previewUrl });
   };

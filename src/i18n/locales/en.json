@@ -692,6 +692,7 @@
     "uploadError": {
       "upload_failed": "The file could not be uploaded. Check your connection and press send again.",
       "network": "No connection. The file was not sent — try again when you are back online.",
+      "file_unreadable": "The browser can no longer read this file (it was moved, deleted or changed after you attached it). Remove it and attach it again.",
       "too_large_for_server": "The server rejected this file as too large. Please report this — it should not happen.",
       "file_type_blocked": "Executable files cannot be shared in chat.",
       "file_too_large": "That file is over the 2 GB limit for chat attachments.",

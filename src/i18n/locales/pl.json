@@ -692,6 +692,7 @@
     "uploadError": {
       "upload_failed": "Nie udało się wysłać pliku. Sprawdź połączenie i naciśnij wyślij ponownie.",
       "network": "Brak połączenia. Plik nie został wysłany — spróbuj ponownie po odzyskaniu sieci.",
+      "file_unreadable": "Przeglądarka nie może już odczytać tego pliku (został przeniesiony, usunięty lub zmieniony po dołączeniu). Usuń go i dołącz ponownie.",
       "too_large_for_server": "Serwer odrzucił plik jako zbyt duży. Zgłoś to — nie powinno się zdarzyć.",
       "file_type_blocked": "Plików wykonywalnych nie można udostępniać na czacie.",
       "file_too_large": "Ten plik przekracza limit 2 GB dla załączników czatu.",

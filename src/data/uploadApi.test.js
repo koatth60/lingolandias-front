@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { uploadChatFile, UploadError } from "./uploadApi.js";
+import { uploadChatFile, UploadError, snapshotFile } from "./uploadApi.js";
 
 /**
  * The contract these cover: whatever content type is sent to /upload/chat-presign
@@ -151,11 +151,44 @@ describe("uploadChatFile — failures", () => {
     expect(url).toBe("https://s3.example/fallback.bin");
   });
 
+  it("reports an unreadable file as such, not as a lost connection", async () => {
+    // What Chrome does once the original is moved, deleted or modified after
+    // attaching: every read — and so every upload route — fails.
+    const file = makeFile("making questions.png", "image/png");
+    file.slice = () => ({
+      arrayBuffer: () => Promise.reject(new DOMException("gone", "NotReadableError")),
+    });
+
+    await expect(uploadChatFile(file)).rejects.toMatchObject({ code: "file_unreadable" });
+    expect(presignBodies).toHaveLength(0);
+    expect(putCalls).toHaveLength(0);
+  });
+
   it("rejects with an UploadError carrying a code the UI can translate", async () => {
     presignResponse = { status: 400, body: { code: "file_type_blocked" } };
 
     await expect(
       uploadChatFile(makeFile("malware.exe", "application/octet-stream")),
     ).rejects.toBeInstanceOf(UploadError);
+  });
+});
+
+describe("snapshotFile", () => {
+  it("returns an in-memory copy with the same name, type and bytes", async () => {
+    const original = new File([new Uint8Array([1, 2, 3])], "ficha.pdf", { type: "application/pdf" });
+
+    const copy = await snapshotFile(original);
+
+    expect(copy).not.toBe(original);
+    expect(copy.name).toBe("ficha.pdf");
+    expect(copy.type).toBe("application/pdf");
+    expect([...new Uint8Array(await copy.arrayBuffer())]).toEqual([1, 2, 3]);
+  });
+
+  it("keeps the original when it cannot be read, instead of throwing", async () => {
+    const original = new File([new Uint8Array(4)], "gone.png", { type: "image/png" });
+    original.arrayBuffer = () => Promise.reject(new DOMException("gone", "NotReadableError"));
+
+    await expect(snapshotFile(original)).resolves.toBe(original);
   });
 });

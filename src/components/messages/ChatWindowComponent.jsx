@@ -23,7 +23,7 @@ import Swal from "sweetalert2";
 import { renderInlineFormatting } from "../../utils/inlineFormatting.jsx";
 import useVoiceRecorder from "../../hooks/useVoiceRecorder.js";
 import { getDraft, setDraft } from "../../state/messageDrafts.js";
-import { uploadChatFile, formatBytes } from "../../data/uploadApi.js";
+import { uploadChatFile, formatBytes, snapshotFile } from "../../data/uploadApi.js";
 import UploadStatus from "./UploadStatus";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -430,7 +430,7 @@ const ChatWindowComponent = ({
     dragCounterRef.current = 0;
     setIsDraggingFile(false);
     const files = e.dataTransfer.files;
-    if (files && files.length) Array.from(files).forEach(addStagedFile);
+    if (files && files.length) addStagedFiles(files);
   };
 
   // ── File staging (attach/paste, then Send) ──
@@ -442,17 +442,20 @@ const ChatWindowComponent = ({
   // (see data/uploadApi.js), so there is no request-body ceiling to stay
   // under. The old 10 MB cap existed because the file used to be posted
   // through nginx and buffered in the API process.
-  const addStagedFile = (file) => {
-    if (!file) return;
+  // Copies each file into memory first (snapshotFile) so moving, deleting or
+  // re-saving the original before Send no longer breaks the upload.
+  const addStagedFiles = async (files) => {
+    const list = await Promise.all(Array.from(files).filter(Boolean).map(snapshotFile));
+    if (!list.length) return;
     setStagedFiles((prev) => [
       ...prev,
-      {
+      ...list.map((file) => ({
         id: `${Date.now()}-${Math.random()}`,
         file,
         previewUrl: file.type.startsWith("image/") ? URL.createObjectURL(file) : null,
         name: file.name,
         size: file.size,
-      },
+      })),
     ]);
   };
 
@@ -465,7 +468,7 @@ const ChatWindowComponent = ({
   };
 
   const handleFileSelect = (e) => {
-    Array.from(e.target.files).forEach(addStagedFile);
+    addStagedFiles(e.target.files);
     e.target.value = "";
   };
 
@@ -479,7 +482,7 @@ const ChatWindowComponent = ({
         const file = item.getAsFile();
         if (file) {
           e.preventDefault();
-          addStagedFile(file);
+          addStagedFiles([file]);
         }
         return;
       }
@@ -495,7 +498,7 @@ const ChatWindowComponent = ({
   };
   const handleStopRecording = async () => {
     const file = await stopRecording();
-    if (file) addStagedFile(file);
+    if (file) addStagedFiles([file]);
   };
   const handleCancelRecording = () => { cancelRecording(); };
 

@@ -14,7 +14,7 @@ import { socket } from "../../socket";
 import { activeRoomRef } from "../../state/activeRoom";
 import { clearConversationUnread } from "../../redux/notificationsSlice";
 import { renderInlineFormatting } from "../../utils/inlineFormatting.jsx";
-import { uploadChatFile } from "../../data/uploadApi.js";
+import { uploadChatFile, snapshotFile } from "../../data/uploadApi.js";
 import UploadStatus from "./UploadStatus";
 
 const SYSTEM_MESSAGE_TYPES = ["member_added", "member_removed", "member_left", "group_renamed"];
@@ -213,16 +213,19 @@ const CallChatWindow = ({
   };
 
   // ── File staging (attach/paste/drop, then Send) ──
-  const addStagedFile = (file) => {
-    if (!file) return;
+  // Copies each file into memory first (snapshotFile) so moving, deleting or
+  // re-saving the original before Send no longer breaks the upload.
+  const addStagedFiles = async (files) => {
+    const list = await Promise.all(Array.from(files).filter(Boolean).map(snapshotFile));
+    if (!list.length) return;
     setStagedFiles((prev) => [
       ...prev,
-      {
+      ...list.map((file) => ({
         id: `${Date.now()}-${Math.random()}`,
         file,
         previewUrl: file.type.startsWith("image/") ? URL.createObjectURL(file) : null,
         name: file.name,
-      },
+      })),
     ]);
   };
 
@@ -235,7 +238,7 @@ const CallChatWindow = ({
   };
 
   const handleFileSelect = (e) => {
-    Array.from(e.target.files).forEach(addStagedFile);
+    addStagedFiles(e.target.files);
     e.target.value = "";
   };
 
@@ -249,7 +252,7 @@ const CallChatWindow = ({
         const pastedFile = item.getAsFile();
         if (pastedFile) {
           e.preventDefault();
-          addStagedFile(pastedFile);
+          addStagedFiles([pastedFile]);
         }
         return;
       }
@@ -273,7 +276,7 @@ const CallChatWindow = ({
     dragCounterRef.current = 0;
     setIsDraggingFile(false);
     const files = e.dataTransfer.files;
-    if (files && files.length) Array.from(files).forEach(addStagedFile);
+    if (files && files.length) addStagedFiles(files);
   };
 
   // Mirrors ChatWindowComponent.sendStagedFiles — presigned direct-to-S3

@@ -22,9 +22,24 @@ settingsListener.startListening({
   },
 });
 
+// Until 2026-09-26 the login response carried password hashes (the user's and
+// every assigned student's), and they were persisted here with the rest of
+// userInfo. The server no longer sends them; this also scrubs copies already
+// sitting in browsers, and anything that might slip through later.
+const stripPasswords = (value, depth = 0) => {
+  if (!value || typeof value !== 'object' || depth > 6) return value;
+  if (Array.isArray(value)) {
+    value.forEach((item) => stripPasswords(item, depth + 1));
+    return value;
+  }
+  delete value.password;
+  Object.values(value).forEach((child) => stripPasswords(child, depth + 1));
+  return value;
+};
+
 const saveState = (state) => {
   try {
-    const serializedState = JSON.stringify(state);
+    const serializedState = JSON.stringify(state, (key, val) => (key === 'password' ? undefined : val));
     localStorage.setItem('state', serializedState);
   } catch (e) {
     console.error('Could not save state', e);
@@ -52,6 +67,7 @@ const loadState = () => {
     if (state?.user) {
       delete state.user.status;
       delete state.user.error;
+      stripPasswords(state.user.userInfo);
     }
     // 'chat' is a retired slice (see redux/chatSlice.js's deletion) — every
     // existing user's localStorage still has it from before, and handing a

@@ -85,13 +85,15 @@ const Dashboard = () => {
   }, [user?.id, dispatch]);
 
   const handleLogout = async () => {
+    // Read before logout() clears it: the server identifies who is logging
+    // out from this token (it no longer accepts a userId in the body).
+    const token = localStorage.getItem("token");
     dispatch(logout());
     logoutAndNavigate();
     try {
       await fetch(`${BACKEND_URL}/auth/logout`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id }),
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
     } catch (error) {
       console.error("Logout error:", error);

@@ -34,7 +34,9 @@ const useAuthExpiry = (userId) => {
 
     async function handleExpiry() {
       try {
-        await axios.post(`${BACKEND_URL}/auth/logout`, { userId });
+        // The token still in storage identifies the user (the axios
+        // interceptor attaches it); the server ignores any body userId now.
+        await axios.post(`${BACKEND_URL}/auth/logout`);
       } catch {}
       dispatch(logout());
       navigate("/");

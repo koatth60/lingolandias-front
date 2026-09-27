@@ -4,14 +4,11 @@ import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import avatar from "../../assets/logos/avatar.jpg";
 import { useLogout } from "../../hooks/customHooks";
-import { logout } from "../../redux/userSlice";
+import { performLogout } from "../../auth/session";
 import { toggleSidebar } from "../../redux/sidebarSlice";
-import { messageCache } from "../../state/messageCache";
-import { conversationListCache } from "../../state/conversationListCache";
 import ThemeToggleButton from "../buttons/ThemeToggleButton";
 import { FiChevronDown, FiMenu, FiChevronLeft, FiUser, FiSettings, FiHelpCircle, FiLogOut, FiBookOpen } from "react-icons/fi";
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const Navbar = ({ header }) => {
   const dispatch = useDispatch();
@@ -34,22 +31,9 @@ const Navbar = ({ header }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = async () => {
-    // Read before logout() clears it: the server identifies who is logging
-    // out from this token (it no longer accepts a userId in the body).
-    const token = localStorage.getItem("token");
-    dispatch(logout());
-    messageCache.clear();
-    conversationListCache.clear();
+  const handleLogout = () => {
+    performLogout(dispatch);
     logoutAndNavigate();
-    try {
-      await fetch(`${BACKEND_URL}/auth/logout`, {
-        method: "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
   };
 
   return (

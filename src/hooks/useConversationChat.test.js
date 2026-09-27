@@ -169,3 +169,77 @@ describe("useConversationChat — chatError only fails the message it names", ()
     expect(afterC._pending).toBe(true);
   });
 });
+
+describe("useConversationChat — messages stay with their conversation (2026-09-27)", () => {
+  it("a slow response for the chat you left does not land in the chat you opened", async () => {
+    const axios = (await import("axios")).default;
+    let resolveOld;
+    axios.get.mockImplementationOnce(() => new Promise((r) => { resolveOld = r; }));
+    axios.get.mockResolvedValueOnce({ data: [{ id: "b1", conversationId: "conv-B", message: "hi from B", timestamp: "2026-09-27T10:00:00Z" }] });
+
+    const socket = new FakeSocket();
+    const { result, rerender } = renderHook(({ id }) => useConversationChat(socket, id, USER), {
+      initialProps: { id: "conv-A" },
+    });
+    rerender({ id: "conv-B" });
+    await waitFor(() => expect(result.current.chatMessages.map((m) => m.id)).toEqual(["b1"]));
+
+    // conv-A's request finally answers.
+    await act(async () => {
+      resolveOld({ data: [{ id: "a1", conversationId: "conv-A", message: "from A", timestamp: "2026-09-27T09:00:00Z" }] });
+    });
+
+    expect(result.current.chatMessages.map((m) => m.id)).toEqual(["b1"]);
+  });
+
+  it("swaps the placeholder for the echo by tempId even with a skewed clock", async () => {
+    const socket = new FakeSocket();
+    const { result } = renderHook(() => useConversationChat(socket, "conv-1", USER));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    act(() => result.current.sendMessage("hello"));
+    const tempId = result.current.chatMessages[0].id;
+
+    act(() => {
+      socket.trigger("conversationMessage", {
+        id: "real-1",
+        conversationId: "conv-1",
+        senderId: USER.id,
+        message: "hello",
+        // Five minutes off: the old timestamp-window match would miss this.
+        timestamp: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+        clientTempId: tempId,
+      });
+    });
+
+    expect(result.current.chatMessages).toHaveLength(1);
+    expect(result.current.chatMessages[0].id).toBe("real-1");
+    expect(result.current.chatMessages[0].clientTempId).toBeUndefined();
+  });
+});
+
+describe("mergeFreshPage (reconnect refetch)", () => {
+  it("keeps unsent messages and older loaded pages", async () => {
+    const { mergeFreshPage } = await import("./useConversationChat.js");
+    const t = (min) => new Date(Date.UTC(2026, 8, 27, 10, min)).toISOString();
+    const older = { id: "old-1", message: "older page", timestamp: t(0) };
+    const fresh = Array.from({ length: 50 }, (_, i) => ({ id: `f${i}`, message: `m${i}`, timestamp: t(10 + i) }));
+    const failed = { id: "pending-x", _failed: true, senderId: "u", message: "not sent", timestamp: t(59) };
+
+    const { messages, keptOlder } = mergeFreshPage([older, ...fresh.slice(0, 5), failed], fresh);
+
+    expect(keptOlder).toBe(true);
+    expect(messages[0].id).toBe("old-1");
+    expect(messages[messages.length - 1].id).toBe("pending-x");
+    expect(messages).toHaveLength(52);
+  });
+
+  it("drops an unsent placeholder once the server has it", async () => {
+    const { mergeFreshPage } = await import("./useConversationChat.js");
+    const pending = { id: "pending-1", _pending: true, senderId: "u", message: "hi", timestamp: "2026-09-27T10:00:00Z" };
+    const fresh = [{ id: "real-1", senderId: "u", message: "hi", timestamp: "2026-09-27T10:00:01Z", clientTempId: "pending-1" }];
+
+    const { messages } = mergeFreshPage([pending], fresh);
+    expect(messages.map((m) => m.id)).toEqual(["real-1"]);
+  });
+});

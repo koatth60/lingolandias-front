@@ -10,7 +10,8 @@ import {
 import { toast } from "react-toastify";
 import Dashboard from "../../sections/dashboard";
 import Navbar from "../layout/navbar";
-import { updateUserSettings, logout } from "../../redux/userSlice";
+import { updateUserSettings } from "../../redux/userSlice";
+import { performLogout } from "../../auth/session";
 import ChangePasswordModal from "./ChangePasswordModal";
 import useNotificationSound from "../../hooks/useNotificationSound";
 import useInstallPrompt from "../../hooks/useInstallPrompt";
@@ -324,7 +325,7 @@ const Settings = () => {
   };
 
   const handleLogout = () => {
-    dispatch(logout());
+    performLogout(dispatch);
     navigate("/login");
   };
 

@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import axios from "axios";
 import { messageCache } from "../state/messageCache";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const PAGE_SIZE = 50;
 
 const dedupeById = (list) => {
   const seen = new Set();
@@ -13,18 +14,79 @@ const dedupeById = (list) => {
   });
 };
 
+// The echo of our own message: matched by the tempId the server now sends
+// back, falling back to text + a timestamp window for an older server. The
+// window alone failed whenever the device clock was off by more than 10s:
+// the message showed twice, once as "Not sent", and Retry sent a copy.
+const isEchoOf = (local, echo) =>
+  (echo.clientTempId && local.id === echo.clientTempId) ||
+  (!echo.clientTempId &&
+    local.senderId === echo.senderId &&
+    local.message === echo.message &&
+    Math.abs(new Date(local.timestamp) - new Date(echo.timestamp)) < 10000);
+
+// Folds a fresh first page from the server into what is already shown.
+// Replacing the list outright (as before) dropped two things on every
+// reconnect: messages still "sending" or marked "Not sent · Retry", which
+// vanished as if they had been delivered, and older pages the user had
+// loaded with "load more".
+export const mergeFreshPage = (prev, fresh) => {
+  const oldest = fresh[0];
+  const olderKept =
+    fresh.length >= PAGE_SIZE && oldest
+      ? prev.filter((m) => !m._pending && !m._failed && new Date(m.timestamp) < new Date(oldest.timestamp))
+      : [];
+  const unsent = prev.filter((m) => (m._pending || m._failed) && !fresh.some((f) => isEchoOf(m, f)));
+  return { messages: dedupeById([...olderKept, ...fresh, ...unsent]), keptOlder: olderKept.length > 0 };
+};
+
+const initialStore = (conversationId) => {
+  const cached = messageCache.get(conversationId);
+  return cached?.length
+    ? { id: conversationId, messages: cached, source: "cache" }
+    : { id: conversationId, messages: [], source: "none" };
+};
+
 // Talks to the unified /conversations API + sendConversationMessage socket
-// events instead of the legacy /chat + chat/globalChat pair (that whole
-// legacy stack — useGlobalChat, useSocketManager, the old chatWindow.jsx —
-// was deleted once confirmed dead: nothing rendered it any more). Used for
-// every conversation type now (dm, group, general, teacher, support) since
-// Fase 1 migrated them all into one model.
+// events. Used for every conversation type (dm, group, general, teacher).
 const useConversationChat = (socket, conversationId, user) => {
-  const [chatMessages, setChatMessages] = useState([]);
+  // Messages are stored together with the conversation they belong to. With
+  // a bare array, a slow response for the chat you just left landed in the
+  // chat you had switched to, and the cache-sync effect then saved the old
+  // chat's messages under the new chat's id (memory and IndexedDB), so they
+  // showed up there again on the next visit. `source` records where the list
+  // came from; only real data is ever written to the cache.
+  const [store, setStore] = useState(() => initialStore(conversationId));
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(() => !!conversationId && !messageCache.get(conversationId)?.length);
   const currentIdRef = useRef(conversationId);
+
+  // On the first render after a switch the store still holds the previous
+  // chat. Show this chat's cached messages (or nothing) instead of flashing
+  // the old ones; the effect below then moves the store over.
+  const chatMessages = useMemo(
+    () => (store.id === conversationId ? store.messages : messageCache.get(conversationId) || []),
+    [store, conversationId],
+  );
+
+  // Applies an update only if the store still belongs to `forId`.
+  const updateFor = useCallback((forId, updater, source) => {
+    setStore((prev) => {
+      if (prev.id !== forId) return prev;
+      const next = typeof updater === "function" ? updater(prev.messages) : updater;
+      const nextSource = source || (prev.source === "none" ? "local" : prev.source);
+      if (next === prev.messages && nextSource === prev.source) return prev;
+      return { id: forId, messages: next, source: nextSource };
+    });
+  }, []);
+
+  // Public setter (edits, deletes, reactions from components): always
+  // targets the conversation that is open right now.
+  const setChatMessages = useCallback(
+    (updater) => updateFor(currentIdRef.current, updater),
+    [updateFor],
+  );
 
   const fetchMessages = useCallback(async () => {
     if (!conversationId) return;
@@ -35,15 +97,21 @@ const useConversationChat = (socket, conversationId, user) => {
         `${BACKEND_URL}/conversations/${conversationId}/messages`,
         { params: { userId: user?.id }, headers: token ? { Authorization: `Bearer ${token}` } : {} }
       );
+      if (currentIdRef.current !== forId) return; // the user moved on
       const fresh = dedupeById(response.data);
-      setChatMessages((prev) => {
-        // Evita un re-render/parpadeo cuando el servidor devuelve exactamente
-        // lo mismo que ya se estaba mostrando (típicamente desde caché) —
-        // pero si hay un mensaje optimista sin confirmar, siempre se actualiza.
-        if (!prev.some((m) => m._pending) && JSON.stringify(prev) === JSON.stringify(fresh)) return prev;
-        return fresh;
-      });
-      setHasMore(response.data.length >= 50);
+      let keptOlder = false;
+      updateFor(
+        forId,
+        (prev) => {
+          const merged = mergeFreshPage(prev, fresh);
+          keptOlder = merged.keptOlder;
+          // Evita un re-render/parpadeo cuando el servidor devuelve exactamente
+          // lo mismo que ya se estaba mostrando (típicamente desde caché).
+          return JSON.stringify(prev) === JSON.stringify(merged.messages) ? prev : merged.messages;
+        },
+        "network",
+      );
+      if (!keptOlder) setHasMore(response.data.length >= PAGE_SIZE);
     } catch (error) {
       console.error("Error fetching conversation messages:", error);
     } finally {
@@ -52,45 +120,46 @@ const useConversationChat = (socket, conversationId, user) => {
       // abandonó marque como "cargado" al chat nuevo que se está viendo.
       if (currentIdRef.current === forId) setIsLoading(false);
     }
-  }, [conversationId, user?.id]);
+  }, [conversationId, user?.id, updateFor]);
 
   const loadOlderMessages = useCallback(async () => {
     if (!conversationId || loadingMore || !hasMore || !chatMessages.length) return;
+    const forId = conversationId;
     setLoadingMore(true);
     try {
       const token = localStorage.getItem("token");
-      const oldest = chatMessages[0];
+      const oldest = chatMessages.find((m) => !m._pending && !m._failed) || chatMessages[0];
       const response = await axios.get(
         `${BACKEND_URL}/conversations/${conversationId}/messages`,
         { params: { userId: user?.id, before: oldest.id }, headers: token ? { Authorization: `Bearer ${token}` } : {} }
       );
-      setChatMessages((prev) => dedupeById([...response.data, ...prev]));
-      setHasMore(response.data.length >= 50);
+      if (currentIdRef.current !== forId) return;
+      updateFor(forId, (prev) => dedupeById([...response.data, ...prev]));
+      setHasMore(response.data.length >= PAGE_SIZE);
     } catch (error) {
       console.error("Error loading older messages:", error);
     } finally {
       setLoadingMore(false);
     }
-  }, [conversationId, user?.id, chatMessages, loadingMore, hasMore]);
+  }, [conversationId, user?.id, chatMessages, loadingMore, hasMore, updateFor]);
 
   // Runs on every conversationId change, including into a draft DM's `null`
-  // (see ChatWindowComponent) — without this, switching from an open
-  // conversation into a blank draft left the previous conversation's
-  // messages rendered under the new person's name until the first message
-  // was actually sent and a real fetch overwrote the stale state.
-  // Shows the cached messages for this chat instantly (if we've visited it
-  // already this session) instead of a blank/loading state — fetchMessages
-  // below still always runs in the background to revalidate.
+  // (see ChatWindowComponent). Shows the cached messages for this chat
+  // instantly (if we've visited it already this session) instead of a
+  // blank/loading state — fetchMessages below still always runs in the
+  // background to revalidate.
   useEffect(() => {
     currentIdRef.current = conversationId;
     const cached = messageCache.get(conversationId);
-    if (cached) {
-      setChatMessages(cached);
+    // An empty cached list used to count as a hit, which skipped IndexedDB
+    // and showed "no messages" until the network answered.
+    if (cached?.length) {
+      setStore((prev) => (prev.id === conversationId ? prev : { id: conversationId, messages: cached, source: "cache" }));
       setHasMore(true);
       setIsLoading(false);
       return;
     }
-    setChatMessages([]);
+    setStore((prev) => (prev.id === conversationId ? prev : { id: conversationId, messages: [], source: "none" }));
     setHasMore(true);
     // Sin nada en memoria todavía no sabemos si el chat está realmente vacío
     // o solo no se ha cargado en esta sesión — isLoading distingue ambos
@@ -99,25 +168,30 @@ const useConversationChat = (socket, conversationId, user) => {
     setIsLoading(!!conversationId);
     if (!conversationId) return;
     // Pestaña recién abierta (sin nada en memoria) — antes de que termine el
-    // fetch de red de más abajo, intenta con lo que haya quedado guardado en
-    // disco de una sesión anterior, para no mostrar spinner en frío en cada
-    // reapertura del navegador.
+    // fetch de red, intenta con lo que haya quedado guardado en disco de una
+    // sesión anterior, para no mostrar spinner en frío en cada reapertura.
     messageCache.getPersisted(user?.id, conversationId).then((persisted) => {
       if (currentIdRef.current !== conversationId) return; // ya cambió de chat
-      if (persisted) {
-        setChatMessages(persisted);
-        setIsLoading(false);
-      }
+      if (!persisted?.length) return;
+      // Only fills an empty view: if the network (or a send) already put
+      // real data here, the older disk copy must not overwrite it.
+      setStore((prev) =>
+        prev.id === conversationId && prev.source === "none"
+          ? { id: conversationId, messages: persisted, source: "persisted" }
+          : prev,
+      );
+      setIsLoading(false);
     });
   }, [conversationId, user?.id]);
 
   // Keeps the cache in sync with whatever's actually shown — covers fetches,
   // socket-driven edits/deletes/reactions, and the sender's own optimistic
-  // send, all in one place instead of duplicating this in every handler.
+  // send, all in one place. Never writes before real data exists, and never
+  // under an id the messages don't belong to.
   useEffect(() => {
-    if (!conversationId) return;
-    messageCache.set(conversationId, chatMessages, user?.id);
-  }, [conversationId, chatMessages, user?.id]);
+    if (!store.id || store.source === "none") return;
+    messageCache.set(store.id, store.messages, user?.id);
+  }, [store, user?.id]);
 
   // Confirmed by an incoming echo, cleared here; if the echo never arrives
   // (dropped emit, or the socket disconnects right after sending), the timer
@@ -149,37 +223,34 @@ const useConversationChat = (socket, conversationId, user) => {
 
     const handleMessage = (data) => {
       if (data.conversationId !== conversationId) return;
-      setChatMessages((prev) => {
-        const idx = prev.findIndex(
-          (m) =>
-            m._pending &&
-            m.senderId === data.senderId &&
-            m.message === data.message &&
-            Math.abs(new Date(m.timestamp) - new Date(data.timestamp)) < 10000
-        );
+      // eslint-disable-next-line no-unused-vars
+      const { clientTempId, ...message } = data;
+      updateFor(conversationId, (prev) => {
+        const idx = prev.findIndex((m) => (m._pending || m._failed) && isEchoOf(m, data));
         if (idx !== -1) {
           clearPendingTimer(prev[idx].id);
           const updated = [...prev];
-          updated[idx] = data;
+          updated[idx] = message;
           return updated;
         }
-        return [...prev, data];
+        if (prev.some((m) => m.id === message.id)) return prev;
+        return [...prev, message];
       });
     };
 
     const handleEdited = ({ messageId, newMessage, editedAt }) => {
-      setChatMessages((prev) =>
+      updateFor(conversationId, (prev) =>
         prev.map((m) => (m.id === messageId ? { ...m, message: newMessage, editedAt } : m))
       );
     };
 
     const handleDeleted = ({ messageId }) => {
-      setChatMessages((prev) => prev.filter((m) => m.id !== messageId));
+      updateFor(conversationId, (prev) => prev.filter((m) => m.id !== messageId));
     };
 
     const handleReactionUpdated = ({ conversationId: cid, messageId, reactions }) => {
       if (cid !== conversationId) return;
-      setChatMessages((prev) =>
+      updateFor(conversationId, (prev) =>
         prev.map((m) => (m.id === messageId ? { ...m, reactions } : m))
       );
     };
@@ -192,19 +263,13 @@ const useConversationChat = (socket, conversationId, user) => {
       if (reason === "not_allowed") return;
 
       // chatError is one shared event name on one shared socket — every
-      // handler in the gateway emits it (join, registerUser, supportChat,
-      // this hook's own sendConversationMessage…), so this listener can
-      // receive a rejection that has nothing to do with a message this
-      // conversation sent. tempId is how sendConversationMessage's own
-      // rejections identify themselves: every one of its chatError emissions
-      // now carries the tempId of the exact optimistic message that
-      // triggered it. Without a match here, the error belongs to some other
-      // handler and none of this conversation's pending messages should move
-      // — that used to fail everything pending on ANY chatError, so one
-      // rejected message (or even an unrelated join/support-chat failure)
-      // marked every other in-flight message as failed too.
+      // handler in the gateway emits it, so this listener can receive a
+      // rejection that has nothing to do with a message this conversation
+      // sent. tempId is how sendConversationMessage's own rejections identify
+      // themselves; without a match the error belongs to some other handler
+      // and none of this conversation's pending messages should move.
       if (!tempId) return;
-      setChatMessages((prev) =>
+      updateFor(conversationId, (prev) =>
         prev.map((m) => {
           if (m.id !== tempId || !m._pending) return m;
           clearPendingTimer(m.id);
@@ -219,6 +284,7 @@ const useConversationChat = (socket, conversationId, user) => {
     socket.on("messageReactionUpdated", handleReactionUpdated);
     socket.on("chatError", handleChatError);
 
+    const timers = pendingTimersRef.current;
     return () => {
       // The server no longer evicts a socket from every other room on join
       // (that was breaking live delivery whenever two chat views were open at
@@ -230,10 +296,10 @@ const useConversationChat = (socket, conversationId, user) => {
       socket.off("conversationMessageDeleted", handleDeleted);
       socket.off("messageReactionUpdated", handleReactionUpdated);
       socket.off("chatError", handleChatError);
-      pendingTimersRef.current.forEach(clearTimeout);
-      pendingTimersRef.current.clear();
+      timers.forEach(clearTimeout);
+      timers.clear();
     };
-  }, [conversationId, socket, user?.name, fetchMessages]);
+  }, [conversationId, socket, user?.name, fetchMessages, updateFor]);
 
   // targetId overrides the hook's own conversationId — needed for a draft DM
   // that doesn't have a real conversation yet when the user hits send (see
@@ -262,7 +328,8 @@ const useConversationChat = (socket, conversationId, user) => {
     };
     if (replyTo) optimistic.replyTo = replyTo;
     if (fileUrl) optimistic.fileUrl = fileUrl;
-    setChatMessages((prev) => [...prev, optimistic]);
+    const viewId = currentIdRef.current;
+    updateFor(viewId, (prev) => [...prev, optimistic]);
     if (offline) return;
 
     socket.emit("sendConversationMessage", {
@@ -274,8 +341,8 @@ const useConversationChat = (socket, conversationId, user) => {
       message,
       replyTo,
       fileUrl,
-      // Echoed back on chatError so a rejection can fail just this message —
-      // see handleChatError below.
+      // Echoed back on chatError, and now on the broadcast itself, so the
+      // placeholder is matched exactly — see isEchoOf and handleChatError.
       tempId,
     });
 
@@ -283,7 +350,7 @@ const useConversationChat = (socket, conversationId, user) => {
     // back (e.g. the connection drops between emit and broadcast) this is
     // the only thing that keeps a message from sitting as "sending…" forever.
     const timer = setTimeout(() => {
-      setChatMessages((prev) =>
+      updateFor(viewId, (prev) =>
         prev.map((m) => (m.id === tempId && m._pending ? { ...m, _pending: false, _failed: true } : m))
       );
       pendingTimersRef.current.delete(tempId);

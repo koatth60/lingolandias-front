@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { logout } from './userSlice';
 
 // Single source of truth for per-conversation unread counts — replaces three
 // previously-independent, unsynchronized counters (chatSlice.unreadCountsByRoom,
@@ -41,6 +42,12 @@ const notificationsSlice = createSlice({
       delete state.unreadByConversation[action.payload];
       delete state.mutedByConversation[action.payload];
     },
+  },
+  // setConversationsSnapshot merges rather than replaces, so without this the
+  // next person to log in on the same tab saw the previous user's unread
+  // counts added to their own badge.
+  extraReducers: (builder) => {
+    builder.addCase(logout, () => ({ unreadByConversation: {}, mutedByConversation: {} }));
   },
 });
 

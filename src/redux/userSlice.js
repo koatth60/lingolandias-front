@@ -16,9 +16,12 @@ export const loginUser = createAsyncThunk("user/loginUser", async (data, { rejec
     });
 
     const result = await response.json();
-    if (result.token) {
-      localStorage.setItem("token", result.token);
+    // A 4xx used to resolve as "success", which stored the error body as
+    // userInfo and persisted it.
+    if (!response.ok || !result.token) {
+      return rejectWithValue({ status: response.status, message: result?.message });
     }
+    localStorage.setItem("token", result.token);
 
     return result;
   } catch {
@@ -345,6 +348,13 @@ const userSlice = createSlice({
       if (!state.userInfo?.user) return;
       state.userInfo.user.teacher = action.payload;
     },
+    // The sliding session renews the token in the background. RequireAuth
+    // checks userInfo.token, so a renewal written only to localStorage (as
+    // before) still logged everyone out 30 days after their login, however
+    // active they were.
+    setToken: (state, action) => {
+      if (state.userInfo) state.userInfo.token = action.payload;
+    },
     logout: (state) => {
       state.userInfo = null;
       localStorage.removeItem("token");
@@ -477,6 +487,7 @@ export const {
   updateStudentSchedule,
   addStudentToTeacher,
   setStudentTeacher,
+  setToken,
 } = userSlice.actions;
 
 export default userSlice.reducer;

@@ -16,6 +16,7 @@ import Navbar from "../components/layout/navbar";
 import { FiMessageSquare } from "react-icons/fi";
 import { activeRoomRef } from "../state/activeRoom";
 import { conversationListCache } from "../state/conversationListCache";
+import useMediaQuery from "../hooks/useMediaQuery";
 import {
   setConversationsSnapshot,
   clearConversationUnread,
@@ -47,6 +48,12 @@ const Messages = () => {
   const [conversations, setConversations] = useState(() => conversationListCache.get(user?.id) || []);
   const [selectedChat, setSelectedChat] = useState(null);
   const [showChatList, setShowChatList] = useState(true);
+  // Only one layout is mounted. Both used to be, with CSS hiding one, so
+  // every chat ran twice: two joins, two fetches, two mark-reads, and the two
+  // copies overwrote each other's message cache (the hidden desktop copy
+  // saved the previous chat under the new chat's id before the visible
+  // mobile copy read it). Tailwind's lg breakpoint.
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
   const [profileUser, setProfileUser] = useState(null);
   const [showNewGroupModal, setShowNewGroupModal] = useState(false);
   const [groupMembers, setGroupMembers] = useState(null);
@@ -835,8 +842,9 @@ const Messages = () => {
         <section className="flex-grow min-h-0 p-3 sm:p-4 overflow-hidden">
 
           {/* ── Desktop: unified glass card ── */}
+          {isDesktop && (
           <div
-            className="hidden lg:flex h-full relative rounded-2xl overflow-hidden"
+            className="flex h-full relative rounded-2xl overflow-hidden"
             style={{
               border: "1px solid rgba(158,47,208,0.15)",
               boxShadow: "0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(158,47,208,0.08)",
@@ -898,9 +906,11 @@ const Messages = () => {
               </div>
             </div>
           </div>
+          )}
 
           {/* ── Mobile ── */}
-          <div className="lg:hidden h-full">
+          {!isDesktop && (
+          <div className="h-full">
             {showChatList ? (
               <div
                 className="h-full rounded-2xl overflow-hidden"
@@ -915,6 +925,7 @@ const Messages = () => {
               selectedChat && <ChatWindowComponent {...chatWindowProps} />
             )}
           </div>
+          )}
 
         </section>
       </div>

@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { logout } from './userSlice';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 // Async thunk for fetching unread messages
@@ -34,6 +35,7 @@ const messageSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
+      .addCase(logout, () => ({ unreadCounts: {}, totalUnread: 0, status: 'idle', error: null }))
       .addCase(fetchUnreadMessages.pending, (state) => {
         state.status = 'loading';
       })

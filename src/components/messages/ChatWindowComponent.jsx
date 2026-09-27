@@ -1,5 +1,5 @@
 // ChatWindowComponent.jsx
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import send from "../../assets/logos/send.png";
 import { BsEmojiSmile, BsThreeDots, BsType, BsTypeBold, BsTypeItalic, BsTypeStrikethrough, BsCodeSlash } from "react-icons/bs";
@@ -72,6 +72,11 @@ const ChatWindowComponent = ({
   const typingTimeoutRef = useRef(null);
   const readDebounceRef = useRef(null);
   const isAtBottomRef = useRef(true);
+  // Scroll bookkeeping for the open conversation — see "Scroll" below.
+  const contentRef = useRef(null);
+  const pinnedRoomRef = useRef(null);
+  const lastMessageIdRef = useRef(null);
+  const olderAnchorRef = useRef(null);
   const navigate = useNavigate();
   const user = useSelector((state) => state.user.userInfo?.user);
 
@@ -297,18 +302,28 @@ const ChatWindowComponent = ({
   // ── Typing listeners ──
   useEffect(() => {
     if (!socket || !room) return;
-    const handleTyping = ({ username: who }) => {
+    const handleTyping = ({ username: who, room: typingRoom }) => {
+      // Typing events carry their room now; without it, someone typing in
+      // the support channel showed up as typing in whatever DM was open.
+      if (typingRoom && typingRoom !== room) return;
       if (who && who !== username) {
         setTypingUsers((prev) => prev.includes(who) ? prev : [...prev, who]);
       }
     };
-    const handleStopTyping = () => setTypingUsers([]);
+    const handleStopTyping = ({ room: typingRoom } = {}) => {
+      if (typingRoom && typingRoom !== room) return;
+      setTypingUsers([]);
+    };
     socket.on("typing", handleTyping);
     socket.on("stopTyping", handleStopTyping);
     return () => {
       socket.off("typing", handleTyping);
       socket.off("stopTyping", handleStopTyping);
+      // Leaving mid-typing used to leave "typing…" stuck on the other side.
+      if (typingTimeoutRef.current) socket.emit("stopTyping", { room });
       clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = null;
+      setTypingUsers([]);
     };
   }, [socket, room, username]);
 
@@ -717,32 +732,131 @@ const ChatWindowComponent = ({
   }, [socket, room, chatType, otherUserId]);
 
   // Scroll tracking
+  // Only a real user gesture may take the view off the bottom. Scroll events
+  // also come from the browser's own scroll anchoring and from our pinning;
+  // treating those as "the user scrolled up" (as before) switched off the
+  // stick-to-bottom halfway through images loading, leaving a gap.
+  const lastUserScrollRef = useRef(0);
   const handleScroll = useCallback(() => {
     const el = scrollContainerRef.current;
     if (!el) return;
     const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
-    isAtBottomRef.current = atBottom;
-    setShowScrollBtn(!atBottom);
-    if (atBottom) setNewMsgCount(0);
+    if (atBottom) {
+      isAtBottomRef.current = true;
+      setShowScrollBtn(false);
+      setNewMsgCount(0);
+      return;
+    }
+    if (Date.now() - lastUserScrollRef.current < 1000) {
+      isAtBottomRef.current = false;
+      setShowScrollBtn(true);
+    }
   }, []);
 
-  // Auto-scroll on new messages, count if scrolled up
   useEffect(() => {
     const el = scrollContainerRef.current;
-    if (!el) return;
-    if (isAtBottomRef.current) {
+    if (!el) return undefined;
+    const markUserScroll = () => { lastUserScrollRef.current = Date.now(); };
+    const events = ["wheel", "touchmove", "pointerdown", "keydown"];
+    events.forEach((name) => el.addEventListener(name, markUserScroll, { passive: true }));
+    return () => events.forEach((name) => el.removeEventListener(name, markUserScroll));
+  }, []);
+
+  // ── Scroll ──
+  // Opening a chat used to visibly jump: the scroll-to-bottom ran in a
+  // useEffect (after the browser had already painted the top of the list),
+  // keyed on the message COUNT (so switching between two 50-message chats
+  // never re-scrolled), and nothing re-pinned when images or videos finished
+  // loading and grew the list. All pinning now happens in layout effects,
+  // before paint, and a ResizeObserver keeps the view on the last message
+  // while content settles.
+
+  // Each conversation starts at the bottom with a clean slate.
+  useLayoutEffect(() => {
+    isAtBottomRef.current = true;
+    pinnedRoomRef.current = null;
+    lastMessageIdRef.current = null;
+    olderAnchorRef.current = null;
+    setShowScrollBtn(false);
+    setNewMsgCount(0);
+  }, [room]);
+
+  useLayoutEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el || !chatMessages.length) return;
+    const last = chatMessages[chatMessages.length - 1];
+
+    // First content for this conversation: jump straight to the end.
+    if (pinnedRoomRef.current !== room) {
+      pinnedRoomRef.current = room;
+      lastMessageIdRef.current = last.id;
       el.scrollTop = el.scrollHeight;
+      return;
+    }
+
+    // "Load more" prepended older messages: put the message that was at the
+    // top back exactly where it was, instead of letting the list shift.
+    const anchor = olderAnchorRef.current;
+    if (anchor && chatMessages[0]?.id !== anchor.firstId) {
+      olderAnchorRef.current = null;
+      const row = anchor.messageId && el.querySelector(`[data-msg-id="${CSS.escape(anchor.messageId)}"]`);
+      const target = row ? row.querySelector("li") || row : null;
+      if (target) {
+        const offset = target.getBoundingClientRect().top - el.getBoundingClientRect().top;
+        el.scrollTop += offset - anchor.offset;
+      } else {
+        el.scrollTop = el.scrollHeight - anchor.fromBottom;
+      }
+      return;
+    }
+
+    // Only a new message at the END counts as new (edits, reactions and
+    // older pages don't).
+    if (last.id === lastMessageIdRef.current) return;
+    lastMessageIdRef.current = last.id;
+    const mine = last.email === email || last.senderId === userId;
+    if (isAtBottomRef.current || mine) {
+      el.scrollTop = el.scrollHeight;
+      isAtBottomRef.current = true;
       setNewMsgCount(0);
     } else {
       setNewMsgCount((n) => n + 1);
     }
-  }, [chatMessages.length]);
+  }, [chatMessages, room, email, userId]);
 
-  // Initial scroll to bottom when chat loads
+  // Images, videos and file cards grow after they load; the composer, reply
+  // bar and typing line change the visible height. Stay on the last message
+  // through all of it, unless the user has scrolled up to read.
   useEffect(() => {
     const el = scrollContainerRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
+    const content = contentRef.current;
+    if (!el || !content || typeof ResizeObserver === "undefined") return undefined;
+    const observer = new ResizeObserver(() => {
+      if (isAtBottomRef.current) el.scrollTop = el.scrollHeight;
+    });
+    observer.observe(content);
+    observer.observe(el);
+    return () => observer.disconnect();
   }, [room]);
+
+  const handleLoadOlder = () => {
+    const el = scrollContainerRef.current;
+    if (el) {
+      const elTop = el.getBoundingClientRect().top;
+      // The first message row still (at least partly) on screen.
+      const row = [...el.querySelectorAll("[data-msg-id]")].find(
+        (r) => r.getBoundingClientRect().bottom > elTop,
+      );
+      const target = row ? row.querySelector("li") || row : null;
+      olderAnchorRef.current = {
+        fromBottom: el.scrollHeight - el.scrollTop,
+        firstId: chatMessages[0]?.id,
+        messageId: row?.getAttribute("data-msg-id") || null,
+        offset: target ? target.getBoundingClientRect().top - elTop : 0,
+      };
+    }
+    loadOlderMessages();
+  };
 
   const scrollToBottom = () => {
     const el = scrollContainerRef.current;
@@ -964,9 +1078,12 @@ const ChatWindowComponent = ({
       <div className="relative h-[2px] flex-shrink-0 z-10 opacity-70 dark:opacity-100"
            style={{ background: "linear-gradient(90deg, #9E2FD0, #F6B82E, #26D9A1)" }} />
 
-      {/* Messages */}
-      {chatMessages.length === 0 ? (
-        <div className="flex-1 relative z-10 flex items-center justify-center">
+      {/* Messages — the scroll container stays mounted while empty or
+          loading (it used to be swapped for the spinner, so every cold open
+          re-created it at scrollTop 0 and then jumped). */}
+      <div className="flex-1 relative z-10 min-h-0 flex flex-col">
+      {chatMessages.length === 0 && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center">
           {isLoading ? (
             <div className="w-8 h-8 rounded-full border-4 border-[#9E2FD0]/30 border-t-[#9E2FD0] animate-spin" />
           ) : (
@@ -979,18 +1096,22 @@ const ChatWindowComponent = ({
             </div>
           )}
         </div>
-      ) : (
+      )}
       <PerfectScrollbar
         containerRef={(ref) => { scrollContainerRef.current = ref; }}
         onScrollY={handleScroll}
-        className="flex-1 relative z-10 bg-transparent transition-colors duration-300"
+        className="flex-1 relative bg-transparent transition-colors duration-300"
+        // perfect-scrollbar's stylesheet turns the browser's scroll anchoring
+        // off; with it on, images that finish loading ABOVE what you're
+        // reading (e.g. after "load more") no longer push the text away.
+        style={{ overflowAnchor: "auto" }}
         options={{ suppressScrollX: true }}
       >
-        <div className="p-4 sm:p-6">
+        <div ref={contentRef} className="p-4 sm:p-6">
           {hasMore && chatMessages.length > 0 && (
             <div className="flex justify-center mb-4">
               <button
-                onClick={loadOlderMessages}
+                onClick={handleLoadOlder}
                 disabled={loadingMore}
                 className="text-xs font-medium px-3 py-1.5 rounded-full text-[#9E2FD0] dark:text-purple-300
                            bg-[#9E2FD0]/10 dark:bg-[#9E2FD0]/15 hover:bg-[#9E2FD0]/20 transition-colors
@@ -1047,7 +1168,7 @@ const ChatWindowComponent = ({
                   text = t("messagesExtra.systemGroupRenamed", { actor: msg.username, oldName: meta.oldName, newName: meta.newName });
                 }
                 return (
-                  <div key={index}>
+                  <div key={msg.id || index} data-msg-id={msg.id}>
                     {showTimestamp && (
                       <div className="flex items-center gap-3 my-5">
                         <div className="flex-1 h-px bg-[#9E2FD0]/15 dark:bg-white/10" />
@@ -1072,7 +1193,7 @@ const ChatWindowComponent = ({
 
               if (msg.messageType === "missed_call") {
                 return (
-                  <div key={index}>
+                  <div key={msg.id || index} data-msg-id={msg.id}>
                     {showTimestamp && (
                       <div className="flex items-center gap-3 my-5">
                         <div className="flex-1 h-px bg-[#9E2FD0]/15 dark:bg-white/10" />
@@ -1105,7 +1226,7 @@ const ChatWindowComponent = ({
               }
 
               return (
-                <div key={index}>
+                <div key={msg.id || index} data-msg-id={msg.id}>
                   {showTimestamp && (
                     <div className="flex items-center gap-3 my-5">
                       <div className="flex-1 h-px bg-[#9E2FD0]/15 dark:bg-white/10" />
@@ -1298,7 +1419,7 @@ const ChatWindowComponent = ({
           </ul>
         </div>
       </PerfectScrollbar>
-      )}
+      </div>
 
       {/* Scroll-to-bottom button */}
       {showScrollBtn && (

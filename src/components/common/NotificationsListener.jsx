@@ -85,12 +85,20 @@ const NotificationsListener = () => {
   useEffect(() => {
     if (!user?.id) return;
 
-    socket.on("newUnreadGlobalMessage", () => {
-      dispatch(fetchUnreadMessages(user.id));
-    });
-    socket.on("newUnreadSupportMessage", () => {
-      dispatch(fetchUnreadMessages(user.id));
-    });
+    // Named so cleanup removes only this listener — socket.off(event) with no
+    // handler strips every component's listener for that event.
+    const refreshLegacyUnread = () => dispatch(fetchUnreadMessages(user.id));
+    socket.on("newUnreadGlobalMessage", refreshLegacyUnread);
+    socket.on("newUnreadSupportMessage", refreshLegacyUnread);
+
+    // Anything that arrived while the connection was down (laptop asleep,
+    // wifi drop) never reached us as a live event; badges and previews stayed
+    // stale until a reload. Re-seed both counters on every reconnect.
+    const handleReconnect = () => {
+      fetchConversationsSnapshot();
+      refreshLegacyUnread();
+    };
+    socket.on("connect", handleReconnect);
 
     // Server only emits this to members other than the sender, so any event
     // received here is genuinely someone else's message. Increments the
@@ -146,8 +154,9 @@ const NotificationsListener = () => {
     socket.on("mentioned", handleMentioned);
 
     return () => {
-      socket.off("newUnreadGlobalMessage");
-      socket.off("newUnreadSupportMessage");
+      socket.off("newUnreadGlobalMessage", refreshLegacyUnread);
+      socket.off("newUnreadSupportMessage", refreshLegacyUnread);
+      socket.off("connect", handleReconnect);
       socket.off("newConversationMessage", handleNewConversationMessage);
       socket.off("newConversation", fetchConversationsSnapshot);
       socket.off("conversationRead", handleConversationRead);

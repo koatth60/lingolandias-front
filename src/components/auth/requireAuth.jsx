@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
-import { logout } from '../../redux/userSlice';
+import { performLogout } from '../../auth/session';
 import useGlobalSocket from '../../hooks/useGlobalSocket';
 import useAuthExpiry from '../../hooks/useAuthExpiry';
 
@@ -32,7 +32,7 @@ const RequireAuth = ({ children, role }) => {
       navigate('/login', { state: { from: location }, replace: true });
     } else if (isTokenExpired(token)) {
       toast.error('Your session has expired. Please log in again.', { toastId: 'session-expired' });
-      dispatch(logout());
+      performLogout(dispatch, { notifyServer: false });
       navigate('/login', { replace: true });
     } else if (role && userRole !== role) {
       navigate('/home', { replace: true });

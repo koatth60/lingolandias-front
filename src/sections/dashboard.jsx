@@ -15,11 +15,10 @@ import { toast } from "react-toastify";
 import { updateUserStatus } from "../redux/userSlice";
 import logo from "../assets/logos/logo3.png";
 import { useLogout } from "../hooks/customHooks";
-import { logout } from "../redux/userSlice";
+import { performLogout } from "../auth/session";
 import { selectTotalUnread } from "../redux/notificationsSlice";
 import { prefetchRoute } from "../routePrefetch";
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const Dashboard = () => {
   const location = useLocation();
@@ -84,20 +83,9 @@ const Dashboard = () => {
     };
   }, [user?.id, dispatch]);
 
-  const handleLogout = async () => {
-    // Read before logout() clears it: the server identifies who is logging
-    // out from this token (it no longer accepts a userId in the body).
-    const token = localStorage.getItem("token");
-    dispatch(logout());
+  const handleLogout = () => {
+    performLogout(dispatch);
     logoutAndNavigate();
-    try {
-      await fetch(`${BACKEND_URL}/auth/logout`, {
-        method: "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
   };
 
   const navLinks = [

@@ -109,12 +109,18 @@ const CallChatWindow = ({
   // ── Typing listeners on the shared socket ──
   useEffect(() => {
     if (!username || !room) return;
-    const handleTyping = ({ username: who }) => {
+    // Typing events carry their room; ignore the ones from other rooms this
+    // socket is also in.
+    const handleTyping = ({ username: who, room: typingRoom }) => {
+      if (typingRoom && typingRoom !== room) return;
       if (who && who !== username) {
         setTypingUsers((prev) => prev.includes(who) ? prev : [...prev, who]);
       }
     };
-    const handleStopTyping = () => setTypingUsers([]);
+    const handleStopTyping = ({ room: typingRoom } = {}) => {
+      if (typingRoom && typingRoom !== room) return;
+      setTypingUsers([]);
+    };
 
     socket.on("typing", handleTyping);
     socket.on("stopTyping", handleStopTyping);

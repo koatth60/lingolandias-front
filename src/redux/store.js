@@ -1,6 +1,7 @@
 import { configureStore, createListenerMiddleware } from '@reduxjs/toolkit';
 import { toast } from 'react-toastify';
-import userReducer, { updateUserSettings, logout } from '../redux/userSlice';
+import userReducer, { updateUserSettings } from '../redux/userSlice';
+import { installSession, performLogout } from '../auth/session';
 import sidebarReducer from '../redux/sidebarSlice';
 import messageReducer from '../redux/messageSlice'; // Existing messages reducer
 import filePreviewReducer from './filePreviewSlice';
@@ -15,7 +16,7 @@ settingsListener.startListening({
     const status = action.payload?.status;
     if (status === 401 || status === 403) {
       toast.error('Your session has expired. Please log in again.', { toastId: 'session-expired' });
-      listenerApi.dispatch(logout());
+      performLogout(listenerApi.dispatch, { notifyServer: false });
     } else {
       toast.error('Could not save settings. Please try again.', { toastId: 'settings-error' });
     }
@@ -68,6 +69,14 @@ const loadState = () => {
       delete state.user.status;
       delete state.user.error;
       stripPasswords(state.user.userInfo);
+      // localStorage 'token' is where the sliding refresh writes; the copy in
+      // userInfo could be the one from login weeks ago. No token at all
+      // means the session was ended (possibly from another tab).
+      const token = localStorage.getItem('token');
+      if (state.user.userInfo) {
+        if (token) state.user.userInfo.token = token;
+        else state.user.userInfo = null;
+      }
     }
     // 'chat' is a retired slice (see redux/chatSlice.js's deletion) — every
     // existing user's localStorage still has it from before, and handing a
@@ -103,6 +112,10 @@ const store = configureStore({
 
 store.subscribe(() => {
   const { status, error, ...userRest } = store.getState().user;
+  // A tab still holding a user after the token was removed elsewhere must
+  // not write that user back — that is how a logout in one tab used to be
+  // undone by the next dispatch in another.
+  if (userRest.userInfo && !localStorage.getItem('token')) return;
   debouncedSaveState({
     user: userRest,
     sidebar: store.getState().sidebar,
@@ -119,5 +132,7 @@ export const flushStateNow = () => {
     messages: store.getState().messages,
   });
 };
+
+installSession(store);
 
 export default store;

@@ -81,6 +81,8 @@ describe("redux/store.js — rehydrating a real (pre-existing) user", () => {
         chat: { unreadCountsByRoom: { room1: 5 } },
       })
     );
+    // A logged-in user always has a token next to their persisted state.
+    localStorage.setItem("token", "tok");
 
     const store = await freshStore();
     const state = store.getState();
@@ -126,5 +128,28 @@ describe("redux/store.js — rehydrating a real (pre-existing) user", () => {
 
     const saved = JSON.parse(localStorage.getItem(STATE_KEY));
     expect("chat" in saved).toBe(false);
+  });
+});
+
+describe("redux/store.js — session consistency (2026-09-27)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("uses the refreshed token from localStorage, not the stale login copy", async () => {
+    localStorage.setItem(STATE_KEY, JSON.stringify({ user: { userInfo: { token: "login-token", user: { id: "u1" } } } }));
+    localStorage.setItem("token", "refreshed-token");
+
+    const store = await freshStore();
+
+    expect(store.getState().user.userInfo.token).toBe("refreshed-token");
+  });
+
+  it("treats persisted state without a token as logged out", async () => {
+    localStorage.setItem(STATE_KEY, JSON.stringify({ user: { userInfo: { token: "t", user: { id: "u1" } } } }));
+
+    const store = await freshStore();
+
+    expect(store.getState().user.userInfo).toBeNull();
   });
 });

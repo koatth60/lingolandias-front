@@ -117,13 +117,28 @@ const SupportChatWindow = () => {
         prev.map((m) => (m.id === data.messageId ? { ...m, reactions: data.reactions } : m))
       );
     };
-    const handleTyping = ({ username: who }) => {
+    // Typing events carry their room; ignore the ones from other rooms this
+    // socket is also in.
+    const handleTyping = ({ username: who, room: typingRoom }) => {
+      if (typingRoom && typingRoom !== SUPPORT_ROOM) return;
       if (who && who !== user?.name) {
         setTypingUsers((prev) => (prev.includes(who) ? prev : [...prev, who]));
       }
     };
-    const handleStopTyping = () => setTypingUsers([]);
+    const handleStopTyping = ({ room: typingRoom } = {}) => {
+      if (typingRoom && typingRoom !== SUPPORT_ROOM) return;
+      setTypingUsers([]);
+    };
 
+    // After a dropped connection the server no longer has this socket in the
+    // support room, so live messages silently stopped until a reload. Re-join
+    // and refetch whatever arrived in between.
+    const handleReconnect = () => {
+      socket.emit("join", { username: user.name, room: SUPPORT_ROOM });
+      fetchMessages();
+    };
+
+    socket.on("connect", handleReconnect);
     socket.on("supportChat", handleSupportChat);
     socket.on("supportChatDeleted", handleSupportChatDeleted);
     socket.on("globalChatEdited", handleSupportChatEdited);
@@ -132,6 +147,8 @@ const SupportChatWindow = () => {
     socket.on("stopTyping", handleStopTyping);
 
     return () => {
+      socket.emit("leave", { room: SUPPORT_ROOM });
+      socket.off("connect", handleReconnect);
       socket.off("supportChat", handleSupportChat);
       socket.off("supportChatDeleted", handleSupportChatDeleted);
       socket.off("globalChatEdited", handleSupportChatEdited);

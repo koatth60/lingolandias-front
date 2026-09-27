@@ -2,7 +2,8 @@ import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { logout } from "../redux/userSlice";
+import { setToken } from "../redux/userSlice";
+import { performLogout } from "../auth/session";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 // How often an open tab re-extends its own session, on top of the refresh
@@ -32,13 +33,8 @@ const useAuthExpiry = (userId) => {
     let expiryTimer;
     let cancelled = false;
 
-    async function handleExpiry() {
-      try {
-        // The token still in storage identifies the user (the axios
-        // interceptor attaches it); the server ignores any body userId now.
-        await axios.post(`${BACKEND_URL}/auth/logout`);
-      } catch {}
-      dispatch(logout());
+    function handleExpiry() {
+      performLogout(dispatch);
       navigate("/");
     }
 
@@ -85,6 +81,9 @@ const useAuthExpiry = (userId) => {
         );
         if (cancelled) return;
         localStorage.setItem("token", data.token);
+        // RequireAuth checks the Redux copy — without this the renewal never
+        // reached it and the session still ended 30 days after login.
+        dispatch(setToken(data.token));
         scheduleExpiry(data.token);
       } catch {}
     }

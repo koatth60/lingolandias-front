@@ -34,8 +34,10 @@ const ScheduleActionsBar = ({ user, handleJoinMeeting, loading }) => {
           {!loading &&
             (user.role === "teacher" || user.role === "admin") &&
             Object.entries(meetingRooms).map(([lang, roomName]) => {
+              // A teacher with no language set (accounts can exist without
+              // one) used to crash this whole page — .includes() on null.
               const shouldRender =
-                user.role === "admin" || (user.role === "teacher" && user.language.includes(lang));
+                user.role === "admin" || (user.role === "teacher" && user.language?.includes(lang));
               if (!shouldRender) return null;
               return (
                 <button

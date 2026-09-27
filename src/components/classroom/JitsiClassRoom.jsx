@@ -357,6 +357,14 @@ const JitsiClassRoom = () => {
 
   const handleCallEnd = () => {
     logEvent("conference_left");
+    // Hanging up while still the only one here (nobody answered yet) used to
+    // leave the other side's IncomingCallBanner ringing until its own
+    // CALL_RING_TIMEOUT_MS client-side timeout — this tells it to stop right
+    // away. Only the caller (callStartedNotifiedRef) ever rang anyone, so
+    // only they need to cancel it.
+    if (callStartedNotifiedRef.current && (apiRef.current?.getParticipantsInfo().length ?? 0) <= 1) {
+      socket.emit("callCanceled", { conversationId: chatRoomId || roomId, otherUserId });
+    }
     endSession();
     clearTimeout(missedCallTimeoutRef.current);
     if (isRecordingRef.current) stopRecording();

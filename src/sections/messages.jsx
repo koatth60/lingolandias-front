@@ -16,6 +16,7 @@ import Navbar from "../components/layout/navbar";
 import { FiMessageSquare } from "react-icons/fi";
 import { activeRoomRef } from "../state/activeRoom";
 import { conversationListCache } from "../state/conversationListCache";
+import { applyIncomingMessage } from "../state/conversationListPatch";
 import useMediaQuery from "../hooks/useMediaQuery";
 import {
   setConversationsSnapshot,
@@ -161,27 +162,64 @@ const Messages = () => {
   useEffect(() => { fetchConversations(); }, [fetchConversations]);
 
   useEffect(() => {
-    const refresh = () => fetchConversations();
-    socket.on("newConversationMessage", refresh);
-    socket.on("newConversation", refresh);
+    const handleNewMessage = (data) => {
+      if (!data?.conversationId) return;
+      let missing = false;
+      setConversations((prev) => {
+        const next = applyIncomingMessage(prev, {
+          conversationId: data.conversationId,
+          content: data.preview,
+          senderId: null,
+          senderName: data.sender,
+          timestamp: new Date().toISOString(),
+          isOwn: false,
+          activeRoomId: activeRoomRef.current,
+        });
+        if (next) return next;
+        missing = true;
+        return prev;
+      });
+      // Not in the loaded page (e.g. a chat further back than the current
+      // page, or one that predates this session) — only then fall back to a
+      // real fetch, same as before this optimization.
+      if (missing) fetchConversations();
+    };
+    const refreshOnNewConversation = () => fetchConversations();
+    socket.on("newConversationMessage", handleNewMessage);
+    socket.on("newConversation", refreshOnNewConversation);
     return () => {
-      socket.off("newConversationMessage", refresh);
-      socket.off("newConversation", refresh);
+      socket.off("newConversationMessage", handleNewMessage);
+      socket.off("newConversation", refreshOnNewConversation);
     };
   }, [fetchConversations]);
 
   // 'newConversationMessage' above deliberately excludes the sender (it also
   // drives the unread badge/sound, which shouldn't fire for your own
-  // message) — so sending a message never refreshed your OWN sidebar
-  // preview/order, leaving it stuck on whatever was last there until
-  // something else happened to trigger a refetch. 'conversationMessage' is
-  // the room-scoped event that delivers the message into the open window
-  // instead, which the sender is always in — filtering it to your own
-  // messages gives the sidebar the same live update without duplicating the
-  // refresh recipients already get from 'newConversationMessage'.
+  // message) — so sending a message never updated your OWN sidebar
+  // preview/order. 'conversationMessage' is the room-scoped event that
+  // delivers the message into the open window instead, which the sender is
+  // always in — filtering it to your own messages gives the sidebar the same
+  // live update without duplicating the recipients 'newConversationMessage'
+  // already covers.
   useEffect(() => {
     const handleOwnMessage = (msg) => {
-      if (msg?.senderId === user?.id) fetchConversations();
+      if (msg?.senderId !== user?.id || !msg?.conversationId) return;
+      let missing = false;
+      setConversations((prev) => {
+        const next = applyIncomingMessage(prev, {
+          conversationId: msg.conversationId,
+          content: msg.fileUrl ? '📎 File' : msg.message,
+          senderId: msg.senderId,
+          senderName: msg.username,
+          timestamp: msg.timestamp || new Date().toISOString(),
+          isOwn: true,
+          activeRoomId: activeRoomRef.current,
+        });
+        if (next) return next;
+        missing = true;
+        return prev;
+      });
+      if (missing) fetchConversations();
     };
     socket.on("conversationMessage", handleOwnMessage);
     return () => socket.off("conversationMessage", handleOwnMessage);

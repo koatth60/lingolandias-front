@@ -44,6 +44,23 @@ const IncomingCallBanner = () => {
     return () => socket.off("callStarted", handleCallStarted);
   }, [user, start, stop]);
 
+  // The caller hung up before this side answered — stop ringing right away
+  // instead of sitting through the rest of CALL_RING_TIMEOUT_MS for a call
+  // that's already gone.
+  useEffect(() => {
+    if (!user || user.role === "admin") return;
+    const handleCallCanceled = (data) => {
+      setIncomingCall((current) => {
+        if (!current || current.conversationId !== data?.conversationId) return current;
+        clearTimeout(timeoutRef.current);
+        stop();
+        return null;
+      });
+    };
+    socket.on("callCanceled", handleCallCanceled);
+    return () => socket.off("callCanceled", handleCallCanceled);
+  }, [user, stop]);
+
   const dismiss = () => {
     clearTimeout(timeoutRef.current);
     stop();

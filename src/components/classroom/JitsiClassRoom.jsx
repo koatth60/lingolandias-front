@@ -36,13 +36,10 @@ const IS_MOBILE    = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
 // Known-harmless internal Jitsi log lines that fire on every call regardless of outcome —
 // excluded so they don't drown out real problems in the meeting-logs admin view.
 // - "conference.destroyed": normal teardown message on every hangup, not a dropped call
-// - "get STUN/TURN credentials" / "getting turn credentials failed": XMPP service-discovery
-//   for TURN servers isn't configured on our XMPP server, but we already hardcode TURN_SERVERS
-//   below, so ICE negotiation doesn't depend on this succeeding
+// TURN credential failures ("getting turn credentials ... failed") are NOT benign: Prosody
+// hands out the only valid (short-lived) TURN credentials, for both P2P and the bridge.
 const BENIGN_LOG_PATTERNS = [
   "conference.destroyed",
-  "getting turn credentials failed",
-  "get STUN/TURN credentials",
 ];
 
 // Jitsi doesn't always fire the dedicated cameraError/micError events when the
@@ -462,32 +459,11 @@ const JitsiClassRoom = () => {
     }
   };
 
-  const TURN_SERVERS = [
-    // Port 443 TURNS — works through firewalls that block 3478/5349/10000
-    {
-      urls: "turns:turns.lingolandias.com:443",
-      username: "sincelejana",
-      credential: "asdkASDIORNVM345Fasdegf23",
-    },
-    { urls: `stun:${JITSI_DOMAIN}:3478` },
-    {
-      urls: `turn:${JITSI_DOMAIN}:3478`,
-      username: "sincelejana",
-      credential: "asdkASDIORNVM345Fasdegf23",
-    },
-    {
-      urls: `turn:${JITSI_DOMAIN}:3478?transport=tcp`,
-      username: "sincelejana",
-      credential: "asdkASDIORNVM345Fasdegf23",
-    },
-    // The coturn certificate is issued for turns.lingolandias.com only, so TLS to
-    // the jitsi hostname fails the name check.
-    {
-      urls: "turns:turns.lingolandias.com:5349",
-      username: "sincelejana",
-      credential: "asdkASDIORNVM345Fasdegf23",
-    },
-  ];
+  // STUN only. TURN credentials are short-lived and come from Prosody (XMPP extdisco,
+  // shared secret with coturn): turn:3478 udp/tcp and turns:443 on turns.lingolandias.com.
+  // lib-jitsi-meet replaces the P2P list with them and uses them for the bridge too.
+  // coturn rejects the old static user, so never put credentials back in the bundle.
+  const TURN_SERVERS = [{ urls: `stun:${JITSI_DOMAIN}:3478` }];
 
   // Only force both muted when our own preflight found BOTH audio and video
   // completely unavailable — that's the crash-prevention case this was built

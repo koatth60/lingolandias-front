@@ -231,12 +231,12 @@ const UserHomePage = () => {
                     {otherUserId && (
                       <button
                         onClick={() => navigate("/messages", { state: { openDmWithUserId: otherUserId, openDmWithName: otherUserName, openDmWithRole: user.role === "teacher" ? "user" : "teacher" } })}
-                        className="ll-btn ll-btn-sm bg-white/10 border border-white/25 text-white hover:bg-white/20"
+                        className={`ll-btn ll-btn-sm text-white ${halloween ? "bg-black/35 border border-ll-violet/70 !text-[#FFE9C7] hover:bg-ll-violet/20 hover:border-ll-violet" : "bg-white/10 border border-white/25 hover:bg-white/20"}`}
                       >
                         <FiMessageSquare size={13} /> {t("upcomingClass.message")}
                       </button>
                     )}
-                    <button onClick={() => handleJoinClass({ user, classSession: firstClass, navigate })} className="ll-btn ll-btn-sm bg-white text-[#2A1152] hover:bg-white/90">
+                    <button onClick={() => handleJoinClass({ user, classSession: firstClass, navigate })} className={`ll-btn ll-btn-sm ${halloween ? "bg-ll-violet text-ll-on-violet hover:bg-ll-violet-hover" : "bg-white text-[#2A1152] hover:bg-white/90"}`}>
                       <FiCalendar size={13} /> {t("upcomingClass.join")}
                     </button>
                   </div>

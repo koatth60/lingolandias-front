@@ -423,3 +423,9 @@ html.theme-hw .ll-nav-name { font-size: 18px; line-height: 1; color: #FFE9C7; }
 
 /* Auth pages: the footer is the graveyard's ground, same colour as the silhouettes, and sits above them. */
 html.theme-hw .ll-login-footer { background: #0A0612; border-top-color: transparent; }
+
+/* Chat conversation body: a quiet panel→subtle wash (the mock's .cv-b).
+   Halloween keeps it transparent so HalloweenChatScene shows through. */
+.ll-chat-body { background: linear-gradient(rgb(var(--ll-panel)), rgb(var(--ll-subtle))); }
+.ll-chat-foot { background: rgb(var(--ll-subtle)); }
+html.theme-hw .ll-chat-body, html.theme-hw .ll-chat-foot { background: transparent; }

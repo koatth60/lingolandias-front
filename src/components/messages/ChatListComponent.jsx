@@ -1,67 +1,25 @@
 import { useState, useMemo, memo, useEffect } from "react";
 import PropTypes from "prop-types";
-import { FaComments, FaUsers, FaUserFriends } from "react-icons/fa";
+import { FaComments } from "react-icons/fa";
 import { FiSearch, FiPlus, FiUserPlus, FiMoreVertical, FiBellOff, FiBell, FiTrash2, FiAlertTriangle } from "react-icons/fi";
 import { BsPinAngleFill, BsPinAngle } from "react-icons/bs";
 import { useTranslation } from "react-i18next";
 import useUserSearch from "../../hooks/useUserSearch";
 
-// wrap is now a real gradient + shadow color per type — the old flat pastel
-// fill made group/teacher/general avatars feel like placeholders next to
-// the DM avatars, which already got a proper gradient treatment below.
+// Tinted avatar + chip per chat type. Groups get a square avatar, people a
+// round one (see the list item below), so the two read apart without labels.
 const TYPE_META = {
-  teacher: {
-    wrap: "text-white",
-    gradient: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))",
-    shadow: "0 2px 8px rgb(var(--ll-violet) / 0.35)",
-    dot:  "bg-ll-violet",
-    chipKey: "messagesExtra.chipTeacher",
-    chipStyle: "bg-ll-violet/10 text-ll-violet dark:bg-ll-violet/20",
-  },
-  group: {
-    wrap: "text-white",
-    gradient: "linear-gradient(135deg, #E8A23A, #C4860A)",
-    shadow: "0 2px 8px rgba(232,162,58,0.35)",
-    dot:  "bg-[#E8A23A]",
-    chipKey: "messagesExtra.chipGroup",
-    chipStyle: "bg-[#E8A23A]/10 text-[#C4860A] dark:bg-[#E8A23A]/15 dark:text-[#E8A23A]",
-  },
-  general: {
-    wrap: "text-white",
-    gradient: "linear-gradient(135deg, #1FA48C, #17886F)",
-    shadow: "0 2px 8px rgba(31,164,140,0.35)",
-    dot:  "bg-[#1FA48C]",
-    chipKey: "messagesExtra.chipGeneral",
-    chipStyle: "bg-[#1FA48C]/10 text-[#1aad82] dark:bg-[#1FA48C]/15 dark:text-[#1FA48C]",
-  },
-  support: {
-    wrap: "text-white",
-    gradient: "linear-gradient(135deg, #1FA48C, #17886F)",
-    shadow: "0 2px 8px rgba(31,164,140,0.35)",
-    dot:  "bg-[#1FA48C]",
-    chipKey: "messagesExtra.chipGeneral",
-    chipStyle: "bg-[#1FA48C]/10 text-[#1aad82] dark:bg-[#1FA48C]/15 dark:text-[#1FA48C]",
-  },
-  dm: {
-    wrap: "text-white",
-    gradient: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))",
-    shadow: "0 2px 8px rgb(var(--ll-violet) / 0.35)",
-    dot:  "bg-ll-violet",
-    chipKey: "messagesExtra.chipDm",
-    chipStyle: "bg-ll-violet/10 text-ll-violet dark:bg-ll-violet/20",
-  },
+  teacher: { tile: "bg-ll-violet-tint text-ll-violet-ink", chipKey: "messagesExtra.chipTeacher" },
+  group:   { tile: "bg-ll-gold-tint text-ll-gold-ink",     chipKey: "messagesExtra.chipGroup" },
+  general: { tile: "bg-ll-teal-tint text-ll-teal-ink",     chipKey: "messagesExtra.chipGeneral" },
+  support: { tile: "bg-ll-teal-tint text-ll-teal-ink",     chipKey: "messagesExtra.chipGeneral" },
+  dm:      { tile: "bg-ll-hover text-ll-ink2",             chipKey: "messagesExtra.chipDm" },
 };
 
 const getInitials = (name) => {
   if (!name) return "?";
   const p = name.trim().split(" ");
   return ((p[0]?.[0] ?? "") + (p.length > 1 ? p[p.length - 1][0] : "")).toUpperCase();
-};
-
-const ChatIcon = ({ type }) => {
-  if (type === "teacher") return <FaUsers size={18} />;
-  if (type === "group")   return <FaUserFriends size={18} />;
-  return <FaComments size={18} />;
 };
 
 const formatTime = (ts, t) => {
@@ -128,22 +86,22 @@ const ChatListComponent = ({
   const showPeopleResults = search.trim().length >= 2;
 
   return (
-    <div className="h-full flex flex-col bg-gradient-to-b from-white to-[#f8f7fb] dark:from-[#16131f] dark:to-[#16131f] border-r border-gray-100 dark:border-white/5">
+    <div className="h-full flex flex-col bg-ll-panel">
 
       {/* ── Header ── */}
-      <div className="px-4 pt-5 pb-4 flex-shrink-0 border-b border-gray-100 dark:border-white/5">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="w-1 h-5 rounded-full bg-ll-violet" />
-          <h2 className="text-sm font-semibold tracking-tight text-gray-700 dark:text-white">
+      <div className="px-4 pt-4 pb-3 flex-shrink-0 flex flex-col gap-3 border-b border-ll-line">
+        <div className="flex items-center gap-2">
+          <h2 className="text-[17px] font-semibold tracking-[-0.01em] text-ll-ink">
             {t("messagesExtra.chatsHeader")}
           </h2>
-          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-ll-violet/10 dark:bg-ll-violet/20 text-ll-violet">
+          <span className="font-mono text-[11.5px] px-1.5 py-px rounded-[5px] bg-ll-hover text-ll-ink3">
             {chats.length}
           </span>
           <button
             onClick={onNewGroup}
             title={t("messagesExtra.newGroupTitle")}
-            className="ml-auto p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-[#E8A23A] hover:bg-[#E8A23A]/10 transition-colors"
+            className="ml-auto w-[30px] h-[30px] grid place-items-center rounded-[7px] border border-ll-line text-ll-ink2
+                       hover:bg-ll-hover hover:text-ll-ink transition-colors"
           >
             <FiPlus size={16} />
           </button>
@@ -152,72 +110,69 @@ const ChatListComponent = ({
         {/* Search — filters chats AND finds new people to message */}
         <div className="relative">
           <FiSearch
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-600"
-            size={13}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-ll-ink3 pointer-events-none"
+            size={15}
           />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t("messagesExtra.searchPeoplePlaceholder")}
-            className="w-full text-xs py-2 pl-8 pr-3 rounded-xl
-                       bg-gray-50 dark:bg-[#1e1b35]
-                       border border-gray-200 dark:border-white/5
-                       text-gray-700 dark:text-gray-300
-                       placeholder-gray-400 dark:placeholder-gray-600
-                       outline-none focus:border-ll-violet/50 transition-colors"
+            className="w-full h-[34px] text-[13px] pl-9 pr-3 rounded-[9px]
+                       bg-ll-panel border border-ll-line2 text-ll-ink placeholder:text-ll-ink3
+                       outline-none focus:border-ll-violet/60 transition-colors"
           />
         </div>
       </div>
 
       {/* ── People search results ── */}
       {showPeopleResults && (
-        <div className="flex-shrink-0 border-b border-gray-100 dark:border-white/5 max-h-48 overflow-y-auto custom-scrollbar">
+        <div className="flex-shrink-0 border-b border-ll-line max-h-48 overflow-y-auto custom-scrollbar">
           {peopleLoading && (
-            <p className="text-[11px] text-gray-400 text-center py-3">{t("messagesExtra.searching")}</p>
+            <p className="text-[12px] text-ll-ink3 text-center py-3">{t("messagesExtra.searching")}</p>
           )}
           {!peopleLoading && peopleResults.length === 0 && (
-            <p className="text-[11px] text-gray-400 text-center py-3">{t("messagesExtra.noResults")}</p>
+            <p className="text-[12px] text-ll-ink3 text-center py-3">{t("messagesExtra.noResults")}</p>
           )}
           {peopleResults.map((person) => (
             <div
               key={person.id}
               onClick={() => onStartChatWithUser(person)}
-              className="flex items-center gap-2.5 px-4 py-2.5 cursor-pointer hover:bg-ll-violet-tint dark:hover:bg-white/[0.04] transition-colors"
+              className="flex items-center gap-2.5 px-4 py-2 cursor-pointer hover:bg-ll-hover transition-colors"
             >
               {person.avatarUrl ? (
                 <img src={person.avatarUrl} alt={person.name} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
               ) : (
-                <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}>
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-semibold flex-shrink-0 bg-ll-hover text-ll-ink2">
                   {getInitials(`${person.name} ${person.lastName}`)}
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-gray-800 dark:text-gray-100 truncate">{person.name} {person.lastName}</p>
-                <p className="text-[10px] text-gray-400 truncate">{person.email}</p>
+                <p className="text-[13px] font-medium text-ll-ink truncate">{person.name} {person.lastName}</p>
+                <p className="text-[11.5px] text-ll-ink3 truncate">{person.email}</p>
               </div>
-              <FiUserPlus size={13} className="text-gray-400 flex-shrink-0" />
+              <FiUserPlus size={14} className="text-ll-ink3 flex-shrink-0" />
             </div>
           ))}
         </div>
       )}
 
       {/* ── List ── */}
-      <ul className="flex-1 overflow-y-auto custom-scrollbar py-2 px-2 space-y-0.5">
+      <ul className="flex-1 overflow-y-auto custom-scrollbar py-1.5 px-1.5">
         {isLoading && (
           Array.from({ length: 6 }).map((_, i) => (
-            <li key={i} className="flex items-center gap-3 px-3 py-3 animate-pulse">
-              <div className="w-10 h-10 rounded-2xl bg-gray-200 dark:bg-white/10 flex-shrink-0" />
+            <li key={i} className="flex items-center gap-3 px-3 py-2 animate-pulse">
+              <div className="w-9 h-9 rounded-full bg-ll-hover flex-shrink-0" />
               <div className="flex-1 min-w-0 space-y-1.5">
-                <div className="h-3 w-2/3 rounded bg-gray-200 dark:bg-white/10" />
-                <div className="h-2.5 w-1/2 rounded bg-gray-100 dark:bg-white/5" />
+                <div className="h-3 w-2/3 rounded bg-ll-hover" />
+                <div className="h-2.5 w-1/2 rounded bg-ll-subtle" />
               </div>
             </li>
           ))
         )}
 
         {!isLoading && filtered.length === 0 && !showPeopleResults && (
-          <li className="flex flex-col items-center gap-2 py-12 text-gray-400 dark:text-gray-600">
+          <li className="flex flex-col items-center gap-2 py-12 text-ll-ink3">
             <FaComments size={28} className="opacity-30" />
             <span className="text-xs">{t("messages.noConversations")}</span>
           </li>
@@ -228,75 +183,61 @@ const ChatListComponent = ({
           const unread = chat.unreadCount || 0;
           const isActive = chat.id === selectedChatId;
           const lastMsg = chat.lastMessage;
-          const isOnline = chat.type === "dm" ? chat.otherUser?.online === "online" : true;
+          const isOnline = chat.type === "dm" && chat.otherUser?.online === "online";
           const isManageable = chat.type === "dm" || chat.type === "group";
 
           return (
             <li
               key={chat.id || "draft"}
               onClick={() => { onChatSelect(chat); setOpenMenuId(null); }}
-              className={`group relative flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer
-                         transition-all duration-150 active:scale-[0.99]
+              className={`group relative flex items-center gap-[11px] px-3 py-2 rounded-[9px] cursor-pointer transition-colors
                          ${openMenuId === chat.id ? "z-40" : ""}
-                         ${isActive
-                           ? "bg-ll-violet/10 dark:bg-ll-violet/15 border border-ll-violet/25 dark:border-ll-violet/30"
-                           : "hover:bg-ll-violet-tint dark:hover:bg-white/[0.04] border border-transparent"
-                         }`}
-              style={isActive ? { boxShadow: "0 2px 10px rgb(var(--ll-violet) / 0.10)" } : undefined}
+                         ${isActive ? "bg-ll-violet-tint" : "hover:bg-ll-hover"}`}
             >
-              {/* Icon avatar */}
+              {/* Avatar — round for a person, square for a group */}
               <div className="relative flex-shrink-0">
                 {(chat.type === "dm" || chat.type === "group") && chat.avatarUrl ? (
-                  <img src={chat.avatarUrl} alt={chat.name} className="w-10 h-10 rounded-2xl object-cover" />
-                ) : chat.type === "dm" ? (
-                  <div
-                    className="w-10 h-10 rounded-2xl flex items-center justify-center text-white text-sm font-bold"
-                    style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}
-                  >
+                  <img src={chat.avatarUrl} alt={chat.name}
+                    className={`w-9 h-9 object-cover ${chat.type === "dm" ? "rounded-full" : "rounded-[10px]"}`} />
+                ) : (
+                  <div className={`w-9 h-9 flex items-center justify-center text-[11.5px] font-semibold
+                                  ${chat.type === "dm" ? "rounded-full" : "rounded-[10px]"}
+                                  ${isActive && chat.type === "dm" ? "bg-ll-panel text-ll-ink2" : meta.tile}`}>
                     {getInitials(chat.name)}
                   </div>
-                ) : (
-                  <div
-                    className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-transform duration-150 group-hover:scale-105 ${meta.wrap}`}
-                    style={{ background: meta.gradient, boxShadow: meta.shadow }}
-                  >
-                    <ChatIcon type={chat.type} />
-                  </div>
                 )}
-                {/* Online dot */}
-                <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-[#16131f] ${isOnline ? meta.dot : "bg-gray-300 dark:bg-gray-600"}`} />
+                {chat.type === "dm" && isOnline && (
+                  <span className={`absolute -right-px -bottom-px w-2.5 h-2.5 rounded-full bg-ll-teal ring-2
+                                   ${isActive ? "ring-[rgb(var(--ll-violet-tint))]" : "ring-[rgb(var(--ll-panel))]"}`} />
+                )}
               </div>
 
               {/* Text */}
               <div className="flex-1 min-w-0">
                 {/* Row 1: name + timestamp */}
-                <div className="flex items-center justify-between gap-1">
-                  <p className={`flex items-center gap-1 text-sm tracking-tight leading-tight truncate ${
-                      isActive
-                        ? "font-semibold text-ll-violet dark:text-ll-violet-ink"
-                        : unread > 0
-                          ? "font-bold text-gray-900 dark:text-white"
-                          : "font-medium text-gray-500 dark:text-gray-400"
+                <div className="flex items-baseline justify-between gap-2">
+                  <p className={`flex items-center gap-1 text-[13.5px] leading-tight truncate text-ll-ink ${
+                      unread > 0 || isActive ? "font-semibold" : "font-medium"
                     }`}>
-                    {chat.pinned && <BsPinAngleFill size={10} className="text-[#E8A23A] flex-shrink-0" />}
-                    {chat.muted && <FiBellOff size={10} className="text-gray-400 flex-shrink-0" />}
+                    {chat.pinned && <BsPinAngleFill size={10} className="text-ll-gold flex-shrink-0" />}
+                    {chat.muted && <FiBellOff size={10} className="text-ll-ink3 flex-shrink-0" />}
                     <span className="truncate">{chat.name}</span>
                   </p>
                   <div className="flex items-center gap-1 flex-shrink-0">
                     {lastMsg?.timestamp && (
-                      <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                      <span className="font-mono text-[10.5px] text-ll-ink3">
                         {formatTime(lastMsg.timestamp, t)}
                       </span>
                     )}
                     {unread > 0 && (
-                      <span className="min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-ll-violet text-white text-[9px] font-bold px-1">
+                      <span className="min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-ll-violet text-ll-on-violet text-[10px] font-semibold px-1">
                         {unread > 99 ? "99+" : unread}
                       </span>
                     )}
                     {!chat.isDraft && (
                       <button
                         onClick={(e) => { e.stopPropagation(); setOpenMenuId((id) => (id === chat.id ? null : chat.id)); }}
-                        className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                        className="p-0.5 rounded-md text-ll-ink4 hover:text-ll-ink hover:bg-ll-panel transition-colors"
                       >
                         <FiMoreVertical size={13} />
                       </button>
@@ -306,9 +247,9 @@ const ChatListComponent = ({
 
                 {/* Row 2: last message preview OR chip + status */}
                 {lastMsg?.content ? (
-                  <p className="text-[11px] text-gray-400 dark:text-gray-500 truncate mt-0.5">
+                  <p className="text-[12.5px] text-ll-ink3 truncate mt-px">
                     {chat.type !== "dm" && lastMsg.username ? (
-                      <span className="font-medium text-gray-600 dark:text-gray-300">{lastMsg.username}: </span>
+                      <span className="text-ll-ink2">{lastMsg.username}: </span>
                     ) : null}
                     {/* Plain-text preview, so @[Name](id) mention markup is
                         stripped down to "@Name" instead of showing raw text. */}
@@ -316,7 +257,7 @@ const ChatListComponent = ({
                   </p>
                 ) : (
                   <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className={`inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-md ${meta.chipStyle}`}>
+                    <span className={`inline-block text-[11px] font-medium px-1.5 py-px rounded-full ${meta.tile}`}>
                       {t(meta.chipKey)}
                     </span>
                   </div>
@@ -330,17 +271,17 @@ const ChatListComponent = ({
               {!chat.isDraft && openMenuId === chat.id && (
                 <div
                   onClick={(e) => e.stopPropagation()}
-                  className="absolute right-2 top-12 z-30 w-40 rounded-xl shadow-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1e1b35] overflow-hidden"
+                  className="absolute right-2 top-11 z-30 w-44 p-1 rounded-lg shadow-ll-pop border border-ll-line bg-ll-panel"
                 >
                   <button
                     onClick={() => { onTogglePin?.(chat); setOpenMenuId(null); }}
-                    className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5"
+                    className="w-full flex items-center gap-2 px-2.5 py-2 rounded-md text-[13px] text-ll-ink hover:bg-ll-hover"
                   >
                     {chat.pinned ? <BsPinAngleFill size={13} /> : <BsPinAngle size={13} />} {chat.pinned ? t("messagesExtra.unpin") : t("messagesExtra.pin")}
                   </button>
                   <button
                     onClick={() => { onToggleMute?.(chat); setOpenMenuId(null); }}
-                    className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 border-t border-gray-100 dark:border-white/5"
+                    className="w-full flex items-center gap-2 px-2.5 py-2 rounded-md text-[13px] text-ll-ink hover:bg-ll-hover"
                   >
                     {chat.muted ? <FiBell size={13} /> : <FiBellOff size={13} />}
                     {chat.muted ? t("messagesExtra.unmute") : t("messagesExtra.mute")}
@@ -348,7 +289,7 @@ const ChatListComponent = ({
                   {isManageable && (
                     <button
                       onClick={() => { onDeleteChat?.(chat); setOpenMenuId(null); }}
-                      className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 border-t border-gray-100 dark:border-white/5"
+                      className="w-full flex items-center gap-2 px-2.5 py-2 rounded-md text-[13px] text-red-500 hover:bg-red-500/10"
                     >
                       <FiTrash2 size={13} /> {t("messagesExtra.deleteChat")}
                     </button>
@@ -356,7 +297,7 @@ const ChatListComponent = ({
                   {chat.type === "group" && (!chat.linkedToSchedule || currentUserRole === "teacher") && (
                     <button
                       onClick={() => { onDeleteGroup?.(chat); setOpenMenuId(null); }}
-                      className="w-full flex items-center gap-2 px-3 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 border-t border-gray-100 dark:border-white/5"
+                      className="w-full flex items-center gap-2 px-2.5 py-2 rounded-md text-[13px] font-medium text-red-600 dark:text-red-400 hover:bg-red-500/10"
                     >
                       <FiAlertTriangle size={13} /> {t("messagesExtra.deleteGroup")}
                     </button>
@@ -369,13 +310,12 @@ const ChatListComponent = ({
       </ul>
 
       {hasMoreChats && !showPeopleResults && (
-        <div className="flex-shrink-0 px-3 py-2 border-t border-gray-100 dark:border-white/5">
+        <div className="flex-shrink-0 px-3 py-2 border-t border-ll-line">
           <button
             onClick={onLoadMoreChats}
             disabled={loadingMoreChats}
-            className="w-full text-xs font-medium py-2 rounded-xl text-ll-violet dark:text-ll-violet-ink
-                       bg-ll-violet/10 dark:bg-ll-violet/15 hover:bg-ll-violet/20 transition-colors
-                       disabled:opacity-50"
+            className="w-full h-8 text-[12.5px] font-medium rounded-[7px] text-ll-ink2 border border-ll-line2
+                       hover:bg-ll-hover hover:text-ll-ink transition-colors disabled:opacity-50"
           >
             {loadingMoreChats ? t("messagesExtra.searching") : t("messagesExtra.loadMoreChats")}
           </button>

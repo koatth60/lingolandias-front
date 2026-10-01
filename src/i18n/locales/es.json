@@ -735,6 +735,7 @@
     "recordVoiceNote": "Grabar nota de voz",
     "stopRecording": "Detener y revisar",
     "recording": "Grabando…",
+    "enterHint": "Enter para enviar, Shift + Enter para nueva línea",
     "micPermissionDenied": "Se denegó el acceso al micrófono. Permítelo en la configuración de tu navegador para grabar una nota de voz.",
     "micUnavailable": "No se pudo acceder al micrófono.",
     "activeNow": "Activo ahora",

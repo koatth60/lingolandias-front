@@ -2,9 +2,8 @@ import HalloweenChatScene from "../common/HalloweenChatScene";
 // ChatWindowComponent.jsx
 import { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import send from "../../assets/logos/send.png";
-import { BsEmojiSmile, BsThreeDots, BsType, BsTypeBold, BsTypeItalic, BsTypeStrikethrough, BsCodeSlash } from "react-icons/bs";
-import { FiVideo, FiChevronLeft, FiEdit2, FiX, FiPaperclip, FiDownload, FiFile, FiMusic, FiFileText, FiCornerUpLeft, FiArrowDown, FiUsers, FiPhoneMissed, FiUserPlus, FiUserMinus, FiLogOut, FiMic, FiSquare, FiTrash2, FiPlus, FiAlertCircle } from "react-icons/fi";
+import { BsCheck2All, BsEmojiSmile, BsThreeDots, BsType, BsTypeBold, BsTypeItalic, BsTypeStrikethrough, BsCodeSlash } from "react-icons/bs";
+import { FiVideo, FiChevronLeft, FiEdit2, FiX, FiPaperclip, FiDownload, FiFile, FiMusic, FiFileText, FiCornerUpLeft, FiArrowDown, FiUsers, FiPhoneMissed, FiUserPlus, FiUserMinus, FiLogOut, FiMic, FiSquare, FiTrash2, FiPlus, FiAlertCircle, FiSend } from "react-icons/fi";
 
 const SYSTEM_MESSAGE_TYPES = ["member_added", "member_removed", "member_left", "group_renamed"];
 import { FaComments } from "react-icons/fa";
@@ -47,6 +46,18 @@ const EXT_COLORS = {
   XLS: "#16a34a", XLSX: "#16a34a", TXT: "#6b7280",
   ZIP: "#d97706", RAR: "#d97706", CSV: "#16a34a",
 };
+
+// Icon button inside the composer box (emoji, format, attach, mic).
+const COMPOSER_BTN = "w-[30px] h-[30px] grid place-items-center rounded-[7px] text-ll-ink3 hover:bg-ll-hover hover:text-ll-ink transition-colors duration-150";
+
+// Day/time divider between message runs: plain text between two hairlines.
+const DateSep = ({ children }) => (
+  <div className="flex items-center gap-3 mt-3.5 mb-2.5 text-[11.5px] font-medium text-ll-ink3">
+    <div className="flex-1 h-px bg-ll-line" />
+    {children}
+    <div className="flex-1 h-px bg-ll-line" />
+  </div>
+);
 
 const ChatWindowComponent = ({
   username,
@@ -971,8 +982,7 @@ const ChatWindowComponent = ({
   const canShowMembers = chatType === "general" || chatType === "teacher" || chatType === "support" || chatType === "group" || chatType === "dm";
 
   return (
-    <div className="w-full h-full flex flex-col relative overflow-hidden
-                    bg-white dark:bg-[#0d0a1e] transition-colors duration-300"
+    <div className="w-full h-full flex flex-col relative overflow-hidden bg-ll-panel"
       onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -991,110 +1001,95 @@ const ChatWindowComponent = ({
         </div>
       )}
 
-      {/* Background orbs — previously dark-mode-only, which left light mode
-          completely flat with nothing to give the chat area any depth. */}
-      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-        <div className="absolute rounded-full blur-3xl opacity-[0.07] dark:opacity-20"
-          style={{ background: "radial-gradient(circle, rgb(var(--ll-violet) / 0.5), transparent 70%)", width: "400px", height: "400px", top: "-10%", right: "-5%" }} />
-        <div className="absolute rounded-full blur-3xl opacity-[0.06] dark:opacity-15"
-          style={{ background: "radial-gradient(circle, rgba(31,164,140,0.4), transparent 70%)", width: "350px", height: "350px", bottom: "-5%", left: "-5%" }} />
-      </div>
       <HalloweenChatScene />
 
-      {/* Header */}
-      <div className="relative flex items-center gap-3 px-4 py-3 flex-shrink-0
-                      bg-white dark:bg-black/40 backdrop-blur-xl
-                      border-b border-gray-200 dark:border-white/10 z-10 transition-colors duration-300">
+      {/* Header — avatar + name on the left, actions on the right (members,
+          join call, close). Round avatar for a person, square for a group. */}
+      <div className="relative flex items-center gap-3 h-[60px] pl-3 pr-3 sm:pl-5 sm:pr-4 flex-shrink-0
+                      bg-ll-panel border-b border-ll-line z-10">
         {/* Back button — mobile */}
         <button onClick={onBackClick}
-          className="lg:hidden p-1.5 rounded-lg text-gray-600 dark:text-gray-300
-                     hover:bg-gray-100 dark:hover:bg-white/10 transition-colors flex-shrink-0">
-          <FiChevronLeft size={20} />
+          className="lg:hidden w-[30px] h-[30px] grid place-items-center rounded-[7px] text-ll-ink2
+                     hover:bg-ll-hover hover:text-ll-ink transition-colors flex-shrink-0">
+          <FiChevronLeft size={18} />
         </button>
 
-        {/* Avatar icon */}
         <div
           onClick={() => {
             if (chatType === "dm" && otherUserId) onViewProfile?.(otherUserId);
             else if (chatType === "group") onViewGroupMembers?.();
           }}
-          className={`w-9 h-9 rounded-2xl flex items-center justify-center flex-shrink-0
-                        bg-ll-violet-tint dark:bg-ll-violet/20 border border-ll-violet-line dark:border-ll-violet/30
-                        ${chatType === "dm" || chatType === "group" ? "cursor-pointer hover:bg-ll-violet-tint dark:hover:bg-ll-violet/30 transition-colors" : ""}`}>
-          <FaComments className="text-ll-violet-ink dark:text-ll-violet-ink" size={15} />
+          className={`relative w-[34px] h-[34px] flex items-center justify-center flex-shrink-0
+                      text-[12px] font-semibold bg-ll-violet-tint text-ll-violet-ink
+                      ${chatType === "dm" ? "rounded-full" : "rounded-[10px]"}
+                      ${chatType === "dm" || chatType === "group" ? "cursor-pointer" : ""}`}>
+          {getInitials(studentName)}
+          {chatType === "dm" && otherOnline && (
+            <span className="absolute -right-px -bottom-px w-2.5 h-2.5 rounded-full bg-ll-teal ring-2 ring-[rgb(var(--ll-panel))]" />
+          )}
         </div>
 
-        {/* Name + status */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h2
-              onClick={() => {
-                if (chatType === "dm" && otherUserId) onViewProfile?.(otherUserId);
-                else if (chatType === "group") onViewGroupMembers?.();
-              }}
-              className={`text-[15px] font-semibold tracking-tight text-gray-900 dark:text-white truncate ${chatType === "dm" || chatType === "group" ? "cursor-pointer hover:underline" : ""}`}
-            >
-              {studentName}
-            </h2>
-            {isGeneralChat && (
-              <button onClick={handleJoinGeneralClass} title="Join video class"
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full flex-shrink-0
-                           text-white text-[11px] font-semibold transition-all duration-150 hover:scale-105 active:scale-95"
-                style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", boxShadow: "0 2px 8px rgb(var(--ll-violet) / 0.4)" }}>
-                <FiVideo size={13} />
-                <span>Join</span>
-              </button>
-            )}
-            {canShowMembers && (
-              <button onClick={() => onViewGroupMembers?.()} title="View members"
-                className="flex items-center gap-1 px-2 py-1 rounded-full flex-shrink-0
-                           text-gray-600 dark:text-gray-300 text-[11px] font-medium transition-colors
-                           bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10">
-                <FiUsers size={12} />
-              </button>
-            )}
-          </div>
+          <h2
+            onClick={() => {
+              if (chatType === "dm" && otherUserId) onViewProfile?.(otherUserId);
+              else if (chatType === "group") onViewGroupMembers?.();
+            }}
+            className={`text-[14.5px] font-semibold text-ll-ink truncate leading-tight ${chatType === "dm" || chatType === "group" ? "cursor-pointer hover:underline" : ""}`}
+          >
+            {studentName}
+          </h2>
           {/* Online indicator — only meaningful for a 1:1 DM with a known peer */}
           {chatType === "dm" && otherOnline !== null && (
-            <span className="flex items-center gap-1 mt-0.5">
-              <span className={`w-1.5 h-1.5 rounded-full ${otherOnline ? "bg-[#1FA48C]" : "bg-gray-400 dark:bg-gray-500"}`} />
-              <span className={`text-[11px] font-medium ${otherOnline ? "text-[#1FA48C]" : "text-gray-400 dark:text-gray-500"}`}>
-                {t(otherOnline ? "chatWindow.activeNow" : "chatWindow.offline")}
-              </span>
+            <span className={`flex items-center gap-1.5 mt-0.5 text-[12px] ${otherOnline ? "text-ll-teal-ink" : "text-ll-ink3"}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${otherOnline ? "bg-ll-teal" : "bg-ll-ink4"}`} />
+              {t(otherOnline ? "chatWindow.activeNow" : "chatWindow.offline")}
             </span>
           )}
         </div>
 
-        {/* Close button */}
-        {onClose && (
-          <button onClick={onClose}
-            className="flex-shrink-0 p-1.5 rounded-lg text-gray-500 dark:text-gray-400
-                       hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-            title="Close chat">
-            <FiX size={18} />
-          </button>
-        )}
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          {canShowMembers && (
+            <button onClick={() => onViewGroupMembers?.()} title="View members"
+              className="w-[30px] h-[30px] grid place-items-center rounded-[7px] text-ll-ink2
+                         hover:bg-ll-hover hover:text-ll-ink transition-colors">
+              <FiUsers size={16} />
+            </button>
+          )}
+          {isGeneralChat && (
+            <button onClick={handleJoinGeneralClass} title="Join video class"
+              className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[7px] text-[12.5px] font-medium
+                         bg-ll-violet hover:bg-ll-violet-hover text-ll-on-violet transition-colors
+                         shadow-[inset_0_1px_0_rgba(255,255,255,.15),0_1px_2px_rgb(var(--ll-shadow)/.25)]">
+              <FiVideo size={14} />
+              <span>{t("messagesExtra.joinCall")}</span>
+            </button>
+          )}
+          {onClose && (
+            <button onClick={onClose}
+              className="w-[30px] h-[30px] grid place-items-center rounded-[7px] text-ll-ink2
+                         hover:bg-ll-hover hover:text-ll-ink transition-colors"
+              title="Close chat">
+              <FiX size={16} />
+            </button>
+          )}
+        </div>
       </div>
-
-      {/* Accent line */}
-      <div className="relative h-[2px] flex-shrink-0 z-10 opacity-70 dark:opacity-100"
-           style={{ background: "linear-gradient(90deg, rgb(var(--ll-violet)), #E8A23A, #1FA48C)" }} />
 
       {/* Messages — the scroll container stays mounted while empty or
           loading (it used to be swapped for the spinner, so every cold open
           re-created it at scrollTop 0 and then jumped). */}
-      <div className="flex-1 relative z-10 min-h-0 flex flex-col">
+      <div className="ll-chat-body flex-1 relative z-10 min-h-0 flex flex-col">
       {chatMessages.length === 0 && (
         <div className="absolute inset-0 z-10 flex items-center justify-center">
           {isLoading ? (
             <div className="w-8 h-8 rounded-full border-4 border-ll-violet/30 border-t-ll-violet animate-spin" />
           ) : (
             <div className="flex flex-col items-center justify-center gap-3">
-              <div className="w-14 h-14 rounded-full bg-ll-violet-tint dark:bg-ll-violet/20
-                             border border-ll-violet-line dark:border-ll-violet/30 flex items-center justify-center">
-                <FaComments className="text-ll-violet-ink" size={24} />
+              <div className="w-12 h-12 rounded-xl bg-ll-violet-tint flex items-center justify-center">
+                <FaComments className="text-ll-violet-ink" size={20} />
               </div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{t("chatWindow.noMessages")}</p>
+              <p className="text-[13px] text-ll-ink3">{t("chatWindow.noMessages")}</p>
             </div>
           )}
         </div>
@@ -1102,28 +1097,27 @@ const ChatWindowComponent = ({
       <PerfectScrollbar
         containerRef={(ref) => { scrollContainerRef.current = ref; }}
         onScrollY={handleScroll}
-        className="flex-1 relative bg-transparent transition-colors duration-300"
+        className="flex-1 relative bg-transparent"
         // perfect-scrollbar's stylesheet turns the browser's scroll anchoring
         // off; with it on, images that finish loading ABOVE what you're
         // reading (e.g. after "load more") no longer push the text away.
         style={{ overflowAnchor: "auto" }}
         options={{ suppressScrollX: true }}
       >
-        <div ref={contentRef} className="px-2.5 py-3 sm:p-6">
+        <div ref={contentRef} className="px-2.5 py-3 sm:px-7 sm:pt-[18px] sm:pb-3">
           {hasMore && chatMessages.length > 0 && (
             <div className="flex justify-center mb-4">
               <button
                 onClick={handleLoadOlder}
                 disabled={loadingMore}
-                className="text-xs font-medium px-3 py-1.5 rounded-full text-ll-violet dark:text-ll-violet-ink
-                           bg-ll-violet/10 dark:bg-ll-violet/15 hover:bg-ll-violet/20 transition-colors
-                           disabled:opacity-50"
+                className="h-7 px-2.5 rounded-[7px] text-[12.5px] font-medium text-ll-violet-ink
+                           bg-ll-violet-tint hover:bg-ll-violet/15 transition-colors disabled:opacity-50"
               >
                 {loadingMore ? t("chatWindow.loading", "Loading...") : t("chatWindow.loadMore")}
               </button>
             </div>
           )}
-          <ul className="space-y-1">
+          <ul>
             {chatMessages.map((msg, index) => {
               const prev = chatMessages[index - 1];
               const showTimestamp = index === 0 || new Date(msg.timestamp) - new Date(prev.timestamp) > 3 * 60 * 1000;
@@ -1138,8 +1132,16 @@ const ChatWindowComponent = ({
               const hasContent = effectiveFileUrl || effectiveMessage?.trim();
               const isSystemMessage = SYSTEM_MESSAGE_TYPES.includes(msg.messageType);
               if (!hasContent && !isSystemMessage) return null;
-              const isFirstFromUser = index === 0 || msg.email !== prev.email;
-              const showUsername = !isSender && isFirstFromUser;
+              // A "run" = consecutive ordinary messages from one sender with no
+              // date divider between them. Bubbles in a run stack tightly with
+              // squared inner corners; name on the first, avatar + time on the last.
+              const next = chatMessages[index + 1];
+              const isSpecial = (m) => SYSTEM_MESSAGE_TYPES.includes(m.messageType) || m.messageType === "missed_call";
+              const breaksRun = (a, b) => !a || !b || a.email !== b.email || isSpecial(a) || isSpecial(b)
+                || new Date(b.timestamp) - new Date(a.timestamp) > 3 * 60 * 1000;
+              const isFirstInRun = breaksRun(prev, msg);
+              const isLastInRun = breaksRun(msg, next);
+              const showUsername = !isSender && isFirstInRun;
               const initials = getInitials(msg.username);
               const avatarColor = generateColor(msg.username);
               const isImageOnly = !!(effectiveFileUrl && !effectiveMessage?.trim() && isImageUrl(effectiveFileUrl));
@@ -1172,16 +1174,7 @@ const ChatWindowComponent = ({
                 return (
                   <div key={msg.id || index} data-msg-id={msg.id}>
                     {showTimestamp && (
-                      <div className="flex items-center gap-3 my-5">
-                        <div className="flex-1 h-px bg-ll-violet/15 dark:bg-white/10" />
-                        <span className="text-[10px] font-semibold text-ll-violet dark:text-ll-violet-ink
-                                       px-3 py-1 rounded-full bg-ll-violet/[0.06] dark:bg-black/40
-                                       backdrop-blur-sm border border-ll-violet/15 dark:border-white/10"
-                                       style={{ boxShadow: "0 1px 4px rgb(var(--ll-violet) / 0.08)" }}>
-                          {formatTimestamp(msg.timestamp)}
-                        </span>
-                        <div className="flex-1 h-px bg-ll-violet/15 dark:bg-white/10" />
-                      </div>
+                      <DateSep>{formatTimestamp(msg.timestamp)}</DateSep>
                     )}
                     <li className="flex justify-center my-1">
                       <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-100 dark:bg-white/5">
@@ -1197,16 +1190,7 @@ const ChatWindowComponent = ({
                 return (
                   <div key={msg.id || index} data-msg-id={msg.id}>
                     {showTimestamp && (
-                      <div className="flex items-center gap-3 my-5">
-                        <div className="flex-1 h-px bg-ll-violet/15 dark:bg-white/10" />
-                        <span className="text-[10px] font-semibold text-ll-violet dark:text-ll-violet-ink
-                                       px-3 py-1 rounded-full bg-ll-violet/[0.06] dark:bg-black/40
-                                       backdrop-blur-sm border border-ll-violet/15 dark:border-white/10"
-                                       style={{ boxShadow: "0 1px 4px rgb(var(--ll-violet) / 0.08)" }}>
-                          {formatTimestamp(msg.timestamp)}
-                        </span>
-                        <div className="flex-1 h-px bg-ll-violet/15 dark:bg-white/10" />
-                      </div>
+                      <DateSep>{formatTimestamp(msg.timestamp)}</DateSep>
                     )}
                     <li className="flex justify-center my-1.5">
                       <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20">
@@ -1230,58 +1214,49 @@ const ChatWindowComponent = ({
               return (
                 <div key={msg.id || index} data-msg-id={msg.id}>
                   {showTimestamp && (
-                    <div className="flex items-center gap-3 my-5">
-                      <div className="flex-1 h-px bg-ll-violet/15 dark:bg-white/10" />
-                      <span className="text-[10px] font-semibold text-ll-violet dark:text-ll-violet-ink
-                                     px-3 py-1 rounded-full bg-ll-violet/[0.06] dark:bg-black/40
-                                     backdrop-blur-sm border border-ll-violet/15 dark:border-white/10"
-                                     style={{ boxShadow: "0 1px 4px rgb(var(--ll-violet) / 0.08)" }}>
-                        {formatTimestamp(msg.timestamp)}
-                      </span>
-                      <div className="flex-1 h-px bg-ll-violet/15 dark:bg-white/10" />
-                    </div>
+                    <DateSep>{formatTimestamp(msg.timestamp)}</DateSep>
                   )}
 
-                  <li className={`group flex items-end gap-2 mb-1.5 ${isSender ? "justify-end" : "justify-start"}`}>
+                  <li className={`group flex items-end gap-2.5 ${isLastInRun ? "mb-2.5" : "mb-[3px]"} ${isSender ? "justify-end" : "justify-start"}`}>
 
-                    {/* Avatar (others) — clickable to view sender's profile */}
+                    {/* Avatar (others), on the run's last bubble — clickable to view the sender's profile */}
                     {!isSender && (
-                      <div className="flex-shrink-0 w-8 self-end">
-                        {isFirstFromUser ? (
+                      <div className={`flex-shrink-0 w-7 self-end ${isLastInRun ? "mb-[18px]" : ""}`}>
+                        {isLastInRun ? (
                           msg.avatarUrl ? (
                             <img src={msg.avatarUrl} alt="avatar"
                               onClick={() => msg.senderId && onViewProfile?.(msg.senderId)}
-                              className="w-8 h-8 rounded-full object-cover shadow ring-2 ring-ll-violet-line dark:ring-ll-violet/30 cursor-pointer hover:opacity-80 transition-opacity" />
+                              className="w-7 h-7 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity" />
                           ) : (
                             <div
                               onClick={() => msg.senderId && onViewProfile?.(msg.senderId)}
-                              className="w-8 h-8 rounded-full flex items-center justify-center
-                                          text-white text-xs font-bold shadow ring-2 ring-ll-violet-line dark:ring-ll-violet/30 cursor-pointer hover:opacity-80 transition-opacity"
+                              className="w-7 h-7 rounded-full flex items-center justify-center
+                                          text-white text-[10px] font-semibold cursor-pointer hover:opacity-80 transition-opacity"
                               style={{ background: avatarColor }}>
                               {initials}
                             </div>
                           )
-                        ) : <div className="w-8 h-8" />}
+                        ) : <div className="w-7" />}
                       </div>
                     )}
 
                     {isSender ? (
-                      <div className="flex flex-col items-end max-w-[88%] sm:max-w-[60%]">
-                      <div className="relative flex items-end gap-1.5">
+                      <div className="flex flex-col items-end max-w-[88%] sm:max-w-[62%]">
+                      <div className="relative flex items-center gap-2">
                         {/* Reply + options */}
-                        <div className="flex items-center gap-0.5 self-end mb-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150 max-sm:absolute max-sm:-top-8 max-sm:right-0 max-sm:z-10 max-sm:bg-ll-panel max-sm:border max-sm:border-ll-line max-sm:rounded-full max-sm:shadow-ll-1 max-sm:px-0.5">
+                        <div className="flex items-center gap-0.5 p-0.5 rounded-lg bg-ll-panel border border-ll-line shadow-ll-2
+                                        opacity-0 group-hover:opacity-100 transition-opacity duration-150
+                                        max-sm:absolute max-sm:-top-9 max-sm:right-0 max-sm:z-10">
                           <button
                             onClick={() => setReplyTo({ id: msg.id, message: legacyFileUrl ? "📎 File" : (msg.message || "📎 File"), username: msg.username })}
-                            className="p-1.5 rounded-full text-gray-500 dark:text-gray-400
-                                       hover:text-ll-violet-ink dark:hover:text-ll-violet-ink
-                                       hover:bg-ll-violet-tint dark:hover:bg-white/10 transition-colors duration-150">
-                            <FiCornerUpLeft size={13} />
+                            className="w-[26px] h-[26px] grid place-items-center rounded-md text-ll-ink2
+                                       hover:bg-ll-hover hover:text-ll-ink transition-colors duration-150">
+                            <FiCornerUpLeft size={14} />
                           </button>
                           <div className="relative">
                             <button onClick={() => toggleOptionsMenu(msg.id)}
-                              className="p-1.5 rounded-full text-gray-500 dark:text-gray-400
-                                         hover:text-ll-violet-ink dark:hover:text-ll-violet-ink
-                                         hover:bg-ll-violet-tint dark:hover:bg-white/10 transition-colors duration-150">
+                              className="w-[26px] h-[26px] grid place-items-center rounded-md text-ll-ink2
+                                         hover:bg-ll-hover hover:text-ll-ink transition-colors duration-150">
                               <BsThreeDots size={14} />
                             </button>
                             {openMessageId === msg.id && (
@@ -1296,39 +1271,26 @@ const ChatWindowComponent = ({
                           </div>
                         </div>
                         {/* Bubble */}
-                        <div className={`relative rounded-2xl rounded-br-sm ${
+                        <div className={`relative rounded-2xl ${isFirstInRun ? "" : "rounded-tr-md"} ${isLastInRun ? "" : "rounded-br-md"} ${
                             isImageOnly ? "overflow-hidden"
                             : isFileOnly ? ""
-                            : "ll-bubble-out px-4 py-2.5 text-white text-sm leading-relaxed"
+                            : "ll-bubble-out px-[13px] py-2 text-[14px] leading-[1.42]"
                           } ${msg._pending ? "opacity-60" : ""} ${msg._failed ? "ring-2 ring-red-400/70" : ""}`}
-                          style={isImageOnly
-                            ? { boxShadow: "0 4px 16px rgba(0,0,0,0.25)" }
-                            : isFileOnly ? {}
+                          style={isImageOnly || isFileOnly ? {}
                             : { background: "rgb(var(--ll-violet))", color: "rgb(var(--ll-on-violet))" }}>
                           {/* Reply quote in bubble */}
                           {msg.replyTo && (
-                            <div className="mb-2 pl-2 border-l-2 border-white/50 rounded bg-white/10 text-xs" style={{ padding: "4px 6px" }}>
-                              <p className="font-semibold text-[10px] mb-0.5 text-white/80">{msg.replyTo.username}</p>
-                              <p className="line-clamp-2 text-[11px] text-white/70">{stripMentionMarkup(msg.replyTo.message)}</p>
+                            <div className="mb-1.5 pl-2 border-l-2 border-white/50 rounded bg-white/10 text-xs" style={{ padding: "4px 6px" }}>
+                              <p className="font-semibold text-[11px] mb-0.5 text-white/80">{msg.replyTo.username}</p>
+                              <p className="line-clamp-2 text-[12px] text-white/70">{stripMentionMarkup(msg.replyTo.message)}</p>
                             </div>
                           )}
-                          {/* Voice notes get a matching spacer above the
-                              waveform row — otherwise the timestamp line
-                              below it (present but no counterweight above)
-                              makes the play button read as sitting too high
-                              in the pill instead of centered in it. */}
-                          {isVoiceNoteOnly && <div className="h-[13px]" />}
                           {effectiveFileUrl && renderFile(effectiveFileUrl, true)}
                           {effectiveMessage?.trim() && (
-                            <p className="text-white" style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                            <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
                               {formatMessageWithLinks(effectiveMessage, true, userId)}
-                              {msg.editedAt && <span className="text-[10px] text-white/60 ml-1">({t("chatWindow.edited")})</span>}
+                              {msg.editedAt && <span className="text-[11px] text-white/60 ml-1">({t("chatWindow.edited")})</span>}
                             </p>
-                          )}
-                          {!isImageOnly && (
-                            <span className="block text-right text-[10px] text-white/60 mt-0.5 leading-none">
-                              {bubbleTime(msg.timestamp)}
-                            </span>
                           )}
                         </div>
                       </div>
@@ -1341,69 +1303,69 @@ const ChatWindowComponent = ({
                         {msg._failed ? (
                           <button
                             onClick={() => retryMessage(msg.id)}
-                            className="flex items-center gap-1 text-[10px] mt-0.5 mr-1 text-red-500 hover:text-red-600 hover:underline"
+                            className="flex items-center gap-1 text-[11px] mt-[3px] mx-1 text-red-500 hover:text-red-600 hover:underline"
                           >
                             <FiAlertCircle size={11} />
                             {t("chatWindow.failedToSend")} · {t("chatWindow.retry")}
                           </button>
                         ) : msg._pending ? (
-                          <span className="text-[10px] mt-0.5 mr-1 text-gray-400">{t("chatWindow.sending")}</span>
-                        ) : (
-                          isLastOwnMessage && chatType === "dm" && (
-                            <span className={`text-[10px] mt-0.5 mr-1 ${isSeen ? "text-ll-violet" : "text-gray-400"}`}>
-                              {isSeen ? t("chatWindow.seen") : t("chatWindow.sent")}
-                            </span>
-                          )
+                          <span className="text-[11px] mt-[3px] mx-1 text-ll-ink3">{t("chatWindow.sending")}</span>
+                        ) : isLastInRun && (
+                          <span className="flex items-center gap-1.5 mt-[3px] mx-1 font-mono text-[10.5px] text-ll-ink3">
+                            {bubbleTime(msg.timestamp)}
+                            {isLastOwnMessage && chatType === "dm" && (
+                              <>
+                                <BsCheck2All size={14} className={isSeen ? "text-ll-teal" : "text-ll-ink4"} />
+                                <span className={`font-sans text-[11px] font-medium ${isSeen ? "text-ll-teal-ink" : "text-ll-ink3"}`}>
+                                  {isSeen ? t("chatWindow.seen") : t("chatWindow.sent")}
+                                </span>
+                              </>
+                            )}
+                          </span>
                         )}
                       </div>
                     ) : (
-                      <div className="max-w-[84%] sm:max-w-[60%]">
+                      <div className="max-w-[84%] sm:max-w-[62%]">
                         {showUsername && msg.username && msg.username !== "undefined" && (
                           <p
                             onClick={() => msg.senderId && onViewProfile?.(msg.senderId)}
-                            className="text-[11px] font-semibold text-ll-violet-ink dark:text-ll-violet-ink mb-1 ml-1 cursor-pointer hover:underline w-fit"
+                            className="text-[12px] font-semibold text-ll-violet-ink mb-0.5 ml-1 cursor-pointer hover:underline w-fit"
                           >
                             {msg.username}
                           </p>
                         )}
                         {/* relative wrapper for bubble only — so button centers on bubble, not username */}
                         <div className="relative">
-                          <div className={`rounded-2xl rounded-bl-sm ${
+                          <div className={`rounded-2xl ${isFirstInRun ? "" : "rounded-tl-md"} ${isLastInRun ? "" : "rounded-bl-md"} ${
                               isImageOnly ? "overflow-hidden"
                               : isFileOnly ? ""
-                              : "px-4 py-2.5 text-sm leading-relaxed text-ll-ink border border-ll-line"
+                              : "px-[13px] py-2 text-[14px] leading-[1.42] text-ll-ink"
                             }`}
-                            style={isImageOnly ? { boxShadow: "0 4px 16px rgba(0,0,0,0.16)" } : isFileOnly ? {} : { background: "rgb(var(--ll-bubble-in))" }}>
+                            style={isImageOnly || isFileOnly ? {} : { background: "rgb(var(--ll-bubble-in))" }}>
                             {/* Reply quote in received bubble */}
                             {msg.replyTo && (
-                              <div className="mb-2 pl-2 border-l-2 border-ll-violet/60 rounded bg-ll-violet/5 dark:bg-white/5 text-xs" style={{ padding: "4px 6px" }}>
-                                <p className="font-semibold text-[10px] mb-0.5 text-ll-violet dark:text-ll-violet-ink">{msg.replyTo.username}</p>
-                                <p className="line-clamp-2 text-[11px] text-gray-500 dark:text-gray-400">{stripMentionMarkup(msg.replyTo.message)}</p>
+                              <div className="mb-1.5 pl-2 border-l-2 border-ll-violet/60 rounded bg-ll-panel/60 text-xs" style={{ padding: "4px 6px" }}>
+                                <p className="font-semibold text-[11px] mb-0.5 text-ll-violet-ink">{msg.replyTo.username}</p>
+                                <p className="line-clamp-2 text-[12px] text-ll-ink3">{stripMentionMarkup(msg.replyTo.message)}</p>
                               </div>
                             )}
-                            {isVoiceNoteOnly && <div className="h-[13px]" />}
                             {effectiveFileUrl && renderFile(effectiveFileUrl, false)}
                             {effectiveMessage?.trim() && (
                               <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
                                 {formatMessageWithLinks(effectiveMessage, false, userId)}
-                                {msg.editedAt && <span className="text-[10px] text-gray-400 dark:text-gray-500 ml-1">({t("chatWindow.edited")})</span>}
+                                {msg.editedAt && <span className="text-[11px] text-ll-ink3 ml-1">({t("chatWindow.edited")})</span>}
                               </p>
-                            )}
-                            {!isImageOnly && (
-                              <span className="block text-right text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 leading-none">
-                                {bubbleTime(msg.timestamp)}
-                              </span>
                             )}
                           </div>
                           {/* Reply button — positioned relative to bubble only */}
                           <button
                             onClick={() => setReplyTo({ id: msg.id, message: legacyFileUrl ? "📎 File" : (msg.message || "📎 File"), username: msg.username })}
-                            className="absolute left-full top-1/2 -translate-y-1/2 ml-1
+                            className="absolute left-full top-1/2 -translate-y-1/2 ml-2
                                        opacity-0 group-hover:opacity-100 transition-opacity
-                                       p-1.5 rounded-full text-gray-400
-                                       hover:text-ll-violet-ink dark:hover:text-ll-violet-ink
-                                       hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
-                            <FiCornerUpLeft size={13} />
+                                       w-[26px] h-[26px] grid place-items-center rounded-md
+                                       bg-ll-panel border border-ll-line shadow-ll-2 text-ll-ink2
+                                       hover:text-ll-ink">
+                            <FiCornerUpLeft size={14} />
                           </button>
                         </div>
                         <MessageReactions
@@ -1412,6 +1374,11 @@ const ChatWindowComponent = ({
                           onToggle={(emoji) => toggleReaction(msg.id, emoji)}
                           align="start"
                         />
+                        {isLastInRun && (
+                          <span className="block mt-[3px] mx-1 font-mono text-[10.5px] text-ll-ink3">
+                            {bubbleTime(msg.timestamp)}
+                          </span>
+                        )}
                       </div>
                     )}
                   </li>
@@ -1426,10 +1393,10 @@ const ChatWindowComponent = ({
       {/* Scroll-to-bottom button */}
       {showScrollBtn && (
         <button onClick={scrollToBottom}
-          className="absolute right-4 z-20 w-9 h-9 rounded-full flex items-center justify-center shadow-lg
-                     transition-all hover:scale-110 active:scale-95"
-          style={{ bottom: "80px", background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", boxShadow: "0 4px 12px rgb(var(--ll-violet) / 0.4)" }}>
-          <FiArrowDown size={16} className="text-white" />
+          className="absolute right-4 z-20 w-9 h-9 rounded-full flex items-center justify-center
+                     bg-ll-panel border border-ll-line shadow-ll-2 text-ll-ink2 hover:text-ll-ink transition-colors"
+          style={{ bottom: "96px" }}>
+          <FiArrowDown size={16} />
           {newMsgCount > 0 && (
             <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500
                              text-white text-[9px] flex items-center justify-center font-bold leading-none">
@@ -1442,7 +1409,7 @@ const ChatWindowComponent = ({
       {/* Typing indicator */}
       {typingUsers.length > 0 && (
         <div className="relative z-10 px-5 pb-1 flex-shrink-0">
-          <span className="text-[11px] text-gray-500 dark:text-gray-400 italic">
+          <span className="text-[11.5px] text-ll-ink3">
             {typingUsers.join(", ")} {typingUsers.length === 1 ? t("chatWindow.isTyping") : t("chatWindow.areTyping")}
             <span className="inline-flex gap-0.5 ml-1">
               <span className="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-500 animate-bounce" style={{ animationDelay: "0ms" }} />
@@ -1454,30 +1421,28 @@ const ChatWindowComponent = ({
       )}
 
       {/* Input bar */}
-      <div className="relative flex-shrink-0 px-3 sm:px-5 py-3 z-10
-                      bg-white dark:bg-black/40 backdrop-blur-xl
-                      border-t border-gray-200 dark:border-white/10 transition-colors duration-300">
+      <div className="relative flex-shrink-0 px-2.5 sm:px-5 pt-2 pb-2.5 sm:pt-3 sm:pb-[18px] z-10 ll-chat-foot">
         {/* @ mention picker — anchored above the input like the emoji picker
             below; full-width on phones (no left/right inset) instead of a
             narrow floating box, since a cramped list is hard to tap accurately. */}
         {mentionQuery !== null && filteredMentionCandidates.length > 0 && (
           <div className="absolute bottom-full left-0 right-0 sm:left-3 sm:right-auto sm:w-64 mb-2 z-20 px-3 sm:px-0">
-            <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-white/10 shadow-xl bg-white dark:bg-[#1a1a2e] max-h-56 overflow-y-auto">
+            <div className="rounded-xl overflow-hidden border border-ll-line bg-ll-panel shadow-ll-pop max-h-56 overflow-y-auto">
               {filteredMentionCandidates.map((candidate, i) => (
                 <button
                   key={candidate.id}
                   onClick={() => insertMention(candidate)}
                   className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors ${
                     i === mentionActiveIndex
-                      ? "bg-ll-violet/10 dark:bg-ll-violet/20"
-                      : "hover:bg-gray-50 dark:hover:bg-white/5"
+                      ? "bg-ll-violet-tint"
+                      : "hover:bg-ll-hover"
                   }`}
                 >
                   <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[11px] font-bold flex-shrink-0"
                     style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}>
                     {candidate.name.slice(0, 1).toUpperCase()}
                   </div>
-                  <span className="text-sm text-gray-800 dark:text-white truncate flex-1">{candidate.name}</span>
+                  <span className="text-sm text-ll-ink truncate flex-1">{candidate.name}</span>
                   {candidate.isMember === false && (
                     <span className="flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-md flex-shrink-0
                                      bg-[#E8A23A]/15 text-[#C4860A] dark:text-[#E8A23A]">
@@ -1538,12 +1503,12 @@ const ChatWindowComponent = ({
         {/* Editing banner */}
         {editingMsg && (
           <div className="flex items-center justify-between gap-2 px-3 py-1.5 mb-2 rounded-lg
-                         bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20">
-            <div className="flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400">
+                         bg-ll-subtle border border-ll-line">
+            <div className="flex items-center gap-1.5 text-xs text-ll-ink2">
               <FiEdit2 size={12} />
               <span>{t("chatWindow.editing")}</span>
             </div>
-            <button onClick={clearEditing} className="text-blue-400 hover:text-blue-600 flex-shrink-0">
+            <button onClick={clearEditing} className="text-ll-ink3 hover:text-ll-ink flex-shrink-0">
               <FiX size={14} />
             </button>
           </div>
@@ -1552,15 +1517,15 @@ const ChatWindowComponent = ({
         {/* Reply banner */}
         {replyTo && !editingMsg && (
           <div className="flex items-center justify-between gap-2 px-3 py-1.5 mb-2 rounded-lg
-                         bg-ll-violet/5 dark:bg-ll-violet/10 border border-ll-violet/20">
+                         bg-ll-subtle border border-ll-line border-l-2 border-l-ll-violet">
             <div className="flex items-center gap-1.5 min-w-0">
               <FiCornerUpLeft size={12} className="text-ll-violet flex-shrink-0" />
               <div className="min-w-0">
-                <p className="text-[10px] font-semibold text-ll-violet dark:text-ll-violet-ink">{replyTo.username}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{stripMentionMarkup(replyTo.message)}</p>
+                <p className="text-[11px] font-semibold text-ll-violet-ink">{replyTo.username}</p>
+                <p className="text-xs text-ll-ink3 truncate">{stripMentionMarkup(replyTo.message)}</p>
               </div>
             </div>
-            <button onClick={() => setReplyTo(null)} className="text-gray-400 hover:text-gray-600 flex-shrink-0">
+            <button onClick={() => setReplyTo(null)} className="text-ll-ink3 hover:text-ll-ink flex-shrink-0">
               <FiX size={14} />
             </button>
           </div>
@@ -1568,20 +1533,21 @@ const ChatWindowComponent = ({
 
         <div className="relative">
           <svg className="hw-only ll-peek absolute right-16 -top-[18px] z-0 w-[34px] h-10 pointer-events-none" viewBox="0 0 40 46" aria-hidden="true"><path d="M20 2C10.5 2 4 9.5 4 19.5V42l4-3 4 3 4-3 4 3 4-3 4 3 4-3 4 3V19.5C36 9.5 29.5 2 20 2z" fill="rgba(246,242,255,.94)" /><ellipse cx="14.5" cy="19" rx="2.6" ry="3.6" fill="#140E1C" /><ellipse cx="25.5" cy="19" rx="2.6" ry="3.6" fill="#140E1C" /><ellipse cx="20" cy="28" rx="2.4" ry="3" fill="#140E1C" /></svg>
-        <div className="ll-composer relative z-[1] flex items-end gap-1.5 bg-gray-50 dark:bg-black/40 rounded-2xl px-3 py-2
-                        border border-gray-200 dark:border-white/10
-                        focus-within:border-ll-violet dark:focus-within:border-ll-violet/50
-                        transition-colors duration-200">
+        {/* Composer box. Phone: one row (tools | text | send). sm+: text on
+            top, tools + hint + send underneath, like the design mock. */}
+        <div className="ll-composer relative z-[1] grid grid-cols-[auto_1fr_auto] items-end gap-1.5 px-2 py-1.5
+                        sm:grid-cols-[1fr_auto] sm:gap-0 sm:p-0
+                        bg-ll-panel rounded-xl border border-ll-line2 shadow-ll-1
+                        focus-within:border-ll-violet/60 transition-colors duration-200">
 
-          <div className="flex items-center gap-0.5 flex-shrink-0 self-end mb-0.5">
+          <div className="flex items-center gap-0.5 flex-shrink-0 self-end sm:col-start-1 sm:row-start-2 sm:px-2 sm:pb-2 sm:pt-1">
             {/* Mobile-only "+" — emoji/format/attach collapse behind it so the
                 row doesn't get crowded on a narrow phone screen; desktop just
                 shows all three inline (see the hidden sm:flex group below). */}
             {!isRecording && (
               <button
                 onClick={() => setShowMoreOptions((p) => !p)}
-                className="sm:hidden p-1 rounded-lg text-gray-500 dark:text-gray-400
-                           hover:text-ll-violet-ink dark:hover:text-ll-violet-ink transition-colors duration-150">
+                className={`sm:hidden ${COMPOSER_BTN}`}>
                 <FiPlus size={18} className={`transition-transform duration-150 ${showMoreOptions ? "rotate-45" : ""}`} />
               </button>
             )}
@@ -1589,9 +1555,8 @@ const ChatWindowComponent = ({
             <div className={`items-center gap-0.5 ${showMoreOptions ? "flex" : "hidden"} sm:flex`}>
               {/* Emoji button */}
               <button onClick={() => { setShowEmojiPicker((p) => !p); setShowFormatMenu(false); setShowMoreOptions(false); }}
-                className="p-1 rounded-lg text-gray-500 dark:text-gray-400
-                           hover:text-amber-600 dark:hover:text-amber-400 transition-colors duration-150">
-                <BsEmojiSmile size={18} />
+                className={COMPOSER_BTN}>
+                <BsEmojiSmile size={16} />
               </button>
 
               {/* Text format button — one icon instead of 4 separate ones so the
@@ -1600,17 +1565,14 @@ const ChatWindowComponent = ({
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => { setShowFormatMenu((p) => !p); setShowEmojiPicker(false); setShowMoreOptions(false); }}
                 title={t("chatWindow.formatText")}
-                className="p-1 rounded-lg text-gray-500 dark:text-gray-400
-                           hover:text-ll-violet-ink dark:hover:text-ll-violet-ink transition-colors duration-150">
+                className={COMPOSER_BTN}>
                 <BsType size={17} />
               </button>
 
               {/* File button */}
               <button onClick={() => { fileInputRef.current?.click(); setShowMoreOptions(false); }} disabled={isUploading}
-                className="p-1 rounded-lg text-gray-500 dark:text-gray-400
-                           hover:text-ll-violet-ink dark:hover:text-ll-violet-ink
-                           disabled:opacity-40 transition-colors duration-150" title="Attach file">
-                <FiPaperclip size={17} className={isUploading ? "animate-pulse" : ""} />
+                className={`${COMPOSER_BTN} disabled:opacity-40`} title="Attach file">
+                <FiPaperclip size={16} className={isUploading ? "animate-pulse" : ""} />
               </button>
               {/* No `accept` filter. The old list had no video/* entry at all, so
                   the picker silently hid every video (and .pptx) — a teacher could
@@ -1622,65 +1584,64 @@ const ChatWindowComponent = ({
             {/* Voice note — cancel (discard) only shows up mid-recording */}
             {isRecording && (
               <button onClick={handleCancelRecording}
-                className="p-1 rounded-lg text-gray-500 dark:text-gray-400 hover:text-red-500 transition-colors duration-150">
-                <FiTrash2 size={17} />
+                className={`${COMPOSER_BTN} hover:!text-red-500`}>
+                <FiTrash2 size={16} />
               </button>
             )}
             <button
               onClick={isRecording ? handleStopRecording : handleStartRecording}
               title={isRecording ? t("chatWindow.stopRecording") : t("chatWindow.recordVoiceNote")}
               className={isRecording
-                ? "p-1.5 rounded-full bg-red-500 text-white animate-pulse transition-colors duration-150"
-                : "p-1 rounded-lg text-gray-500 dark:text-gray-400 hover:text-ll-violet-ink dark:hover:text-ll-violet-ink transition-colors duration-150"}>
-              {isRecording ? <FiSquare size={13} /> : <FiMic size={17} />}
+                ? "w-[30px] h-[30px] grid place-items-center rounded-full bg-red-500 text-white animate-pulse"
+                : COMPOSER_BTN}>
+              {isRecording ? <FiSquare size={13} /> : <FiMic size={16} />}
             </button>
           </div>
 
           {/* Textarea — swapped for a recording indicator while capturing */}
-          {isRecording ? (
-            <div className="flex-1 flex items-center gap-2 py-1.5 min-w-0">
-              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
-              <span className="text-sm font-semibold text-red-500 tabular-nums flex-shrink-0">
-                {Math.floor(recordingSeconds / 60)}:{(recordingSeconds % 60).toString().padStart(2, "0")}
-              </span>
-              <span className="text-xs text-gray-400 dark:text-gray-500 truncate">{t("chatWindow.recording")}</span>
-            </div>
-          ) : (
-            <textarea
-              ref={textareaRef}
-              placeholder={t("chatWindow.typePlaceholder")}
-              value={message}
-              onChange={handleInputWithTyping}
-              onKeyDown={handleKeyDown}
-              onPaste={handlePaste}
-              rows={1}
-              className="flex-1 bg-transparent resize-none outline-none
-                         text-sm text-gray-900 dark:text-white
-                         placeholder-gray-400 dark:placeholder-gray-500
-                         max-h-32 leading-relaxed py-1.5"
-              style={{ overflowY: "hidden" }}
-            />
-          )}
+          <div className="min-w-0 sm:col-span-2 sm:row-start-1 sm:px-3.5 sm:pt-2.5">
+            {isRecording ? (
+              <div className="flex items-center gap-2 py-1.5 min-w-0">
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
+                <span className="text-sm font-semibold text-red-500 tabular-nums flex-shrink-0">
+                  {Math.floor(recordingSeconds / 60)}:{(recordingSeconds % 60).toString().padStart(2, "0")}
+                </span>
+                <span className="text-xs text-ll-ink3 truncate">{t("chatWindow.recording")}</span>
+              </div>
+            ) : (
+              <textarea
+                ref={textareaRef}
+                placeholder={t("chatWindow.typePlaceholder")}
+                value={message}
+                onChange={handleInputWithTyping}
+                onKeyDown={handleKeyDown}
+                onPaste={handlePaste}
+                rows={1}
+                className="block w-full bg-transparent resize-none outline-none
+                           text-[14px] text-ll-ink placeholder:text-ll-ink3
+                           max-h-32 leading-relaxed py-1.5"
+                style={{ overflowY: "hidden" }}
+              />
+            )}
+          </div>
 
-          {/* Send button */}
-          <button onClick={handleSendMessage} disabled={!message.trim() && stagedFiles.length === 0}
-            className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center
-                       self-end transition-all duration-150
-                       disabled:opacity-30 disabled:cursor-not-allowed
-                       hover:scale-105 active:scale-95 text-white"
-            style={{
-              background: (message.trim() || stagedFiles.length > 0) ? "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" : "rgb(var(--ll-violet))",
-              opacity: (message.trim() || stagedFiles.length > 0) ? 1 : 0.3,
-            }}>
-            <img src={send} alt="send" className="w-4 h-4 brightness-200" />
-          </button>
+          {/* Hint + send */}
+          <div className="flex items-center gap-3 self-end sm:col-start-2 sm:row-start-2 sm:px-2 sm:pb-2 sm:pt-1">
+            <span className="hidden sm:inline text-[11.5px] text-ll-ink4">{t("chatWindow.enterHint")}</span>
+            <button onClick={handleSendMessage} disabled={!message.trim() && stagedFiles.length === 0}
+              aria-label="Send"
+              className="flex-shrink-0 w-8 h-8 rounded-lg grid place-items-center
+                         bg-ll-violet hover:bg-ll-violet-hover text-ll-on-violet transition-colors duration-150
+                         disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-ll-violet">
+              <FiSend size={15} />
+            </button>
+          </div>
         </div>
         </div>
 
         {showEmojiPicker && (
           <div className="absolute bottom-full right-4 mb-2 z-20">
-            <div className="bg-white dark:bg-[#1a1a2e] rounded-2xl
-                          border border-gray-200 dark:border-white/10 overflow-hidden shadow-xl">
+            <div className="bg-ll-panel rounded-xl border border-ll-line overflow-hidden shadow-ll-pop">
               <EmojiPicker onEmojiClick={handleEmojiClick} />
             </div>
           </div>
@@ -1688,8 +1649,7 @@ const ChatWindowComponent = ({
 
         {showFormatMenu && (
           <div className="absolute bottom-full left-3 mb-2 z-20">
-            <div className="flex items-center gap-1 p-1.5 rounded-xl bg-white dark:bg-[#1a1a2e]
-                            border border-gray-200 dark:border-white/10 shadow-xl">
+            <div className="flex items-center gap-0.5 p-1 rounded-lg bg-ll-panel border border-ll-line shadow-ll-pop">
               {[
                 { delimiter: "*", icon: BsTypeBold, label: t("chatWindow.formatBold") },
                 { delimiter: "_", icon: BsTypeItalic, label: t("chatWindow.formatItalic") },
@@ -1701,9 +1661,8 @@ const ChatWindowComponent = ({
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => wrapSelection(delimiter)}
                   title={label}
-                  className="p-2 rounded-lg text-gray-600 dark:text-gray-300
-                             hover:text-ll-violet-ink dark:hover:text-ll-violet-ink
-                             hover:bg-ll-violet-tint dark:hover:bg-white/10 transition-colors"
+                  className="w-8 h-8 grid place-items-center rounded-md text-ll-ink2
+                             hover:text-ll-ink hover:bg-ll-hover transition-colors"
                 >
                   <Icon size={16} />
                 </button>

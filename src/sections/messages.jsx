@@ -876,14 +876,14 @@ const Messages = () => {
       <div className="ll-shell w-full relative z-10 flex flex-col min-w-0">
         <Navbar header={t("messages.title")} />
 
-        <section className="flex-grow min-h-0 p-0 sm:p-4 overflow-hidden">
+        <section className="flex-grow min-h-0 overflow-hidden">
 
-          {/* ── Desktop: unified card ── */}
+          {/* ── Desktop: list + conversation fill the shell, split by one hairline ── */}
           {isDesktop && (
-          <div className="ll-card flex h-full overflow-hidden">
+          <div className="flex h-full overflow-hidden">
 
             {/* ── ChatList sidebar ── */}
-            <div className="w-[280px] flex-shrink-0 overflow-hidden border-r border-ll-line">
+            <div className="w-[300px] flex-shrink-0 overflow-hidden border-r border-ll-line">
               <ChatListComponent {...chatListProps} />
             </div>
 
@@ -913,7 +913,7 @@ const Messages = () => {
           {!isDesktop && (
           <div className="h-full">
             {showChatList ? (
-              <div className="ll-card h-full overflow-hidden max-sm:!border-0 max-sm:!rounded-none">
+              <div className="h-full overflow-hidden">
                 <ChatListComponent {...chatListProps} />
               </div>
             ) : (

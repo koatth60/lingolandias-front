@@ -735,6 +735,7 @@
     "recordVoiceNote": "Nagraj wiadomość głosową",
     "stopRecording": "Zatrzymaj i podejrzyj",
     "recording": "Nagrywanie…",
+    "enterHint": "Enter, aby wysłać; Shift + Enter, aby przejść do nowej linii",
     "micPermissionDenied": "Odmówiono dostępu do mikrofonu. Zezwól na niego w ustawieniach przeglądarki, aby nagrać wiadomość głosową.",
     "micUnavailable": "Nie udało się uzyskać dostępu do mikrofonu.",
     "activeNow": "Aktywny teraz",

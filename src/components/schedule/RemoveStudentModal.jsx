@@ -55,21 +55,8 @@ const RemoveStudentModal = ({ student, teacher, onClose, onConfirm, isOpen }) =>
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
       <div 
-        className="relative w-full max-w-md rounded-2xl shadow-2xl overflow-hidden"
-        style={{
-          background: 'linear-gradient(135deg, #ffffff 0%, #f5f5f5 55%, #f0f0f0 100%)'
-        }}
+        className="relative w-full max-w-md rounded-2xl shadow-2xl overflow-hidden bg-ll-panel border border-ll-line"
       >
-        {/* Dark mode gradient */}
-        <div className="dark:block hidden absolute inset-0" style={{ 
-          background: 'linear-gradient(135deg, #0d0a1e 0%, #1a1a2e 55%, #110e28 100%)'
-        }} />
-
-        {/* Ambient glow orbs - rojizo para advertencia */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none hidden dark:block">
-          <div className="absolute w-48 h-48 rounded-full bg-red-500/10 blur-3xl -top-24 -left-24" />
-          <div className="absolute w-48 h-48 rounded-full bg-orange-500/10 blur-3xl -bottom-24 -right-24" />
-        </div>
 
         {/* Content */}
         <div className="relative z-10 p-6">
@@ -79,36 +66,36 @@ const RemoveStudentModal = ({ student, teacher, onClose, onConfirm, isOpen }) =>
               <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
                 <FiAlertTriangle className="text-red-500" size={20} />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              <h2 className="text-2xl font-bold text-ll-ink">
                 Remove Student
               </h2>
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
+              className="p-2 rounded-lg text-ll-ink3 hover:text-ll-ink hover:bg-ll-hover transition-colors"
             >
               <FiX size={20} />
             </button>
           </div>
 
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
+          <p className="text-ll-ink2 mb-6">
             Removing <span className="font-semibold text-ll-violet">{student.name} {student.lastName}</span>
           </p>
 
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-200 dark:border-ll-violet/20">
+          <p className="text-sm text-ll-ink3 mb-6 p-4 bg-ll-subtle rounded-xl border border-ll-line">
             You can either remove the student completely (which will delete all
             their events and chats) or remove only selected events.
           </p>
 
           {/* Remove All Option */}
-          <label className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-200 dark:border-ll-violet/20 cursor-pointer mb-4">
+          <label className="flex items-center gap-3 p-4 bg-ll-subtle rounded-xl border border-ll-line cursor-pointer mb-4">
             <input
               type="checkbox"
               checked={removeAll}
               onChange={() => setRemoveAll(!removeAll)}
               className="w-5 h-5 rounded border-gray-300 dark:border-ll-violet/30 text-ll-violet focus:ring-ll-violet"
             />
-            <span className="text-gray-900 dark:text-white font-medium">
+            <span className="text-ll-ink font-medium">
               Remove student completely
             </span>
           </label>
@@ -125,9 +112,9 @@ const RemoveStudentModal = ({ student, teacher, onClose, onConfirm, isOpen }) =>
                   return (
                     <label
                       key={slotKey}
-                      className="flex items-center justify-between p-3 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-200 dark:border-ll-violet/20 cursor-pointer hover:border-ll-violet transition-colors"
+                      className="flex items-center justify-between p-3 bg-ll-subtle rounded-xl border border-ll-line cursor-pointer hover:border-ll-violet transition-colors"
                     >
-                      <span className="text-gray-800 dark:text-white">
+                      <span className="text-ll-ink">
                         {event.day} at {event.time}
                       </span>
                       <input
@@ -147,7 +134,7 @@ const RemoveStudentModal = ({ student, teacher, onClose, onConfirm, isOpen }) =>
           <div className="flex gap-3">
             <button
               onClick={onClose}
-              className="flex-1 py-3 px-4 rounded-xl bg-gray-200 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-white/10 transition-all font-medium"
+              className="flex-1 py-3 px-4 rounded-xl bg-ll-hover text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-white/10 transition-all font-medium"
             >
               Cancel
             </button>

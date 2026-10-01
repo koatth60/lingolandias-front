@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import Dashboard from "./dashboard";
 import Navbar from "../components/layout/navbar";
 import CoursesCard from "../components/home/coursesCard";
-import { FiInfo, FiBookOpen, FiVideo, FiX } from "react-icons/fi";
+import { FiInfo, FiX } from "react-icons/fi";
 
 const Learning = () => {
   const [showBanner, setShowBanner] = useState(true);
@@ -76,73 +76,40 @@ const Learning = () => {
   };
 
   return (
-    <div className="flex w-full relative min-h-screen">
-      {/* Page backgrounds */}
-      <div className="absolute inset-0 pointer-events-none dark:hidden"
-        style={{ background: "linear-gradient(135deg, #f8f8fa 0%, #f2f2f6 100%)" }} />
-      
-      {/* Ambient orbs (dark only) */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden hidden dark:block">
-        <div className="absolute rounded-full blur-3xl opacity-10"
-          style={{ background: "radial-gradient(circle, rgb(var(--ll-violet) / 0.6), transparent 70%)", width: "500px", height: "500px", top: "-5%", right: "0%" }} />
-        <div className="absolute rounded-full blur-3xl opacity-8"
-          style={{ background: "radial-gradient(circle, rgba(31,164,140,0.4), transparent 70%)", width: "350px", height: "350px", bottom: "10%", left: "5%" }} />
-      </div>
-
+    <div className="flex w-full relative min-h-screen bg-ll-canvas">
       <Dashboard />
 
       <div className="ll-shell w-full min-w-0 relative z-10 flex flex-col">
         <Navbar header={t("learning.title")} />
 
-        <div className="px-3 sm:px-6 md:px-8 py-5 sm:py-8 flex flex-col gap-8 sm:gap-12">
+        <div className="px-3 sm:px-7 py-5 sm:py-8 flex flex-col gap-8 max-w-6xl w-full mx-auto">
 
           {/* ── Demo banner ── */}
           {showBanner && (
-            <div
-              className="relative rounded-2xl overflow-hidden"
-              style={{ border: "1px solid rgba(232,162,58,0.28)" }}
-            >
-              <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(232,162,58,0.07)" }} />
-              <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(232,162,58,0.06)" }} />
-              <div className="relative z-10 flex items-start sm:items-center justify-between gap-3 p-4">
-                <div className="flex items-start sm:items-center gap-3">
-                  <FiInfo size={16} style={{ color: "#E8A23A" }} className="flex-shrink-0 mt-0.5 sm:mt-0" />
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {t("learning.demoNotice")}
-                  </p>
-                </div>
-                <button onClick={() => setShowBanner(false)} className="flex-shrink-0 transition-opacity hover:opacity-60">
-                  <FiX size={16} style={{ color: "#E8A23A" }} />
-                </button>
+            <div className="flex items-start sm:items-center justify-between gap-3 px-4 py-3 rounded-xl border border-ll-line bg-ll-gold-tint">
+              <div className="flex items-start sm:items-center gap-3">
+                <FiInfo size={16} className="flex-shrink-0 mt-0.5 sm:mt-0 text-ll-gold-ink" />
+                <p className="text-[13.5px] text-ll-ink2">{t("learning.demoNotice")}</p>
               </div>
+              <button onClick={() => setShowBanner(false)} className="flex-shrink-0 text-ll-gold-ink hover:opacity-70 transition-opacity">
+                <FiX size={16} />
+              </button>
             </div>
           )}
 
           {/* ── Hero ── */}
-          <div className="text-center py-4 sm:py-8">
-            <p className="text-[10px] font-bold tracking-widest text-ll-violet uppercase mb-3">{t("learning.heroBadge")}</p>
-            <h1 className="text-3xl sm:text-5xl font-bold tracking-tight login-gradient-text mb-3 sm:mb-4">
+          <div>
+            <p className="text-[12.5px] font-medium text-ll-violet-ink mb-1">{t("learning.heroBadge")}</p>
+            <h1 className="text-[28px] sm:text-[34px] font-semibold tracking-[-0.03em] leading-[1.1] text-ll-ink">
               {t("learning.heroTitle")}
             </h1>
-            <p className="text-base sm:text-lg text-gray-500 dark:text-gray-400 max-w-lg mx-auto">
-              {t("learning.heroSubtitle")}
-            </p>
-            <div className="h-px mt-6 mx-auto max-w-xs opacity-40"
-              style={{ background: "linear-gradient(90deg, transparent, rgb(var(--ll-violet)), #E8A23A, #1FA48C, transparent)" }} />
+            <p className="text-[14.5px] text-ll-ink3 mt-2 max-w-xl">{t("learning.heroSubtitle")}</p>
           </div>
 
           {/* ── Interactive Courses ── */}
           <section>
-            <div className="flex items-center gap-3 mb-5 sm:mb-7">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: "rgb(var(--ll-violet) / 0.12)", border: "1px solid rgb(var(--ll-violet) / 0.25)" }}>
-                <FiVideo size={15} style={{ color: "rgb(var(--ll-violet))" }} />
-              </div>
-              <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-gray-800 dark:text-white">
-                {languageCourses.title}
-              </h2>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+            <h2 className="text-[13.5px] font-semibold text-ll-ink mb-3">{languageCourses.title}</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {languageCourses.courses.map((course) => (
                 <CoursesCard key={course.id} {...course} />
               ))}
@@ -151,16 +118,8 @@ const Learning = () => {
 
           {/* ── E-books ── */}
           <section>
-            <div className="flex items-center gap-3 mb-5 sm:mb-7">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: "rgba(31,164,140,0.12)", border: "1px solid rgba(31,164,140,0.25)" }}>
-                <FiBookOpen size={15} style={{ color: "#1FA48C" }} />
-              </div>
-              <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-gray-800 dark:text-white">
-                {ebooks.title}
-              </h2>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+            <h2 className="text-[13.5px] font-semibold text-ll-ink mb-3">{ebooks.title}</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {ebooks.courses.map((course) => (
                 <CoursesCard key={course.id} {...course} />
               ))}

@@ -43,21 +43,19 @@ const NewGroupModal = ({ currentUserId, currentUserRole, onClose, onCreate }) =>
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="relative w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col"
-        style={{ background: "linear-gradient(135deg, #ffffff 0%, #f5f5f5 55%, #f0f0f0 100%)" }}
+        className="relative w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col bg-ll-panel border border-ll-line"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="dark:block hidden absolute inset-0" style={{ background: "linear-gradient(135deg, #0d0a1e 0%, #1a1a2e 55%, #110e28 100%)" }} />
 
         <div className="relative z-10 p-5 flex flex-col min-h-0 flex-1">
           <div className="flex items-center justify-between mb-4 flex-shrink-0">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-[#E8A23A]/15">
-                <FiUsers size={15} className="text-[#E8A23A]" />
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-ll-gold-tint">
+                <FiUsers size={15} className="text-ll-gold-ink" />
               </div>
-              <h2 className="text-base font-bold text-gray-900 dark:text-white">{t("messagesExtra.newGroupTitle")}</h2>
+              <h2 className="text-base font-bold text-ll-ink">{t("messagesExtra.newGroupTitle")}</h2>
             </div>
-            <button onClick={onClose} className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5">
+            <button onClick={onClose} className="p-1.5 rounded-lg text-ll-ink3 hover:bg-ll-hover">
               <FiX size={18} />
             </button>
           </div>
@@ -72,7 +70,7 @@ const NewGroupModal = ({ currentUserId, currentUserRole, onClose, onCreate }) =>
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder={t("messagesExtra.groupNamePlaceholder")}
-            className="w-full mb-3 px-3.5 py-2.5 rounded-xl text-sm bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-ll-violet/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:border-ll-violet transition-colors flex-shrink-0"
+            className="w-full mb-3 px-3.5 py-2.5 rounded-xl text-sm bg-ll-subtle border border-ll-line text-ll-ink placeholder:text-ll-ink3 outline-none focus:border-ll-violet transition-colors flex-shrink-0"
           />
 
           {selected.length > 0 && (
@@ -97,7 +95,7 @@ const NewGroupModal = ({ currentUserId, currentUserRole, onClose, onCreate }) =>
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t("messagesExtra.searchMembersPlaceholder")}
-              className="w-full pl-9 pr-3 py-2.5 rounded-xl text-sm bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-ll-violet/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:border-ll-violet transition-colors"
+              className="w-full pl-9 pr-3 py-2.5 rounded-xl text-sm bg-ll-subtle border border-ll-line text-ll-ink placeholder:text-ll-ink3 outline-none focus:border-ll-violet transition-colors"
             />
           </div>
 
@@ -113,7 +111,7 @@ const NewGroupModal = ({ currentUserId, currentUserRole, onClose, onCreate }) =>
                   key={u.id}
                   onClick={() => toggleMember(u)}
                   className={`flex items-center gap-2.5 px-2.5 py-2 rounded-xl cursor-pointer transition-colors ${
-                    isSelected ? "bg-ll-violet/10 dark:bg-ll-violet/15" : "hover:bg-gray-50 dark:hover:bg-white/5"
+                    isSelected ? "bg-ll-violet/10 dark:bg-ll-violet/15" : "hover:bg-ll-hover"
                   }`}
                 >
                   {u.avatarUrl ? (
@@ -124,7 +122,7 @@ const NewGroupModal = ({ currentUserId, currentUserRole, onClose, onCreate }) =>
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-gray-800 dark:text-gray-100 truncate">{u.name} {u.lastName}</p>
+                    <p className="text-xs font-medium text-ll-ink truncate">{u.name} {u.lastName}</p>
                     <p className="text-[10px] text-gray-400 truncate">{u.email}</p>
                   </div>
                   {isSelected && <FiCheck size={16} className="text-ll-violet flex-shrink-0" />}
@@ -134,7 +132,7 @@ const NewGroupModal = ({ currentUserId, currentUserRole, onClose, onCreate }) =>
           </div>
 
           {isTeacher && (
-            <label className="flex items-center gap-2 mt-3 px-1 text-xs text-gray-600 dark:text-gray-300 flex-shrink-0 cursor-pointer">
+            <label className="flex items-center gap-2 mt-3 px-1 text-xs text-ll-ink2 flex-shrink-0 cursor-pointer">
               <input
                 type="checkbox"
                 checked={scheduleAsClass}

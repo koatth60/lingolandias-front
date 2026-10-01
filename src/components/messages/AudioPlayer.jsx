@@ -148,7 +148,7 @@ const AudioPlayer = ({ src, variant = "file", isSender = false }) => {
       <button
         onClick={togglePlay}
         className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-white
-                   transition-transform hover:scale-105 active:scale-95"
+ transition-transform hover:scale-105 active:scale-95"
         style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", boxShadow: "0 2px 6px rgb(var(--ll-violet) / 0.35)" }}
       >
         {isPlaying ? <FiPause size={13} /> : <FiPlay size={13} className="ml-0.5" />}
@@ -164,13 +164,13 @@ const AudioPlayer = ({ src, variant = "file", isSender = false }) => {
           />
           <div
             className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-white shadow
-                       border border-ll-violet/40 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+ border border-ll-violet/40 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
             style={{ left: `calc(${progress}% - 5px)` }}
           />
         </div>
         <div className="flex justify-between mt-1">
-          <span className="text-[10px] text-gray-500 dark:text-gray-400 tabular-nums">{formatTime(currentTime)}</span>
-          <span className="text-[10px] text-gray-500 dark:text-gray-400 tabular-nums">{formatTime(duration)}</span>
+          <span className="text-[10px] text-ll-ink3 tabular-nums">{formatTime(currentTime)}</span>
+          <span className="text-[10px] text-ll-ink3 tabular-nums">{formatTime(duration)}</span>
         </div>
       </div>
     </div>

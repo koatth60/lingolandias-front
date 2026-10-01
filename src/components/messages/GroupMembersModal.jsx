@@ -68,11 +68,9 @@ const GroupMembersModal = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={onClose}>
       <div
-        className="relative w-full max-w-xs rounded-2xl shadow-2xl overflow-hidden max-h-[80vh] flex flex-col"
-        style={{ background: "linear-gradient(135deg, #ffffff 0%, #f5f5f5 55%, #f0f0f0 100%)" }}
+        className="relative w-full max-w-xs rounded-2xl shadow-2xl overflow-hidden max-h-[80vh] flex flex-col bg-ll-panel border border-ll-line"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="dark:block hidden absolute inset-0" style={{ background: "linear-gradient(135deg, #0d0a1e 0%, #1a1a2e 55%, #110e28 100%)" }} />
 
         <div className="relative z-10 p-5 flex flex-col min-h-0 flex-1">
           <div className="flex items-center justify-between mb-1 flex-shrink-0 gap-2">
@@ -80,8 +78,8 @@ const GroupMembersModal = ({
               {chatType === "group" ? (
                 <AvatarPicker value={groupAvatarUrl} onChange={onChangeAvatar} size={32} align="start" />
               ) : (
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-[#E8A23A]/15 flex-shrink-0">
-                  <FiUsers size={15} className="text-[#E8A23A]" />
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-ll-gold-tint flex-shrink-0">
+                  <FiUsers size={15} className="text-ll-gold-ink" />
                 </div>
               )}
               {editingName ? (
@@ -91,14 +89,14 @@ const GroupMembersModal = ({
                     value={nameInput}
                     onChange={(e) => setNameInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && submitRename()}
-                    className="flex-1 min-w-0 text-sm px-2 py-1 rounded-lg bg-gray-50 dark:bg-white/5 border border-ll-violet/30 text-gray-900 dark:text-white outline-none"
+                    className="flex-1 min-w-0 text-sm px-2 py-1 rounded-lg bg-ll-subtle border border-ll-violet/30 text-ll-ink outline-none"
                   />
                   <button onClick={submitRename} className="p-1.5 rounded-lg text-white flex-shrink-0" style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}>
                     <FiCheck size={13} />
                   </button>
                 </div>
               ) : (
-                <h2 className="text-base font-bold text-gray-900 dark:text-white truncate">{groupName}</h2>
+                <h2 className="text-base font-bold text-ll-ink truncate">{groupName}</h2>
               )}
               {!editingName && canManage && (
                 <button onClick={() => { setNameInput(groupName || ""); setEditingName(true); }} className="p-1 rounded-lg text-gray-400 hover:text-ll-violet flex-shrink-0">
@@ -106,7 +104,7 @@ const GroupMembersModal = ({
                 </button>
               )}
             </div>
-            <button onClick={onClose} className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 flex-shrink-0">
+            <button onClick={onClose} className="p-1.5 rounded-lg text-ll-ink3 hover:bg-ll-hover flex-shrink-0">
               <FiX size={18} />
             </button>
           </div>
@@ -116,10 +114,10 @@ const GroupMembersModal = ({
 
           {pendingClassConfirm ? (
             <div>
-              <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-1">
+              <p className="text-sm font-semibold text-ll-ink mb-1">
                 {t("messagesExtra.addToClassTitle")}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+              <p className="text-xs text-ll-ink3 mb-3">
                 {t("messagesExtra.addToClassWarning", { name: pendingClassConfirm.personName })}
               </p>
               <input
@@ -127,7 +125,7 @@ const GroupMembersModal = ({
                 type="text"
                 value={classNameInput}
                 onChange={(e) => setClassNameInput(e.target.value)}
-                className="w-full px-3 py-2.5 mb-3 rounded-xl text-sm bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-ll-violet/20 text-gray-900 dark:text-white outline-none focus:border-ll-violet"
+                className="w-full px-3 py-2.5 mb-3 rounded-xl text-sm bg-ll-subtle border border-ll-line text-ll-ink outline-none focus:border-ll-violet"
               />
               <div className="flex gap-2">
                 <button
@@ -139,7 +137,7 @@ const GroupMembersModal = ({
                 </button>
                 <button
                   onClick={onCancelAddToClass}
-                  className="flex-1 py-2.5 rounded-xl font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 transition-all"
+                  className="flex-1 py-2.5 rounded-xl font-medium text-gray-700 dark:text-gray-300 bg-ll-hover hover:bg-gray-200 dark:hover:bg-white/10 transition-all"
                 >
                   {t("messagesExtra.skipScheduling")}
                 </button>
@@ -151,7 +149,7 @@ const GroupMembersModal = ({
                 {members.map((m) =>
                   confirmRemoveId === m.id ? (
                     <div key={m.id} className="px-2.5 py-2.5 rounded-xl bg-red-50 dark:bg-red-500/10 space-y-2">
-                      <p className="text-xs text-gray-700 dark:text-gray-200">
+                      <p className="text-xs text-ll-ink">
                         {m.id === currentUserId
                           ? t("messagesExtra.confirmLeaveGroup")
                           : t("messagesExtra.confirmRemoveMember", { name: `${m.name} ${m.lastName}`.trim() })}
@@ -165,7 +163,7 @@ const GroupMembersModal = ({
                         </button>
                         <button
                           onClick={() => setConfirmRemoveId(null)}
-                          className="flex-1 py-1.5 rounded-lg text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors"
+                          className="flex-1 py-1.5 rounded-lg text-xs font-medium text-gray-700 dark:text-gray-300 bg-ll-hover hover:bg-gray-200 dark:hover:bg-white/20 transition-colors"
                         >
                           {t("messagesExtra.cancel")}
                         </button>
@@ -174,7 +172,7 @@ const GroupMembersModal = ({
                   ) : (
                     <div
                       key={m.id}
-                      className="flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                      className="flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-ll-hover transition-colors"
                     >
                       <div className="flex items-center gap-2.5 flex-1 min-w-0 cursor-pointer" onClick={() => onViewProfile(m.id)}>
                         {m.avatarUrl ? (
@@ -185,10 +183,10 @@ const GroupMembersModal = ({
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-gray-800 dark:text-gray-100 truncate">
+                          <p className="text-xs font-medium text-ll-ink truncate">
                             {m.name} {m.lastName}
                             {m.memberRole === "owner" && (
-                              <span className="ml-1.5 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-[#E8A23A]/15 text-[#C4860A] dark:text-[#E8A23A]">
+                              <span className="ml-1.5 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-ll-gold-tint text-ll-gold-ink ">
                                 {t("messagesExtra.groupOwner")}
                               </span>
                             )}
@@ -196,7 +194,7 @@ const GroupMembersModal = ({
                           <p className="text-[10px] text-gray-400">{t(ROLE_LABEL_KEY[m.role] || "profileCard.roleStudent")}</p>
                         </div>
                       </div>
-                      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${m.online === "online" ? "bg-[#1FA48C]" : "bg-gray-300 dark:bg-gray-600"}`} />
+                      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${m.online === "online" ? "bg-ll-teal" : "bg-ll-ink4"}`} />
                       {canRemove(m) && (
                         <button
                           onClick={() => setConfirmRemoveId(m.id)}
@@ -223,7 +221,7 @@ const GroupMembersModal = ({
               {canScheduleClass && (
                 <button
                   onClick={onScheduleClass}
-                  className="mt-2 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 transition-all flex-shrink-0"
+                  className="mt-2 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-medium text-ll-ink bg-ll-hover hover:bg-gray-200 dark:hover:bg-white/10 transition-all flex-shrink-0"
                 >
                   <FiCalendar size={14} />
                   {t("messagesExtra.scheduleClassButton")}
@@ -240,11 +238,11 @@ const GroupMembersModal = ({
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder={t("messagesExtra.searchMembersPlaceholder")}
-                  className="w-full pl-9 pr-3 py-2.5 rounded-xl text-sm bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-ll-violet/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:border-ll-violet"
+                  className="w-full pl-9 pr-3 py-2.5 rounded-xl text-sm bg-ll-subtle border border-ll-line text-ll-ink placeholder:text-ll-ink3 outline-none focus:border-ll-violet"
                 />
               </div>
 
-              <label className="flex items-center gap-2 mb-2 px-1 text-xs text-gray-600 dark:text-gray-300 flex-shrink-0 cursor-pointer">
+              <label className="flex items-center gap-2 mb-2 px-1 text-xs text-ll-ink2 flex-shrink-0 cursor-pointer">
                 <input type="checkbox" checked={shareHistory} onChange={(e) => setShareHistory(e.target.checked)} className="accent-ll-violet" />
                 {t("messagesExtra.shareHistoryToggle")}
               </label>
@@ -258,7 +256,7 @@ const GroupMembersModal = ({
                   <div
                     key={u.id}
                     onClick={() => { onAddMember(u, shareHistory); setShowAddPeople(false); setQuery(""); }}
-                    className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                    className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl cursor-pointer hover:bg-ll-hover transition-colors"
                   >
                     {u.avatarUrl ? (
                       <img src={u.avatarUrl} alt={u.name} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
@@ -268,7 +266,7 @@ const GroupMembersModal = ({
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-gray-800 dark:text-gray-100 truncate">{u.name} {u.lastName}</p>
+                      <p className="text-xs font-medium text-ll-ink truncate">{u.name} {u.lastName}</p>
                       <p className="text-[10px] text-gray-400 truncate">{u.email}</p>
                     </div>
                   </div>
@@ -277,7 +275,7 @@ const GroupMembersModal = ({
 
               <button
                 onClick={() => setShowAddPeople(false)}
-                className="mt-3 w-full py-2.5 rounded-xl font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 transition-all flex-shrink-0"
+                className="mt-3 w-full py-2.5 rounded-xl font-medium text-gray-700 dark:text-gray-300 bg-ll-hover hover:bg-gray-200 dark:hover:bg-white/10 transition-all flex-shrink-0"
               >
                 {t("messagesExtra.cancel")}
               </button>

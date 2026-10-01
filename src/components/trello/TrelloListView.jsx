@@ -8,18 +8,18 @@ const TrelloListView = ({
   onCardClick 
 }) => {
   return (
-    <div className="flex-shrink-0 w-72 sm:w-80 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-800">
+    <div className="flex-shrink-0 w-72 sm:w-80 bg-ll-subtle rounded-xl border border-ll-line">
       {/* Encabezado de lista */}
-      <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+      <div className="p-4 border-b border-ll-line">
         <div className="flex justify-between items-center mb-2">
-          <h4 className="font-bold text-gray-900 dark:text-white text-lg truncate">{list.name}</h4>
+          <h4 className="font-bold text-ll-ink text-lg truncate">{list.name}</h4>
           <div className="flex items-center gap-2">
             <span className="bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-semibold px-2.5 py-1 rounded-full min-w-[2rem] text-center">
               {cards.length}
             </span>
             <button
               onClick={() => onRefresh(list.id)}
-              className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 p-1"
+              className="text-ll-ink3 hover:text-gray-700 dark:hover:text-gray-300 p-1"
               title="Refresh list"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -45,15 +45,15 @@ const TrelloListView = ({
         {cards.slice(0, 3).map((card) => (
           <div
             key={card.id}
-            className="bg-white dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-700 p-3 hover:shadow-md dark:hover:shadow-lg transition cursor-pointer"
+            className="bg-ll-panel rounded-lg border border-gray-300 dark:border-gray-700 p-3 hover:shadow-md dark:hover:shadow-lg transition cursor-pointer"
             onClick={() => onCardClick(card.url)}
           >
-            <h5 className="font-medium text-gray-900 dark:text-white mb-1 line-clamp-1">{card.name}</h5>
+            <h5 className="font-medium text-ll-ink mb-1 line-clamp-1">{card.name}</h5>
             {card.desc && (
               <p className="text-gray-600 dark:text-gray-400 text-xs line-clamp-2 mb-2">{card.desc}</p>
             )}
             <div className="flex justify-between items-center">
-              <span className="text-xs text-gray-500 dark:text-gray-400">Click to open</span>
+              <span className="text-xs text-ll-ink3">Click to open</span>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -69,7 +69,7 @@ const TrelloListView = ({
         ))}
         
         {cards.length === 0 && (
-          <div className="text-center text-gray-400 dark:text-gray-500 py-4 text-sm">
+          <div className="text-center text-ll-ink3 py-4 text-sm">
             No cards in this list
           </div>
         )}
@@ -87,7 +87,7 @@ const TrelloListView = ({
       </div>
       
       {/* Botón para añadir tarjeta */}
-      <div className="p-3 border-t border-gray-200 dark:border-gray-800">
+      <div className="p-3 border-t border-ll-line">
         <button
           onClick={() => onAddCard(list.id)}
           className="w-full text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 py-2 rounded text-sm font-medium flex items-center justify-center transition"

@@ -5,7 +5,7 @@ const TrelloConnectModal = ({ isOpen, onClose, onSave, apiKey, apiSecret, token,
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-2">
-      <div className="bg-white dark:bg-brand-dark-secondary p-4 sm:p-6 rounded-lg shadow-lg w-full max-w-md">
+      <div className="bg-ll-panel p-4 sm:p-6 rounded-lg shadow-lg w-full max-w-md">
         <h2 className="text-xl font-bold mb-4">Connect to Trello</h2>
         <div className="mb-4">
           <label className="block mb-2 font-semibold">API Key</label>

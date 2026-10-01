@@ -5,7 +5,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { selectUserInfo, selectAllSchedules, selectAllUsers } from "../../redux/selectors";
 import { setSchedulesData } from "../../redux/schedulesSlice";
-import { FiGlobe, FiVideo } from "react-icons/fi";
+import { FiVideo } from "react-icons/fi";
 import AdminStats from "./AdminStats";
 import LanguageFilter from "./LanguageFilter";
 import ClassCard from "./ClassCard";
@@ -108,7 +108,7 @@ const AdminHomeDashboard = () => {
               animation: "spin 0.8s linear infinite",
             }}
           />
-          <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{t("adminHome.loading")}</p>
+          <p className="text-[13px] text-ll-ink3">{t("adminHome.loading")}</p>
         </div>
       </main>
     );
@@ -116,42 +116,23 @@ const AdminHomeDashboard = () => {
 
   return (
     <>
-      <main className="relative w-full max-w-7xl mx-auto px-3 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8 overflow-x-hidden">
+      <main className="relative w-full max-w-6xl mx-auto px-3 sm:px-7 py-6 sm:py-8 space-y-8 overflow-x-hidden">
         <HalloweenWeb />
 
-        {/* ── Admin hero ── */}
-        <section className="relative rounded-2xl overflow-hidden shadow-sm dark:shadow-none" style={{ border: "1px solid rgb(var(--ll-violet) / 0.12)" }}>
-          <div className="dark:hidden absolute inset-0 bg-white" />
-          <div
-            className="hidden dark:block absolute inset-0"
-            style={{ background: "linear-gradient(135deg, rgba(13,10,30,0.96) 0%, rgba(26,26,46,0.95) 100%)" }}
-          />
-          <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-ll-violet via-[#E8A23A] to-[#1FA48C]" />
-          <div
-            className="absolute top-[-60px] right-[-40px] w-[220px] h-[220px] rounded-full pointer-events-none"
-            style={{ background: "radial-gradient(circle, rgb(var(--ll-violet) / 0.18), transparent 70%)" }}
-          />
-          <div className="relative z-10 px-4 sm:px-10 py-6 sm:py-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-            <div>
-              <h1 className="hw-gothic text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-ll-ink mb-2">
-                {t("adminHome.adminDashboard")}
-              </h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                {t("adminHome.todayClasses", { day: getTodayDayName() })}
-              </p>
-            </div>
-            <button
-              onClick={() => setShowRecordings(true)}
-              className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-sm font-semibold text-white shadow-lg transition-all hover:opacity-90 hover:scale-[1.02] active:scale-100 self-start sm:self-auto flex-shrink-0"
-              style={{
-                background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))",
-                boxShadow: "0 4px 16px rgb(var(--ll-violet) / 0.35)",
-              }}
-            >
-              <FiVideo size={16} />
-              {t("adminHome.classRecordings")}
-            </button>
+        {/* ── Header ── */}
+        <section className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div>
+            <h1 className="hw-gothic text-[30px] sm:text-[36px] font-semibold tracking-[-0.03em] leading-[1.05] text-ll-ink">
+              {t("adminHome.adminDashboard")}
+            </h1>
+            <p className="text-[14px] text-ll-ink3 mt-2">
+              {t("adminHome.todayClasses", { day: getTodayDayName() })}
+            </p>
           </div>
+          <button onClick={() => setShowRecordings(true)} className="ll-btn ll-btn-secondary self-start sm:self-auto flex-shrink-0">
+            <FiVideo size={15} />
+            {t("adminHome.classRecordings")}
+          </button>
         </section>
 
         {/* ── Stats ── */}
@@ -165,20 +146,14 @@ const AdminHomeDashboard = () => {
 
         {/* ── Today's Classes ── */}
         <section>
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-            <FiGlobe className="text-ll-violet" size={20} />
-            <h2 className="text-xl font-bold text-gray-800 dark:text-white">{t("adminHome.todaysClasses")}</h2>
-            <span
-              className="px-2.5 py-0.5 rounded-full text-xs font-bold text-white"
-              style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", boxShadow: "0 2px 8px rgb(var(--ll-violet) / 0.35)" }}
-            >
-              {filteredClasses.length}
-            </span>
+          <div className="flex items-center gap-2 mb-3">
+            <h2 className="text-[13.5px] font-semibold text-ll-ink">{t("adminHome.todaysClasses")}</h2>
+            <span className="font-mono text-[11.5px] text-ll-ink3 px-1.5 py-px rounded-[5px] bg-ll-hover">{filteredClasses.length}</span>
           </div>
 
           <LanguageFilter activeSection={activeSection} setActiveSection={setActiveSection} />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
             {filteredClasses.map((classItem) => (
               <ClassCard
                 key={classItem.id}
@@ -190,24 +165,11 @@ const AdminHomeDashboard = () => {
           </div>
 
           {filteredClasses.length === 0 && (
-            <div
-              className="relative rounded-2xl overflow-hidden text-center py-16 shadow-sm dark:shadow-none"
-              style={{ border: "1px solid rgb(var(--ll-violet) / 0.15)" }}
-            >
-              <div className="dark:hidden absolute inset-0 bg-white" />
-              <div
-                className="hidden dark:block absolute inset-0"
-                style={{ background: "linear-gradient(135deg, rgba(13,10,30,0.90), rgba(26,26,46,0.88))" }}
-              />
-              <div className="relative z-10">
-                <div className="text-5xl mb-4">📚</div>
-                <h3 className="text-lg font-bold text-gray-700 dark:text-gray-300 mb-1">
-                  {t("adminHome.noClasses", { day: getTodayDayName() })}
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {t("adminHome.checkSchedule")}
-                </p>
-              </div>
+            <div className="text-center py-14 rounded-xl border border-dashed border-ll-line2 bg-ll-subtle">
+              <h3 className="text-[14px] font-semibold text-ll-ink mb-1">
+                {t("adminHome.noClasses", { day: getTodayDayName() })}
+              </h3>
+              <p className="text-[13px] text-ll-ink3">{t("adminHome.checkSchedule")}</p>
             </div>
           )}
         </section>

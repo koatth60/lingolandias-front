@@ -1,56 +1,34 @@
 import { FiArrowRight, FiClock } from "react-icons/fi";
 
-const LEVEL_COLORS = {
-  "Beginner":     { color: "#1FA48C", bg: "rgba(31,164,140,0.15)",  border: "rgba(31,164,140,0.35)" },
-  "Intermediate": { color: "#E8A23A", bg: "rgba(232,162,58,0.15)",  border: "rgba(232,162,58,0.35)" },
-  "Advanced":     { color: "#ef4444", bg: "rgba(239,68,68,0.15)",   border: "rgba(239,68,68,0.35)"  },
-  "All Levels":   { color: "rgb(var(--ll-violet))", bg: "rgb(var(--ll-violet) / 0.15)",  border: "rgb(var(--ll-violet) / 0.35)" },
+const LEVEL_TINT = {
+  "Beginner":     "bg-ll-teal-tint text-ll-teal-ink",
+  "Intermediate": "bg-ll-gold-tint text-ll-gold-ink",
+  "Advanced":     "bg-red-500/10 text-red-600 dark:text-red-400",
+  "All Levels":   "bg-ll-violet-tint text-ll-violet-ink",
 };
 
 const CoursesCard = ({ title, description, image, button, level, duration }) => {
-  const lc = LEVEL_COLORS[level] || LEVEL_COLORS["All Levels"];
+  const tint = LEVEL_TINT[level] || LEVEL_TINT["All Levels"];
 
   return (
-    <div
-      className="relative rounded-2xl overflow-hidden flex flex-col transition-transform duration-200 hover:-translate-y-1"
-      style={{ border: "1px solid rgb(var(--ll-violet) / 0.15)", boxShadow: "0 6px 24px rgba(0,0,0,0.08)" }}
-    >
-      {/* Glass backgrounds */}
-      <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }} />
-      <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.80)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }} />
-
-      {/* Top accent bar */}
-      <div className="absolute top-0 left-0 w-full h-[2px] z-10" style={{ background: "linear-gradient(90deg, rgb(var(--ll-violet)), #E8A23A, #1FA48C)" }} />
-
-      {/* Image */}
-      <div className="relative z-10 overflow-hidden" style={{ height: "180px" }}>
+    <div className="rounded-xl overflow-hidden flex flex-col border border-ll-line bg-ll-panel transition-shadow duration-200 hover:shadow-ll-2">
+      <div className="relative overflow-hidden bg-ll-hover" style={{ height: "168px" }}>
         <img className="w-full h-full object-cover" src={image} alt={title} />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent 50%, rgba(13,10,30,0.55) 100%)" }} />
-        {/* Level badge */}
-        <span
-          className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-bold"
-          style={{ background: lc.bg, border: `1px solid ${lc.border}`, color: lc.color, backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}
-        >
+        <span className={`absolute top-3 left-3 inline-flex items-center h-5 px-2 rounded-full text-[11.5px] font-medium ${tint}`}>
           {level}
         </span>
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 p-5 flex flex-col flex-grow">
-        <h3 className="text-base font-extrabold text-gray-800 dark:text-white mb-2 leading-snug">{title}</h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed flex-grow mb-4">{description}</p>
+      <div className="p-4 flex flex-col flex-grow">
+        <h3 className="text-[14.5px] font-semibold text-ll-ink mb-1.5 leading-snug">{title}</h3>
+        <p className="text-[13px] text-ll-ink3 leading-relaxed flex-grow mb-3">{description}</p>
 
-        {/* Meta */}
-        <div className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500 mb-4">
-          <FiClock size={11} />
+        <div className="flex items-center gap-1.5 text-[12px] text-ll-ink3 mb-3.5">
+          <FiClock size={12} />
           <span>{duration}</span>
         </div>
 
-        {/* Button */}
-        <button
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-white text-sm font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] group"
-          style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", boxShadow: "0 4px 14px rgb(var(--ll-violet) / 0.30)" }}
-        >
+        <button className="ll-btn ll-btn-secondary w-full justify-center group">
           {button}
           <FiArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform duration-150" />
         </button>

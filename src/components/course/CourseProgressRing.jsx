@@ -1,34 +1,18 @@
-const CourseProgressRing = ({ percent, size = 72, stroke = 6 }) => {
+const CourseProgressRing = ({ percent, size = 64, stroke = 5 }) => {
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (Math.min(percent, 100) / 100) * circumference;
-  const gradientId = "courseRingGradient";
 
   return (
     <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
-        <defs>
-          <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="rgb(var(--ll-violet))" />
-            <stop offset="55%" stopColor="rgb(var(--ll-violet-ink))" />
-            <stop offset="100%" stopColor="#E8A23A" />
-          </linearGradient>
-        </defs>
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="rgb(var(--ll-hover))" strokeWidth={stroke} />
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="currentColor"
-          className="text-gray-200 dark:text-white/10"
-          strokeWidth={stroke}
-        />
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke={`url(#${gradientId})`}
+          stroke="rgb(var(--ll-violet))"
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={circumference}
@@ -37,7 +21,7 @@ const CourseProgressRing = ({ percent, size = 72, stroke = 6 }) => {
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-sm font-bold text-gray-800 dark:text-white">{percent}%</span>
+        <span className="font-mono text-[13px] font-medium text-ll-ink">{percent}%</span>
       </div>
     </div>
   );

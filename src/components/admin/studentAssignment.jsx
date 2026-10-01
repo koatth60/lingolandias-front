@@ -43,7 +43,7 @@ const EventTimeModal = ({ selectedDate, initialStart, initialEnd, onClose, onAdd
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
-        className="relative w-full max-w-sm rounded-2xl bg-white dark:bg-[#0d0a1e]"
+        className="relative w-full max-w-sm rounded-2xl bg-ll-panel"
         style={{
           border: "1px solid rgb(var(--ll-violet) / 0.30)",
           boxShadow: "0 32px 64px rgba(0,0,0,0.5)",
@@ -53,18 +53,18 @@ const EventTimeModal = ({ selectedDate, initialStart, initialEnd, onClose, onAdd
         <div className="absolute top-0 left-0 w-full h-[2px] rounded-t-2xl" style={{ background: "linear-gradient(90deg, #E8A23A, rgb(var(--ll-violet)))" }} />
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
+            <h3 className="text-base font-extrabold text-ll-ink flex items-center gap-2">
               <FiClock size={15} style={{ color: "#E8A23A" }} />
               {t("addEvent.addClassTime")}
             </h3>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-all"
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-ll-ink hover:bg-ll-hover transition-all"
             >
               <FiX size={15} />
             </button>
           </div>
-          <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-5">
+          <p className="text-sm font-semibold text-ll-ink3 mb-5">
             {selectedDate ? dayjs(selectedDate).format("dddd, MMMM D YYYY") : ""}
           </p>
           <div className="space-y-4">
@@ -90,7 +90,7 @@ const EventTimeModal = ({ selectedDate, initialStart, initialEnd, onClose, onAdd
                     className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all duration-200 ${
                       recurrenceWeeks === opt.value
                         ? "text-white"
-                        : "text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-white/10"
+                        : "text-ll-ink3 border border-ll-line"
                     }`}
                     style={recurrenceWeeks === opt.value ? { background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" } : {}}
                   >
@@ -437,7 +437,7 @@ const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
           onClick={(e) => { if (e.target === e.currentTarget) setIsCalendarOpen(false); }}
         >
           <div
-            className="relative w-full rounded-2xl bg-white dark:bg-[#0d0a1e] flex flex-col"
+            className="relative w-full rounded-2xl bg-ll-panel flex flex-col"
             style={{
               maxWidth: "min(1100px, 96vw)",
               height: "min(800px, 90vh)",
@@ -450,23 +450,23 @@ const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
             <div className="absolute top-0 left-0 w-full h-[3px] rounded-t-2xl" style={{ background: "linear-gradient(90deg, rgb(var(--ll-violet)), #E8A23A, #1FA48C)" }} />
 
             {/* Header */}
-            <div className="flex items-center justify-between px-6 pt-5 pb-4 flex-shrink-0 border-b border-gray-100 dark:border-white/[0.07]">
+            <div className="flex items-center justify-between px-6 pt-5 pb-4 flex-shrink-0 border-b border-ll-line">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}>
                   <FiCalendar size={16} className="text-white" />
                 </div>
                 <div>
-                  <h3 className="text-base font-extrabold text-gray-900 dark:text-white leading-tight">
+                  <h3 className="text-base font-extrabold text-ll-ink leading-tight">
                     {t("admin.teacherSchedule", { name: `${selectedTeacher?.name} ${selectedTeacher?.lastName}` })}
                   </h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  <p className="text-xs text-ll-ink3 mt-0.5">
                     {t("admin.calendarHint")}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setIsCalendarOpen(false)}
-                className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-all flex-shrink-0"
+                className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 hover:text-ll-ink hover:bg-ll-hover transition-all flex-shrink-0"
               >
                 <FiX size={18} />
               </button>
@@ -474,7 +474,7 @@ const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
 
             {/* Calendar */}
             <div className="flex-1 overflow-hidden p-4">
-              <div className="rbc-admin-cal h-full rounded-xl overflow-hidden border border-gray-200 dark:border-white/[0.07]">
+              <div className="rbc-admin-cal h-full rounded-xl overflow-hidden border border-ll-line">
                 <Calendar
                   localizer={localizer}
                   events={[...teachersEvents, ...events]}

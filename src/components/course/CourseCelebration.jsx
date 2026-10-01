@@ -15,17 +15,9 @@ const CourseCelebration = ({ onDismiss }) => {
 
   return (
     <div
-      className="relative overflow-hidden rounded-2xl mb-6"
-      style={{
-        border: "1px solid rgba(106,43,216,0.3)",
-        animation: "courseCelebrationPop 0.4s cubic-bezier(0.16,1,0.3,1) both",
-      }}
+      className="relative overflow-hidden rounded-xl mb-6 border border-ll-line bg-ll-panel"
+      style={{ animation: "courseCelebrationPop 0.4s cubic-bezier(0.16,1,0.3,1) both" }}
     >
-      <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(106,43,216,0.12) 0%, rgba(232,162,58,0.10) 100%)" }} />
-      <div className="dark:hidden absolute inset-0 bg-white/60" />
-      <div className="hidden dark:block absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(13,10,30,0.6), rgba(26,26,46,0.6))" }} />
-      <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-ll-violet via-[#E8A23A] to-[#1FA48C]" />
-
       {/* Confetti burst — contained to this card, not the whole page */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {CONFETTI.map((c, i) => (
@@ -43,32 +35,21 @@ const CourseCelebration = ({ onDismiss }) => {
         ))}
       </div>
 
-      <div className="relative z-10 flex items-start sm:items-center gap-4 p-5 sm:p-6">
-        <div
-          className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: "linear-gradient(135deg, #6A2BD8, #E8A23A)", boxShadow: "0 4px 14px rgba(106,43,216,0.35)" }}
-        >
-          <FiAward size={22} className="text-white" />
+      <div className="relative z-10 flex items-start sm:items-center gap-4 p-5">
+        <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-ll-violet-tint text-ll-violet-ink">
+          <FiAward size={20} />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">
-            {t("course.celebrationTitle")}
-          </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-300 mt-0.5">
-            {t("course.celebrationBody")}
-          </p>
+          <h3 className="text-[15px] font-semibold text-ll-ink">{t("course.celebrationTitle")}</h3>
+          <p className="text-[13.5px] text-ll-ink2 mt-0.5">{t("course.celebrationBody")}</p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          <button
-            onClick={onDismiss}
-            className="hidden sm:inline-flex px-3.5 py-2 rounded-xl text-xs font-semibold text-white transition-opacity hover:opacity-90"
-            style={{ background: "linear-gradient(135deg, #6A2BD8, #B89EFF)", boxShadow: "0 4px 14px rgba(106,43,216,0.3)" }}
-          >
+          <button onClick={onDismiss} className="hidden sm:inline-flex ll-btn ll-btn-primary ll-btn-sm">
             {t("course.celebrationCta")}
           </button>
           <button
             onClick={onDismiss}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+            className="w-[30px] h-[30px] grid place-items-center rounded-[7px] text-ll-ink3 hover:bg-ll-hover hover:text-ll-ink transition-colors"
             aria-label="Close"
           >
             <FiX size={16} />

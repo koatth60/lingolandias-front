@@ -12,17 +12,17 @@ const PasswordField = ({ label, value, onChange, fieldKey, placeholder, show, on
     </label>
     <div className="relative">
       <FiLock
-        className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-600 group-focus-within:text-ll-violet transition-colors duration-200"
+        className="absolute left-4 top-1/2 -translate-y-1/2 text-ll-ink3 group-focus-within:text-ll-violet transition-colors duration-200"
         size={15}
       />
       <input
         className="w-full pl-11 pr-11 py-3 rounded-xl text-sm transition-all duration-200 outline-none border
-          text-gray-800 dark:text-white
-          placeholder-gray-400 dark:placeholder-gray-600
-          bg-white dark:bg-white/5
-          border-gray-200 dark:border-white/10
-          focus:border-ll-violet/60 focus:ring-2 focus:ring-ll-violet/10
-          dark:focus:border-ll-violet/70 dark:focus:bg-[rgb(var(--ll-violet) / 0.08)]"
+ text-ll-ink
+ placeholder:text-ll-ink3
+ bg-ll-panel
+ border-ll-line
+ focus:border-ll-violet/60 focus:ring-2 focus:ring-ll-violet/10
+ dark:focus:bg-[rgb(var(--ll-violet) / 0.08)]"
         type={show ? "text" : "password"}
         placeholder={placeholder}
         value={value}
@@ -32,7 +32,7 @@ const PasswordField = ({ label, value, onChange, fieldKey, placeholder, show, on
       <button
         type="button"
         onClick={() => onToggleShow(fieldKey)}
-        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors duration-200"
+        className="absolute right-4 top-1/2 -translate-y-1/2 text-ll-ink3 hover:text-gray-700 dark:hover:text-gray-300 transition-colors duration-200"
         tabIndex={-1}
       >
         {show ? <FiEyeOff size={15} /> : <FiEye size={15} />}
@@ -111,12 +111,12 @@ const ChangePasswordModal = ({ onClose }) => {
           {/* Header */}
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h2 className="text-gray-800 dark:text-white font-extrabold text-lg">{t("changePasswordExtra.updatePassword")}</h2>
+              <h2 className="text-ll-ink font-extrabold text-lg">{t("changePasswordExtra.updatePassword")}</h2>
               <p className="text-gray-500 dark:text-gray-500 text-xs mt-0.5">{t("changePasswordExtra.updateSubtitle")}</p>
             </div>
             <button
               onClick={onClose}
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-white transition-colors duration-200"
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-ll-ink3 hover:text-ll-ink transition-colors duration-200"
               style={{ background: "rgb(var(--ll-violet) / 0.07)", border: "1px solid rgb(var(--ll-violet) / 0.15)" }}
             >
               <FiX size={15} />
@@ -174,23 +174,14 @@ const ChangePasswordModal = ({ onClose }) => {
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all duration-200
-                  text-gray-600 dark:text-gray-400
-                  hover:text-gray-900 dark:hover:text-white
-                  border border-gray-200 dark:border-white/10
-                  hover:border-ll-violet/30 dark:hover:border-white/20
-                  bg-white/60 dark:bg-transparent"
+                className="ll-btn ll-btn-secondary flex-1 justify-center"
               >
                 {t("changePassword.cancel")}
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 py-3 rounded-xl text-sm font-bold text-white disabled:opacity-50 disabled:cursor-not-allowed transition-transform duration-150 hover:scale-[1.02] active:scale-[0.98]"
-                style={{
-                  background: "linear-gradient(135deg, rgb(var(--ll-violet)) 0%, rgb(var(--ll-violet-hover)) 50%, #b84a10 100%)",
-                  boxShadow: "0 4px 20px rgb(var(--ll-violet) / 0.35)",
-                }}
+                className="ll-btn ll-btn-primary flex-1 justify-center disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">

@@ -226,24 +226,24 @@ const NewClassModal = ({ show, teacherId, teacherName, teacherEmail, teacherAvat
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
-        className="relative w-full max-w-md rounded-2xl bg-white dark:bg-[#0d0a1e] flex flex-col overflow-hidden"
+        className="relative w-full max-w-md rounded-2xl bg-ll-panel flex flex-col overflow-hidden"
         style={{ maxHeight: "90vh", border: "1px solid rgb(var(--ll-violet) / 0.30)", boxShadow: "0 32px 80px rgba(0,0,0,0.5)", zIndex: 100000 }}
       >
         <div className="absolute top-0 left-0 w-full h-[3px]" style={{ background: "linear-gradient(90deg, rgb(var(--ll-violet)), #E8A23A, #1FA48C)" }} />
 
-        <div className="flex items-center justify-between px-5 pt-5 pb-4 flex-shrink-0 border-b border-gray-100 dark:border-white/[0.07]">
+        <div className="flex items-center justify-between px-5 pt-5 pb-4 flex-shrink-0 border-b border-ll-line">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}>
               <FiCalendar size={16} className="text-white" />
             </div>
             <div className="min-w-0">
-              <h3 className="text-base font-extrabold text-gray-900 dark:text-white leading-tight">{t("newClassModal.title")}</h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              <h3 className="text-base font-extrabold text-ll-ink leading-tight">{t("newClassModal.title")}</h3>
+              <p className="text-xs text-ll-ink3 mt-0.5">
                 {initialStart ? dayjs(initialStart).format("dddd, MMMM D") : ""}
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-all flex-shrink-0">
+          <button onClick={onClose} className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 hover:text-ll-ink hover:bg-ll-hover transition-all flex-shrink-0">
             <FiX size={18} />
           </button>
         </div>
@@ -279,11 +279,11 @@ const NewClassModal = ({ show, teacherId, teacherName, teacherEmail, teacherAvat
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={t("newClassModal.searchPlaceholder")}
-                className="w-full pl-9 pr-3 py-2.5 rounded-xl text-sm bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-ll-violet/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:border-ll-violet"
+                className="w-full pl-9 pr-3 py-2.5 rounded-xl text-sm bg-ll-subtle border border-ll-line text-ll-ink placeholder:text-ll-ink3 outline-none focus:border-ll-violet"
               />
             </div>
             {query.trim().length >= 2 && (
-              <div className="mt-1.5 max-h-40 overflow-y-auto rounded-xl border border-gray-100 dark:border-white/[0.07]">
+              <div className="mt-1.5 max-h-40 overflow-y-auto rounded-xl border border-ll-line">
                 {loading && <p className="text-xs text-gray-400 text-center py-3">{t("messagesExtra.searching")}</p>}
                 {!loading && pickable.length === 0 && (
                   <p className="text-xs text-gray-400 text-center py-3">{t("messagesExtra.noResults")}</p>
@@ -292,13 +292,13 @@ const NewClassModal = ({ show, teacherId, teacherName, teacherEmail, teacherAvat
                   <div
                     key={u.id}
                     onClick={() => addPerson(u)}
-                    className="flex items-center gap-2.5 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                    className="flex items-center gap-2.5 px-3 py-2 cursor-pointer hover:bg-ll-hover transition-colors"
                   >
                     <span className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0" style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}>
                       {getInitials(u.name, u.lastName)}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-medium text-gray-800 dark:text-gray-100 truncate">{u.name} {u.lastName}</p>
+                      <p className="text-xs font-medium text-ll-ink truncate">{u.name} {u.lastName}</p>
                       <p className="text-[10px] text-gray-400 truncate">{u.email}</p>
                     </div>
                     <FiUserPlus size={13} className="text-gray-300 flex-shrink-0" />
@@ -307,7 +307,7 @@ const NewClassModal = ({ show, teacherId, teacherName, teacherEmail, teacherAvat
               </div>
             )}
             {existingLink && (
-              <p className="mt-2 text-[11px] text-[#1FA48C] flex items-center gap-1.5">
+              <p className="mt-2 text-[11px] text-ll-teal-ink flex items-center gap-1.5">
                 <FiCalendar size={11} />
                 {t("newClassModal.existingLinkNote")}
               </p>
@@ -324,7 +324,7 @@ const NewClassModal = ({ show, teacherId, teacherName, teacherEmail, teacherAvat
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={t("newClassModal.namePlaceholder")}
-              className="w-full px-3.5 py-2.5 rounded-xl text-sm bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-ll-violet/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:border-ll-violet"
+              className="w-full px-3.5 py-2.5 rounded-xl text-sm bg-ll-subtle border border-ll-line text-ll-ink placeholder:text-ll-ink3 outline-none focus:border-ll-violet"
             />
           </div>
 
@@ -350,7 +350,7 @@ const NewClassModal = ({ show, teacherId, teacherName, teacherEmail, teacherAvat
                   type="button"
                   onClick={() => setRecurrenceWeeks(opt.value)}
                   className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all duration-200 ${
-                    recurrenceWeeks === opt.value ? "text-white" : "text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-white/10"
+                    recurrenceWeeks === opt.value ? "text-white" : "text-ll-ink3 border border-ll-line"
                   }`}
                   style={recurrenceWeeks === opt.value ? { background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" } : {}}
                 >

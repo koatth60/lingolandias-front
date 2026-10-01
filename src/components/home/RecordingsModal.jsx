@@ -83,25 +83,12 @@ const RecordingsModal = ({ onClose }) => {
       style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(8px)" }}
     >
       <div
-        className="relative w-full max-w-4xl flex flex-col rounded-2xl overflow-hidden shadow-2xl"
-        style={{
-          border: "1px solid rgb(var(--ll-violet) / 0.25)",
-          maxHeight: "85vh",
-        }}
+        className="relative w-full max-w-4xl flex flex-col rounded-2xl overflow-hidden shadow-2xl bg-ll-panel border border-ll-line"
+        style={{ maxHeight: "85vh" }}
       >
-        {/* Gradient bar */}
-        <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-ll-violet via-[#E8A23A] to-[#1FA48C]" />
-
-        {/* Background */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background: "linear-gradient(135deg, rgba(13,10,30,0.98) 0%, rgba(26,26,46,0.97) 100%)",
-          }}
-        />
 
         {/* Header */}
-        <div className="relative z-10 flex items-center justify-between px-6 py-4 border-b border-[rgb(var(--ll-violet) / 0.15)]">
+        <div className="relative z-10 flex items-center justify-between px-6 py-4 border-b border-ll-line">
           <div className="flex items-center gap-3">
             <div
               className="w-9 h-9 rounded-xl flex items-center justify-center"
@@ -110,8 +97,8 @@ const RecordingsModal = ({ onClose }) => {
               <FiVideo className="text-white" size={17} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white">{t("recordings.title")}</h2>
-              <p className="text-xs text-gray-400">
+              <h2 className="text-[16px] font-semibold text-ll-ink">{t("recordings.title")}</h2>
+              <p className="text-[12.5px] text-ll-ink3">
                 {loading ? t("common.loading") : t("recordings.count", { count: totalCount })}
               </p>
             </div>
@@ -119,14 +106,14 @@ const RecordingsModal = ({ onClose }) => {
           <div className="flex items-center gap-2">
             <button
               onClick={fetchRecordings}
-              className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all"
+              className="p-2 rounded-lg text-ll-ink3 hover:text-ll-ink hover:bg-ll-hover transition-colors"
               title={t("recordings.refresh")}
             >
               <FiRefreshCw size={16} />
             </button>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all"
+              className="p-2 rounded-lg text-ll-ink3 hover:text-ll-ink hover:bg-ll-hover transition-colors"
             >
               <FiX size={20} />
             </button>
@@ -138,7 +125,7 @@ const RecordingsModal = ({ onClose }) => {
 
           {/* Sidebar */}
           {allTabs.length > 0 && (
-            <div className="w-52 flex-shrink-0 border-r border-[rgb(var(--ll-violet) / 0.12)] overflow-y-auto p-3 space-y-1">
+            <div className="w-52 flex-shrink-0 border-r border-ll-line overflow-y-auto p-3 space-y-1">
               {allTabs.map((teacher) => {
                 const group = recordings[teacher];
                 const count = group?.recordings?.length || 0;
@@ -149,16 +136,9 @@ const RecordingsModal = ({ onClose }) => {
                   <button
                     key={teacher}
                     onClick={() => setActiveTeacher(teacher)}
-                    className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                      isActive
-                        ? "text-white shadow-lg"
-                        : "text-gray-400 hover:text-white hover:bg-white/5"
+                    className={`w-full text-left px-3 py-2 rounded-[9px] text-[13.5px] font-medium transition-colors ${
+                      isActive ? "bg-ll-violet-tint text-ll-violet-ink" : "text-ll-ink2 hover:text-ll-ink hover:bg-ll-hover"
                     }`}
-                    style={
-                      isActive
-                        ? { background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }
-                        : {}
-                    }
                   >
                     <div className="flex items-start justify-between gap-1">
                       <div className="flex items-start gap-2 min-w-0">

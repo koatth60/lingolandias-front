@@ -1,12 +1,4 @@
 import { useTranslation } from "react-i18next";
-import { FiUsers, FiBook, FiUserCheck } from "react-icons/fi";
-
-const STAT_COLORS = [
-  { gradient: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", shadow: "rgb(var(--ll-violet) / 0.35)" },
-  { gradient: "linear-gradient(135deg, #1FA48C, #17886F)", shadow: "rgba(31,164,140,0.35)" },
-  { gradient: "linear-gradient(135deg, #E8A23A, #C4860A)", shadow: "rgba(232,162,58,0.35)" },
-  { gradient: "linear-gradient(135deg, rgb(var(--ll-violet-ink)), rgb(var(--ll-violet)))", shadow: "rgba(184,158,255,0.35)" },
-];
 
 const AdminStats = ({
   teachersCount = 0,
@@ -19,47 +11,27 @@ const AdminStats = ({
   const studentPercentage = totalUsers > 0 ? Math.round((studentsCount / totalUsers) * 100) : 0;
 
   const stats = [
-    { label: t("adminStats.totalUsers"), value: totalUsers, icon: <FiUsers size={16} />, sub: t("adminStats.registered", { count: totalUsers }) },
-    { label: t("adminStats.teachers"), value: teachersCount, icon: <FiUserCheck size={16} />, sub: t("adminStats.ofTotal", { pct: teacherPercentage }) },
-    { label: t("adminStats.students"), value: studentsCount, icon: <FiUsers size={16} />, sub: t("adminStats.ofTotal", { pct: studentPercentage }) },
+    { label: t("adminStats.totalUsers"), value: totalUsers, sub: t("adminStats.registered", { count: totalUsers }) },
+    { label: t("adminStats.teachers"), value: teachersCount, sub: t("adminStats.ofTotal", { pct: teacherPercentage }) },
+    { label: t("adminStats.students"), value: studentsCount, sub: t("adminStats.ofTotal", { pct: studentPercentage }) },
     {
       label: t("adminStats.unassigned"),
       value: unassignedStudentsCount,
-      icon: <FiBook size={16} />,
-      sub: studentsCount > 0
-        ? t("adminStats.ofStudents", { pct: Math.round((unassignedStudentsCount / studentsCount) * 100) })
-        : t("adminStats.ofStudents", { pct: 0 }),
+      sub: t("adminStats.ofStudents", {
+        pct: studentsCount > 0 ? Math.round((unassignedStudentsCount / studentsCount) * 100) : 0,
+      }),
     },
   ];
 
   return (
-    <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-10">
-      {stats.map((stat, i) => (
-        <div
-          key={i}
-          className="relative rounded-2xl overflow-hidden transition-transform duration-200 hover:-translate-y-1 shadow-sm dark:shadow-none"
-          style={{ border: "1px solid rgb(var(--ll-violet) / 0.15)" }}
-        >
-          <div className="dark:hidden absolute inset-0 bg-white" />
-          <div
-            className="hidden dark:block absolute inset-0"
-            style={{ background: "linear-gradient(135deg, rgba(13,10,30,0.94), rgba(26,26,46,0.92))" }}
-          />
-          <div className="absolute top-0 left-0 w-full h-[1.5px] bg-gradient-to-r from-ll-violet via-[#E8A23A] to-[#1FA48C] opacity-50" />
-
-          <div className="relative z-10 p-3 sm:p-5">
-            <div className="flex items-center justify-between mb-2 sm:mb-3">
-              <div
-                className="p-1.5 sm:p-2 rounded-xl text-white"
-                style={{ background: STAT_COLORS[i].gradient, boxShadow: `0 4px 12px ${STAT_COLORS[i].shadow}` }}
-              >
-                {stat.icon}
-              </div>
-              <span className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 font-medium hidden xs:block sm:block truncate ml-2 max-w-[70px] sm:max-w-none">{stat.sub}</span>
-            </div>
-            <p className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">{stat.value}</p>
-            <p className="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400 mt-0.5">{stat.label}</p>
-          </div>
+    <section className="grid grid-cols-2 lg:grid-cols-4 rounded-xl border border-ll-line bg-ll-panel overflow-hidden
+                        [&>*:nth-child(odd)]:border-r [&>*:nth-child(odd)]:border-ll-line lg:[&>*]:border-r lg:[&>*:last-child]:border-r-0
+                        [&>*:nth-child(n+3)]:border-t [&>*:nth-child(n+3)]:border-ll-line lg:[&>*:nth-child(n+3)]:border-t-0">
+      {stats.map((stat) => (
+        <div key={stat.label} className="px-4 sm:px-5 py-4">
+          <p className="text-[12.5px] text-ll-ink3">{stat.label}</p>
+          <p className="font-mono text-[26px] font-medium leading-tight text-ll-ink mt-1">{stat.value}</p>
+          <p className="text-[11.5px] text-ll-ink4 mt-0.5 truncate">{stat.sub}</p>
         </div>
       ))}
     </section>

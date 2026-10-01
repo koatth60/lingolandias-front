@@ -16,7 +16,7 @@ const BoardPreviewModal = ({ board, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-white dark:bg-[#1a1a2e] rounded-2xl shadow-2xl w-full max-w-3xl border border-gray-200 dark:border-ll-violet/30 overflow-hidden">
+      <div className="bg-ll-panel rounded-2xl shadow-2xl w-full max-w-3xl border border-ll-line overflow-hidden">
         <div
           className="px-6 py-4 flex items-center justify-between"
           style={{ ...getBgStyle(board.background), fontFamily: board.fontFamily }}
@@ -37,20 +37,20 @@ const BoardPreviewModal = ({ board, onClose }) => {
               <div className="h-8 w-8 rounded-full border-4 border-ll-violet border-t-transparent animate-spin" />
             </div>
           ) : lists.length === 0 ? (
-            <p className="text-center text-gray-400 dark:text-gray-500 py-8">No lists in this board</p>
+            <p className="text-center text-ll-ink3 py-8">No lists in this board</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {lists.map((list) => (
-                <div key={list.id} className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-100 dark:border-gray-700">
+                <div key={list.id} className="bg-ll-subtle rounded-xl p-4 border border-ll-line">
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold text-gray-800 dark:text-white text-sm">{list.name}</h4>
-                    <span className="text-xs text-gray-400 dark:text-gray-500 bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded-full">
+                    <h4 className="font-semibold text-ll-ink text-sm">{list.name}</h4>
+                    <span className="text-xs text-ll-ink3 bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded-full">
                       {list.cards?.length || 0}
                     </span>
                   </div>
                   <div className="space-y-1.5">
                     {(list.cards || []).slice(0, 5).map((card) => (
-                      <div key={card.id} className="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-100 dark:border-gray-700">
+                      <div key={card.id} className="bg-ll-panel rounded-lg px-3 py-2 border border-ll-line">
                         {card.label && (
                           <div className="h-1.5 w-10 rounded-full mb-1.5" style={{ backgroundColor: card.label }} />
                         )}
@@ -58,7 +58,7 @@ const BoardPreviewModal = ({ board, onClose }) => {
                       </div>
                     ))}
                     {(list.cards?.length || 0) > 5 && (
-                      <p className="text-xs text-gray-400 dark:text-gray-500 pl-1">
+                      <p className="text-xs text-ll-ink3 pl-1">
                         +{list.cards.length - 5} more cards
                       </p>
                     )}

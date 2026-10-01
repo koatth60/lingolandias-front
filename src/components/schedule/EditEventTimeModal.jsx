@@ -14,22 +14,20 @@ const EditEventTimeModal = ({ eventTitle, eventDetails, handleEventDetailsChange
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
       <div
-        className="relative w-full max-w-md rounded-2xl shadow-2xl overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #ffffff 0%, #f5f5f5 55%, #f0f0f0 100%)" }}
+        className="relative w-full max-w-md rounded-2xl shadow-2xl overflow-hidden bg-ll-panel border border-ll-line"
       >
-        <div className="dark:block hidden absolute inset-0" style={{ background: "linear-gradient(135deg, #0d0a1e 0%, #1a1a2e 55%, #110e28 100%)" }} />
 
         <div className="relative z-10 p-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2 min-w-0">
               <FiEdit2 className="text-ll-violet flex-shrink-0" size={20} />
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white truncate">
+              <h3 className="text-xl font-bold text-ll-ink truncate">
                 {eventTitle || t("editEvent.editEvent")}
               </h3>
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-colors flex-shrink-0"
+              className="p-2 rounded-lg text-ll-ink3 hover:text-ll-ink hover:bg-ll-hover transition-colors flex-shrink-0"
             >
               <FiX size={20} />
             </button>
@@ -63,7 +61,7 @@ const EditEventTimeModal = ({ eventTitle, eventDetails, handleEventDetailsChange
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 py-3 px-4 rounded-xl bg-gray-200 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-white/10 transition-all font-medium"
+                className="flex-1 py-3 px-4 rounded-xl bg-ll-hover text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-white/10 transition-all font-medium"
               >
                 <FiX className="inline mr-2" size={16} />
                 {t("editEvent.cancel")}

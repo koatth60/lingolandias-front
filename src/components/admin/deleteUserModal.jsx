@@ -107,8 +107,8 @@ const DeleteUserModal = ({ show, handleClose, onDeleted, teachers = [] }) => {
               <FiUserX size={17} style={{ color: "#ef4444" }} />
             </div>
             <div>
-              <h2 className="text-lg font-extrabold text-gray-800 dark:text-white leading-tight">{t("deleteModal.title")}</h2>
-              <p className="text-xs text-gray-400 dark:text-gray-500">{t("deleteModal.subtitle")}</p>
+              <h2 className="text-lg font-extrabold text-ll-ink leading-tight">{t("deleteModal.title")}</h2>
+              <p className="text-xs text-ll-ink3">{t("deleteModal.subtitle")}</p>
             </div>
             <button
               onClick={handleClose}
@@ -138,17 +138,13 @@ const DeleteUserModal = ({ show, handleClose, onDeleted, teachers = [] }) => {
           <form onSubmit={handleDeleteUser} className="space-y-4">
             {/* Email */}
             <div className="relative">
-              <FiMail className="absolute left-4 top-1/2 -translate-y-1/2" size={14} style={{ color: "#9ca3af" }} />
+              <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-ll-ink3 pointer-events-none" size={14} />
               <input
                 type="email"
                 placeholder={t("deleteModal.placeholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className={
-                  "w-full pl-11 pr-4 py-3 rounded-xl text-sm outline-none border transition-all duration-200 " +
-                  "bg-gray-100 border-gray-200 text-gray-800 placeholder-gray-400 " +
-                  "dark:bg-white/5 dark:border-white/10 dark:text-white dark:placeholder-gray-600"
-                }
+                className="w-full h-10 pl-10 pr-3 rounded-lg text-[13.5px] outline-none border border-ll-line2 bg-ll-panel text-ll-ink placeholder:text-ll-ink3 focus:border-ll-violet/60 transition-colors"
                 onFocus={onFocus}
                 onBlur={onBlur}
                 required
@@ -161,15 +157,14 @@ const DeleteUserModal = ({ show, handleClose, onDeleted, teachers = [] }) => {
               <button
                 type="button"
                 onClick={handleClose}
-                className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-white/6 border border-gray-200 dark:border-white/10"
+                className="ll-btn ll-btn-secondary flex-1 justify-center"
               >
                 {t("deleteModal.cancel")}
               </button>
               <button
                 type="submit"
                 disabled={!email}
-                className="flex-1 py-3 rounded-xl text-white text-sm font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                style={{ background: "linear-gradient(135deg, #ef4444, #dc2626)", boxShadow: "0 4px 20px rgba(239,68,68,0.28)" }}
+                className="ll-btn flex-1 justify-center text-white bg-ll-danger hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <FiUserX size={14} />
                 {t("deleteModal.delete")}

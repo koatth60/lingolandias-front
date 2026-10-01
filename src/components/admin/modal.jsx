@@ -77,7 +77,7 @@ const Modal = ({ isOpen, onClose, onSave }) => {
               >
                 <FiCamera size={15} className="text-white" />
               </div>
-              <h2 className="text-base font-extrabold text-gray-800 dark:text-white">
+              <h2 className="text-base font-extrabold text-ll-ink">
                 {t("uploadModal.title")}
               </h2>
             </div>
@@ -133,10 +133,10 @@ const Modal = ({ isOpen, onClose, onSave }) => {
                 >
                   <FiUpload size={22} style={{ color: "rgb(var(--ll-violet))" }} />
                 </div>
-                <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                <p className="text-sm font-semibold text-ll-ink">
                   {dragging ? t("uploadModal.dropHere") : t("uploadModal.clickOrDrag")}
                 </p>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                <p className="text-xs text-ll-ink3 mt-1">
                   {t("uploadModal.fileHint")}
                 </p>
               </>

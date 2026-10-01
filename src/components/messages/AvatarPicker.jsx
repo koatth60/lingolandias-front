@@ -65,7 +65,7 @@ const AvatarPicker = ({ value, onChange, size = 64, align = "center" }) => {
         ) : (
           <div
             className="w-full h-full flex items-center justify-center text-white font-bold"
-            style={{ background: "linear-gradient(135deg, #E8A23A, rgb(var(--ll-violet)))" }}
+            style={{ background: "rgb(var(--ll-violet))" }}
           >
             <FiUsers size={Math.round(size * 0.35)} />
           </div>
@@ -82,7 +82,7 @@ const AvatarPicker = ({ value, onChange, size = 64, align = "center" }) => {
 
       {menuOpen && (
         <div
-          className={`absolute top-full mt-2 z-30 rounded-xl shadow-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1e1b35] overflow-hidden ${
+          className={`absolute top-full mt-2 z-30 rounded-xl shadow-xl border border-ll-line bg-ll-panel overflow-hidden ${
             align === "center" ? "left-1/2 -translate-x-1/2" : "left-0"
           }`}
           style={{ width: tab === "gallery" ? 208 : 190 }}
@@ -93,21 +93,21 @@ const AvatarPicker = ({ value, onChange, size = 64, align = "center" }) => {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5"
+                className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-ll-ink hover:bg-ll-hover"
               >
                 <FiUpload size={13} /> {t("messagesExtra.uploadPhoto")}
               </button>
               <button
                 type="button"
                 onClick={() => setTab("gallery")}
-                className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 border-t border-gray-100 dark:border-white/5"
+                className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-ll-ink hover:bg-ll-hover border-t border-ll-line"
               >
                 <FiGrid size={13} /> {t("messagesExtra.chooseFromGallery")}
               </button>
               <button
                 type="button"
                 onClick={() => setTab("url")}
-                className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 border-t border-gray-100 dark:border-white/5"
+                className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-ll-ink hover:bg-ll-hover border-t border-ll-line"
               >
                 <FiLink size={13} /> {t("messagesExtra.useImageUrl")}
               </button>
@@ -122,7 +122,7 @@ const AvatarPicker = ({ value, onChange, size = 64, align = "center" }) => {
                 onChange={(e) => setUrlInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && applyUrl()}
                 placeholder="https://..."
-                className="flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-800 dark:text-gray-100 outline-none focus:border-ll-violet"
+                className="flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg bg-ll-subtle border border-ll-line text-ll-ink outline-none focus:border-ll-violet"
               />
               <button
                 type="button"

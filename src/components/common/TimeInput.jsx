@@ -62,7 +62,7 @@ const TimeInput = ({ value, onChange, className = "" }) => {
 
   return (
     <div
-      className={`flex items-center gap-1.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 focus-within:border-ll-violet focus-within:ring-2 focus-within:ring-ll-violet/20 transition-all duration-200 ${className}`}
+      className={`flex items-center gap-1.5 rounded-xl border border-ll-line bg-ll-subtle focus-within:border-ll-violet focus-within:ring-2 focus-within:ring-ll-violet/20 transition-all duration-200 ${className}`}
     >
       <input
         type="text"
@@ -71,9 +71,9 @@ const TimeInput = ({ value, onChange, className = "" }) => {
         maxLength={2}
         value={hour}
         onChange={handleHourChange}
-        className="w-8 bg-transparent text-center text-gray-900 dark:text-white outline-none"
+        className="w-8 bg-transparent text-center text-ll-ink outline-none"
       />
-      <span className="text-gray-400 dark:text-gray-500">:</span>
+      <span className="text-ll-ink3">:</span>
       <input
         ref={minuteRef}
         type="text"
@@ -82,9 +82,9 @@ const TimeInput = ({ value, onChange, className = "" }) => {
         maxLength={2}
         value={minute}
         onChange={handleMinuteChange}
-        className="w-8 bg-transparent text-center text-gray-900 dark:text-white outline-none"
+        className="w-8 bg-transparent text-center text-ll-ink outline-none"
       />
-      <div className="flex ml-auto rounded-lg overflow-hidden border border-gray-200 dark:border-white/10 shrink-0">
+      <div className="flex ml-auto rounded-lg overflow-hidden border border-ll-line shrink-0">
         {["AM", "PM"].map((mer) => (
           <button
             key={mer}
@@ -93,7 +93,7 @@ const TimeInput = ({ value, onChange, className = "" }) => {
             className={`px-2 py-1 text-xs font-bold transition-colors ${
               meridiem === mer
                 ? "text-white"
-                : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white"
+                : "text-ll-ink3 hover:text-ll-ink"
             }`}
             style={meridiem === mer ? { background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" } : {}}
           >

@@ -33,7 +33,7 @@ const BgPicker = ({ value, onChange }) => {
             className={`px-3 py-1 rounded-lg text-xs font-medium transition ${
               tab === t.key
                 ? 'bg-ll-violet text-white'
-                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                : 'bg-ll-hover text-ll-ink2 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
           >
             {t.label}
@@ -52,7 +52,7 @@ const BgPicker = ({ value, onChange }) => {
                 title={bg.label}
                 onClick={() => onChange(bg.value)}
                 className="h-7 w-7 rounded-lg transition-transform hover:scale-110 relative"
-                style={{
+                data-keep-gradient="1" style={{
                   ...getBgStyle(bg.value),
                   boxShadow: isActive ? '0 0 0 2px white, 0 0 0 4px rgb(var(--ll-violet))' : 'none',
                 }}
@@ -109,7 +109,7 @@ const BgPicker = ({ value, onChange }) => {
             value={imgUrl}
             onChange={(e) => setImgUrl(e.target.value)}
             placeholder="https://images.unsplash.com/..."
-            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ll-violet"
+            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-ll-panel text-ll-ink focus:outline-none focus:ring-2 focus:ring-ll-violet"
           />
           <button
             type="button"
@@ -120,7 +120,7 @@ const BgPicker = ({ value, onChange }) => {
           </button>
           {value?.startsWith('http') && (
             <div
-              className="h-16 rounded-lg border border-gray-200 dark:border-gray-600"
+              className="h-16 rounded-lg border border-ll-line"
               style={{ background: `url(${value}) center/cover no-repeat` }}
             />
           )}
@@ -154,11 +154,11 @@ const CreateBoardModal = ({ onClose, onCreated, userId }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-white dark:bg-[#1a1a2e] rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-gray-200 dark:border-ll-violet/30">
+      <div className="bg-ll-panel rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-ll-line">
         {/* Preview */}
         <div
           className="h-28 flex items-end justify-start px-5 pb-4 transition-all duration-300"
-          style={{ ...getBgStyle(background), fontFamily }}
+          data-keep-gradient="1" style={{ ...getBgStyle(background), fontFamily }}
         >
           <h3 className="text-xl font-bold text-white drop-shadow-md">{name || 'Board preview'}</h3>
         </div>
@@ -171,7 +171,7 @@ const CreateBoardModal = ({ onClose, onCreated, userId }) => {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="My awesome board"
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ll-violet"
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-ll-panel text-ll-ink focus:outline-none focus:ring-2 focus:ring-ll-violet"
             />
           </div>
           <div>
@@ -183,7 +183,7 @@ const CreateBoardModal = ({ onClose, onCreated, userId }) => {
             <select
               value={fontFamily}
               onChange={(e) => setFontFamily(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ll-violet"
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-ll-panel text-ll-ink focus:outline-none focus:ring-2 focus:ring-ll-violet"
             >
               {FONT_OPTIONS.map((f) => (
                 <option key={f.value} value={f.value}>{f.label}</option>
@@ -375,7 +375,7 @@ const TrelloDashboard = () => {
             <div
               key={board.id}
               className="relative group rounded-xl overflow-hidden cursor-pointer border border-ll-line hover:shadow-ll-2 transition-shadow duration-200 h-32"
-              style={{ ...getBgStyle(board.background), fontFamily: board.fontFamily }}
+              data-keep-gradient="1" style={{ ...getBgStyle(board.background), fontFamily: board.fontFamily }}
               onClick={() => setActiveBoard(board)}
             >
               <div className="absolute inset-0 bg-black/10 group-hover:bg-black/25 transition-all duration-300" />

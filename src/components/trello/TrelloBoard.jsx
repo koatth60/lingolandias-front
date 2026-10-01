@@ -42,7 +42,7 @@ const BgPickerInline = ({ value, onChange }) => {
       <div className="flex gap-1 mb-2">
         {TABS.map((t) => (
           <button key={t.key} type="button" onClick={() => setTab(t.key)}
-            className={`px-3 py-1 rounded-lg text-xs font-medium transition ${tab === t.key ? 'bg-ll-violet text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
+            className={`px-3 py-1 rounded-lg text-xs font-medium transition ${tab === t.key ? 'bg-ll-violet text-white' : 'bg-ll-hover text-ll-ink2 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
           >
             {t.label}
           </button>
@@ -56,7 +56,7 @@ const BgPickerInline = ({ value, onChange }) => {
             return (
               <button key={bg.value} type="button" title={bg.label} onClick={() => onChange(bg.value)}
                 className="h-7 w-7 rounded-lg transition-transform hover:scale-110 relative"
-                style={{ ...getBgStyle(bg.value), boxShadow: isActive ? '0 0 0 2px white, 0 0 0 4px rgb(var(--ll-violet))' : 'none' }}
+                data-keep-gradient="1" style={{ ...getBgStyle(bg.value), boxShadow: isActive ? '0 0 0 2px white, 0 0 0 4px rgb(var(--ll-violet))' : 'none' }}
               >
                 {isActive && <span className="absolute inset-0 flex items-center justify-center text-white text-xs">✓</span>}
               </button>
@@ -89,7 +89,7 @@ const BgPickerInline = ({ value, onChange }) => {
         <div className="space-y-2">
           <input type="url" value={imgUrl} onChange={(e) => setImgUrl(e.target.value)}
             placeholder="https://images.unsplash.com/..."
-            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ll-violet"
+            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-ll-panel text-ll-ink focus:outline-none focus:ring-2 focus:ring-ll-violet"
           />
           <button type="button" onClick={() => { if (imgUrl.trim()) onChange(imgUrl.trim()); }}
             className="w-full py-2 text-sm rounded-lg bg-ll-violet hover:bg-ll-violet-hover text-white transition"
@@ -125,22 +125,22 @@ const BoardSettingsModal = ({ board, onClose, onUpdated }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-white dark:bg-[#1a1a2e] rounded-2xl shadow-2xl w-full max-w-md mx-4 border border-gray-200 dark:border-ll-violet/30 overflow-hidden">
+      <div className="bg-ll-panel rounded-2xl shadow-2xl w-full max-w-md mx-4 border border-ll-line overflow-hidden">
         {/* Live preview strip */}
-        <div className="h-20 transition-all duration-300" style={{ ...getBgStyle(background), fontFamily }}>
+        <div className="h-20 transition-all duration-300" data-keep-gradient="1" style={{ ...getBgStyle(background), fontFamily }}>
           <div className="h-full flex items-end px-5 pb-3" style={{ backgroundColor: 'rgba(0,0,0,0.18)' }}>
             <span className="text-white font-bold text-base drop-shadow">{name || board.name}</span>
           </div>
         </div>
-        <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white">Board settings</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-white text-xl">×</button>
+        <div className="p-5 border-b border-ll-line flex items-center justify-between">
+          <h3 className="text-lg font-bold text-ll-ink">Board settings</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-ll-ink text-xl">×</button>
         </div>
         <div className="p-5 space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
             <input type="text" value={name} onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ll-violet"
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-ll-panel text-ll-ink focus:outline-none focus:ring-2 focus:ring-ll-violet"
             />
           </div>
           <div>
@@ -150,7 +150,7 @@ const BoardSettingsModal = ({ board, onClose, onUpdated }) => {
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Font</label>
             <select value={fontFamily} onChange={(e) => setFontFamily(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ll-violet"
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-ll-panel text-ll-ink focus:outline-none focus:ring-2 focus:ring-ll-violet"
             >
               {FONT_OPTIONS.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
             </select>
@@ -224,7 +224,7 @@ const TrelloCardItem = ({ card, onClick }) => {
       {...attributes}
       {...listeners}
       onClick={() => !isDragging && onClick()}
-      className="bg-white dark:bg-[#212a3a] rounded-xl border border-gray-100 dark:border-white/5 shadow-sm p-3 cursor-grab active:cursor-grabbing hover:shadow-md hover:border-ll-violet/30 hover:-translate-y-0.5 transition-all duration-150 touch-none"
+      className="bg-ll-panel rounded-xl border border-ll-line shadow-sm p-3 cursor-grab active:cursor-grabbing hover:shadow-md hover:border-ll-violet/30 hover:-translate-y-0.5 transition-all duration-150 touch-none"
     >
       {cardLabels.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-2">
@@ -238,10 +238,10 @@ const TrelloCardItem = ({ card, onClick }) => {
           ))}
         </div>
       )}
-      <p className="text-sm text-gray-800 dark:text-gray-100 font-medium leading-snug line-clamp-3">{card.name}</p>
+      <p className="text-sm text-ll-ink font-medium leading-snug line-clamp-3">{card.name}</p>
       {card.description && (
         <p
-          className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2"
+          className="text-xs text-ll-ink3 mt-1 line-clamp-2"
           dangerouslySetInnerHTML={{ __html: card.description }}
         />
       )}
@@ -254,7 +254,7 @@ const TrelloCardItem = ({ card, onClick }) => {
                   ? 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400'
                   : checklistComplete
                   ? 'bg-green-50 text-green-600 dark:bg-green-500/10 dark:text-green-400'
-                  : 'text-gray-400 dark:text-gray-500'
+                  : 'text-ll-ink3'
               }`}
             >
               <ClockIcon />
@@ -266,7 +266,7 @@ const TrelloCardItem = ({ card, onClick }) => {
               className={`inline-flex items-center gap-1 text-[11px] font-semibold px-1.5 py-0.5 rounded-md ${
                 checklistComplete
                   ? 'bg-green-50 text-green-600 dark:bg-green-500/10 dark:text-green-400'
-                  : 'text-gray-400 dark:text-gray-500'
+                  : 'text-ll-ink3'
               }`}
             >
               <ChecklistIcon />
@@ -274,7 +274,7 @@ const TrelloCardItem = ({ card, onClick }) => {
             </span>
           )}
           {comments.length > 0 && (
-            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-gray-400 dark:text-gray-500 px-1.5 py-0.5 rounded-md">
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-ll-ink3 px-1.5 py-0.5 rounded-md">
               <CommentIcon />
               {comments.length}
             </span>
@@ -291,13 +291,13 @@ const TrelloCardItem = ({ card, onClick }) => {
 const CardGhost = ({ card }) => {
   const cardLabels = parseCardLabels(card.label);
   return (
-    <div className="bg-white dark:bg-[#212a3a] rounded-xl border border-ll-violet/40 shadow-2xl p-3 w-72 rotate-2 cursor-grabbing">
+    <div className="bg-ll-panel rounded-xl border border-ll-violet/40 shadow-2xl p-3 w-72 rotate-2 cursor-grabbing">
       {cardLabels.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-2">
           {cardLabels.map((lbl) => <span key={lbl.name} className="h-1.5 w-8 rounded-full" style={{ backgroundColor: lbl.color }} />)}
         </div>
       )}
-      <p className="text-sm text-gray-800 dark:text-gray-100 font-medium leading-snug line-clamp-3">{card.name}</p>
+      <p className="text-sm text-ll-ink font-medium leading-snug line-clamp-3">{card.name}</p>
     </div>
   );
 };
@@ -349,11 +349,11 @@ const TrelloListColumn = ({
       className="flex-shrink-0 w-72 flex flex-col rounded-2xl max-h-full"
       style={{
         fontFamily,
-        background: 'rgba(235,236,240,0.95)',
+        background: 'rgb(var(--ll-canvas) / 0.96)',
         backdropFilter: 'blur(8px)',
         WebkitBackdropFilter: 'blur(8px)',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.12)',
-        border: '1px solid rgba(255,255,255,0.4)',
+        boxShadow: '0 2px 12px rgba(0,0,0,0.10)',
+        border: '1px solid rgb(var(--ll-line))',
         transform: CSS.Transform.toString(transform),
         transition,
         opacity: isDragging ? 0.5 : 1,
@@ -376,7 +376,7 @@ const TrelloListColumn = ({
             onChange={(e) => setListName(e.target.value)}
             onBlur={handleRenameList}
             onKeyDown={(e) => { if (e.key === 'Enter') handleRenameList(); if (e.key === 'Escape') { setListName(list.name); setRenaming(false); } }}
-            className="flex-1 px-2 py-1 text-sm font-bold rounded border border-ll-violet bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none"
+            className="flex-1 px-2 py-1 text-sm font-bold rounded border border-ll-violet bg-ll-panel text-ll-ink focus:outline-none"
           />
         ) : (
           <h4
@@ -388,7 +388,7 @@ const TrelloListColumn = ({
           </h4>
         )}
         <div className="flex items-center gap-1 ml-1">
-          <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded-full">
+          <span className="text-xs text-ll-ink3 bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded-full">
             {cards.length}
           </span>
           <button
@@ -415,7 +415,7 @@ const TrelloListColumn = ({
           ))}
         </SortableContext>
         {cards.length === 0 && !addingCard && (
-          <div className="text-center py-3 text-xs text-gray-400 dark:text-gray-500 select-none">No cards yet</div>
+          <div className="text-center py-3 text-xs text-ll-ink3 select-none">No cards yet</div>
         )}
       </div>
 
@@ -430,17 +430,17 @@ const TrelloListColumn = ({
               onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleAddCard(); } if (e.key === 'Escape') setAddingCard(false); }}
               placeholder="Enter card title..."
               rows={2}
-              className="w-full px-3 py-2 text-sm rounded-lg border border-ll-violet bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none resize-none"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-ll-violet bg-ll-panel text-ll-ink focus:outline-none resize-none"
             />
             <div className="flex gap-1">
               <button onClick={handleAddCard} className="bg-ll-violet hover:bg-ll-violet-hover text-white text-xs px-3 py-1.5 rounded-lg transition">Add card</button>
-              <button onClick={() => { setAddingCard(false); setNewCardName(''); }} className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white text-xs px-2 py-1.5 rounded-lg transition">Cancel</button>
+              <button onClick={() => { setAddingCard(false); setNewCardName(''); }} className="text-ll-ink3 hover:text-ll-ink text-xs px-2 py-1.5 rounded-lg transition">Cancel</button>
             </div>
           </div>
         ) : (
           <button
             onClick={() => setAddingCard(true)}
-            className="w-full flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-700 text-sm px-2 py-1.5 rounded-lg transition"
+            className="w-full flex items-center gap-1 text-ll-ink3 hover:text-ll-ink hover:bg-gray-200 dark:hover:bg-gray-700 text-sm px-2 py-1.5 rounded-lg transition"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
@@ -784,7 +784,7 @@ const TrelloBoard = ({ board, onBack, onBoardUpdated }) => {
               {/* Add list */}
               <div className="flex-shrink-0 w-72">
                 {addingList ? (
-                  <div className="bg-gray-100 dark:bg-[#111827] rounded-2xl p-3 border border-gray-200 dark:border-gray-700 space-y-2">
+                  <div className="bg-ll-hover rounded-2xl p-3 border border-ll-line space-y-2">
                     <input
                       autoFocus
                       type="text"
@@ -792,11 +792,11 @@ const TrelloBoard = ({ board, onBack, onBoardUpdated }) => {
                       onChange={(e) => setNewListName(e.target.value)}
                       onKeyDown={(e) => { if (e.key === 'Enter') handleAddList(); if (e.key === 'Escape') setAddingList(false); }}
                       placeholder="Enter list name..."
-                      className="w-full px-3 py-2 text-sm rounded-lg border border-ll-violet bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none"
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-ll-violet bg-ll-panel text-ll-ink focus:outline-none"
                     />
                     <div className="flex gap-1">
                       <button onClick={handleAddList} className="bg-ll-violet hover:bg-ll-violet-hover text-white text-xs px-3 py-1.5 rounded-lg transition">Add list</button>
-                      <button onClick={() => { setAddingList(false); setNewListName(''); }} className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white text-xs px-2 py-1.5 rounded-lg transition">Cancel</button>
+                      <button onClick={() => { setAddingList(false); setNewListName(''); }} className="text-ll-ink3 hover:text-ll-ink text-xs px-2 py-1.5 rounded-lg transition">Cancel</button>
                     </div>
                   </div>
                 ) : (

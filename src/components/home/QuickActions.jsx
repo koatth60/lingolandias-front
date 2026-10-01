@@ -1,50 +1,35 @@
 import { useNavigate } from "react-router-dom";
-import { FiBarChart2, FiUsers, FiSettings } from "react-icons/fi";
+import { FiBarChart2, FiUsers, FiSettings, FiChevronRight } from "react-icons/fi";
 import { useTranslation } from "react-i18next";
 
 const ACTIONS_CONFIG = [
-  { icon: FiBarChart2, titleKey: "quickActions.analytics", descKey: "quickActions.analyticsDesc", gradient: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", shadow: "rgb(var(--ll-violet) / 0.35)", to: null },
-  { icon: FiUsers, titleKey: "quickActions.manageUsers", descKey: "quickActions.manageUsersDesc", gradient: "linear-gradient(135deg, #1FA48C, #17886F)", shadow: "rgba(31,164,140,0.35)", to: "/admin" },
-  { icon: FiSettings, titleKey: "quickActions.platformSettings", descKey: "quickActions.platformSettingsDesc", gradient: "linear-gradient(135deg, #E8A23A, #C4860A)", shadow: "rgba(232,162,58,0.35)", to: "/settings" },
+  { icon: FiBarChart2, titleKey: "quickActions.analytics", descKey: "quickActions.analyticsDesc", tile: "bg-ll-violet-tint text-ll-violet-ink", to: "/analytics" },
+  { icon: FiUsers, titleKey: "quickActions.manageUsers", descKey: "quickActions.manageUsersDesc", tile: "bg-ll-teal-tint text-ll-teal-ink", to: "/admin" },
+  { icon: FiSettings, titleKey: "quickActions.platformSettings", descKey: "quickActions.platformSettingsDesc", tile: "bg-ll-gold-tint text-ll-gold-ink", to: "/settings" },
 ];
 
 const QuickActions = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const ACTIONS = ACTIONS_CONFIG.map((a) => ({ ...a, title: t(a.titleKey), description: t(a.descKey) }));
 
   return (
     <section>
-      <h3 className="text-base font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-        <span
-          className="inline-block w-1 h-4 rounded-full flex-shrink-0"
-          style={{ background: "linear-gradient(to bottom, rgb(var(--ll-violet)), #E8A23A)" }}
-        />
-        {t("quickActions.title")}
-      </h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-        {ACTIONS.map(({ icon: Icon, title, description, gradient, shadow, to }) => (
+      <h3 className="text-[13.5px] font-semibold text-ll-ink mb-3">{t("quickActions.title")}</h3>
+      <div className="rounded-xl border border-ll-line bg-ll-panel divide-y divide-ll-line overflow-hidden">
+        {ACTIONS_CONFIG.map(({ icon: Icon, titleKey, descKey, tile, to }) => (
           <button
-            key={title}
+            key={titleKey}
             onClick={() => to && navigate(to)}
-            className="group relative rounded-2xl p-5 flex items-start gap-4 text-left transition-transform duration-200 hover:-translate-y-1 shadow-sm dark:shadow-none"
-            style={{ border: "1px solid rgb(var(--ll-violet) / 0.15)", cursor: to ? "pointer" : "default" }}
+            className="w-full grid grid-cols-[34px_1fr_auto] items-center gap-3 px-4 py-3 text-left hover:bg-ll-subtle transition-colors"
           >
-            <div className="dark:hidden absolute inset-0 rounded-2xl bg-white" />
-            <div
-              className="hidden dark:block absolute inset-0 rounded-2xl"
-              style={{ background: "linear-gradient(135deg, rgba(13,10,30,0.90), rgba(26,26,46,0.88))" }}
-            />
-            <div
-              className="relative z-10 p-2.5 rounded-xl flex-shrink-0"
-              style={{ background: gradient, boxShadow: `0 4px 14px ${shadow}` }}
-            >
-              <Icon size={18} className="text-white" />
+            <div className={`w-[34px] h-[34px] rounded-[9px] grid place-items-center ${tile}`}>
+              <Icon size={17} />
             </div>
-            <div className="relative z-10">
-              <p className="font-bold text-gray-800 dark:text-white text-sm">{title}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">{description}</p>
+            <div className="min-w-0">
+              <p className="text-[13.5px] font-semibold text-ll-ink">{t(titleKey)}</p>
+              <p className="text-[12.5px] text-ll-ink3 truncate">{t(descKey)}</p>
             </div>
+            <FiChevronRight size={16} className="text-ll-ink4" />
           </button>
         ))}
       </div>

@@ -13,7 +13,7 @@ const CreateCardForm = ({
   onScrollToForm
 }) => {
   return (
-    <div id="create-card-form" className="bg-gradient-to-br from-white to-gray-50 dark:from-brand-dark-secondary dark:to-gray-900/50 rounded-2xl shadow-lg p-6 sm:p-8 mb-12 border border-gray-200 dark:border-gray-800">
+    <div id="create-card-form" className="bg-gradient-to-br from-white to-gray-50 dark:from-brand-dark-secondary dark:to-gray-900/50 rounded-2xl shadow-lg p-6 sm:p-8 mb-12 border border-ll-line">
       <div className="flex items-center gap-3 mb-8">
         <div className="bg-gradient-to-r from-green-500 to-green-600 dark:from-green-600 dark:to-green-700 p-2 rounded-lg">
           <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -21,7 +21,7 @@ const CreateCardForm = ({
           </svg>
         </div>
         <div>
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Create New Card</h3>
+          <h3 className="text-2xl font-bold text-ll-ink">Create New Card</h3>
           <p className="text-gray-600 dark:text-gray-400">Add a new card to any list in this board</p>
         </div>
       </div>
@@ -35,12 +35,12 @@ const CreateCardForm = ({
             <select
               value={selectedList}
               onChange={(e) => setSelectedList(e.target.value)}
-              className="w-full p-3.5 border-2 border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-600 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 transition-all"
+              className="w-full p-3.5 border-2 border-gray-300 dark:border-gray-700 rounded-xl bg-ll-panel text-ll-ink focus:border-blue-500 dark:focus:border-blue-600 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 transition-all"
               required
             >
-              <option value="" className="text-gray-500 dark:text-gray-400">Choose a list...</option>
+              <option value="" className="text-ll-ink3">Choose a list...</option>
               {boardLists.map((list) => (
-                <option key={list.id} value={list.id} className="text-gray-900 dark:text-white">
+                <option key={list.id} value={list.id} className="text-ll-ink">
                   {list.name} ({listCards[list.id]?.length || 0} cards)
                 </option>
               ))}
@@ -55,7 +55,7 @@ const CreateCardForm = ({
               type="text"
               value={cardName}
               onChange={(e) => setCardName(e.target.value)}
-              className="w-full p-3.5 border-2 border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-600 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 transition-all"
+              className="w-full p-3.5 border-2 border-gray-300 dark:border-gray-700 rounded-xl bg-ll-panel text-ll-ink focus:border-blue-500 dark:focus:border-blue-600 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 transition-all"
               placeholder="Enter card title"
               required
             />
@@ -69,7 +69,7 @@ const CreateCardForm = ({
           <textarea
             value={cardDesc}
             onChange={(e) => setCardDesc(e.target.value)}
-            className="w-full p-3.5 border-2 border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-600 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 transition-all"
+            className="w-full p-3.5 border-2 border-gray-300 dark:border-gray-700 rounded-xl bg-ll-panel text-ll-ink focus:border-blue-500 dark:focus:border-blue-600 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 transition-all"
             placeholder="Add a detailed description (optional)"
             rows="4"
           />

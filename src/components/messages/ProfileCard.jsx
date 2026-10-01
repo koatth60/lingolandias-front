@@ -103,12 +103,12 @@ const ProfileCard = ({ user, onClose, onMessage, isSelf }) => {
             )}
             <span
               className={`absolute bottom-1.5 right-1.5 w-4 h-4 rounded-full border-2 border-white dark:border-ll-panel ${
-                isOnline ? "bg-[#1FA48C]" : "bg-gray-400 dark:bg-gray-600"
+                isOnline ? "bg-ll-teal" : "bg-gray-400 dark:bg-gray-600"
               }`}
             />
           </div>
 
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+          <h3 className="text-lg font-bold text-ll-ink">
             {user.name} {user.lastName}
           </h3>
 
@@ -121,14 +121,14 @@ const ProfileCard = ({ user, onClose, onMessage, isSelf }) => {
                 {t(ROLE_LABEL_KEY[user.role] || "profileCard.roleStudent")}
               </span>
             )}
-            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-gray-500 dark:text-gray-400">
-              <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? "bg-[#1FA48C]" : "bg-gray-400 dark:bg-gray-600"}`} />
+            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-ll-ink3">
+              <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? "bg-ll-teal" : "bg-gray-400 dark:bg-gray-600"}`} />
               {t(isOnline ? "profileCard.activeNow" : "profileCard.offline")}
             </span>
           </div>
 
           {user.biography && (
-            <p className="mt-4 text-xs leading-relaxed text-gray-600 dark:text-gray-300 italic">
+            <p className="mt-4 text-xs leading-relaxed text-ll-ink2 italic">
               “{user.biography}”
             </p>
           )}
@@ -137,18 +137,18 @@ const ProfileCard = ({ user, onClose, onMessage, isSelf }) => {
             <div className="mt-4 flex items-center justify-center gap-4">
               {typeof user.classesCount === "number" && (
                 <div className="text-center">
-                  <p className="text-sm font-bold text-gray-900 dark:text-white">{user.classesCount}</p>
-                  <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">
+                  <p className="font-mono text-[14px] font-medium text-ll-ink">{user.classesCount}</p>
+                  <p className="text-[11.5px] text-ll-ink3">
                     {t(user.role === "teacher" ? "profileCard.classesTaught" : "profileCard.classesTaken")}
                   </p>
                 </div>
               )}
               {memberSince && (
                 <>
-                  {typeof user.classesCount === "number" && <div className="w-px h-8 bg-gray-200 dark:bg-white/10" />}
+                  {typeof user.classesCount === "number" && <div className="w-px h-8 bg-ll-hover" />}
                   <div className="text-center">
-                    <p className="text-sm font-bold text-gray-900 dark:text-white">{memberSince}</p>
-                    <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">
+                    <p className="font-mono text-[14px] font-medium text-ll-ink">{memberSince}</p>
+                    <p className="text-[11.5px] text-ll-ink3">
                       {t("profileCard.memberSince")}
                     </p>
                   </div>
@@ -159,13 +159,13 @@ const ProfileCard = ({ user, onClose, onMessage, isSelf }) => {
 
           <div className="mt-4 w-full space-y-2">
             {location && (
-              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
-                <FiMapPin size={14} className="text-gray-400 dark:text-gray-500 flex-shrink-0" />
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-ll-subtle border border-ll-line">
+                <FiMapPin size={14} className="text-ll-ink3 flex-shrink-0" />
                 <span className="text-xs text-gray-700 dark:text-gray-300 truncate">{location}</span>
               </div>
             )}
-            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
-              <FiMail size={14} className="text-gray-400 dark:text-gray-500 flex-shrink-0" />
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-ll-subtle border border-ll-line">
+              <FiMail size={14} className="text-ll-ink3 flex-shrink-0" />
               <span className="text-xs text-gray-700 dark:text-gray-300 truncate">{user.email}</span>
             </div>
             {langMeta && (
@@ -174,7 +174,7 @@ const ProfileCard = ({ user, onClose, onMessage, isSelf }) => {
                 style={{ background: `${alpha(langMeta.color,"12")}`, border: `1px solid ${alpha(langMeta.color,"30")}` }}
               >
                 <FiBookOpen size={14} style={{ color: langMeta.color }} className="flex-shrink-0" />
-                <span className="text-xs font-medium text-gray-700 dark:text-gray-200">
+                <span className="text-xs font-medium text-ll-ink">
                   {t(languageLabel)}: <span className="font-bold">{t(`userModal.languages.${user.language}`)}</span>
                 </span>
                 <span className="ml-auto text-sm">{langMeta.flag}</span>

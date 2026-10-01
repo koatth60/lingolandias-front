@@ -166,7 +166,7 @@ const UserHomePage = () => {
         <div>
           <div className="flex items-center gap-1.5 mb-2.5">
             <span className="w-1.5 h-1.5 rounded-full bg-ll-teal flex-shrink-0" style={{ boxShadow: '0 0 0 3px rgb(var(--ll-teal-tint))' }} />
-            <span className="text-[11px] font-medium tracking-wide text-ll-teal-ink uppercase">{t("home.online")}</span>
+            <span className="text-[12.5px] font-medium text-ll-teal-ink">{t("home.online")}</span>
           </div>
           <h1 className={`font-semibold tracking-[-0.03em] text-ll-ink leading-[1.05] ${halloween ? 'hw-gothic text-[44px] sm:text-[58px]' : 'text-[34px] sm:text-[42px]'}`}>
             {halloween

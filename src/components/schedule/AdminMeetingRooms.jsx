@@ -68,7 +68,7 @@ const AdminMeetingRooms = ({ onJoinMeeting }) => {
         <h2 className="text-2xl sm:text-3xl font-extrabold login-gradient-text mb-3">
           {t("adminRooms.title")}
         </h2>
-        <p className="text-gray-500 dark:text-gray-300 text-sm leading-relaxed">
+        <p className="text-ll-ink3 text-sm leading-relaxed">
           {t("adminRooms.subtitle")}
         </p>
 
@@ -225,7 +225,7 @@ const AdminMeetingRooms = ({ onJoinMeeting }) => {
           background: "rgb(var(--ll-violet) / 0.04)",
         }}
       >
-        <div className="flex items-center gap-2 text-gray-500 dark:text-gray-300">
+        <div className="flex items-center gap-2 text-ll-ink3">
           <div
             className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
             style={{ background: "rgb(var(--ll-violet) / 0.12)", border: "1px solid rgb(var(--ll-violet) / 0.20)" }}

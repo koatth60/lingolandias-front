@@ -1153,7 +1153,7 @@ const ChatWindowComponent = ({
                 let icon = <FiUsers size={12} className="text-gray-400 flex-shrink-0" />;
                 let text = "";
                 if (msg.messageType === "member_added") {
-                  icon = <FiUserPlus size={12} className="text-[#1FA48C] flex-shrink-0" />;
+                  icon = <FiUserPlus size={12} className="text-ll-teal-ink flex-shrink-0" />;
                   text = renderSystemTextWithTag(
                     t("messagesExtra.systemMemberAdded", { actor: msg.username, target: meta.targetName }),
                     meta.targetName
@@ -1445,7 +1445,7 @@ const ChatWindowComponent = ({
                   <span className="text-sm text-ll-ink truncate flex-1">{candidate.name}</span>
                   {candidate.isMember === false && (
                     <span className="flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-md flex-shrink-0
-                                     bg-[#E8A23A]/15 text-[#C4860A] dark:text-[#E8A23A]">
+                                     bg-ll-gold-tint text-ll-gold-ink ">
                       <FiUserPlus size={10} />
                       {t("messagesExtra.addPeople")}
                     </span>

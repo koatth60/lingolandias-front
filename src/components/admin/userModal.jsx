@@ -17,9 +17,8 @@ const onBlur = (e) => {
 };
 
 const inputCls =
-  "w-full pl-11 pr-4 py-3 rounded-xl text-sm outline-none border transition-all duration-200 " +
-  "bg-gray-100 border-gray-200 text-gray-800 placeholder-gray-400 " +
-  "dark:bg-white/5 dark:border-white/10 dark:text-white dark:placeholder-gray-600";
+  "w-full h-10 pl-10 pr-3 rounded-lg text-[13.5px] outline-none border border-ll-line2 bg-ll-panel text-ll-ink " +
+  "placeholder:text-ll-ink3 focus:border-ll-violet/60 transition-colors";
 
 /* ── Reusable custom dropdown ── */
 const CustomSelect = ({ value, onChange, placeholder, options }) => {
@@ -50,7 +49,7 @@ const CustomSelect = ({ value, onChange, placeholder, options }) => {
           color: selected ? "inherit" : "rgba(156,163,175,1)",
         }}
       >
-        <span className="flex-1 text-left text-gray-800 dark:text-white">
+        <span className="flex-1 text-left text-ll-ink">
           {selected ? selected.label : placeholder}
         </span>
         <FiChevronDown
@@ -181,8 +180,8 @@ const UserModal = ({ show, handleClose, onCreated }) => {
               <FiUserPlus size={17} style={{ color: "#1FA48C" }} />
             </div>
             <div>
-              <h2 className="text-lg font-extrabold text-gray-800 dark:text-white leading-tight">{t("userModal.title")}</h2>
-              <p className="text-xs text-gray-400 dark:text-gray-500">{t("userModal.subtitle")}</p>
+              <h2 className="text-lg font-extrabold text-ll-ink leading-tight">{t("userModal.title")}</h2>
+              <p className="text-xs text-ll-ink3">{t("userModal.subtitle")}</p>
             </div>
             <button
               onClick={handleClose}
@@ -280,14 +279,13 @@ const UserModal = ({ show, handleClose, onCreated }) => {
               <button
                 type="button"
                 onClick={handleClose}
-                className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-white/6 border border-gray-200 dark:border-white/10"
+                className="ll-btn ll-btn-secondary flex-1 justify-center"
               >
                 {t("userModal.cancel")}
               </button>
               <button
                 type="submit"
-                className="flex-1 py-3 rounded-xl text-white text-sm font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
-                style={{ background: "linear-gradient(135deg, #1FA48C, #17886F)", boxShadow: "0 4px 20px rgba(31,164,140,0.35)" }}
+                className="ll-btn ll-btn-primary flex-1 justify-center disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <FiUserPlus size={14} />
                 {t("userModal.create")}

@@ -114,7 +114,7 @@ const RichEditor = forwardRef(({ html, onChange, placeholder }, ref) => {
     <div className="relative">
       {/* Fixed toolbar (always visible when focused) */}
       {focused && (
-        <div className="flex flex-wrap items-center gap-0.5 mb-2 p-1.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg">
+        <div className="flex flex-wrap items-center gap-0.5 mb-2 p-1.5 bg-ll-subtle border border-ll-line rounded-lg">
           {/* Bold */}
           <ToolBtn onClick={() => exec('bold')} title="Bold (Ctrl+B)">
             <b className="text-xs">B</b>
@@ -132,7 +132,7 @@ const RichEditor = forwardRef(({ html, onChange, placeholder }, ref) => {
             <s className="text-xs">S</s>
           </ToolBtn>
 
-          <div className="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-0.5" />
+          <div className="w-px h-5 bg-ll-ink4 mx-0.5" />
 
           {/* Text color */}
           <div className="relative">
@@ -141,7 +141,7 @@ const RichEditor = forwardRef(({ html, onChange, placeholder }, ref) => {
               <div className="w-3 h-0.5 mt-0.5 bg-red-500 rounded" />
             </ToolBtn>
             {showColorPicker && (
-              <div className="absolute top-9 left-0 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg p-2 shadow-xl grid grid-cols-6 gap-1 w-44">
+              <div className="absolute top-9 left-0 z-50 bg-ll-panel border border-ll-line rounded-lg p-2 shadow-xl grid grid-cols-6 gap-1 w-44">
                 {TEXT_COLORS.map((c) => (
                   <button
                     key={c}
@@ -162,14 +162,14 @@ const RichEditor = forwardRef(({ html, onChange, placeholder }, ref) => {
             </ToolBtn>
           </div>
 
-          <div className="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-0.5" />
+          <div className="w-px h-5 bg-ll-ink4 mx-0.5" />
 
           {/* Font size */}
           <div className="relative">
             <button
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => { setShowFontSize(!showFontSize); setShowColorPicker(false); setShowFontFamily(false); }}
-              className="flex items-center gap-1 px-2 py-1 text-xs text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
+              className="flex items-center gap-1 px-2 py-1 text-xs text-ll-ink hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
               title="Font size"
             >
               Size
@@ -178,12 +178,12 @@ const RichEditor = forwardRef(({ html, onChange, placeholder }, ref) => {
               </svg>
             </button>
             {showFontSize && (
-              <div className="absolute top-9 left-0 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-xl overflow-hidden w-24">
+              <div className="absolute top-9 left-0 z-50 bg-ll-panel border border-ll-line rounded-lg shadow-xl overflow-hidden w-24">
                 {FONT_SIZES.map((s) => (
                   <button
                     key={s}
                     onMouseDown={(e) => { e.preventDefault(); exec('fontSize', '7'); const sel = window.getSelection(); if (sel && !sel.isCollapsed) { const els = editorRef.current?.querySelectorAll('font[size="7"]'); els?.forEach(el => el.style.fontSize = s); } onChange(editorRef.current?.innerHTML || ''); setShowFontSize(false); }}
-                    className="w-full px-3 py-1.5 text-left text-xs text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="w-full px-3 py-1.5 text-left text-xs text-ll-ink hover:bg-gray-100 dark:hover:bg-gray-700"
                     style={{ fontSize: s }}
                   >
                     {s}
@@ -198,7 +198,7 @@ const RichEditor = forwardRef(({ html, onChange, placeholder }, ref) => {
             <button
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => { setShowFontFamily(!showFontFamily); setShowColorPicker(false); setShowFontSize(false); }}
-              className="flex items-center gap-1 px-2 py-1 text-xs text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
+              className="flex items-center gap-1 px-2 py-1 text-xs text-ll-ink hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
               title="Font family"
             >
               Font
@@ -207,12 +207,12 @@ const RichEditor = forwardRef(({ html, onChange, placeholder }, ref) => {
               </svg>
             </button>
             {showFontFamily && (
-              <div className="absolute top-9 left-0 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-xl overflow-hidden w-48">
+              <div className="absolute top-9 left-0 z-50 bg-ll-panel border border-ll-line rounded-lg shadow-xl overflow-hidden w-48">
                 {FONT_FAMILIES.map((f) => (
                   <button
                     key={f}
                     onMouseDown={(e) => { e.preventDefault(); exec('fontName', f); }}
-                    className="w-full px-3 py-1.5 text-left text-xs text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="w-full px-3 py-1.5 text-left text-xs text-ll-ink hover:bg-gray-100 dark:hover:bg-gray-700"
                     style={{ fontFamily: f }}
                   >
                     {f.split(',')[0].replace(/'/g, '')}
@@ -222,13 +222,13 @@ const RichEditor = forwardRef(({ html, onChange, placeholder }, ref) => {
             )}
           </div>
 
-          <div className="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-0.5" />
+          <div className="w-px h-5 bg-ll-ink4 mx-0.5" />
 
           {/* Lists */}
           <ToolBtn onClick={() => exec('insertUnorderedList')} title="Bullet list">•≡</ToolBtn>
           <ToolBtn onClick={() => exec('insertOrderedList')} title="Numbered list">1≡</ToolBtn>
 
-          <div className="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-0.5" />
+          <div className="w-px h-5 bg-ll-ink4 mx-0.5" />
 
           {/* Align */}
           <ToolBtn onClick={() => exec('justifyLeft')} title="Align left">
@@ -238,7 +238,7 @@ const RichEditor = forwardRef(({ html, onChange, placeholder }, ref) => {
             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M3 5h18v2H3zm3 4h12v2H6zm-3 4h18v2H3zm3 4h12v2H6z"/></svg>
           </ToolBtn>
 
-          <div className="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-0.5" />
+          <div className="w-px h-5 bg-ll-ink4 mx-0.5" />
 
           {/* Clear formatting */}
           <ToolBtn onClick={() => exec('removeFormat')} title="Clear formatting">
@@ -256,13 +256,13 @@ const RichEditor = forwardRef(({ html, onChange, placeholder }, ref) => {
         onBlur={() => { setFocused(false); setShowColorPicker(false); setShowFontSize(false); setShowFontFamily(false); }}
         onMouseUp={handleMouseUp}
         onKeyUp={handleKeyUp}
-        className="min-h-[100px] max-h-64 overflow-y-auto w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ll-violet transition-colors"
+        className="min-h-[100px] max-h-64 overflow-y-auto w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-ll-panel text-ll-ink focus:outline-none focus:ring-2 focus:ring-ll-violet transition-colors"
         style={{ lineHeight: '1.6', wordBreak: 'break-word' }}
         data-placeholder={placeholder}
       />
 
       {isEmpty && !focused && (
-        <div className="absolute left-3 text-sm text-gray-400 dark:text-gray-500 pointer-events-none select-none" style={{top: '10px'}}>
+        <div className="absolute left-3 text-sm text-ll-ink3 pointer-events-none select-none" style={{top: '10px'}}>
           {placeholder}
         </div>
       )}
@@ -276,7 +276,7 @@ const ToolBtn = ({ onClick, children, title }) => (
     onMouseDown={(e) => e.preventDefault()}
     onClick={onClick}
     title={title}
-    className="flex flex-col items-center justify-center w-7 h-7 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors text-xs"
+    className="flex flex-col items-center justify-center w-7 h-7 text-ll-ink2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors text-xs"
   >
     {children}
   </button>
@@ -304,8 +304,8 @@ const Checklist = ({ items, onChange }) => {
       {items.length > 0 && (
         <div className="mb-2">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-xs text-gray-500 dark:text-gray-400">{done}/{items.length}</span>
-            <span className="text-xs text-gray-500 dark:text-gray-400">{pct}%</span>
+            <span className="text-xs text-ll-ink3">{done}/{items.length}</span>
+            <span className="text-xs text-ll-ink3">{pct}%</span>
           </div>
           <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
             <div
@@ -324,7 +324,7 @@ const Checklist = ({ items, onChange }) => {
               onChange={() => toggle(item.id)}
               className="mt-0.5 h-4 w-4 rounded accent-ll-violet cursor-pointer flex-shrink-0"
             />
-            <span className={`flex-1 text-sm text-gray-800 dark:text-gray-200 ${item.done ? 'line-through text-gray-400 dark:text-gray-500' : ''}`}>
+            <span className={`flex-1 text-sm text-gray-800 dark:text-gray-200 ${item.done ? 'line-through text-ll-ink3' : ''}`}>
               {item.text}
             </span>
             <button
@@ -343,7 +343,7 @@ const Checklist = ({ items, onChange }) => {
           onChange={(e) => setNewText(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') add(); }}
           placeholder="Add an item..."
-          className="flex-1 px-2.5 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-ll-violet"
+          className="flex-1 px-2.5 py-1.5 text-sm rounded-lg border border-ll-line bg-ll-panel text-ll-ink focus:outline-none focus:ring-1 focus:ring-ll-violet"
         />
         <button onClick={add} className="px-3 py-1.5 text-xs bg-ll-violet hover:bg-ll-violet-hover text-white rounded-lg transition">Add</button>
       </div>
@@ -398,14 +398,14 @@ const LabelsPicker = ({ selected, onChange }) => {
       </div>
 
       {/* Custom label */}
-      <div className="pt-2 border-t border-gray-100 dark:border-gray-700">
-        <p className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Custom label</p>
+      <div className="pt-2 border-t border-ll-line">
+        <p className="text-[11px] font-semibold text-ll-ink3 uppercase tracking-wider mb-2">Custom label</p>
         <div className="flex gap-2 items-center">
           <input
             type="color"
             value={customColor}
             onChange={(e) => setCustomColor(e.target.value)}
-            className="w-8 h-8 rounded border border-gray-300 dark:border-gray-600 cursor-pointer p-0.5 bg-white dark:bg-gray-800"
+            className="w-8 h-8 rounded border border-gray-300 dark:border-gray-600 cursor-pointer p-0.5 bg-ll-panel"
             title="Pick color"
           />
           <input
@@ -414,7 +414,7 @@ const LabelsPicker = ({ selected, onChange }) => {
             onChange={(e) => setCustomName(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') addCustom(); }}
             placeholder="e.g. Phonetics, Idioms..."
-            className="flex-1 px-2.5 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-ll-violet"
+            className="flex-1 px-2.5 py-1.5 text-sm rounded-lg border border-ll-line bg-ll-panel text-ll-ink focus:outline-none focus:ring-1 focus:ring-ll-violet"
           />
           <button
             onClick={addCustom}
@@ -436,7 +436,7 @@ const SideBtn = ({ icon, label, onClick, active }) => (
     className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors
       ${active
         ? 'bg-ll-violet/15 text-ll-violet dark:text-ll-violet-ink'
-        : 'bg-gray-100 dark:bg-gray-700/60 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+        : 'bg-ll-hover text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
       }`}
   >
     <span className="text-base">{icon}</span>
@@ -580,10 +580,10 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
 
   return (
     <div className="absolute inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-2 sm:p-6" onClick={(e) => { if (e.target === e.currentTarget) handleClose(); }}>
-      <div className="bg-white dark:bg-[#1e2a3a] rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] flex flex-col border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="bg-ll-panel rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] flex flex-col border border-ll-line overflow-hidden">
 
         {/* ── HEADER ─────────────────────────────────────────────── */}
-        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex-shrink-0">
+        <div className="px-6 py-4 border-b border-ll-line flex-shrink-0">
           <div className="flex items-start gap-3">
             <svg className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
@@ -607,12 +607,12 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
                     }}
                   />
                   {/* Title style toolbar */}
-                  <div className="flex flex-wrap items-center gap-1.5 mt-2 p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+                  <div className="flex flex-wrap items-center gap-1.5 mt-2 p-2 bg-ll-subtle rounded-lg border border-ll-line">
                     {/* Font family */}
                     <select
                       value={titleStyle.fontFamily || ''}
                       onChange={(e) => updateTitleStyle('fontFamily', e.target.value || undefined)}
-                      className="text-xs px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-ll-violet"
+                      className="text-xs px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-ll-panel text-ll-ink focus:outline-none focus:ring-1 focus:ring-ll-violet"
                     >
                       <option value="">Default font</option>
                       {FONT_OPTIONS.map((f) => (
@@ -623,7 +623,7 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
                     <select
                       value={titleStyle.fontSize || ''}
                       onChange={(e) => updateTitleStyle('fontSize', e.target.value || undefined)}
-                      className="text-xs px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-ll-violet"
+                      className="text-xs px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-ll-panel text-ll-ink focus:outline-none focus:ring-1 focus:ring-ll-violet"
                     >
                       <option value="">Default size</option>
                       {['14px','16px','18px','20px','24px','28px','32px','36px','42px'].map((s) => (
@@ -634,17 +634,17 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
                     <button
                       type="button"
                       onClick={() => updateTitleStyle('fontWeight', titleStyle.fontWeight === 'bold' ? 'normal' : 'bold')}
-                      className={`w-7 h-7 rounded text-xs font-bold flex items-center justify-center transition ${titleStyle.fontWeight === 'bold' ? 'bg-ll-violet text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200'}`}
+                      className={`w-7 h-7 rounded text-xs font-bold flex items-center justify-center transition ${titleStyle.fontWeight === 'bold' ? 'bg-ll-violet text-white' : 'bg-ll-hover text-gray-700 dark:text-gray-300 hover:bg-gray-200'}`}
                     >B</button>
                     {/* Italic */}
                     <button
                       type="button"
                       onClick={() => updateTitleStyle('fontStyle', titleStyle.fontStyle === 'italic' ? 'normal' : 'italic')}
-                      className={`w-7 h-7 rounded text-xs italic flex items-center justify-center transition ${titleStyle.fontStyle === 'italic' ? 'bg-ll-violet text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200'}`}
+                      className={`w-7 h-7 rounded text-xs italic flex items-center justify-center transition ${titleStyle.fontStyle === 'italic' ? 'bg-ll-violet text-white' : 'bg-ll-hover text-gray-700 dark:text-gray-300 hover:bg-gray-200'}`}
                     >I</button>
                     {/* Color */}
                     <div className="flex items-center gap-1">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">Color:</span>
+                      <span className="text-xs text-ll-ink3">Color:</span>
                       <input
                         type="color"
                         value={titleStyle.color || '#111827'}
@@ -686,11 +686,11 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
                   {name}
                 </h2>
               )}
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 ml-1">
-                In list <span className="font-semibold text-gray-600 dark:text-gray-300 underline cursor-default">{list?.name}</span>
+              <p className="text-xs text-ll-ink3 mt-1 ml-1">
+                In list <span className="font-semibold text-ll-ink2 underline cursor-default">{list?.name}</span>
               </p>
             </div>
-            <button onClick={handleClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-white text-2xl leading-none flex-shrink-0 p-1">×</button>
+            <button onClick={handleClose} className="text-gray-400 hover:text-ll-ink text-2xl leading-none flex-shrink-0 p-1">×</button>
           </div>
 
           {/* Active labels strip */}
@@ -743,14 +743,14 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
               {/* Description */}
               <section>
                 <div className="flex items-center gap-2 mb-3">
-                  <svg className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 text-ll-ink3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h7" />
                   </svg>
-                  <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200">Description</h3>
+                  <h3 className="text-sm font-bold text-ll-ink">Description</h3>
                   {!editingDescription && (
                     <button
                       onClick={() => setEditingDescription(true)}
-                      className="ml-auto text-xs px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                      className="ml-auto text-xs px-3 py-1 rounded-lg border border-ll-line text-ll-ink2 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
                     >
                       Edit
                     </button>
@@ -774,7 +774,7 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
                       </button>
                       <button
                         onClick={() => { setDescription(card.description || ''); setEditingDescription(false); }}
-                        className="px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white rounded-lg transition"
+                        className="px-3 py-1.5 text-xs text-ll-ink3 hover:text-ll-ink rounded-lg transition"
                       >
                         Cancel
                       </button>
@@ -790,7 +790,7 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
                 ) : (
                   <button
                     onClick={() => setEditingDescription(true)}
-                    className="w-full text-left px-3 py-2.5 text-sm text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700/50 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition"
+                    className="w-full text-left px-3 py-2.5 text-sm text-ll-ink3 bg-ll-hover hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition"
                   >
                     Add a more detailed description...
                   </button>
@@ -801,10 +801,10 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
               {(activePanel === 'checklist' || checklist.length > 0) && (
                 <section>
                   <div className="flex items-center gap-2 mb-3">
-                    <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-ll-ink3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                     </svg>
-                    <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200">Checklist</h3>
+                    <h3 className="text-sm font-bold text-ll-ink">Checklist</h3>
                     {checklist.length > 0 && (
                       <button onClick={() => setChecklist([])} className="ml-auto text-xs text-gray-400 hover:text-red-500 transition">Delete</button>
                     )}
@@ -817,17 +817,17 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
               {activePanel === 'move' && (
                 <section>
                   <div className="flex items-center gap-2 mb-3">
-                    <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-ll-ink3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                     </svg>
-                    <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200">Move to list</h3>
+                    <h3 className="text-sm font-bold text-ll-ink">Move to list</h3>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {lists.filter((l) => l.id !== list?.id).map((l) => (
                       <button
                         key={l.id}
                         onClick={() => { onMoved(card.id, l.id); }}
-                        className="px-3 py-2 text-sm font-medium rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-ll-violet/15 hover:text-ll-violet transition border border-gray-200 dark:border-gray-600"
+                        className="px-3 py-2 text-sm font-medium rounded-xl bg-ll-hover text-ll-ink hover:bg-ll-violet/15 hover:text-ll-violet transition border border-ll-line"
                       >
                         → {l.name}
                       </button>
@@ -841,7 +841,7 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
                 <section>
                   <div className="flex items-center gap-2 mb-3">
                     <span className="text-base">🏷️</span>
-                    <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200">Labels</h3>
+                    <h3 className="text-sm font-bold text-ll-ink">Labels</h3>
                   </div>
                   <LabelsPicker selected={labels} onChange={setLabels} />
                 </section>
@@ -852,14 +852,14 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
                 <section>
                   <div className="flex items-center gap-2 mb-3">
                     <span className="text-base">📅</span>
-                    <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200">Due date</h3>
+                    <h3 className="text-sm font-bold text-ll-ink">Due date</h3>
                   </div>
                   <div className="flex items-center gap-3">
                     <input
                       type="date"
                       value={dueDate}
                       onChange={(e) => setDueDate(e.target.value)}
-                      className="px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ll-violet"
+                      className="px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-ll-panel text-ll-ink focus:outline-none focus:ring-2 focus:ring-ll-violet"
                     />
                     {dueDate && (
                       <button onClick={() => setDueDate('')} className="text-xs text-red-500 hover:text-red-700">Remove</button>
@@ -871,10 +871,10 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
               {/* ── COMMENTS & ACTIVITY ── */}
               <section>
                 <div className="flex items-center gap-2 mb-3">
-                  <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 text-ll-ink3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                   </svg>
-                  <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200">Comments & Activity</h3>
+                  <h3 className="text-sm font-bold text-ll-ink">Comments & Activity</h3>
                 </div>
 
                 {/* Add comment */}
@@ -889,7 +889,7 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
                       onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleAddComment(); } }}
                       placeholder="Write a comment..."
                       rows={2}
-                      className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ll-violet resize-none"
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-ll-line bg-ll-panel text-ll-ink focus:outline-none focus:ring-2 focus:ring-ll-violet resize-none"
                     />
                     {newComment.trim() && (
                       <button onClick={handleAddComment} className="mt-1 px-3 py-1.5 text-xs bg-ll-violet hover:bg-ll-violet-hover text-white rounded-lg transition">
@@ -907,11 +907,11 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
                         U
                       </div>
                       <div className="flex-1">
-                        <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-600 rounded-xl px-3 py-2">
+                        <div className="bg-ll-panel border border-ll-line rounded-xl px-3 py-2">
                           <p className="text-sm text-gray-800 dark:text-gray-200">{c.text}</p>
                         </div>
                         <div className="flex items-center gap-3 mt-1 ml-1">
-                          <span className="text-[11px] text-gray-400 dark:text-gray-500">
+                          <span className="text-[11px] text-ll-ink3">
                             {new Date(c.createdAt).toLocaleString()}
                           </span>
                           <button
@@ -935,9 +935,9 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
             </div>
 
             {/* ── SIDEBAR ─────────────────────────────────────────── */}
-            <div className="w-44 flex-shrink-0 px-3 py-4 border-l border-gray-100 dark:border-gray-700 space-y-4">
+            <div className="w-44 flex-shrink-0 px-3 py-4 border-l border-ll-line space-y-4">
               <div>
-                <p className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Add to card</p>
+                <p className="text-[11px] font-bold text-ll-ink3 uppercase tracking-wider mb-2">Add to card</p>
                 <div className="space-y-1">
                   <SideBtn icon="🏷️" label="Labels" onClick={() => setActivePanel(activePanel === 'labels' ? null : 'labels')} active={activePanel === 'labels'} />
                   <SideBtn icon="✅" label="Checklist" onClick={() => setActivePanel(activePanel === 'checklist' ? null : 'checklist')} active={activePanel === 'checklist' || checklist.length > 0} />
@@ -945,7 +945,7 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
                 </div>
               </div>
               <div>
-                <p className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Actions</p>
+                <p className="text-[11px] font-bold text-ll-ink3 uppercase tracking-wider mb-2">Actions</p>
                 <div className="space-y-1">
                   <SideBtn icon="↗️" label="Move" onClick={() => setActivePanel(activePanel === 'move' ? null : 'move')} active={activePanel === 'move'} />
                   <SideBtn icon="🗑️" label="Delete" onClick={handleDelete} />
@@ -956,11 +956,11 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
         </div>
 
         {/* ── FOOTER ─────────────────────────────────────────────── */}
-        <div className="px-6 py-3 border-t border-gray-100 dark:border-gray-700 flex-shrink-0 flex items-center justify-end gap-2">
+        <div className="px-6 py-3 border-t border-ll-line flex-shrink-0 flex items-center justify-end gap-2">
           <button
             onClick={handleClose}
             disabled={saving}
-            className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm transition disabled:opacity-50"
+            className="px-4 py-2 rounded-xl border border-ll-line text-ll-ink2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm transition disabled:opacity-50"
           >
             {saving ? 'Saving...' : 'Close'}
           </button>

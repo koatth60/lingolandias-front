@@ -340,6 +340,7 @@ html .rbc-time-gutter .rbc-timeslot-group { color: rgb(var(--ll-ink-3)); }
 .swal2-html-container { color: rgb(var(--ll-ink-2)) !important; font-size: 14px !important; }
 .swal2-styled { border-radius: 8px !important; font-size: 13.5px !important; font-weight: 500 !important; padding: 8px 16px !important; box-shadow: none !important; }
 .swal2-styled.swal2-confirm { background: rgb(var(--ll-violet)) !important; color: rgb(var(--ll-on-violet)) !important; }
+.swal2-styled.swal2-confirm[style*="239, 68, 68"] { background: rgb(var(--ll-danger)) !important; }
 .swal2-styled.swal2-cancel { background: rgb(var(--ll-panel)) !important; color: rgb(var(--ll-ink)) !important; border: 1px solid rgb(var(--ll-line-2)) !important; }
 .swal2-styled.swal2-deny { background: rgb(var(--ll-danger)) !important; }
 .swal2-input, .swal2-textarea, .swal2-select { background: rgb(var(--ll-panel)) !important; color: rgb(var(--ll-ink)) !important; border: 1px solid rgb(var(--ll-line-2)) !important; border-radius: 8px !important; box-shadow: none !important; font-size: 14px !important; }
@@ -451,5 +452,14 @@ html.theme-hw .ll-chat-body, html.theme-hw .ll-chat-foot { background: transpare
   background: rgb(var(--ll-violet)) !important; color: rgb(var(--ll-on-violet)) !important; border-radius: 8px !important;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 1px 2px rgb(var(--ll-shadow) / .25) !important;
 }
-.ll-shell button[style*="#ef4444"] { background: rgb(var(--ll-danger)) !important; border-radius: 8px !important; box-shadow: none !important; }
+.ll-shell button[style*="rgb(239, 68, 68)"] { background: rgb(var(--ll-danger)) !important; border-radius: 8px !important; box-shadow: none !important; }
 .ll-shell button[class*="hover:scale-"]:hover, .fixed button[class*="hover:scale-"]:hover { transform: none !important; }
+
+/* Gradient buttons / tiles / dividers inside the legacy modals and admin panels: flat tokens. */
+.ll-shell button[style*="linear-gradient"]:not([data-keep-gradient]), .fixed button[style*="linear-gradient"]:not([data-keep-gradient]) {
+  background: rgb(var(--ll-violet)) !important; color: rgb(var(--ll-on-violet)) !important; border-radius: 8px !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 1px 2px rgb(var(--ll-shadow) / .25) !important;
+}
+.ll-shell button[style*="rgb(239, 68, 68)"], .fixed button[style*="rgb(239, 68, 68)"] { background: rgb(var(--ll-danger)) !important; box-shadow: none !important; }
+.ll-shell div[style*="linear-gradient(135deg"]:not([class*="w-full"]):not([class*="max-w"]):not([class*="inset-"]):not([data-keep-gradient]), .fixed div[style*="linear-gradient(135deg"]:not([class*="w-full"]):not([class*="max-w"]):not([class*="inset-"]):not([data-keep-gradient]) { background: rgb(var(--ll-violet)) !important; box-shadow: none !important; }
+.ll-shell div.h-px[style*="linear-gradient"], .fixed div.h-px[style*="linear-gradient"] { background: rgb(var(--ll-line)) !important; opacity: 1 !important; }

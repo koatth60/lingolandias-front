@@ -142,7 +142,7 @@ const Dashboard = () => {
   return (
     <>
       <div
-        className={`h-screen hidden lg:flex flex-col fixed top-0 left-0 z-50 lg:sticky lg:top-0 bg-ll-sidebar ${
+        className={`h-screen hidden lg:flex flex-col fixed top-0 left-0 z-50 lg:z-[5] lg:sticky lg:top-0 bg-ll-sidebar ${
           isSidebarOpen
             ? "w-[232px] flex-shrink-0 translate-x-0"
             : "w-[232px] flex-shrink-0 -translate-x-full lg:w-20 lg:translate-x-0"

@@ -344,7 +344,7 @@ const CallChatWindow = ({
           style={{ background: "rgb(var(--ll-violet) / 0.08)", border: "1px solid rgb(var(--ll-violet) / 0.25)" }}>
           <div className="flex items-center gap-1.5 mb-2">
             <FiMusic size={11} className="flex-shrink-0 text-ll-violet-ink dark:text-ll-violet-ink" />
-            <p className="text-[11px] font-semibold truncate text-gray-800 dark:text-gray-100 flex-1 min-w-0">{fileName}</p>
+            <p className="text-[11px] font-semibold truncate text-ll-ink flex-1 min-w-0">{fileName}</p>
           </div>
           <AudioPlayer src={fileUrl} variant="voiceNote" />
         </div>
@@ -355,7 +355,7 @@ const CallChatWindow = ({
         className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition-colors ${
           isSender
             ? "border-white/20 hover:bg-white/10 text-white"
-            : "border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/5 text-gray-700 dark:text-gray-200"
+            : "border-ll-line hover:bg-ll-hover text-ll-ink"
         }`}
       >
         <FiFile size={15} />
@@ -452,7 +452,7 @@ const CallChatWindow = ({
   const displayName = chatName || "Group Chat";
 
   return (
-    <div className="w-full h-full flex flex-col relative bg-white dark:bg-[#0f0d24] transition-colors duration-300"
+    <div className="w-full h-full flex flex-col relative bg-ll-panel transition-colors duration-300"
       onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -460,9 +460,9 @@ const CallChatWindow = ({
     >
       {isDraggingFile && (
         <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none
-                        bg-ll-violet/10 dark:bg-ll-violet/15 backdrop-blur-[1px]">
+ bg-ll-violet/10 dark:bg-ll-violet/15 backdrop-blur-[1px]">
           <div className="flex flex-col items-center gap-2 px-6 py-5 rounded-2xl border-2 border-dashed
-                          border-ll-violet bg-white/90 dark:bg-[#1a1a2e]/90">
+ border-ll-violet bg-white/90 dark:bg-[#1a1a2e]/90">
             <FiPaperclip size={22} className="text-ll-violet" />
             <p className="text-sm font-semibold text-ll-violet">{t("chatWindow.dropFilesHere")}</p>
           </div>
@@ -491,10 +491,10 @@ const CallChatWindow = ({
             <button
               onClick={onClose}
               className="flex-shrink-0 p-1.5 rounded-lg
-                         text-gray-500 dark:text-gray-400
-                         hover:bg-red-50 dark:hover:bg-red-500/10
-                         hover:text-red-500 dark:hover:text-red-400
-                         transition-colors"
+ text-ll-ink3
+ hover:bg-red-50 dark:hover:bg-red-500/10
+ hover:text-red-500 dark:hover:text-red-400
+ transition-colors"
               title="Close chat"
             >
               <FiX size={18} />
@@ -505,7 +505,7 @@ const CallChatWindow = ({
 
       {/* ── Messages ── */}
       <div ref={scrollContainerRef}
-        className={`flex-1 bg-gray-50 dark:bg-black/20 overflow-y-auto overflow-x-hidden ${
+        className={`flex-1 bg-ll-subtle overflow-y-auto overflow-x-hidden ${
           chatMessages.length === 0 ? "flex items-center justify-center" : "p-4 sm:p-5"
         }`}
         style={{ minHeight: 0 }}>
@@ -517,7 +517,7 @@ const CallChatWindow = ({
             <div className="w-12 h-12 rounded-full bg-ll-violet-tint dark:bg-ll-violet/20 border border-ll-violet-line dark:border-ll-violet/30 flex items-center justify-center">
               <FaComments className="text-ll-violet-ink" size={20} />
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">No messages yet — say hi!</p>
+            <p className="text-xs text-ll-ink3">No messages yet — say hi!</p>
           </div>
         )}
 
@@ -539,7 +539,7 @@ const CallChatWindow = ({
               let icon = <FiUsers size={12} className="text-gray-400 flex-shrink-0" />;
               let text = "";
               if (msg.messageType === "member_added") {
-                icon = <FiUserPlus size={12} className="text-[#1FA48C] flex-shrink-0" />;
+                icon = <FiUserPlus size={12} className="text-ll-teal-ink flex-shrink-0" />;
                 text = renderSystemTextWithTag(
                   t("messagesExtra.systemMemberAdded", { actor: msg.username, target: meta.targetName }),
                   meta.targetName
@@ -561,17 +561,17 @@ const CallChatWindow = ({
                 <div key={index}>
                   {showTimestamp && (
                     <div className="flex items-center gap-3 my-4">
-                      <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
-                      <span className="text-[10px] font-medium px-3 py-1 rounded-full text-gray-500 dark:text-gray-400 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10">
+                      <div className="flex-1 h-px bg-ll-hover" />
+                      <span className="text-[10px] font-medium px-3 py-1 rounded-full text-ll-ink3 bg-ll-panel border border-ll-line">
                         {formatTimestamp(msg.timestamp)}
                       </span>
-                      <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
+                      <div className="flex-1 h-px bg-ll-hover" />
                     </div>
                   )}
                   <li className="flex justify-center my-1">
-                    <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-100 dark:bg-white/5">
+                    <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-ll-hover">
                       {icon}
-                      <span className="text-[11px] text-gray-500 dark:text-gray-400">{text}</span>
+                      <span className="text-[11px] text-ll-ink3">{text}</span>
                     </div>
                   </li>
                 </div>
@@ -582,11 +582,11 @@ const CallChatWindow = ({
               <div key={index}>
                 {showTimestamp && (
                   <div className="flex items-center gap-3 my-4">
-                    <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
-                    <span className="text-[10px] font-medium px-3 py-1 rounded-full text-gray-500 dark:text-gray-400 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10">
+                    <div className="flex-1 h-px bg-ll-hover" />
+                    <span className="text-[10px] font-medium px-3 py-1 rounded-full text-ll-ink3 bg-ll-panel border border-ll-line">
                       {formatTimestamp(msg.timestamp)}
                     </span>
-                    <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
+                    <div className="flex-1 h-px bg-ll-hover" />
                   </div>
                 )}
 
@@ -655,16 +655,16 @@ const CallChatWindow = ({
                           {msg.username}
                         </p>
                       )}
-                      <div className="px-3.5 py-2 rounded-2xl rounded-bl-sm text-sm leading-relaxed bg-white dark:bg-[#211d38] text-gray-800 dark:text-gray-100 border border-gray-100 dark:border-white/10"
+                      <div className="px-3.5 py-2 rounded-2xl rounded-bl-sm text-sm leading-relaxed bg-ll-panel text-ll-ink border border-ll-line"
                         style={{ boxShadow: "0 2px 8px rgba(20,20,40,0.08)" }}>
                         {effectiveFileUrl && renderFile(effectiveFileUrl, false)}
                         {effectiveMessage && (
                           <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
                             {formatMessageWithLinks(effectiveMessage, false)}
-                            {msg.editedAt && <span className="text-[10px] text-gray-400 dark:text-gray-500 ml-1">(edited)</span>}
+                            {msg.editedAt && <span className="text-[10px] text-ll-ink3 ml-1">(edited)</span>}
                           </p>
                         )}
-                        <span className="block text-right text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 leading-none">
+                        <span className="block text-right text-[10px] text-ll-ink3 mt-0.5 leading-none">
                           {bubbleTime(msg.timestamp)}
                         </span>
                       </div>
@@ -685,8 +685,8 @@ const CallChatWindow = ({
 
       {/* Typing indicator */}
       {typingUsers.length > 0 && (
-        <div className="px-5 pb-1 flex-shrink-0 bg-gray-50 dark:bg-black/20">
-          <span className="text-[11px] text-gray-500 dark:text-gray-400 italic">
+        <div className="px-5 pb-1 flex-shrink-0 bg-ll-subtle">
+          <span className="text-[11px] text-ll-ink3 italic">
             {typingUsers.join(", ")} {typingUsers.length === 1 ? "is" : "are"} typing
             <span className="inline-flex gap-0.5 ml-1">
               <span className="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-500 animate-bounce" style={{ animationDelay: "0ms" }} />
@@ -698,7 +698,7 @@ const CallChatWindow = ({
       )}
 
       {/* ── Input ── */}
-      <div className="relative flex-shrink-0 p-3 bg-white dark:bg-[#0f0d24] border-t border-gray-100 dark:border-[rgb(var(--ll-violet) / 0.12)]">
+      <div className="relative flex-shrink-0 p-3 bg-ll-panel border-t border-ll-line">
         <UploadStatus
           progress={uploadProgress}
           errorCode={uploadErrorCode}
@@ -710,18 +710,18 @@ const CallChatWindow = ({
               <div key={f.id} className="relative flex-shrink-0">
                 {f.previewUrl ? (
                   <img src={f.previewUrl} alt={f.name}
-                    className="w-14 h-14 rounded-lg object-cover border border-gray-200 dark:border-white/10" />
+                    className="w-14 h-14 rounded-lg object-cover border border-ll-line" />
                 ) : (
                   <div className="w-14 h-14 rounded-lg flex flex-col items-center justify-center gap-0.5 px-1
-                                  bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10">
+ bg-ll-hover border border-ll-line">
                     <FiFile size={16} className="text-gray-400" />
-                    <span className="text-[8px] text-gray-500 dark:text-gray-400 truncate w-full text-center">{f.name}</span>
+                    <span className="text-[8px] text-ll-ink3 truncate w-full text-center">{f.name}</span>
                   </div>
                 )}
                 <button
                   onClick={() => removeStagedFile(f.id)}
                   className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-gray-800 text-white
-                             flex items-center justify-center shadow hover:bg-red-500 transition-colors">
+ flex items-center justify-center shadow hover:bg-red-500 transition-colors">
                   <FiX size={11} />
                 </button>
               </div>
@@ -739,11 +739,11 @@ const CallChatWindow = ({
             </button>
           </div>
         )}
-        <div className="flex items-end gap-1.5 bg-gray-50 dark:bg-white/5 rounded-xl px-3 py-2 border border-gray-200 dark:border-white/10 focus-within:border-[rgb(var(--ll-violet) / 0.5)] dark:focus-within:border-[rgb(var(--ll-violet) / 0.4)] transition-colors">
+        <div className="flex items-end gap-1.5 bg-ll-subtle rounded-xl px-3 py-2 border border-ll-line focus-within:border-[rgb(var(--ll-violet) / 0.5)] dark:focus-within:border-[rgb(var(--ll-violet) / 0.4)] transition-colors">
           <div className="flex items-center gap-0.5 flex-shrink-0 self-end mb-0.5">
             {/* Emoji */}
             <button onClick={() => { setShowEmojiPicker((p) => !p); setShowFormatMenu(false); }}
-              className="p-1 text-gray-400 hover:text-[#E8A23A] transition-colors">
+              className="p-1 text-gray-400 hover:text-ll-gold-ink transition-colors">
               <BsEmojiSmile size={18} />
             </button>
             <button
@@ -772,7 +772,7 @@ const CallChatWindow = ({
             onKeyDown={handleKeyDown}
             onPaste={handlePaste}
             rows={1}
-            className="flex-1 bg-transparent resize-none outline-none text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 leading-relaxed py-1"
+            className="flex-1 bg-transparent resize-none outline-none text-sm text-ll-ink placeholder:text-ll-ink3 leading-relaxed py-1"
             style={{ minHeight: "32px", maxHeight: "112px", overflowY: "hidden" }}
           />
           {/* Send */}
@@ -785,7 +785,7 @@ const CallChatWindow = ({
 
         {showEmojiPicker && (
           <div className="absolute bottom-full right-3 mb-2 z-20">
-            <div className="rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 shadow-xl">
+            <div className="rounded-2xl overflow-hidden border border-ll-line shadow-xl">
               <EmojiPicker onEmojiClick={handleEmojiClick} />
             </div>
           </div>
@@ -793,8 +793,8 @@ const CallChatWindow = ({
 
         {showFormatMenu && (
           <div className="absolute bottom-full left-3 mb-2 z-20">
-            <div className="flex items-center gap-1 p-1.5 rounded-xl bg-white dark:bg-[#1a1a2e]
-                            border border-gray-200 dark:border-white/10 shadow-xl">
+            <div className="flex items-center gap-1 p-1.5 rounded-xl bg-ll-panel
+ border border-ll-line shadow-xl">
               {[
                 { delimiter: "*", icon: BsTypeBold, label: t("chatWindow.formatBold") },
                 { delimiter: "_", icon: BsTypeItalic, label: t("chatWindow.formatItalic") },
@@ -806,9 +806,9 @@ const CallChatWindow = ({
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => wrapSelection(delimiter)}
                   title={label}
-                  className="p-2 rounded-lg text-gray-600 dark:text-gray-300
-                             hover:text-ll-violet-ink dark:hover:text-ll-violet-ink
-                             hover:bg-ll-violet-tint dark:hover:bg-white/10 transition-colors"
+                  className="p-2 rounded-lg text-ll-ink2
+ hover:text-ll-violet-ink dark:hover:text-ll-violet-ink
+ hover:bg-ll-violet-tint dark:hover:bg-white/10 transition-colors"
                 >
                   <Icon size={16} />
                 </button>

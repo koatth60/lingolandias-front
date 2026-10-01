@@ -49,7 +49,7 @@ const EventActionsMenu = ({ onEditTime, onManageParticipants, alwaysVisible = fa
         title={t("schedule.eventMenuLabel")}
         className={
           alwaysVisible
-            ? "p-1.5 rounded-lg text-gray-400 hover:text-ll-violet hover:bg-gray-100 dark:hover:bg-white/5 flex-shrink-0"
+            ? "p-1.5 rounded-lg text-gray-400 hover:text-ll-violet hover:bg-ll-hover flex-shrink-0"
             : "absolute top-0.5 right-0.5 p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-black/25 text-white transition-opacity"
         }
       >
@@ -59,7 +59,7 @@ const EventActionsMenu = ({ onEditTime, onManageParticipants, alwaysVisible = fa
         createPortal(
           <div
             onClick={(e) => e.stopPropagation()}
-            className="fixed z-[100] w-44 rounded-xl shadow-2xl overflow-hidden border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1a1a2e]"
+            className="fixed z-[100] w-44 rounded-xl shadow-2xl overflow-hidden border border-ll-line bg-ll-panel"
             style={{ top: coords.top, left: coords.left }}
           >
             <button
@@ -68,7 +68,7 @@ const EventActionsMenu = ({ onEditTime, onManageParticipants, alwaysVisible = fa
                 setOpen(false);
                 onEditTime();
               }}
-              className="w-full text-left px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-ll-violet/5 dark:hover:bg-white/5 flex items-center gap-2"
+              className="w-full text-left px-3 py-2.5 text-sm text-ll-ink hover:bg-ll-violet/5 dark:hover:bg-white/5 flex items-center gap-2"
             >
               <FiClock size={14} className="text-ll-violet" /> {t("schedule.editTimeMenuItem")}
             </button>
@@ -78,7 +78,7 @@ const EventActionsMenu = ({ onEditTime, onManageParticipants, alwaysVisible = fa
                 setOpen(false);
                 onManageParticipants();
               }}
-              className="w-full text-left px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-ll-violet/5 dark:hover:bg-white/5 flex items-center gap-2 border-t border-gray-100 dark:border-white/5"
+              className="w-full text-left px-3 py-2.5 text-sm text-ll-ink hover:bg-ll-violet/5 dark:hover:bg-white/5 flex items-center gap-2 border-t border-ll-line"
             >
               <FiUsers size={14} className="text-ll-violet" /> {t("schedule.manageParticipantsMenuItem")}
             </button>

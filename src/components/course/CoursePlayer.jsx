@@ -69,39 +69,25 @@ const CoursePlayer = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-6xl mx-auto">
       {/* Progress header */}
-      <div
-        className="relative rounded-2xl overflow-hidden mb-6"
-        style={{ border: "1px solid rgb(var(--ll-violet) / 0.15)" }}
-      >
-        <div className="dark:hidden absolute inset-0 bg-white" />
-        <div
-          className="hidden dark:block absolute inset-0"
-          style={{ background: "linear-gradient(135deg, rgba(13,10,30,0.96) 0%, rgba(26,26,46,0.95) 100%)" }}
-        />
-        <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-ll-violet via-[#E8A23A] to-[#1FA48C]" />
-        <div className="relative z-10 flex flex-wrap items-center gap-5 p-5 sm:p-6">
-          <CourseProgressRing percent={percent} />
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl sm:text-2xl font-bold login-gradient-text">{t("course.pageTitle")}</h1>
-              {isComplete && (
-                <span
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide"
-                  style={{ background: "rgba(31,164,140,0.15)", color: "#17886F" }}
-                >
-                  <FiCheckCircle size={11} /> {t("course.complete")}
-                </span>
-              )}
-            </div>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-              {t(user.role === "teacher" ? "course.subtitleTeacher" : "course.subtitleStudent")}
-            </p>
-            <p className="text-xs font-semibold text-ll-violet dark:text-ll-violet-ink mt-1.5">
-              {t("course.progress", { done: doneCount, total: totalCount })}
-            </p>
+      <div className="flex flex-wrap items-center gap-4 mb-6">
+        <CourseProgressRing percent={percent} />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-[22px] font-semibold tracking-[-0.02em] text-ll-ink">{t("course.pageTitle")}</h1>
+            {isComplete && (
+              <span className="inline-flex items-center gap-1 h-5 px-2 rounded-full text-[11.5px] font-medium bg-ll-teal-tint text-ll-teal-ink">
+                <FiCheckCircle size={11} /> {t("course.complete")}
+              </span>
+            )}
           </div>
+          <p className="text-[13.5px] text-ll-ink3 mt-0.5">
+            {t(user.role === "teacher" ? "course.subtitleTeacher" : "course.subtitleStudent")}
+          </p>
+          <p className="text-[12.5px] font-medium text-ll-violet-ink mt-1">
+            {t("course.progress", { done: doneCount, total: totalCount })}
+          </p>
         </div>
       </div>
 
@@ -111,8 +97,8 @@ const CoursePlayer = () => {
         {/* Player */}
         <div className="lg:col-span-2">
           <div
-            className="relative w-full rounded-2xl overflow-hidden bg-black"
-            style={{ paddingTop: "56.25%", border: "1px solid rgb(var(--ll-violet) / 0.2)" }}
+            className="relative w-full rounded-xl overflow-hidden bg-black border border-ll-line"
+            style={{ paddingTop: "56.25%" }}
           >
             <video
               ref={videoRef}
@@ -128,24 +114,19 @@ const CoursePlayer = () => {
 
           <div className="flex items-start justify-between gap-4 mt-4">
             <div className="min-w-0">
-              <p className="text-xs font-bold tracking-widest text-ll-violet dark:text-ll-violet-ink uppercase mb-1">
+              <p className="text-[12.5px] font-medium text-ll-violet-ink mb-1">
                 {t("course.videoOf", { current: currentIndex + 1, total: totalCount })}
               </p>
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+              <h2 className="text-[17px] font-semibold text-ll-ink">
                 {t(`course.items.${current.id}.title`)}
               </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-[13.5px] text-ll-ink3 mt-1">
                 {t(`course.items.${current.id}.desc`)}
               </p>
             </div>
             <button
               onClick={() => setWatched(current.id, !progress[current.id])}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold flex-shrink-0 transition-all duration-200 hover:opacity-90"
-              style={
-                progress[current.id]
-                  ? { color: "#17886F", background: "rgba(31,164,140,0.12)" }
-                  : { color: "#fff", background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-ink)))", boxShadow: "0 4px 14px rgb(var(--ll-violet) / 0.3)" }
-              }
+              className={`ll-btn ll-btn-sm flex-shrink-0 ${progress[current.id] ? "bg-ll-teal-tint text-ll-teal-ink" : "ll-btn-primary"}`}
             >
               {progress[current.id] ? <FiCheckCircle size={14} /> : <FiCircle size={14} />}
               {t(progress[current.id] ? "course.markUnwatched" : "course.markWatched")}
@@ -155,27 +136,22 @@ const CoursePlayer = () => {
           {(prev || next) && (
             <div className="flex items-stretch gap-3 mt-4">
               {prev && (
-                <button
-                  onClick={() => goTo(prev.id)}
-                  className="flex items-center gap-1.5 px-4 py-3 rounded-xl text-sm font-semibold text-gray-600 dark:text-gray-300 transition-colors hover:bg-ll-violet/5 dark:hover:bg-white/5 flex-shrink-0"
-                  style={{ border: "1px solid rgb(var(--ll-violet) / 0.15)" }}
-                >
+                <button onClick={() => goTo(prev.id)} className="ll-btn ll-btn-secondary flex-shrink-0 !h-auto py-2.5">
                   <FiChevronLeft size={16} /> {t("course.previous")}
                 </button>
               )}
               {next && (
                 <button
                   onClick={() => goTo(next.id)}
-                  className="flex-1 min-w-0 flex items-center justify-between gap-3 px-4 py-3 rounded-xl transition-all duration-200 hover:-translate-y-0.5"
-                  style={{ border: "1px solid rgb(var(--ll-violet) / 0.15)", background: "rgb(var(--ll-violet) / 0.04)" }}
+                  className="flex-1 min-w-0 flex items-center justify-between gap-3 px-4 py-2.5 rounded-lg border border-ll-line bg-ll-subtle hover:bg-ll-hover transition-colors"
                 >
                   <span className="flex items-center gap-2 min-w-0">
-                    <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">{t("course.next")}:</span>
-                    <span className="text-sm font-semibold text-gray-800 dark:text-white truncate">
+                    <span className="text-[12.5px] text-ll-ink3 flex-shrink-0">{t("course.next")}:</span>
+                    <span className="text-[13.5px] font-medium text-ll-ink truncate">
                       {t(`course.items.${next.id}.title`)}
                     </span>
                   </span>
-                  <FiChevronRight size={16} className="text-gray-400 flex-shrink-0" />
+                  <FiChevronRight size={16} className="text-ll-ink3 flex-shrink-0" />
                 </button>
               )}
             </div>
@@ -184,10 +160,10 @@ const CoursePlayer = () => {
 
         {/* Sections list */}
         <div>
-          <h3 className="text-xs font-bold tracking-widest text-gray-500 dark:text-gray-400 uppercase mb-3 px-1">
+          <h3 className="text-[13.5px] font-semibold text-ll-ink mb-2.5 px-1">
             {t("course.sectionsTitle")}
           </h3>
-          <div className="space-y-1.5">
+          <div className="space-y-0.5">
             {sections.map((s, i) => {
               const watched = !!progress[s.id];
               const active = s.id === current.id;
@@ -197,38 +173,25 @@ const CoursePlayer = () => {
                 <button
                   key={s.id}
                   onClick={() => goTo(s.id)}
-                  className="w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all duration-200"
-                  style={
-                    active
-                      ? {
-                          background: "linear-gradient(135deg, rgb(var(--ll-violet) / 0.13) 0%, rgba(232,162,58,0.06) 100%)",
-                          border: "1px solid rgb(var(--ll-violet) / 0.3)",
-                        }
-                      : { border: "1px solid transparent" }
-                  }
+                  className={`w-full flex items-center gap-3 px-2.5 py-2 rounded-[9px] text-left transition-colors ${active ? "bg-ll-violet-tint" : "hover:bg-ll-hover"}`}
                 >
                   <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-xs font-bold"
-                    style={
-                      watched
-                        ? { background: "rgba(31,164,140,0.15)", color: "#17886F" }
-                        : active
-                        ? { background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-ink)))", color: "#fff" }
-                        : { background: "rgb(var(--ll-violet) / 0.08)", color: "rgb(var(--ll-violet))" }
-                    }
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                      watched ? "bg-ll-teal-tint text-ll-teal-ink" : active ? "bg-ll-violet text-ll-on-violet" : "bg-ll-hover text-ll-ink3"
+                    }`}
                   >
                     {watched ? <FiCheckCircle size={15} /> : <Icon size={14} />}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className={`text-sm font-semibold truncate ${active ? "text-gray-900 dark:text-white" : "text-gray-700 dark:text-gray-300"}`}>
+                    <p className={`text-[13.5px] truncate text-ll-ink ${active ? "font-semibold" : "font-medium"}`}>
                       {i + 1}. {t(`course.items.${s.id}.title`)}
                     </p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 truncate mt-0.5">
+                    <p className="text-[12px] text-ll-ink3 truncate mt-0.5">
                       {t(`course.items.${s.id}.desc`)}
                     </p>
                   </div>
                   {dur && (
-                    <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 flex-shrink-0">{dur}</span>
+                    <span className="font-mono text-[11px] text-ll-ink3 flex-shrink-0">{dur}</span>
                   )}
                 </button>
               );

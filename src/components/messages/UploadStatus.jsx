@@ -21,14 +21,14 @@ const UploadStatus = ({ progress, errorCode, onDismissError }) => {
       {progress && (
         <>
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[11px] text-gray-600 dark:text-gray-300 truncate max-w-[70%]">
+            <span className="text-[11px] text-ll-ink2 truncate max-w-[70%]">
               {t("chatWindow.uploading", { name: progress.name })}
             </span>
             <span className="text-[11px] font-semibold text-ll-violet-ink dark:text-ll-violet-ink">
               {Math.round((progress.ratio || 0) * 100)}%
             </span>
           </div>
-          <div className="h-1 rounded-full bg-gray-200 dark:bg-white/10 overflow-hidden">
+          <div className="h-1 rounded-full bg-ll-hover overflow-hidden">
             <div
               className="h-full rounded-full bg-ll-violet transition-all duration-150"
               style={{ width: `${Math.max(2, (progress.ratio || 0) * 100)}%` }}
@@ -39,7 +39,7 @@ const UploadStatus = ({ progress, errorCode, onDismissError }) => {
 
       {errorCode && (
         <div className="flex items-start gap-2 mt-1 px-2 py-1.5 rounded-lg
-                        bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30">
+ bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30">
           <FiAlertCircle size={13} className="text-red-500 flex-shrink-0 mt-0.5" />
           <span className="text-[11px] text-red-700 dark:text-red-300 flex-1">
             {t(`chatWindow.uploadError.${errorCode}`, {

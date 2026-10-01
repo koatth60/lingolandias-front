@@ -104,16 +104,16 @@ const TrelloImportModal = ({ userId, initialToken, onClose, onImported }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-white dark:bg-[#1a1a2e] rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden border border-gray-200 dark:border-ll-violet/30 max-h-[85vh] flex flex-col">
-        <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-          <h3 className="text-lg font-bold text-gray-800 dark:text-white">Migrate from Trello</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-white text-2xl leading-none p-1">×</button>
+      <div className="bg-ll-panel rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden border border-ll-line max-h-[85vh] flex flex-col">
+        <div className="px-5 py-4 border-b border-ll-line flex items-center justify-between">
+          <h3 className="text-lg font-bold text-ll-ink">Migrate from Trello</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-ll-ink text-2xl leading-none p-1">×</button>
         </div>
 
         <div className="p-5 overflow-y-auto space-y-4">
           {!token ? (
             <div className="text-center py-6">
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">
+              <p className="text-sm text-ll-ink3 mb-6 leading-relaxed">
                 Connect your real Trello account to copy your existing boards, lists, cards, due dates
                 and labels into Trello 2.0. This is a one-time copy — nothing stays linked afterward.
               </p>
@@ -132,10 +132,10 @@ const TrelloImportModal = ({ userId, initialToken, onClose, onImported }) => {
           ) : loading ? (
             <div className="flex flex-col items-center justify-center py-10 gap-3">
               <div className="h-8 w-8 rounded-full border-4 border-ll-violet/30 border-t-ll-violet animate-spin" />
-              <p className="text-sm text-gray-400 dark:text-gray-500">Loading your Trello boards...</p>
+              <p className="text-sm text-ll-ink3">Loading your Trello boards...</p>
             </div>
           ) : remoteBoards.length === 0 ? (
-            <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-6">
+            <p className="text-sm text-ll-ink3 text-center py-6">
               No open boards found on that Trello account.
             </p>
           ) : (
@@ -156,9 +156,9 @@ const TrelloImportModal = ({ userId, initialToken, onClose, onImported }) => {
                   return (
                     <div
                       key={rb.id}
-                      className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40"
+                      className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-ll-line bg-ll-subtle"
                     >
-                      <span className="text-sm font-medium text-gray-800 dark:text-white truncate">{rb.name}</span>
+                      <span className="text-sm font-medium text-ll-ink truncate">{rb.name}</span>
                       <button
                         onClick={() => handleImport(rb)}
                         disabled={isImporting || isImported || importingAll}
@@ -179,7 +179,7 @@ const TrelloImportModal = ({ userId, initialToken, onClose, onImported }) => {
         </div>
 
         {token && (
-          <div className="px-5 py-3 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center">
+          <div className="px-5 py-3 border-t border-ll-line flex justify-between items-center">
             <button onClick={handleDisconnect} className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
               Disconnect Trello account
             </button>

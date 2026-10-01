@@ -1,41 +1,28 @@
 import { useTranslation } from "react-i18next";
 
 const FILTERS = [
-  { id: "all", labelKey: "languageFilter.all", emoji: "🌍" },
-  { id: "english", labelKey: "languageFilter.english", emoji: "🇺🇸" },
-  { id: "spanish", labelKey: "languageFilter.spanish", emoji: "🇪🇸" },
-  { id: "polish", labelKey: "languageFilter.polish", emoji: "🇵🇱" },
+  { id: "all", labelKey: "languageFilter.all" },
+  { id: "english", labelKey: "languageFilter.english" },
+  { id: "spanish", labelKey: "languageFilter.spanish" },
+  { id: "polish", labelKey: "languageFilter.polish" },
 ];
 
 const LanguageFilter = ({ activeSection, setActiveSection }) => {
   const { t } = useTranslation();
   return (
-  <div className="flex flex-wrap gap-2 mb-6">
-    {FILTERS.map((filter) => (
-      <button
-        key={filter.id}
-        onClick={() => setActiveSection(filter.id)}
-        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 ${
-          activeSection !== filter.id ? "text-gray-700 dark:text-gray-200" : ""
-        }`}
-        style={
-          activeSection === filter.id
-            ? {
-                background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))",
-                color: "#fff",
-                boxShadow: "0 3px 10px rgb(var(--ll-violet) / 0.35)",
-              }
-            : {
-                background: "rgb(var(--ll-violet) / 0.08)",
-                border: "1px solid rgb(var(--ll-violet) / 0.15)",
-              }
-        }
-      >
-        <span>{filter.emoji}</span>
-        {t(filter.labelKey)}
-      </button>
-    ))}
-  </div>
+    <div className="inline-flex flex-wrap gap-0.5 p-0.5 mb-5 rounded-lg bg-ll-hover border border-ll-line">
+      {FILTERS.map((filter) => (
+        <button
+          key={filter.id}
+          onClick={() => setActiveSection(filter.id)}
+          className={`px-3 h-7 rounded-md text-[12.5px] font-medium transition-colors ${
+            activeSection === filter.id ? "bg-ll-panel text-ll-ink shadow-ll-1" : "text-ll-ink3 hover:text-ll-ink"
+          }`}
+        >
+          {t(filter.labelKey)}
+        </button>
+      ))}
+    </div>
   );
 };
 

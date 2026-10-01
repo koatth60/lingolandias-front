@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 const Support = () => {
   const { t } = useTranslation();
   return (
-    <div className="flex w-full relative h-screen">
+    <div className="flex w-full relative h-screen bg-ll-canvas">
       <Dashboard />
       <div className="ll-shell w-full relative z-10 flex flex-col min-w-0">
         <Navbar header={t("support.title")} />

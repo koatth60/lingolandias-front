@@ -359,10 +359,10 @@ const SupportChatWindow = () => {
     }
     if (AUDIO_EXTS.has(ext)) {
       return (
-        <div className="rounded-xl min-w-[200px] px-3 py-2.5" style={{ background: "rgba(232,162,58,0.10)", border: "1px solid rgba(232,162,58,0.30)" }}>
+        <div className="rounded-xl min-w-[200px] px-3 py-2.5 bg-ll-panel border border-ll-line text-ll-ink">
           <div className="flex items-center gap-1.5 mb-2">
-            <FiMusic size={11} className="flex-shrink-0" style={{ color: "#C4860A" }} />
-            <p className="text-[11px] font-semibold truncate flex-1 min-w-0 text-gray-800 dark:text-gray-100">{fileName}</p>
+            <FiMusic size={12} className="flex-shrink-0 text-ll-ink3" />
+            <p className="text-[12px] font-medium truncate flex-1 min-w-0">{fileName}</p>
           </div>
           <AudioPlayer src={fileUrl} variant="voiceNote" isSender={isSender} />
         </div>
@@ -370,11 +370,11 @@ const SupportChatWindow = () => {
     }
     if (VIDEO_EXTS.has(ext)) {
       return (
-        <div className="rounded-xl overflow-hidden max-w-[280px]">
+        <div className="rounded-xl overflow-hidden max-w-[280px] border border-ll-line">
           <video src={fileUrl} controls className="w-full max-h-48 object-contain bg-black" />
-          <div className="px-2.5 py-1.5 flex items-center gap-1.5" style={{ background: "rgba(232,162,58,0.10)" }}>
-            <FiVideo size={11} style={{ color: "#C4860A" }} />
-            <span className="text-[11px] truncate text-gray-700 dark:text-gray-300">{fileName}</span>
+          <div className="px-2.5 py-1.5 flex items-center gap-1.5 bg-ll-panel text-ll-ink">
+            <FiVideo size={12} className="text-ll-ink3" />
+            <span className="text-[12px] truncate">{fileName}</span>
           </div>
         </div>
       );
@@ -382,17 +382,15 @@ const SupportChatWindow = () => {
     const FileIconComp = ["doc", "docx", "txt", "pdf", "csv"].includes(ext) ? FiFileText : FiFile;
     return (
       <a href={fileUrl} target="_blank" rel="noopener noreferrer"
-        className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all min-w-[190px] max-w-[260px] no-underline"
-        style={{ background: "rgba(232,162,58,0.10)", border: "1px solid rgba(232,162,58,0.30)" }}>
-        <div className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center"
-          style={{ background: "linear-gradient(135deg, #E8A23A, #C4860A)" }}>
-          <FileIconComp size={14} className="text-white" />
+        className="flex items-center gap-3 px-3 py-2.5 rounded-xl min-w-[190px] max-w-[260px] no-underline bg-ll-panel border border-ll-line text-ll-ink hover:bg-ll-subtle transition-colors">
+        <div className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center bg-ll-violet-tint text-ll-violet-ink">
+          <FileIconComp size={15} />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-semibold truncate text-gray-800 dark:text-gray-100">{fileName}</p>
-          <p className="text-[9px] uppercase font-bold text-gray-400">{ext}</p>
+          <p className="text-[12.5px] font-medium truncate">{fileName}</p>
+          <p className="font-mono text-[10.5px] text-ll-ink3">{ext}</p>
         </div>
-        <FiDownload size={13} className="flex-shrink-0 text-gray-400" />
+        <FiDownload size={14} className="flex-shrink-0 text-ll-ink3" />
       </a>
     );
   };
@@ -422,10 +420,16 @@ const SupportChatWindow = () => {
   };
 
   const isAdmin = (msg) => msg.userRole === "admin";
+  const AdminPill = () => (
+    <span className="inline-flex items-center gap-1 h-[18px] px-1.5 rounded-full text-[11px] font-medium bg-ll-gold-tint text-ll-gold-ink">
+      <HiShieldCheck size={11} /> {t("supportChat.adminBadge")}
+    </span>
+  );
+  const COMPOSER_BTN = "flex-shrink-0 w-[30px] h-[30px] grid place-items-center rounded-[7px] text-ll-ink3 hover:bg-ll-hover hover:text-ll-ink transition-colors self-end";
 
   return (
     <div
-      className="w-full h-full flex flex-col bg-white dark:bg-[#0f0c26] transition-colors duration-300 relative overflow-hidden"
+      className="w-full h-full flex flex-col bg-ll-panel relative overflow-hidden"
       onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -434,79 +438,61 @@ const SupportChatWindow = () => {
 
       {/* Drag-and-drop overlay */}
       {isDraggingFile && (
-        <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none bg-[#E8A23A]/10 dark:bg-[#E8A23A]/15 backdrop-blur-[1px]">
-          <div className="flex flex-col items-center gap-2 px-6 py-5 rounded-2xl border-2 border-dashed" style={{ borderColor: "#E8A23A", background: "rgba(255,255,255,0.9)" }}>
-            <FiPaperclip size={22} style={{ color: "#E8A23A" }} />
-            <p className="text-sm font-semibold" style={{ color: "#C4860A" }}>{t("chatWindow.dropFilesHere")}</p>
+        <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none bg-ll-violet/10 backdrop-blur-[1px]">
+          <div className="flex flex-col items-center gap-2 px-6 py-5 rounded-xl border-2 border-dashed border-ll-violet bg-ll-panel">
+            <FiPaperclip size={22} className="text-ll-violet" />
+            <p className="text-sm font-semibold text-ll-violet-ink">{t("chatWindow.dropFilesHere")}</p>
           </div>
         </div>
       )}
 
-      {/* Ambient orbs */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden hidden dark:block" aria-hidden="true">
-        <div className="absolute rounded-full blur-3xl opacity-15"
-          style={{ background: "radial-gradient(circle, rgba(232,162,58,0.5), transparent 70%)", width: 320, height: 320, top: "-8%", right: "-5%" }} />
-        <div className="absolute rounded-full blur-3xl opacity-10"
-          style={{ background: "radial-gradient(circle, rgba(31,164,140,0.4), transparent 70%)", width: 260, height: 260, bottom: "-5%", left: "-5%" }} />
-      </div>
-
       {/* ── Header ── */}
-      <div className="relative flex-shrink-0 z-10">
-        <div className="absolute top-0 left-0 w-full h-[2px] z-10"
-          style={{ background: "linear-gradient(90deg, #E8A23A, #1FA48C, #E8A23A)" }} />
-        <div className="absolute inset-0 dark:hidden"
-          style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.98), rgba(255,250,235,0.98))", borderBottom: "1px solid rgba(232,162,58,0.12)" }} />
-        <div className="absolute inset-0 hidden dark:block"
-          style={{ background: "linear-gradient(135deg, rgba(20,16,40,0.98), rgba(30,22,55,0.98))", borderBottom: "1px solid rgba(232,162,58,0.18)" }} />
-
-        <div className="relative z-10 flex items-center gap-3 px-4 py-3 mt-[2px]">
-          {/* Icon */}
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: "linear-gradient(135deg, #E8A23A, #C4860A)", boxShadow: "0 3px 12px rgba(232,162,58,0.35)" }}>
-            <FiRadio size={17} className="text-white" />
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-extrabold truncate"
-              style={{ background: "linear-gradient(90deg, #E8A23A, #1FA48C)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-              {t("supportChat.title")}
-            </p>
-            <p className="text-[10px] font-semibold" style={{ color: "#1FA48C" }}>
-              ● {t("supportChat.staffChannel")}
-            </p>
-          </div>
-
+      <div className="relative z-10 flex flex-shrink-0 items-center gap-3 h-[60px] px-4 sm:px-5 bg-ll-panel border-b border-ll-line">
+        <div className="w-[34px] h-[34px] rounded-[10px] flex items-center justify-center flex-shrink-0 bg-ll-gold-tint text-ll-gold-ink">
+          <FiRadio size={16} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h2 className="text-[14.5px] font-semibold text-ll-ink truncate leading-tight">{t("supportChat.title")}</h2>
+          <p className="flex items-center gap-1.5 mt-0.5 text-[12px] text-ll-teal-ink">
+            <span className="w-1.5 h-1.5 rounded-full bg-ll-teal" />
+            {t("supportChat.staffChannel")}
+          </p>
         </div>
       </div>
 
       {/* ── Messages ── */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto bg-gray-50 dark:bg-black/20"
+        className="ll-chat-body flex-1 overflow-y-auto"
         style={{ minHeight: 0 }}
       >
-        <div className="p-4 sm:p-5">
+        <div className="px-3 py-3 sm:px-7 sm:pt-[18px] sm:pb-3">
           {chatMessages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-48 gap-3">
-              <div className="w-14 h-14 rounded-full flex items-center justify-center border"
-                style={{ background: "rgba(232,162,58,0.1)", borderColor: "rgba(232,162,58,0.25)" }}>
-                <FiRadio size={24} style={{ color: "#E8A23A" }} />
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-ll-gold-tint text-ll-gold-ink">
+                <FiRadio size={20} />
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 text-center max-w-[200px]">
+              <p className="text-[13px] text-ll-ink3 text-center max-w-[220px]">
                 {t("supportChat.noUpdates")}
               </p>
             </div>
           )}
 
-          <ul className="space-y-1.5">
+          <ul>
             {chatMessages.map((msg, index) => {
               const prev = chatMessages[index - 1];
+              const next = chatMessages[index + 1];
               const showTimestamp =
                 index === 0 ||
                 new Date(msg.timestamp) - new Date(prev.timestamp) > 3 * 60 * 1000;
               const isSender = msg.email === user?.email;
-              const isFirstFromUser = index === 0 || msg.email !== prev.email;
-              const showUsername = !isSender && isFirstFromUser;
+              // Consecutive messages from one sender (no date divider between)
+              // stack tightly; name on the first, avatar on the last.
+              const breaksRun = (a, b) => !a || !b || a.email !== b.email
+                || new Date(b.timestamp) - new Date(a.timestamp) > 3 * 60 * 1000;
+              const isFirstInRun = breaksRun(prev, msg);
+              const isLastInRun = breaksRun(msg, next);
+              const showUsername = !isSender && isFirstInRun;
               const adminMsg = isAdmin(msg);
               const initials = getInitials(msg.username);
               const avatarColor = generateColor(msg.username);
@@ -514,27 +500,23 @@ const SupportChatWindow = () => {
               return (
                 <div key={msg.id || index}>
                   {showTimestamp && (
-                    <div className="flex items-center gap-3 my-4">
-                      <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
-                      <span className="text-[10px] font-medium px-3 py-1 rounded-full text-gray-500 dark:text-gray-400 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10">
-                        {formatTimestamp(msg.timestamp)}
-                      </span>
-                      <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
+                    <div className="flex items-center gap-3 mt-3.5 mb-2.5 text-[11.5px] font-medium text-ll-ink3">
+                      <div className="flex-1 h-px bg-ll-line" />
+                      {formatTimestamp(msg.timestamp)}
+                      <div className="flex-1 h-px bg-ll-line" />
                     </div>
                   )}
 
-                  <li className={`group flex items-end gap-2 ${isSender ? "justify-end" : "justify-start"}`}>
-                    {/* Avatar for others */}
+                  <li className={`group flex items-end gap-2.5 ${isLastInRun ? "mb-2.5" : "mb-[3px]"} ${isSender ? "justify-end" : "justify-start"}`}>
+                    {/* Avatar for others, on the run's last bubble */}
                     {!isSender && (
                       <div className="flex-shrink-0 w-7 self-end">
-                        {isFirstFromUser ? (
+                        {isLastInRun ? (
                           msg.userUrl ? (
-                            <img src={msg.userUrl} alt="avatar"
-                              className="w-7 h-7 rounded-full object-cover shadow"
-                              style={{ ring: adminMsg ? "2px solid #E8A23A" : undefined }} />
+                            <img src={msg.userUrl} alt="avatar" className="w-7 h-7 rounded-full object-cover" />
                           ) : (
-                            <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shadow"
-                              style={{ background: adminMsg ? "linear-gradient(135deg, #E8A23A, #C4860A)" : avatarColor }}>
+                            <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-semibold"
+                              style={{ background: adminMsg ? "rgb(var(--ll-gold))" : avatarColor }}>
                               {initials}
                             </div>
                           )
@@ -545,51 +527,45 @@ const SupportChatWindow = () => {
                     )}
 
                     {isSender ? (
-                      <div className="flex flex-col items-end max-w-[80%]">
-                      <div className="flex items-end gap-1.5">
-                        {/* Reply trigger */}
-                        <button onClick={() => handleReplyClick(msg)}
-                          className="self-end mb-0.5 p-1.5 rounded-full text-gray-400 opacity-0 group-hover:opacity-100
-                                     hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-white/10 transition-all">
-                          <FiCornerUpLeft size={12} />
-                        </button>
-                        {/* Options */}
-                        <div className="relative self-end mb-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button onClick={() => toggleOptionsMenu(msg.id)}
-                            className="p-1.5 rounded-full text-gray-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-white/10 transition-colors">
-                            <BsThreeDots size={12} />
+                      <div className="flex flex-col items-end max-w-[88%] sm:max-w-[62%]">
+                      <div className="flex items-center gap-2">
+                        {/* Reply + options */}
+                        <div className="flex items-center gap-0.5 p-0.5 rounded-lg bg-ll-panel border border-ll-line shadow-ll-2
+                                        opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => handleReplyClick(msg)}
+                            className="w-[26px] h-[26px] grid place-items-center rounded-md text-ll-ink2 hover:bg-ll-hover hover:text-ll-ink transition-colors">
+                            <FiCornerUpLeft size={14} />
                           </button>
-                          {openMessageId === msg.id && (
-                            <div className="absolute bottom-full right-0 mb-1 z-20">
-                              <MessageOptionsCard
-                                onEdit={() => handleEditClick(msg)}
-                                onDelete={() => handleDeleteMessage(msg.id)}
-                                onClose={() => setOpenMessageId(null)}
-                              />
-                            </div>
-                          )}
+                          <div className="relative">
+                            <button onClick={() => toggleOptionsMenu(msg.id)}
+                              className="w-[26px] h-[26px] grid place-items-center rounded-md text-ll-ink2 hover:bg-ll-hover hover:text-ll-ink transition-colors">
+                              <BsThreeDots size={14} />
+                            </button>
+                            {openMessageId === msg.id && (
+                              <div className="absolute bottom-full right-0 mb-1 z-20">
+                                <MessageOptionsCard
+                                  onEdit={() => handleEditClick(msg)}
+                                  onDelete={() => handleDeleteMessage(msg.id)}
+                                  onClose={() => setOpenMessageId(null)}
+                                />
+                              </div>
+                            )}
+                          </div>
                         </div>
                         {/* Sender bubble */}
-                        <div className="rounded-2xl rounded-br-sm text-white text-sm leading-relaxed shadow-md overflow-hidden"
-                          style={{
-                            background: user?.role === "admin"
-                              ? "linear-gradient(135deg, #E8A23A, #C4860A)"
-                              : "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))",
-                            boxShadow: user?.role === "admin"
-                              ? "0 3px 10px rgba(232,162,58,0.30)"
-                              : "0 3px 10px rgb(var(--ll-violet) / 0.30)",
-                          }}>
-                          <div className="px-3.5 py-2">
+                        <div className={`ll-bubble-out rounded-2xl overflow-hidden text-[14px] leading-[1.42] ${isFirstInRun ? "" : "rounded-tr-md"} ${isLastInRun ? "" : "rounded-br-md"}`}
+                          style={{ background: "rgb(var(--ll-violet))", color: "rgb(var(--ll-on-violet))" }}>
+                          <div className="px-[13px] py-2">
                             {user?.role === "admin" && (
-                              <div className="flex items-center gap-1 mb-1 opacity-80">
-                                <HiShieldCheck size={11} />
-                                <span className="text-[9px] font-bold tracking-wider uppercase">{t("supportChat.adminBadge")}</span>
+                              <div className="flex items-center gap-1 mb-1 opacity-80 text-[11px] font-medium">
+                                <HiShieldCheck size={12} />
+                                <span>{t("supportChat.adminBadge")}</span>
                               </div>
                             )}
                             {msg.replyTo && (
                               <div className="mb-1.5 pl-2 border-l-2 border-white/50 rounded bg-white/10 text-xs" style={{ padding: "4px 6px" }}>
-                                <p className="font-semibold text-[10px] mb-0.5 text-white/80">{msg.replyTo.username}</p>
-                                <p className="line-clamp-2 text-[11px] text-white/70">{msg.replyTo.message}</p>
+                                <p className="font-semibold text-[11px] mb-0.5 text-white/80">{msg.replyTo.username}</p>
+                                <p className="line-clamp-2 text-[12px] text-white/70">{msg.replyTo.message}</p>
                               </div>
                             )}
                             {msg.fileUrl && <div className="mb-1.5">{renderFile(msg.fileUrl, true)}</div>}
@@ -597,7 +573,7 @@ const SupportChatWindow = () => {
                               <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{formatMessageWithLinks(msg.message, true)}</p>
                             )}
                             {msg.editedAt && (
-                              <p className="text-[9px] opacity-70 mt-0.5">{t("chatWindow.edited")}</p>
+                              <p className="text-[11px] opacity-70 mt-0.5">{t("chatWindow.edited")}</p>
                             )}
                           </div>
                         </div>
@@ -608,77 +584,46 @@ const SupportChatWindow = () => {
                         onToggle={(emoji) => toggleReaction(msg.id, emoji)}
                         align="end"
                       />
+                      {isLastInRun && (
+                        <span className="mt-[3px] mx-1 font-mono text-[10.5px] text-ll-ink3">
+                          {new Date(msg.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                      )}
                       </div>
                     ) : (
-                      <div className="max-w-[80%]">
+                      <div className="max-w-[84%] sm:max-w-[62%]">
                         {showUsername && msg.username && msg.username !== "undefined" && (
-                          <div className="flex items-center gap-1.5 mb-1.5 ml-1">
-                            <p className={`font-bold truncate ${adminMsg ? "text-xs" : "text-[10px]"}`}
-                              style={{ color: adminMsg ? "#E8A23A" : "rgb(var(--ll-violet))" }}>
-                              {msg.username}
-                            </p>
-                            {adminMsg && (
-                              <span className="flex items-center gap-1 text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full"
-                                style={{
-                                  background: "linear-gradient(135deg, rgba(232,162,58,0.30), rgba(232,162,58,0.15))",
-                                  color: "#C4860A",
-                                  border: "1.5px solid rgba(232,162,58,0.55)",
-                                  boxShadow: "0 0 8px rgba(232,162,58,0.25)",
-                                  letterSpacing: "0.05em",
-                                }}>
-                                <HiShieldCheck size={10} /> {t("supportChat.adminBadge")}
-                              </span>
-                            )}
+                          <div className="flex items-center gap-1.5 mb-0.5 ml-1">
+                            <p className="text-[12px] font-semibold truncate text-ll-violet-ink">{msg.username}</p>
+                            {adminMsg && <AdminPill />}
                           </div>
                         )}
                         {/* Receiver bubble */}
                         <div className="relative">
-                          {adminMsg ? (
-                            <div className="rounded-2xl rounded-bl-sm text-white text-sm leading-relaxed shadow-md overflow-hidden"
-                              style={{
-                                background: "linear-gradient(135deg, #E8A23A, #C4860A)",
-                                boxShadow: "0 3px 10px rgba(232,162,58,0.30)",
-                              }}>
-                              <div className="px-3.5 py-2">
-                                {msg.replyTo && (
-                                  <div className="mb-1.5 pl-2 border-l-2 border-white/50 rounded bg-white/10 text-xs" style={{ padding: "4px 6px" }}>
-                                    <p className="font-semibold text-[10px] mb-0.5 text-white/80">{msg.replyTo.username}</p>
-                                    <p className="line-clamp-2 text-[11px] text-white/70">{msg.replyTo.message}</p>
-                                  </div>
-                                )}
-                                {msg.fileUrl && <div className="mb-1.5">{renderFile(msg.fileUrl, false)}</div>}
-                                {msg.message && (
-                                  <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{formatMessageWithLinks(msg.message, true)}</p>
-                                )}
-                                {msg.editedAt && <p className="text-[9px] opacity-70 mt-0.5">{t("chatWindow.edited")}</p>}
-                              </div>
+                          <div className={`rounded-2xl overflow-hidden text-[14px] leading-[1.42] text-ll-ink ${isFirstInRun ? "" : "rounded-tl-md"} ${isLastInRun ? "" : "rounded-bl-md"} ${adminMsg ? "bg-ll-gold-tint" : ""}`}
+                            style={adminMsg ? undefined : { background: "rgb(var(--ll-bubble-in))" }}>
+                            <div className="px-[13px] py-2">
+                              {msg.replyTo && (
+                                <div className="mb-1.5 pl-2 border-l-2 border-ll-violet/60 rounded bg-ll-panel/60 text-xs" style={{ padding: "4px 6px" }}>
+                                  <p className="font-semibold text-[11px] mb-0.5 text-ll-violet-ink">{msg.replyTo.username}</p>
+                                  <p className="line-clamp-2 text-[12px] text-ll-ink3">{msg.replyTo.message}</p>
+                                </div>
+                              )}
+                              {msg.fileUrl && <div className="mb-1.5">{renderFile(msg.fileUrl, false)}</div>}
+                              {msg.message && (
+                                <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{formatMessageWithLinks(msg.message, false)}</p>
+                              )}
+                              {msg.editedAt && <p className="text-[11px] text-ll-ink3 mt-0.5">{t("chatWindow.edited")}</p>}
                             </div>
-                          ) : (
-                            <div className="rounded-2xl rounded-bl-sm text-sm leading-relaxed shadow-sm bg-white dark:bg-white/[0.07] text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-white/10 overflow-hidden">
-                              <div className="px-3.5 py-2">
-                                {msg.replyTo && (
-                                  <div className="mb-1.5 pl-2 border-l-2 border-[#E8A23A]/60 rounded bg-[#E8A23A]/5 dark:bg-white/5 text-xs" style={{ padding: "4px 6px" }}>
-                                    <p className="font-semibold text-[10px] mb-0.5" style={{ color: "#C4860A" }}>{msg.replyTo.username}</p>
-                                    <p className="line-clamp-2 text-[11px] text-gray-500 dark:text-gray-400">{msg.replyTo.message}</p>
-                                  </div>
-                                )}
-                                {msg.fileUrl && <div className="mb-1.5">{renderFile(msg.fileUrl, false)}</div>}
-                                {msg.message && (
-                                  <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{formatMessageWithLinks(msg.message, false)}</p>
-                                )}
-                                {msg.editedAt && <p className="text-[9px] opacity-60 mt-0.5">{t("chatWindow.edited")}</p>}
-                              </div>
-                            </div>
-                          )}
+                          </div>
                           {/* Reply trigger — positioned relative to bubble only */}
                           <button
                             onClick={() => handleReplyClick(msg)}
-                            className="absolute left-full top-1/2 -translate-y-1/2 ml-1
+                            className="absolute left-full top-1/2 -translate-y-1/2 ml-2
                                        opacity-0 group-hover:opacity-100 transition-opacity
-                                       p-1.5 rounded-full text-gray-400
-                                       hover:text-amber-500 dark:hover:text-amber-400
-                                       hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
-                            <FiCornerUpLeft size={13} />
+                                       w-[26px] h-[26px] grid place-items-center rounded-md
+                                       bg-ll-panel border border-ll-line shadow-ll-2 text-ll-ink2 hover:text-ll-ink">
+                            <FiCornerUpLeft size={14} />
                           </button>
                         </div>
                         <MessageReactions
@@ -687,6 +632,11 @@ const SupportChatWindow = () => {
                           onToggle={(emoji) => toggleReaction(msg.id, emoji)}
                           align="start"
                         />
+                        {isLastInRun && (
+                          <span className="block mt-[3px] mx-1 font-mono text-[10.5px] text-ll-ink3">
+                            {new Date(msg.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                        )}
                       </div>
                     )}
                   </li>
@@ -700,29 +650,28 @@ const SupportChatWindow = () => {
       {/* Typing indicator */}
       {typingUsers.length > 0 && (
         <div className="relative z-10 px-5 pb-1 flex-shrink-0">
-          <span className="text-[11px] text-gray-500 dark:text-gray-400 italic">
+          <span className="text-[11.5px] text-ll-ink3">
             {typingUsers.join(", ")} {typingUsers.length === 1 ? t("chatWindow.isTyping") : t("chatWindow.areTyping")}
             <span className="inline-flex gap-0.5 ml-1">
-              <span className="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-500 animate-bounce" style={{ animationDelay: "0ms" }} />
-              <span className="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-500 animate-bounce" style={{ animationDelay: "150ms" }} />
-              <span className="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-500 animate-bounce" style={{ animationDelay: "300ms" }} />
+              <span className="w-1 h-1 rounded-full bg-ll-ink4 animate-bounce" style={{ animationDelay: "0ms" }} />
+              <span className="w-1 h-1 rounded-full bg-ll-ink4 animate-bounce" style={{ animationDelay: "150ms" }} />
+              <span className="w-1 h-1 rounded-full bg-ll-ink4 animate-bounce" style={{ animationDelay: "300ms" }} />
             </span>
           </span>
         </div>
       )}
 
       {/* ── Input ── */}
-      <div className="relative flex-shrink-0 z-10 p-3 bg-white dark:bg-[#0f0c26] border-t border-gray-100 dark:border-[rgba(232,162,58,0.10)]">
+      <div className="ll-chat-foot relative flex-shrink-0 z-10 px-2.5 sm:px-5 pt-2 pb-2.5 sm:pt-3 sm:pb-[18px]">
 
         {/* Editing banner */}
         {editingMsg && (
-          <div className="flex items-center justify-between gap-2 px-3 py-1.5 mb-2 rounded-lg"
-            style={{ background: "rgba(232,162,58,0.10)", border: "1px solid rgba(232,162,58,0.30)" }}>
-            <div className="flex items-center gap-1.5 text-xs" style={{ color: "#C4860A" }}>
+          <div className="flex items-center justify-between gap-2 px-3 py-1.5 mb-2 rounded-lg bg-ll-subtle border border-ll-line">
+            <div className="flex items-center gap-1.5 text-xs text-ll-ink2">
               <FiEdit2 size={12} />
               <span>{t("chatWindow.editing")}</span>
             </div>
-            <button onClick={handleCancelEdit} className="text-gray-400 hover:text-gray-600 flex-shrink-0">
+            <button onClick={handleCancelEdit} className="text-ll-ink3 hover:text-ll-ink flex-shrink-0">
               <FiX size={14} />
             </button>
           </div>
@@ -730,16 +679,15 @@ const SupportChatWindow = () => {
 
         {/* Reply banner */}
         {replyTo && !editingMsg && (
-          <div className="flex items-center justify-between gap-2 px-3 py-1.5 mb-2 rounded-lg"
-            style={{ background: "rgb(var(--ll-violet) / 0.06)", border: "1px solid rgb(var(--ll-violet) / 0.20)" }}>
+          <div className="flex items-center justify-between gap-2 px-3 py-1.5 mb-2 rounded-lg bg-ll-subtle border border-ll-line border-l-2 border-l-ll-violet">
             <div className="flex items-center gap-1.5 min-w-0">
-              <FiCornerUpLeft size={12} className="flex-shrink-0" style={{ color: "rgb(var(--ll-violet))" }} />
+              <FiCornerUpLeft size={12} className="flex-shrink-0 text-ll-violet" />
               <div className="min-w-0">
-                <p className="text-[10px] font-semibold" style={{ color: "rgb(var(--ll-violet))" }}>{replyTo.username}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{replyTo.message}</p>
+                <p className="text-[11px] font-semibold text-ll-violet-ink">{replyTo.username}</p>
+                <p className="text-xs text-ll-ink3 truncate">{replyTo.message}</p>
               </div>
             </div>
-            <button onClick={handleCancelReply} className="text-gray-400 hover:text-gray-600 flex-shrink-0">
+            <button onClick={handleCancelReply} className="text-ll-ink3 hover:text-ll-ink flex-shrink-0">
               <FiX size={14} />
             </button>
           </div>
@@ -752,35 +700,30 @@ const SupportChatWindow = () => {
           onDismissError={() => setUploadErrorCode(null)}
         />
         {stagedFile && !editingMsg && (
-          <div className="flex items-center gap-2 px-3 py-2 mb-2 rounded-lg"
-            style={{ background: "rgba(232,162,58,0.10)", border: "1px solid rgba(232,162,58,0.30)" }}>
+          <div className="flex items-center gap-2 px-3 py-2 mb-2 rounded-lg bg-ll-subtle border border-ll-line">
             {stagedFile.previewUrl ? (
               <img src={stagedFile.previewUrl} alt="preview" className="w-9 h-9 rounded-lg object-cover flex-shrink-0" />
             ) : (
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "linear-gradient(135deg, #E8A23A, #C4860A)" }}>
-                <FiFile size={14} className="text-white" />
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 bg-ll-violet-tint text-ll-violet-ink">
+                <FiFile size={15} />
               </div>
             )}
-            <p className="text-xs font-medium truncate flex-1 min-w-0 text-gray-700 dark:text-gray-200">{stagedFile.file.name}</p>
-            <button onClick={handleRemoveStagedFile} className="text-gray-400 hover:text-gray-600 flex-shrink-0">
+            <p className="text-xs font-medium truncate flex-1 min-w-0 text-ll-ink2">{stagedFile.file.name}</p>
+            <button onClick={handleRemoveStagedFile} className="text-ll-ink3 hover:text-ll-ink flex-shrink-0">
               <FiX size={14} />
             </button>
           </div>
         )}
 
-        <div className="flex items-end gap-2 bg-gray-50 dark:bg-white/5 rounded-xl px-3 py-2 border border-gray-200 dark:border-white/10 focus-within:border-[rgba(232,162,58,0.5)] dark:focus-within:border-[rgba(232,162,58,0.4)] transition-colors">
-          <button onClick={() => setShowEmojiPicker((p) => !p)}
-            className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg
-                       text-gray-400 hover:text-amber-500 transition-colors self-end">
-            <BsEmojiSmile size={18} />
+        <div className="flex items-end gap-1 px-2 py-1.5 bg-ll-panel rounded-xl border border-ll-line2 shadow-ll-1 focus-within:border-ll-violet/60 transition-colors">
+          <button onClick={() => setShowEmojiPicker((p) => !p)} className={COMPOSER_BTN}>
+            <BsEmojiSmile size={16} />
           </button>
           {!editingMsg && (
             <>
               <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileInputChange} />
-              <button onClick={() => fileInputRef.current?.click()}
-                className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg
-                           text-gray-400 hover:text-amber-500 transition-colors self-end">
-                <FiPaperclip size={17} />
+              <button onClick={() => fileInputRef.current?.click()} className={COMPOSER_BTN}>
+                <FiPaperclip size={16} />
               </button>
             </>
           )}
@@ -792,26 +735,26 @@ const SupportChatWindow = () => {
             onKeyDown={handleKeyDown}
             onFocus={markRead}
             rows={1}
-            className="flex-1 bg-transparent resize-none outline-none text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 leading-relaxed py-1"
+            className="flex-1 bg-transparent resize-none outline-none text-[14px] text-ll-ink placeholder:text-ll-ink3 leading-relaxed py-1.5 px-1"
             style={{ minHeight: "32px", maxHeight: "112px", overflowY: "hidden" }}
           />
           <button
             onClick={sendMessage}
             disabled={(!message.trim() && !stagedFile) || isUploading}
-            className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:opacity-90 active:scale-95 disabled:opacity-30 self-end"
-            style={{ background: "linear-gradient(135deg, #E8A23A, #C4860A)", boxShadow: "0 2px 8px rgba(232,162,58,0.35)" }}
+            className="flex-shrink-0 w-8 h-8 rounded-lg grid place-items-center bg-ll-violet hover:bg-ll-violet-hover text-ll-on-violet transition-colors disabled:opacity-40 disabled:hover:bg-ll-violet self-end"
+            aria-label="Send"
           >
             {isUploading ? (
               <div className="w-3.5 h-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
             ) : (
-              <FiSend size={13} className="text-white" />
+              <FiSend size={15} />
             )}
           </button>
         </div>
 
         {showEmojiPicker && (
           <div className="absolute bottom-full right-3 mb-2 z-20">
-            <div className="rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 shadow-xl">
+            <div className="rounded-xl overflow-hidden border border-ll-line shadow-ll-pop">
               <EmojiPicker onEmojiClick={handleEmojiClick} />
             </div>
           </div>

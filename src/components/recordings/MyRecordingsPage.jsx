@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { FiUser, FiRefreshCw } from "react-icons/fi";
+import { FiUser, FiRefreshCw, FiVideo } from "react-icons/fi";
 import Swal from "sweetalert2";
 import RecordingCard from "./RecordingCard";
 
@@ -86,17 +86,16 @@ const MyRecordingsPage = () => {
 
   return (
     <div className="w-full max-w-6xl mx-auto">
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-gray-800 dark:text-white">{t("recordings.title")}</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
+          <h1 className="text-[22px] font-semibold tracking-[-0.02em] text-ll-ink">{t("recordings.title")}</h1>
+          <p className="text-ll-ink3 mt-1 text-[13.5px]">
             {loading ? t("common.loading") : t("recordings.count", { count: totalCount })}
           </p>
         </div>
         <button
           onClick={fetchRecordings}
-          className="p-2.5 rounded-xl text-gray-500 dark:text-gray-400 hover:text-white transition-all"
-          style={{ border: "1px solid rgb(var(--ll-violet) / 0.2)" }}
+          className="w-[30px] h-[30px] grid place-items-center rounded-[7px] border border-ll-line text-ll-ink2 hover:bg-ll-hover hover:text-ll-ink transition-colors"
           title={t("recordings.refresh")}
         >
           <FiRefreshCw size={16} />
@@ -105,15 +104,15 @@ const MyRecordingsPage = () => {
 
       {loading ? (
         <div className="flex justify-center py-20">
-          <div className="h-10 w-10 rounded-full border-4 border-ll-violet border-t-transparent animate-spin" />
+          <div className="h-8 w-8 rounded-full border-[3px] border-ll-violet/30 border-t-ll-violet animate-spin" />
         </div>
       ) : (
         <div className="flex flex-col md:flex-row gap-4 md:gap-6" style={{ minHeight: "50vh" }}>
           {isTeacher && (
-            <div className="w-full md:w-64 md:flex-shrink-0 rounded-2xl overflow-hidden" style={{ border: "1px solid rgb(var(--ll-violet) / 0.15)" }}>
-              <div className="p-3 space-y-1 max-h-[70vh] overflow-y-auto">
+            <div className="w-full md:w-60 md:flex-shrink-0">
+              <div className="space-y-0.5 max-h-[70vh] overflow-y-auto">
                 {students.length === 0 ? (
-                  <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-8">
+                  <p className="text-[12.5px] text-ll-ink3 text-center py-8">
                     {t("recordings.noRecordings")}
                   </p>
                 ) : (
@@ -124,18 +123,17 @@ const MyRecordingsPage = () => {
                       <button
                         key={studentId}
                         onClick={() => setActiveStudent(studentId)}
-                        className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center justify-between gap-2 ${
-                          isActive ? "text-white shadow-lg" : "text-gray-600 dark:text-gray-300 hover:bg-ll-violet-tint dark:hover:bg-white/5"
+                        className={`w-full text-left px-3 py-2 rounded-[9px] text-[13.5px] font-medium transition-colors flex items-center justify-between gap-2 ${
+                          isActive ? "bg-ll-violet-tint text-ll-violet-ink" : "text-ll-ink2 hover:bg-ll-hover hover:text-ll-ink"
                         }`}
-                        style={isActive ? { background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" } : {}}
                       >
                         <span className="flex items-center gap-2 min-w-0">
                           <FiUser size={13} className="flex-shrink-0" />
                           <span className="truncate">{group.displayName}</span>
                         </span>
                         <span
-                          className={`flex-shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                            isActive ? "bg-white/20 text-white" : "bg-[rgb(var(--ll-violet) / 0.15)] text-ll-violet"
+                          className={`flex-shrink-0 font-mono text-[11px] px-1.5 py-px rounded-[5px] ${
+                            isActive ? "bg-ll-panel text-ll-violet-ink" : "bg-ll-hover text-ll-ink3"
                           }`}
                         >
                           {group.recordings.length}
@@ -150,10 +148,12 @@ const MyRecordingsPage = () => {
 
           <div className="flex-1 min-w-0">
             {currentRecordings.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 text-gray-400 dark:text-gray-500">
-                <div className="text-5xl mb-4">🎥</div>
-                <p className="font-semibold">{t("recordings.noRecordings")}</p>
-                <p className="text-sm mt-1">{t("recordings.noRecordingsText")}</p>
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                <div className="w-12 h-12 rounded-xl mb-4 flex items-center justify-center bg-ll-violet-tint text-ll-violet-ink">
+                  <FiVideo size={22} />
+                </div>
+                <p className="text-[14px] font-semibold text-ll-ink">{t("recordings.noRecordings")}</p>
+                <p className="text-[13px] text-ll-ink3 mt-1">{t("recordings.noRecordingsText")}</p>
               </div>
             ) : (
               <div className="space-y-3">

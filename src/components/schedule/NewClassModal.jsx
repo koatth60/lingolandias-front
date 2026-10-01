@@ -251,7 +251,7 @@ const NewClassModal = ({ show, teacherId, teacherName, teacherEmail, teacherAvat
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
           {/* People picker */}
           <div>
-            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">
+            <label className="block text-[12.5px] font-medium text-ll-ink2 mb-1.5">
               {t("newClassModal.peopleLabel")}
             </label>
             {!!selected.length && (
@@ -316,7 +316,7 @@ const NewClassModal = ({ show, teacherId, teacherName, teacherEmail, teacherAvat
 
           {/* Class name */}
           <div>
-            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">
+            <label className="block text-[12.5px] font-medium text-ll-ink2 mb-1.5">
               {t("newClassModal.nameLabel")}
             </label>
             <input
@@ -331,18 +331,18 @@ const NewClassModal = ({ show, teacherId, teacherName, teacherEmail, teacherAvat
           {/* Time */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">{t("addEvent.startTime")}</label>
+              <label className="block text-[12.5px] font-medium text-ll-ink2 mb-1.5">{t("addEvent.startTime")}</label>
               <TimeInput value={start} onChange={setStart} className="w-full px-4 py-2.5" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">{t("addEvent.endTime")}</label>
+              <label className="block text-[12.5px] font-medium text-ll-ink2 mb-1.5">{t("addEvent.endTime")}</label>
               <TimeInput value={end} onChange={setEnd} className="w-full px-4 py-2.5" />
             </div>
           </div>
 
           {/* Recurrence */}
           <div>
-            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">{t("addEvent.recurrence")}</label>
+            <label className="block text-[12.5px] font-medium text-ll-ink2 mb-1.5">{t("addEvent.recurrence")}</label>
             <div className="flex gap-2">
               {[{ value: 1, label: t("addEvent.everyWeek") }, { value: 2, label: t("addEvent.everyTwoWeeks") }].map((opt) => (
                 <button

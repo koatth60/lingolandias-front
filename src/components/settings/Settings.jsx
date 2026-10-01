@@ -287,8 +287,7 @@ const Settings = () => {
       case "appearance":
         return (
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <FiEye size={15} className="text-ll-violet-ink" />
+            <div className="flex items-center gap-2 mb-2">
               <h2 className="text-[15px] font-semibold text-ll-ink">{t("settings.appearance")}</h2>
             </div>
             <SettingRow icon={darkMode ? FiMoon : FiSun} label={t("settings.darkMode")} description={halloween ? t("settings.darkModeLockedHalloween") : undefined}>
@@ -312,8 +311,7 @@ const Settings = () => {
       case "notifications":
         return (
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <FiBell size={15} className="text-ll-teal-ink" />
+            <div className="flex items-center gap-2 mb-2">
               <h2 className="text-[15px] font-semibold text-ll-ink">{t("settings.notifications")}</h2>
             </div>
             <SettingRow icon={notificationSound ? FiBell : FiBellOff} label={t("settings.notificationSound")}>
@@ -354,8 +352,7 @@ const Settings = () => {
       case "app":
         return (
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <FiMonitor size={15} className="text-ll-ink2" />
+            <div className="flex items-center gap-2 mb-2">
               <h2 className="text-[15px] font-semibold text-ll-ink">{t("settings.desktopApp")}</h2>
             </div>
             <div className="flex flex-col items-center text-center gap-4 py-6 px-4 rounded-xl bg-ll-subtle border border-ll-line">
@@ -385,8 +382,7 @@ const Settings = () => {
       case "account":
         return (
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <FiUser size={15} className="text-ll-gold-ink" />
+            <div className="flex items-center gap-2 mb-2">
               <h2 className="text-[15px] font-semibold text-ll-ink">{t("settings.account")}</h2>
             </div>
             <SettingRow icon={FiGlobe} label={t("settings.language")}>
@@ -432,33 +428,32 @@ const Settings = () => {
       <div className="ll-shell w-full min-w-0 relative z-10 flex flex-col">
         <Navbar header={t("settings.title")} />
 
-        <div className="px-3 sm:px-6 md:px-8 py-5 sm:py-8 flex flex-col gap-5 sm:gap-6 max-w-4xl mx-auto w-full">
+        <div className="px-3 sm:px-6 md:px-8 py-5 sm:py-8 flex flex-col gap-5 sm:gap-7 max-w-5xl mx-auto w-full">
 
           {/* ── Page header ── */}
           <div>
-            <p className="text-[11px] font-medium tracking-wide text-ll-ink3 uppercase mb-1">{t("settings.preferences")}</p>
-            <h1 className="text-[24px] font-semibold text-ll-ink tracking-tight">{t("settings.title")}</h1>
+            <h1 className="text-[22px] font-semibold text-ll-ink tracking-[-0.02em]">{t("settings.title")}</h1>
             <p className="text-[13.5px] text-ll-ink3 mt-1">{t("settings.subtitle")}</p>
           </div>
 
           {/* ── Layout ── */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-5 md:gap-10">
 
             {/* Sidebar tabs */}
-            <div className="md:col-span-1">
-              <div className="ll-card p-1.5 flex md:flex-col flex-row gap-1 overflow-x-auto">
+            <div>
+              <div className="grid grid-cols-4 md:flex md:flex-col gap-1 p-1 md:p-0 rounded-xl md:rounded-none border md:border-0 border-ll-line bg-ll-subtle md:bg-transparent">
                 {TABS.map(({ id, label, icon: Icon }) => {
                   const isActive = activeTab === id;
                   return (
                     <button
                       key={id}
                       onClick={() => setActiveTab(id)}
-                      className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[13.5px] font-medium transition-colors whitespace-nowrap flex-shrink-0 md:w-full ${
-                        isActive ? "bg-ll-violet-tint text-ll-violet-ink" : "text-ll-ink3 hover:bg-ll-hover hover:text-ll-ink"
+                      className={`flex flex-col md:flex-row items-center gap-1 md:gap-2.5 px-1 md:px-3 py-2 md:py-1.5 rounded-lg md:rounded-[7px] text-[11.5px] md:text-[13.5px] font-medium transition-colors md:w-full border border-transparent ${
+                        isActive ? "bg-ll-panel text-ll-ink border-ll-line shadow-ll-1" : "text-ll-ink2 hover:bg-ll-hover hover:text-ll-ink"
                       }`}
                     >
-                      <Icon size={14} />
-                      {label}
+                      <Icon size={15} className={isActive ? "text-ll-violet" : "text-ll-ink3"} />
+                      <span className="truncate max-w-full">{label}</span>
                     </button>
                   );
                 })}
@@ -466,10 +461,8 @@ const Settings = () => {
             </div>
 
             {/* Content panel */}
-            <div className="md:col-span-3">
-              <div className="ll-card p-5 sm:p-6">
-                {renderContent()}
-              </div>
+            <div className="min-w-0 max-w-2xl">
+              {renderContent()}
             </div>
 
           </div>

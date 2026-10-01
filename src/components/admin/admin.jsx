@@ -1,4 +1,3 @@
-import { alpha } from "../../utils/colorAlpha";
 import { useCallback, useEffect, useState } from "react";
 import Dashboard from "../../sections/dashboard";
 import Navbar from "../layout/navbar";
@@ -10,14 +9,9 @@ import StudentAssignment from "./studentAssignment";
 import RemoveStudent from "./RemoveStudent";
 import DisplayAllStudents from "./DisplayAllStudents";
 import TeacherSchedulesViewer from "./TeacherSchedulesViewer";
-import { FiUserPlus, FiUserX, FiUsers, FiBookOpen, FiGrid, FiCalendar } from "react-icons/fi";
+import { FiUserPlus, FiUserX, FiUsers, FiBookOpen, FiGrid } from "react-icons/fi";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-
-const glassCard = {
-  border: "1px solid rgb(var(--ll-violet) / 0.15)",
-  boxShadow: "0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgb(var(--ll-violet) / 0.06)",
-};
 
 const Admin = () => {
   const { t } = useTranslation();
@@ -45,124 +39,74 @@ const Admin = () => {
   }, [refreshKey]);
 
   const stats = [
-    { label: t("admin.teachers"), value: adminStats.teacherCount, color: "rgb(var(--ll-violet))", icon: FiBookOpen },
-    { label: t("admin.allStudents"), value: adminStats.studentCount, color: "#1FA48C", icon: FiUsers },
-    { label: t("admin.unassigned"), value: adminStats.unassignedCount, color: "#E8A23A", icon: FiGrid },
+    { label: t("admin.teachers"), value: adminStats.teacherCount, tile: "bg-ll-violet-tint text-ll-violet-ink", icon: FiBookOpen },
+    { label: t("admin.allStudents"), value: adminStats.studentCount, tile: "bg-ll-teal-tint text-ll-teal-ink", icon: FiUsers },
+    { label: t("admin.unassigned"), value: adminStats.unassignedCount, tile: "bg-ll-gold-tint text-ll-gold-ink", icon: FiGrid },
   ];
 
   return (
-    <div className="flex w-full relative min-h-screen">
-      {/* Page background */}
-      <div className="absolute inset-0 pointer-events-none dark:hidden"
-        style={{ background: "linear-gradient(135deg, #f8f8fa 0%, #f2f2f6 100%)" }} />
-      
-      {/* Ambient orbs */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden hidden dark:block">
-        <div className="absolute rounded-full blur-3xl opacity-10"
-          style={{ background: "radial-gradient(circle, rgb(var(--ll-violet) / 0.6), transparent 70%)", width: "500px", height: "500px", top: "-5%", right: "0%" }} />
-        <div className="absolute rounded-full blur-3xl opacity-8"
-          style={{ background: "radial-gradient(circle, rgba(31,164,140,0.4), transparent 70%)", width: "350px", height: "350px", bottom: "10%", left: "5%" }} />
-      </div>
-
+    <div className="flex w-full relative min-h-screen bg-ll-canvas">
       <Dashboard />
 
       <div className="ll-shell w-full relative z-10 flex flex-col min-w-0">
         <Navbar header={t("adminHome.adminPanel")} />
 
-        <div className="px-3 sm:px-4 md:px-8 py-4 sm:py-6 flex flex-col gap-5 sm:gap-8">
+        <div className="px-3 sm:px-7 py-4 sm:py-6 flex flex-col gap-6 sm:gap-8 max-w-6xl w-full mx-auto">
 
           {/* ── Header row ── */}
-          <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+          <div className="flex flex-col md:flex-row justify-between md:items-end gap-4">
             <div>
-              <h2 className="text-xl sm:text-2xl font-extrabold login-gradient-text mb-1">
+              <h2 className="text-[22px] font-semibold tracking-[-0.02em] text-ll-ink">
                 {t("admin.hello", { name: user.name })}
               </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md">
+              <p className="text-[13.5px] text-ll-ink3 mt-1 max-w-lg">
                 {t("admin.subtitle")}
               </p>
             </div>
-            <div className="flex gap-2 sm:gap-3 flex-shrink-0 flex-wrap">
-              <button
-                onClick={toggleUserModal}
-                className="flex items-center gap-2 text-white font-bold text-sm px-4 sm:px-5 py-2.5 rounded-xl transition-all hover:scale-[1.03] active:scale-[0.97]"
-                style={{ background: "linear-gradient(135deg, #1FA48C, #17886F)", boxShadow: "0 4px 14px rgba(31,164,140,0.35)" }}
-              >
+            <div className="flex gap-2 flex-shrink-0 flex-wrap">
+              <button onClick={toggleUserModal} className="ll-btn ll-btn-primary">
                 <FiUserPlus size={15} /> {t("admin.createUser")}
               </button>
-              <button
-                onClick={toggleDeleteModal}
-                className="flex items-center gap-2 text-white font-bold text-sm px-4 sm:px-5 py-2.5 rounded-xl transition-all hover:scale-[1.03] active:scale-[0.97]"
-                style={{ background: "linear-gradient(135deg, #ef4444, #dc2626)", boxShadow: "0 4px 14px rgba(239,68,68,0.30)" }}
-              >
+              <button onClick={toggleDeleteModal} className="ll-btn ll-btn-secondary !text-ll-danger">
                 <FiUserX size={15} /> {t("admin.deleteUser")}
               </button>
             </div>
           </div>
 
           {/* ── Quick stats ── */}
-          <div className="grid grid-cols-3 gap-2 sm:gap-4">
-            {stats.map(({ label, value, color, icon: Icon }) => (
-              <div key={label} className="relative rounded-2xl overflow-hidden p-3 sm:p-4 flex items-center" style={glassCard}>
-                <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
-                <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.65)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
-                <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: `linear-gradient(90deg, ${color}, transparent)` }} />
-                <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-3 w-full">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ background: `${alpha(color,"18")}`, border: `1px solid ${alpha(color,"35")}` }}>
-                    <Icon size={15} style={{ color }} />
-                  </div>
-                  <div className="text-center sm:text-left">
-                    <p className="text-lg sm:text-xl font-extrabold leading-none" style={{ color }}>{value}</p>
-                    <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mt-0.5">{label}</p>
-                  </div>
+          <div className="grid grid-cols-3 rounded-xl border border-ll-line divide-x divide-ll-line overflow-hidden">
+            {stats.map(({ label, value, tile, icon: Icon }) => (
+              <div key={label} className="px-3 sm:px-5 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${tile}`}>
+                  <Icon size={15} />
+                </div>
+                <div>
+                  <p className="font-mono text-[20px] font-medium leading-none text-ll-ink">{value}</p>
+                  <p className="text-[12px] text-ll-ink3 mt-1">{label}</p>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* ── Assign Student ── */}
-          <div className="relative rounded-2xl overflow-hidden" style={glassCard}>
-            <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
-            <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.65)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
-            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-ll-violet via-[#E8A23A] to-[#1FA48C] opacity-70" />
-            <div className="relative z-10 p-4 sm:p-6">
-              <StudentAssignment teachers={teachers} onRefresh={refresh} refreshKey={refreshKey} />
-            </div>
-          </div>
+          {/* ── Sections: plain, separated by hairlines ── */}
+          <section className="pt-6 border-t border-ll-line">
+            <StudentAssignment teachers={teachers} onRefresh={refresh} refreshKey={refreshKey} />
+          </section>
 
-          {/* ── Remove Student ── */}
-          <div className="relative rounded-2xl overflow-hidden" style={glassCard}>
-            <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
-            <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.65)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
-            <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, #ef4444, #f97316, transparent)" }} />
-            <div className="relative z-10 p-4 sm:p-6">
-              <RemoveStudent teachers={teachers} onRefresh={refresh} />
-            </div>
-          </div>
+          <section className="pt-6 border-t border-ll-line">
+            <RemoveStudent teachers={teachers} onRefresh={refresh} />
+          </section>
 
-          {/* ── All Students ── */}
-          <div className="relative rounded-2xl overflow-hidden" style={glassCard}>
-            <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
-            <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.65)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
-            <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, #1FA48C, rgb(var(--ll-violet)), transparent)" }} />
-            <div className="relative z-10 p-4 sm:p-6">
-              <DisplayAllStudents refreshKey={refreshKey} />
-            </div>
-          </div>
+          <section className="pt-6 border-t border-ll-line">
+            <DisplayAllStudents refreshKey={refreshKey} />
+          </section>
 
-          {/* ── Teacher Schedules ── */}
-          <div className="relative rounded-2xl overflow-hidden" style={glassCard}>
-            <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
-            <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.65)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
-            <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, rgb(var(--ll-violet)), #E8A23A, transparent)" }} />
-            <div className="relative z-10 p-4 sm:p-6">
-              <h3 className="text-base font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-                <FiCalendar style={{ color: "rgb(var(--ll-violet))" }} />
-                {t("admin.teacherSchedulesTitle")}
-              </h3>
-              <TeacherSchedulesViewer teachers={teachers} />
-            </div>
-          </div>
+          <section className="pt-6 border-t border-ll-line">
+            <h3 className="text-[15px] font-semibold text-ll-ink mb-4">
+              {t("admin.teacherSchedulesTitle")}
+            </h3>
+            <TeacherSchedulesViewer teachers={teachers} />
+          </section>
 
         </div>
       </div>

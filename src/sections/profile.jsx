@@ -1,4 +1,3 @@
-import { alpha } from "../utils/colorAlpha";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Dashboard from "./dashboard";
@@ -15,10 +14,10 @@ import { useTranslation } from "react-i18next";
 // Same language <-> flag mapping as ProfileCard/userModal/DisplayAllStudents,
 // kept in sync deliberately so the same language always reads the same badge.
 const LANGUAGE_FLAG = { english: "🇬🇧", spanish: "🇪🇸", polish: "🇵🇱" };
-const ROLE_GRADIENT = {
-  teacher: "linear-gradient(135deg, #1FA48C, #17886F)",
-  admin: "linear-gradient(135deg, #E8A23A, #C4860A)",
-  user: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))",
+const ROLE_TINT = {
+  teacher: "bg-ll-teal-tint text-ll-teal-ink",
+  admin: "bg-ll-gold-tint text-ll-gold-ink",
+  user: "bg-ll-violet-tint text-ll-violet-ink",
 };
 // role is stored as "user" in the DB (an old naming choice) but should never
 // be shown raw — reuses the same labels as the ProfileCard popup.
@@ -36,9 +35,10 @@ const authHeaders = () => {
 };
 
 const inputBase =
-  "w-full mt-1 rounded-xl py-2.5 px-3.5 text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-ll-violet/20 focus:border-ll-violet/50 transition-colors border border-gray-200 dark:border-ll-violet/25 bg-white dark:bg-ll-hover";
+  "w-full mt-1 h-9 rounded-lg px-3 text-[13.5px] text-ll-ink bg-ll-panel border border-ll-line2 focus:outline-none focus:border-ll-violet/60 transition-colors";
 const inputReadOnly =
-  "w-full mt-1 rounded-xl py-2.5 px-3.5 text-sm text-gray-500 dark:text-gray-400 focus:outline-none border border-gray-200 dark:border-ll-violet/15 bg-gray-50 dark:bg-[#1c1c38] cursor-default";
+  "w-full mt-1 h-9 rounded-lg px-3 text-[13.5px] text-ll-ink2 bg-ll-subtle border border-ll-line cursor-default focus:outline-none";
+const labelCls = "text-[12.5px] font-medium text-ll-ink2";
 
 const Profile = () => {
   const user = useSelector((state) => state.user.userInfo.user);
@@ -178,441 +178,223 @@ const Profile = () => {
   };
 
   return (
-    <div className="flex w-full relative min-h-screen">
-      {/* Page background */}
-      <div
-        className="absolute inset-0 pointer-events-none dark:hidden"
-        style={{ background: "linear-gradient(135deg, #f8f8fa 0%, #f2f2f6 100%)" }}
-      />
-      
-      {/* Ambient orbs — dark mode */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden hidden dark:block">
-        <div
-          className="absolute rounded-full blur-3xl opacity-10"
-          style={{
-            background: "radial-gradient(circle, rgb(var(--ll-violet) / 0.6), transparent 70%)",
-            width: "600px", height: "600px", top: "-10%", right: "-5%",
-          }}
-        />
-        <div
-          className="absolute rounded-full blur-3xl opacity-8"
-          style={{
-            background: "radial-gradient(circle, rgba(31,164,140,0.4), transparent 70%)",
-            width: "400px", height: "400px", bottom: "5%", left: "10%",
-          }}
-        />
-      </div>
-      {/* Grid texture */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-[0.012] dark:opacity-[0.020]"
-        style={{
-          backgroundImage: `linear-gradient(rgb(var(--ll-violet) / 0.8) 1px, transparent 1px), linear-gradient(90deg, rgb(var(--ll-violet) / 0.8) 1px, transparent 1px)`,
-          backgroundSize: "48px 48px",
-        }}
-      />
-
+    <div className="flex w-full relative min-h-screen bg-ll-canvas">
       <Dashboard />
 
       <div className="ll-shell w-full relative z-10 flex flex-col min-w-0">
-        {/* Navbar — no container wrapper */}
         <Navbar header={header} />
 
-        <div className="px-4 pb-8 mt-4 flex-1">
-          {/* ── Hero banner ── */}
-          <div
-            className="relative rounded-2xl overflow-hidden mb-6"
-            style={{
-              border: "1px solid rgb(var(--ll-violet) / 0.15)",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgb(var(--ll-violet) / 0.06)",
-            }}
-          >
-            {/* Top accent line */}
-            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-ll-violet via-[#E8A23A] to-[#1FA48C] opacity-80" />
-            {/* Glass bg */}
-            <div
-              className="absolute inset-0 dark:hidden"
-              style={{
-                background: "linear-gradient(135deg, rgb(var(--ll-violet) / 0.08) 0%, rgba(232,162,58,0.04) 100%)",
-                backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
-              }}
-            />
-            <div
-              className="absolute inset-0 hidden dark:block"
-              style={{
-                background: "linear-gradient(135deg, rgb(var(--ll-violet) / 0.18) 0%, rgba(13,10,30,0.70) 100%)",
-                backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
-              }}
-            />
-            <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center px-6 py-5 gap-4">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight login-gradient-text">
-                  {t("profile.hello", { name })}
-                </h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-md">
-                  {t("profile.subtitle")}
-                </p>
+        <div className="px-3 sm:px-7 pb-10 pt-3 sm:pt-5 flex-1 w-full max-w-6xl mx-auto">
+          {/* ── Identity header: cover strip, avatar, name, edit ── */}
+          <div className="relative h-24 sm:h-28 rounded-xl overflow-hidden group border border-ll-line"
+            style={coverUrl
+              ? { backgroundImage: `url(${coverUrl})`, backgroundSize: "cover", backgroundPosition: "center" }
+              : undefined}>
+            {!coverUrl && <div className={`absolute inset-0 ${ROLE_TINT[user.role] || ROLE_TINT.user}`} />}
+            <button
+              onClick={handleOpenCoverModal}
+              className="absolute top-2 right-2 w-8 h-8 rounded-lg flex items-center justify-center bg-ll-panel/90 border border-ll-line text-ll-ink2 hover:text-ll-ink sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+              title={t("profile.changeCover")}
+            >
+              <FiCamera size={14} />
+            </button>
+            <Modal isOpen={isCoverModalOpen} onClose={handleCloseCoverModal} onSave={handleSaveCover} />
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-end gap-4 px-1 sm:px-4 mt-3">
+            <div className="relative w-[84px] h-[84px] flex-shrink-0 -mt-12 sm:-mt-14">
+              <img
+                src={!avatarUrl ? avatar : avatarUrl}
+                alt="avatar"
+                className="w-full h-full object-cover rounded-full ring-4 ring-[rgb(var(--ll-panel))]"
+              />
+              <button
+                onClick={handleOpenModal}
+                className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center bg-ll-violet text-ll-on-violet ring-2 ring-[rgb(var(--ll-panel))] hover:bg-ll-violet-hover transition-colors"
+                title={t("profile.changeAvatar", { defaultValue: "Change photo" })}
+              >
+                <FiCamera size={13} />
+              </button>
+              <Modal isOpen={isModalOpen} onClose={handleCloseModal} onSave={handleSaveAvatar} />
+            </div>
+
+            <div className="flex-1 min-w-0 sm:pb-1">
+              <h2 className="text-[20px] font-semibold tracking-[-0.015em] text-ll-ink truncate">
+                {name} {lastName}
+              </h2>
+              <div className="mt-1.5 flex items-center gap-2 flex-wrap text-[12.5px]">
+                <span className={`inline-flex items-center h-5 px-2 rounded-full text-[11.5px] font-medium ${ROLE_TINT[user.role] || ROLE_TINT.user}`}>
+                  {t(ROLE_LABEL_KEY[user.role] || "profileCard.roleStudent")}
+                </span>
+                {user.language && LANGUAGE_FLAG[user.language] && (
+                  <span className="inline-flex items-center gap-1 h-5 px-2 rounded-full text-[11.5px] font-medium bg-ll-hover text-ll-ink2">
+                    {LANGUAGE_FLAG[user.language]} {user.language.charAt(0).toUpperCase() + user.language.slice(1)}
+                  </span>
+                )}
+                {(city || country) && (
+                  <span className="inline-flex items-center gap-1 text-ll-ink3">
+                    <FiMapPin size={12} />
+                    {[city, country].filter(Boolean).join(", ")}
+                  </span>
+                )}
               </div>
+            </div>
+
+            <div className="sm:pb-1">
               {!isEditMode ? (
-                <button
-                  type="button"
-                  onClick={handleEditProfile}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white transition-opacity hover:opacity-85 flex-shrink-0"
-                  style={{
-                    background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))",
-                    boxShadow: "0 4px 15px rgb(var(--ll-violet) / 0.35)",
-                  }}
-                >
-                  <FiEdit2 size={15} />
+                <button type="button" onClick={handleEditProfile} className="ll-btn ll-btn-secondary">
+                  <FiEdit2 size={14} />
                   {t("profile.editProfile")}
                 </button>
               ) : (
-                <button
-                  type="button"
-                  onClick={handleSaveProfile}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white transition-opacity hover:opacity-85 flex-shrink-0"
-                  style={{
-                    background: "linear-gradient(135deg, #1FA48C, #17886F)",
-                    boxShadow: "0 4px 15px rgba(31,164,140,0.35)",
-                  }}
-                >
-                  <FiSave size={15} />
+                <button type="button" onClick={handleSaveProfile} className="ll-btn ll-btn-primary">
+                  <FiSave size={14} />
                   {t("profile.saveChanges")}
                 </button>
               )}
             </div>
           </div>
 
-          {/* ── Main grid ── */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* ── Body ── */}
+          <div className="mt-8 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-8 lg:gap-12">
 
-            {/* ── Right: Avatar + Info card ── */}
-            <div className="lg:col-span-1 lg:order-2">
-              <div
-                className="relative rounded-2xl overflow-hidden"
-                style={{
-                  border: "1px solid rgb(var(--ll-violet) / 0.15)",
-                  boxShadow: "0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgb(var(--ll-violet) / 0.06)",
-                }}
-              >
-                <div
-                  className="absolute inset-0 dark:hidden"
-                  style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}
+            {/* Left: account form */}
+            <form className="min-w-0 divide-y divide-ll-line [&>section]:py-6 [&>section:first-child]:pt-0">
+              <section>
+                <h3 className="text-[13.5px] font-semibold text-ll-ink mb-3">{t("profile.aboutMe")}</h3>
+                <textarea
+                  id="biography"
+                  name="biography"
+                  value={biography || ""}
+                  onChange={(e) => setBiography(e.target.value)}
+                  placeholder={isEditMode ? t("profile.biographyPlaceholder") : ""}
+                  className={`${isEditMode ? inputBase : inputReadOnly} !h-auto py-2 resize-none`}
+                  rows="3"
+                  readOnly={!isEditMode}
                 />
-                <div
-                  className="absolute inset-0 hidden dark:block"
-                  style={{ background: "rgba(26,26,46,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}
-                />
+              </section>
 
-                {/* Cover banner — a custom photo if the user set one, otherwise a
-                    role-colored gradient (same fallback treatment as the ProfileCard
-                    popup) so the identity card never looks unfinished */}
-                <div
-                  className="relative h-20 overflow-hidden group"
-                  style={
-                    coverUrl
-                      ? { backgroundImage: `url(${coverUrl})`, backgroundSize: "cover", backgroundPosition: "center" }
-                      : { background: ROLE_GRADIENT[user.role] || ROLE_GRADIENT.user }
-                  }
-                >
-                  {!coverUrl && (
-                    <>
-                      <div className="absolute inset-0 opacity-40" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.25), transparent 60%)" }} />
-                      <div className="absolute w-28 h-28 rounded-full bg-white/10 blur-2xl -top-8 -right-4" />
-                      <div className="absolute w-20 h-20 rounded-full bg-black/10 blur-2xl -bottom-8 -left-4" />
-                    </>
-                  )}
-                  {coverUrl && <div className="absolute inset-0 bg-black/15" />}
-                  <button
-                    onClick={handleOpenCoverModal}
-                    className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center text-white opacity-70 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
-                    style={{ background: "rgba(0,0,0,0.45)", backdropFilter: "blur(2px)" }}
-                    title={t("profile.changeCover")}
-                  >
-                    <FiCamera size={13} />
-                  </button>
-                  <Modal isOpen={isCoverModalOpen} onClose={handleCloseCoverModal} onSave={handleSaveCover} />
+              <section>
+                <h3 className="text-[13.5px] font-semibold text-ll-ink mb-3">{t("profile.userInformation")}</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="name" className={labelCls}>{t("profile.name")}</label>
+                    <input type="text" id="name" name="name" value={name || ""} onChange={(e) => setName(e.target.value)} className={isEditMode ? inputBase : inputReadOnly} readOnly={!isEditMode} />
+                  </div>
+                  <div>
+                    <label htmlFor="lastName" className={labelCls}>{t("profile.lastName")}</label>
+                    <input type="text" id="lastName" name="lastName" value={lastName || ""} onChange={(e) => setLastName(e.target.value)} className={isEditMode ? inputBase : inputReadOnly} readOnly={!isEditMode} />
+                  </div>
+                  <div>
+                    <label htmlFor="phone" className={labelCls}>{t("profile.phone")}</label>
+                    <input type="number" id="phone" name="phone" value={phone || ""} onChange={(e) => setPhone(e.target.value)} className={isEditMode ? inputBase : inputReadOnly} readOnly={!isEditMode} />
+                  </div>
+                  <div>
+                    <label htmlFor="email" className={labelCls}>{t("profile.email")}</label>
+                    <input type="email" id="email" name="email" value={email || ""} readOnly className={inputReadOnly} />
+                  </div>
                 </div>
+              </section>
 
-                <div className="relative z-10 px-6 pb-6 flex flex-col items-center -mt-10">
-                  {/* Avatar with spinning conic ring */}
-                  <div className="relative mb-3">
-                    <div className="relative w-24 h-24">
-                      {/* Spinning gradient ring */}
+              {/* Location — just city/country, like a social profile. Address and
+                  postal code were dropped: nobody looking at a classmate's profile
+                  needs a mailing address. */}
+              <section>
+                <h3 className="text-[13.5px] font-semibold text-ll-ink mb-3">{t("profile.location")}</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="city" className={labelCls}>{t("profile.city")}</label>
+                    <input type="text" id="city" name="city" value={city || ""} onChange={(e) => setCity(e.target.value)} className={isEditMode ? inputBase : inputReadOnly} readOnly={!isEditMode} />
+                  </div>
+                  <div>
+                    <label htmlFor="country" className={labelCls}>{t("profile.country")}</label>
+                    <input type="text" id="country" name="country" value={country || ""} onChange={(e) => setCountry(e.target.value)} className={isEditMode ? inputBase : inputReadOnly} readOnly={!isEditMode} />
+                  </div>
+                </div>
+              </section>
+            </form>
+
+            {/* Right: numbers + people */}
+            <aside className="min-w-0">
+              {/* Stats — only real, derivable numbers */}
+              <div className="grid grid-cols-2 rounded-xl border border-ll-line divide-x divide-ll-line">
+                <div className="px-4 py-3">
+                  <p className="font-mono text-[18px] font-medium text-ll-ink">{classesCount}</p>
+                  <p className="text-[12px] text-ll-ink3 mt-0.5">
+                    {t(user.role === "teacher" ? "profile.classesTaught" : "profile.classesTaken")}
+                  </p>
+                </div>
+                <div className="px-4 py-3">
+                  <p className="font-mono text-[18px] font-medium text-ll-ink">{memberSince || "—"}</p>
+                  <p className="text-[12px] text-ll-ink3 mt-0.5">{t("profile.memberSince")}</p>
+                </div>
+              </div>
+
+              {/* Student — My Learning */}
+              {user.role === "user" && (
+                <div className="mt-7">
+                  <h3 className="text-[13.5px] font-semibold text-ll-ink mb-3">{t("profile.myLearning")}</h3>
+                  <div className="rounded-xl border border-ll-line divide-y divide-ll-line overflow-hidden">
+                    {[
+                      { icon: FiUser, label: t("profile.myTeacher"), value: teacherAssigned || t("profile.notAssigned"), tile: "bg-ll-violet-tint text-ll-violet-ink", onClick: teacherIdAssigned ? () => handleViewProfile(teacherIdAssigned) : null },
+                      { icon: FiBookOpen, label: t("profile.language"), value: user.language ? user.language.charAt(0).toUpperCase() + user.language.slice(1) : "N/A", tile: "bg-ll-teal-tint text-ll-teal-ink" },
+                      { icon: FiAward, label: t("profile.classesTaken"), value: classesCount, tile: "bg-ll-gold-tint text-ll-gold-ink" },
+                    ].map(({ icon: Icon, label, value, tile, onClick }) => (
                       <div
-                        className="absolute rounded-full pointer-events-none"
-                        style={{
-                          inset: "-4px",
-                          background: "conic-gradient(from 0deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-ink)), #E8A23A, #1FA48C, rgb(var(--ll-violet)))",
-                          animation: "spin 7s linear infinite",
-                          WebkitMask: "radial-gradient(farthest-side, transparent calc(100% - 3px), black calc(100% - 2px))",
-                          mask: "radial-gradient(farthest-side, transparent calc(100% - 3px), black calc(100% - 2px))",
-                          opacity: 0.85,
-                        }}
-                      />
-                      <img
-                        src={!avatarUrl ? avatar : avatarUrl}
-                        alt="avatar"
-                        className="relative w-full h-full object-cover rounded-full ring-4 ring-white dark:ring-[#1a1a2e]"
-                      />
-                      {/* Camera button */}
-                      <button
-                        onClick={handleOpenModal}
-                        className="absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center text-white transition-opacity hover:opacity-85"
-                        style={{
-                          background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))",
-                          boxShadow: "0 2px 8px rgb(var(--ll-violet) / 0.45)",
-                        }}
+                        key={label}
+                        onClick={onClick || undefined}
+                        className={`flex items-center gap-3 px-3 py-2.5 ${onClick ? "cursor-pointer hover:bg-ll-subtle transition-colors" : ""}`}
                       >
-                        <FiCamera size={14} />
-                      </button>
-                      <Modal isOpen={isModalOpen} onClose={handleCloseModal} onSave={handleSaveAvatar} />
-                    </div>
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${tile}`}>
+                          <Icon size={15} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[12px] text-ll-ink3">{label}</p>
+                          <p className="text-[13.5px] font-medium text-ll-ink truncate">{value}</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
+                </div>
+              )}
 
-                  {/* Name + role */}
-                  <h3 className="text-base font-bold text-gray-900 dark:text-white tracking-tight text-center">
-                    {name} {lastName}
+              {/* Teacher — My Students */}
+              {user.role === "teacher" && (
+                <div className="mt-7">
+                  <h3 className="text-[13.5px] font-semibold text-ll-ink mb-3 flex items-center gap-2">
+                    {t("profile.myStudents")}
+                    {user.students?.length > 0 && (
+                      <span className="font-mono text-[11.5px] font-normal text-ll-ink3 px-1.5 py-px rounded-[5px] bg-ll-hover">{user.students.length}</span>
+                    )}
                   </h3>
-                  <div className="mt-1.5 flex items-center justify-center gap-2 flex-wrap">
-                    <span
-                      className="text-xs font-semibold px-3 py-0.5 rounded-full text-white"
-                      style={{ background: ROLE_GRADIENT[user.role] || ROLE_GRADIENT.user }}
-                    >
-                      {t(ROLE_LABEL_KEY[user.role] || "profileCard.roleStudent")}
-                    </span>
-                    {user.language && LANGUAGE_FLAG[user.language] && (
-                      <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300">
-                        {LANGUAGE_FLAG[user.language]} {user.language.charAt(0).toUpperCase() + user.language.slice(1)}
-                      </span>
-                    )}
-                  </div>
-                  {(city || country) && (
-                    <span className="mt-2 inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                      <FiMapPin size={12} />
-                      {[city, country].filter(Boolean).join(", ")}
-                    </span>
-                  )}
-                  {biography && (
-                    <p className="mt-3 text-xs leading-relaxed text-gray-600 dark:text-gray-300 italic text-center">
-                      “{biography}”
-                    </p>
-                  )}
-
-                  {/* Stats strip — only real, derivable numbers */}
-                  <div className="mt-4 flex items-center justify-center gap-4 text-center">
-                    <div>
-                      <p className="text-sm font-bold text-gray-900 dark:text-white">{classesCount}</p>
-                      <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">
-                        {t(user.role === "teacher" ? "profile.classesTaught" : "profile.classesTaken")}
-                      </p>
-                    </div>
-                    {memberSince && (
-                      <>
-                        <div className="w-px h-8 bg-gray-200 dark:bg-white/10" />
-                        <div>
-                          <p className="text-sm font-bold text-gray-900 dark:text-white">{memberSince}</p>
-                          <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">
-                            {t("profile.memberSince")}
-                          </p>
-                        </div>
-                      </>
-                    )}
-                  </div>
-
-                  <div className="w-full mt-6">
-                    {/* Gradient divider */}
-                    <div className="h-px bg-gradient-to-r from-transparent via-ll-violet/20 to-transparent mb-5" />
-
-                    {/* Student — My Learning */}
-                    {user.role === "user" && (
-                      <>
-                        <h4 className="text-xs font-bold tracking-widest text-ll-violet dark:text-ll-violet-ink uppercase mb-4">
-                          {t("profile.myLearning")}
-                        </h4>
-                        <div className="space-y-3">
-                          {[
-                            { icon: FiUser, label: t("profile.myTeacher"), value: teacherAssigned || t("profile.notAssigned"), color: "rgb(var(--ll-violet))", onClick: teacherIdAssigned ? () => handleViewProfile(teacherIdAssigned) : null },
-                            { icon: FiBookOpen, label: t("profile.language"), value: user.language ? user.language.charAt(0).toUpperCase() + user.language.slice(1) : "N/A", color: "#1FA48C" },
-                            { icon: FiAward, label: t("profile.classesTaken"), value: classesCount, color: "#E8A23A" },
-                          ].map(({ icon: Icon, label, value, color, onClick }) => (
-                            <div
-                              key={label}
-                              onClick={onClick || undefined}
-                              className={`flex items-center gap-3 p-3 rounded-xl border border-gray-100 dark:border-ll-violet/20 bg-white/60 dark:bg-[#1e1e38] ${onClick ? "cursor-pointer hover:border-ll-violet/50 hover:bg-white dark:hover:bg-ll-hover transition-colors" : ""}`}
-                            >
-                              <div
-                                className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                                style={{ background: `${alpha(color,"18")}`, border: `1px solid ${alpha(color,"30")}` }}
-                              >
-                                <Icon size={16} style={{ color }} />
-                              </div>
-                              <div className="min-w-0">
-                                <p className="text-[11px] text-gray-400 dark:text-gray-500 font-medium">{label}</p>
-                                <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{value}</p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </>
-                    )}
-
-                    {/* Teacher — My Students */}
-                    {user.role === "teacher" && (
-                      <>
-                        <h4 className="text-xs font-bold tracking-widest text-ll-violet dark:text-ll-violet-ink uppercase mb-4">
-                          {t("profile.myStudents")}
-                        </h4>
-                        <div className="space-y-2 max-h-72 overflow-y-auto custom-scrollbar">
-                          {user.students && user.students.length > 0 ? (
-                            user.students.map((student) => (
-                              <div
-                                key={student.id}
-                                onClick={() => handleViewProfile(student.id)}
-                                className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 dark:border-ll-violet/20 bg-white/60 dark:bg-[#1e1e38] cursor-pointer hover:border-ll-violet/50 hover:bg-white dark:hover:bg-ll-hover transition-colors"
-                              >
-                                <div
-                                  className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                                  style={{ background: "rgb(var(--ll-violet) / 0.10)", border: "1px solid rgb(var(--ll-violet) / 0.20)" }}
-                                >
-                                  <FiUser size={16} style={{ color: "rgb(var(--ll-violet))" }} />
-                                </div>
-                                <div className="min-w-0">
-                                  <p className="text-sm font-bold text-gray-900 dark:text-white truncate">
-                                    {student.name} {student.lastName}
-                                  </p>
-                                  <p className="text-[11px] text-gray-400 dark:text-gray-500 truncate">{student.email}</p>
-                                </div>
-                              </div>
-                            ))
-                          ) : (
-                            <p className="text-sm text-gray-400 dark:text-gray-500 italic text-center py-4">
-                              {t("profile.noStudents")}
+                  {user.students && user.students.length > 0 ? (
+                    <div className="rounded-xl border border-ll-line divide-y divide-ll-line overflow-hidden max-h-80 overflow-y-auto custom-scrollbar">
+                      {user.students.map((student) => (
+                        <div
+                          key={student.id}
+                          onClick={() => handleViewProfile(student.id)}
+                          className="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-ll-subtle transition-colors"
+                        >
+                          <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-[11px] font-semibold bg-ll-violet-tint text-ll-violet-ink">
+                            {`${student.name?.[0] ?? ""}${student.lastName?.[0] ?? ""}`.toUpperCase() || <FiUser size={14} />}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-[13.5px] font-medium text-ll-ink truncate">
+                              {student.name} {student.lastName}
                             </p>
-                          )}
+                            <p className="text-[12px] text-ll-ink3 truncate">{student.email}</p>
+                          </div>
                         </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* ── Left: Account form ── */}
-            <div className="lg:col-span-2 lg:order-1">
-              <div
-                className="relative rounded-2xl overflow-hidden"
-                style={{
-                  border: "1px solid rgb(var(--ll-violet) / 0.15)",
-                  boxShadow: "0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgb(var(--ll-violet) / 0.06)",
-                }}
-              >
-                <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-ll-violet via-[#E8A23A] to-[#1FA48C] opacity-60" />
-                <div
-                  className="absolute inset-0 dark:hidden"
-                  style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}
-                />
-                <div
-                  className="absolute inset-0 hidden dark:block"
-                  style={{ background: "rgba(26,26,46,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}
-                />
-
-                {/* Card header */}
-                <div className="relative z-10 flex items-center justify-between px-6 py-4 border-b border-ll-violet/10 dark:border-ll-violet/15 mt-[2px]">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                      style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", boxShadow: "0 2px 8px rgb(var(--ll-violet) / 0.35)" }}
-                    >
-                      <FiUser size={14} className="text-white" />
+                      ))}
                     </div>
-                    <span className="text-sm font-extrabold login-gradient-text">{t("profile.myAccount")}</span>
-                  </div>
-                  {isEditMode && (
-                    <button
-                      type="button"
-                      onClick={handleSaveProfile}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white transition-opacity hover:opacity-85"
-                      style={{
-                        background: "linear-gradient(135deg, #1FA48C, #17886F)",
-                        boxShadow: "0 2px 8px rgba(31,164,140,0.35)",
-                      }}
-                    >
-                      <FiSave size={13} /> {t("profile.save")}
-                    </button>
+                  ) : (
+                    <p className="text-[13px] text-ll-ink3 py-4 text-center rounded-xl border border-dashed border-ll-line2 bg-ll-subtle">
+                      {t("profile.noStudents")}
+                    </p>
                   )}
                 </div>
-
-                {/* Form */}
-                <div className="relative z-10 p-6">
-                  <form>
-                    {/* Section: About Me — the "headline" of a social profile, so it
-                        leads the form instead of being buried under logistics fields */}
-                    <p className="text-[11px] font-bold tracking-widest text-ll-violet dark:text-ll-violet-ink uppercase mb-4">
-                      {t("profile.aboutMe")}
-                    </p>
-                    <div className="mb-6">
-                      <textarea
-                        id="biography"
-                        name="biography"
-                        value={biography || ""}
-                        onChange={(e) => setBiography(e.target.value)}
-                        placeholder={isEditMode ? t("profile.biographyPlaceholder") : ""}
-                        className={`${isEditMode ? inputBase : inputReadOnly} resize-none`}
-                        rows="3"
-                        readOnly={!isEditMode}
-                      />
-                    </div>
-
-                    {/* Gradient divider */}
-                    <div className="h-px bg-gradient-to-r from-transparent via-ll-violet/15 to-transparent mb-6" />
-
-                    {/* Section: User Information */}
-                    <p className="text-[11px] font-bold tracking-widest text-ll-violet dark:text-ll-violet-ink uppercase mb-4">
-                      {t("profile.userInformation")}
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                      <div>
-                        <label htmlFor="name" className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t("profile.name")}</label>
-                        <input type="text" id="name" name="name" value={name || ""} onChange={(e) => setName(e.target.value)} className={isEditMode ? inputBase : inputReadOnly} readOnly={!isEditMode} />
-                      </div>
-                      <div>
-                        <label htmlFor="lastName" className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t("profile.lastName")}</label>
-                        <input type="text" id="lastName" name="lastName" value={lastName || ""} onChange={(e) => setLastName(e.target.value)} className={isEditMode ? inputBase : inputReadOnly} readOnly={!isEditMode} />
-                      </div>
-                      <div>
-                        <label htmlFor="phone" className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t("profile.phone")}</label>
-                        <input type="number" id="phone" name="phone" value={phone || ""} onChange={(e) => setPhone(e.target.value)} className={isEditMode ? inputBase : inputReadOnly} readOnly={!isEditMode} />
-                      </div>
-                      <div>
-                        <label htmlFor="email" className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t("profile.email")}</label>
-                        <input type="email" id="email" name="email" value={email || ""} readOnly className={inputReadOnly} />
-                      </div>
-                    </div>
-
-                    {/* Gradient divider */}
-                    <div className="h-px bg-gradient-to-r from-transparent via-ll-violet/15 to-transparent mb-6" />
-
-                    {/* Section: Location — just city/country, like a social profile.
-                        Address and postal code were dropped: nobody looking at a
-                        classmate's profile needs a mailing address. */}
-                    <p className="text-[11px] font-bold tracking-widest text-ll-violet dark:text-ll-violet-ink uppercase mb-4">
-                      {t("profile.location")}
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label htmlFor="city" className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t("profile.city")}</label>
-                        <input type="text" id="city" name="city" value={city || ""} onChange={(e) => setCity(e.target.value)} className={isEditMode ? inputBase : inputReadOnly} readOnly={!isEditMode} />
-                      </div>
-                      <div>
-                        <label htmlFor="country" className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t("profile.country")}</label>
-                        <input type="text" id="country" name="country" value={country || ""} onChange={(e) => setCountry(e.target.value)} className={isEditMode ? inputBase : inputReadOnly} readOnly={!isEditMode} />
-                      </div>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
-
+              )}
+            </aside>
           </div>
         </div>
       </div>

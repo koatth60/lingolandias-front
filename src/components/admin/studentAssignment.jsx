@@ -1,67 +1,15 @@
-import { alpha } from "../../utils/colorAlpha";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Swal from "sweetalert2";
 import { useTranslation } from "react-i18next";
-import { Calendar, dayjsLocalizer, Navigate } from "react-big-calendar";
+import { Calendar, dayjsLocalizer } from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./studentAssignment.css";
 import dayjs from "dayjs";
-import { FiUserCheck, FiCalendar, FiClock, FiX, FiCheckCircle, FiChevronLeft, FiChevronRight, FiSearch } from "react-icons/fi";
+import { FiUserCheck, FiCalendar, FiClock, FiX, FiCheckCircle, FiSearch } from "react-icons/fi";
 import TimeInput from "../common/TimeInput";
+import AdminCalToolbar from "./AdminCalToolbar";
 import { projectSchedules, normalizeCalendarRange } from "../../utils/scheduleProjection";
-
-const CalendarToolbar = ({ label, onNavigate, onView, view }) => {
-  const { t } = useTranslation();
-  return (
-  <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-[#13102a] border-b border-gray-200 dark:border-white/[0.08] flex-wrap gap-3">
-    {/* Navigation */}
-    <div className="flex items-center gap-2">
-      <button
-        onClick={() => onNavigate(Navigate.PREVIOUS)}
-        className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-ll-violet-tint dark:hover:bg-ll-violet/10 hover:border-ll-violet hover:text-ll-violet-ink dark:hover:text-ll-violet-ink transition-all"
-        title="Previous"
-      >
-        <FiChevronLeft size={18} />
-      </button>
-      <button
-        onClick={() => onNavigate(Navigate.TODAY)}
-        className="px-4 h-9 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-ll-violet-tint dark:hover:bg-ll-violet/10 hover:border-ll-violet hover:text-ll-violet-ink dark:hover:text-ll-violet-ink transition-all"
-      >
-        {t("common.today")}
-      </button>
-      <button
-        onClick={() => onNavigate(Navigate.NEXT)}
-        className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-ll-violet-tint dark:hover:bg-ll-violet/10 hover:border-ll-violet hover:text-ll-violet-ink dark:hover:text-ll-violet-ink transition-all"
-        title="Next"
-      >
-        <FiChevronRight size={18} />
-      </button>
-    </div>
-
-    {/* Current label */}
-    <span className="text-base font-extrabold text-gray-900 dark:text-white">{label}</span>
-
-    {/* View switcher */}
-    <div className="flex items-center gap-1 p-1 rounded-xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10">
-      {["month", "week"].map((v) => (
-        <button
-          key={v}
-          onClick={() => onView(v)}
-          className={`px-4 h-8 rounded-lg text-sm font-bold capitalize transition-all ${
-            view === v
-              ? "text-white shadow-md"
-              : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white"
-          }`}
-          style={view === v ? { background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" } : {}}
-        >
-          {v}
-        </button>
-      ))}
-    </div>
-  </div>
-  );
-};
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -121,15 +69,15 @@ const EventTimeModal = ({ selectedDate, initialStart, initialEnd, onClose, onAdd
           </p>
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">{t("addEvent.startTime")}</label>
+              <label className="block text-[12.5px] font-medium text-ll-ink2 mb-1.5">{t("addEvent.startTime")}</label>
               <TimeInput value={start} onChange={setStart} className="w-full px-4 py-2.5" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">{t("addEvent.endTime")}</label>
+              <label className="block text-[12.5px] font-medium text-ll-ink2 mb-1.5">{t("addEvent.endTime")}</label>
               <TimeInput value={end} onChange={setEnd} className="w-full px-4 py-2.5" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">{t("addEvent.recurrence")}</label>
+              <label className="block text-[12.5px] font-medium text-ll-ink2 mb-1.5">{t("addEvent.recurrence")}</label>
               <div className="flex gap-2">
                 {[
                   { value: 1, label: t("addEvent.everyWeek") },
@@ -173,50 +121,25 @@ import timezone from "dayjs/plugin/timezone";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-const panelStyle = {
-  border: "1px solid rgb(var(--ll-violet) / 0.12)",
-};
-
-const UserRow = ({ person, selected, accentColor, onClick }) => (
+const UserRow = ({ person, selected, onClick }) => (
   <div
     onClick={onClick}
-    className="flex items-center gap-3 p-3 rounded-xl cursor-pointer mb-2 transition-all duration-150"
-    style={
-      selected
-        ? {
-            background: `${alpha(accentColor,"14")}`,
-            border: `1px solid ${alpha(accentColor,"50")}`,
-            boxShadow: `0 2px 10px ${alpha(accentColor,"18")}`,
-          }
-        : {
-            background: "transparent",
-            border: "1px solid transparent",
-          }
-    }
-    onMouseEnter={(e) => {
-      if (!selected) e.currentTarget.style.background = "rgb(var(--ll-violet) / 0.06)";
-    }}
-    onMouseLeave={(e) => {
-      if (!selected) e.currentTarget.style.background = "transparent";
-    }}
+    className={`flex items-center gap-3 px-2.5 py-2 rounded-[9px] cursor-pointer mb-1 transition-colors ${
+      selected ? "bg-ll-violet-tint" : "hover:bg-ll-hover"
+    }`}
   >
     {person.avatarUrl ? (
-      <img src={person.avatarUrl} alt={`${person.name} ${person.lastName}`} className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
+      <img src={person.avatarUrl} alt={`${person.name} ${person.lastName}`} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
     ) : (
-      <div
-        className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-        style={{ background: selected ? `linear-gradient(135deg, ${accentColor}, ${alpha(accentColor,"aa")})` : "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}
-      >
+      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-semibold flex-shrink-0 ${selected ? "bg-ll-panel text-ll-violet-ink" : "bg-ll-hover text-ll-ink2"}`}>
         {person.name.charAt(0)}{person.lastName.charAt(0)}
       </div>
     )}
     <div className="min-w-0 flex-1">
-      <p className="text-sm font-semibold text-gray-800 dark:text-white truncate">{person.name} {person.lastName}</p>
-      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{person.email}</p>
+      <p className="text-[13.5px] font-medium text-ll-ink truncate">{person.name} {person.lastName}</p>
+      <p className="text-[12px] text-ll-ink3 truncate">{person.email}</p>
     </div>
-    {selected && (
-      <FiCheckCircle size={14} style={{ color: accentColor }} className="flex-shrink-0" />
-    )}
+    {selected && <FiCheckCircle size={15} className="flex-shrink-0 text-ll-violet" />}
   </div>
 );
 
@@ -382,36 +305,29 @@ const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
 
   return (
     <section>
-      <div className="flex items-center gap-2 mb-5">
-        <FiUserCheck size={17} style={{ color: "rgb(var(--ll-violet))" }} />
-        <h2 className="text-lg font-extrabold text-gray-800 dark:text-white">{t("admin.assignTitle")}</h2>
+      <div className="flex items-center gap-2 mb-4">
+        <h2 className="text-[15px] font-semibold text-ll-ink">{t("admin.assignTitle")}</h2>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
         {/* ── 1. Select Student ── */}
-        <div className="relative rounded-2xl overflow-hidden" style={panelStyle}>
-          <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, #1FA48C, transparent)" }} />
-          <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(248,248,250,0.85)" }} />
-          <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.55)" }} />
+        <div className="relative rounded-xl overflow-hidden border border-ll-line">
           <div className="relative z-10 p-4">
             <div className="flex items-center gap-2 mb-3">
-              <span className="w-5 h-5 rounded-full bg-[#1FA48C] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">1</span>
-              <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200">{t("admin.selectStudentLabel")}</h3>
+              <span className="w-5 h-5 rounded-full bg-ll-hover text-ll-ink2 flex items-center justify-center font-mono text-[11px] flex-shrink-0">1</span>
+              <h3 className="text-[13.5px] font-semibold text-ll-ink">{t("admin.selectStudentLabel")}</h3>
             </div>
 
             {/* Search */}
             <div className="relative mb-3">
-              <FiSearch size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <FiSearch size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-ll-ink3" />
               <input
                 type="text"
                 placeholder={t("admin.searchStudents")}
                 value={studentSearch}
                 onChange={(e) => setStudentSearch(e.target.value)}
-                className="w-full pl-7 pr-3 py-2 rounded-lg text-xs outline-none border transition-colors duration-200
-                           bg-white dark:bg-white/5 border-gray-200 dark:border-white/10
-                           text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500
-                           focus:border-emerald-400"
+                className="w-full h-8 pl-8 pr-3 rounded-lg text-[13px] outline-none border border-ll-line2 bg-ll-panel text-ll-ink placeholder:text-ll-ink3 focus:border-ll-violet/60 transition-colors"
               />
             </div>
 
@@ -421,7 +337,7 @@ const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
                   <div className="w-4 h-4 rounded-full border-2 border-t-transparent animate-spin border-emerald-400" />
                 </div>
               ) : unassignedStudents.length === 0 ? (
-                <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-6">{t("admin.noUnassigned")}</p>
+                <p className="text-[12.5px] text-ll-ink3 text-center py-6">{t("admin.noUnassigned")}</p>
               ) : (
                 <>
                   {unassignedStudents.map((student) => (
@@ -449,14 +365,11 @@ const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
         </div>
 
         {/* ── 2. Select Teacher ── */}
-        <div className="relative rounded-2xl overflow-hidden" style={panelStyle}>
-          <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, rgb(var(--ll-violet)), transparent)" }} />
-          <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(248,248,250,0.85)" }} />
-          <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.55)" }} />
+        <div className="relative rounded-xl overflow-hidden border border-ll-line">
           <div className="relative z-10 p-4">
             <div className="flex items-center gap-2 mb-3">
-              <span className="w-5 h-5 rounded-full bg-ll-violet text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">2</span>
-              <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200">{t("admin.selectTeacherLabel")}</h3>
+              <span className="w-5 h-5 rounded-full bg-ll-hover text-ll-ink2 flex items-center justify-center font-mono text-[11px] flex-shrink-0">2</span>
+              <h3 className="text-[13.5px] font-semibold text-ll-ink">{t("admin.selectTeacherLabel")}</h3>
             </div>
             <div className="max-h-60 overflow-y-auto custom-scrollbar">
               {teachers.map((teacher) => (
@@ -473,34 +386,29 @@ const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
         </div>
 
         {/* ── 3. Schedule ── */}
-        <div className="relative rounded-2xl overflow-hidden flex flex-col min-h-[260px]" style={panelStyle}>
-          <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, #E8A23A, transparent)" }} />
-          <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(248,248,250,0.85)" }} />
-          <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.55)" }} />
+        <div className="relative rounded-xl overflow-hidden border border-ll-line flex flex-col min-h-[260px]">
           <div className="relative z-10 p-4 flex flex-col h-full">
             <div className="flex items-center gap-2 mb-3">
-              <span className="w-5 h-5 rounded-full bg-[#E8A23A] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">3</span>
-              <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200">{t("admin.setSchedule")}</h3>
+              <span className="w-5 h-5 rounded-full bg-ll-hover text-ll-ink2 flex items-center justify-center font-mono text-[11px] flex-shrink-0">3</span>
+              <h3 className="text-[13.5px] font-semibold text-ll-ink">{t("admin.setSchedule")}</h3>
             </div>
 
             <button
               onClick={handleCalendarOpen}
               disabled={!selectedTeacher || !selectedStudent}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-white text-sm font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
-              style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", boxShadow: "0 4px 14px rgb(var(--ll-violet) / 0.30)" }}
+              className="ll-btn ll-btn-secondary w-full justify-center disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <FiCalendar size={14} /> {t("admin.viewAvailability")}
             </button>
 
             {events.length > 0 && (
               <div className="mt-4 flex-1">
-                <p className="text-xs font-bold text-gray-600 dark:text-gray-300 mb-2">{t("admin.scheduledClasses")}</p>
+                <p className="text-[12.5px] font-medium text-ll-ink2 mb-2">{t("admin.scheduledClasses")}</p>
                 <ul className="space-y-1.5 max-h-28 overflow-y-auto custom-scrollbar">
                   {events.map((event, index) => (
                     <li
                       key={index}
-                      className="text-xs px-3 py-1.5 rounded-lg flex items-center gap-2"
-                      style={{ background: "rgba(31,164,140,0.08)", border: "1px solid rgba(31,164,140,0.18)", color: "#1FA48C" }}
+                      className="text-[12.5px] px-3 py-1.5 rounded-lg flex items-center gap-2 bg-ll-teal-tint text-ll-teal-ink"
                     >
                       <FiClock size={10} className="flex-shrink-0" />
                       {dayjs(event.date).format("MMM DD")} · {formatDateTime(event.start)} – {formatDateTime(event.end)}
@@ -513,8 +421,7 @@ const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
             <button
               onClick={handleAssignClick}
               disabled={!selectedTeacher || !selectedStudent || events.length === 0}
-              className="w-full mt-auto pt-3 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-white text-sm font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
-              style={{ background: "linear-gradient(135deg, #1FA48C, #17886F)", boxShadow: "0 4px 14px rgba(31,164,140,0.28)" }}
+              className="ll-btn ll-btn-primary w-full justify-center mt-auto disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <FiUserCheck size={14} /> {t("admin.assignStudent")}
             </button>
@@ -578,7 +485,7 @@ const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
                   defaultView="week"
                   defaultDate={new Date()}
                   onRangeChange={(range) => setCalendarRange(normalizeCalendarRange(range))}
-                  components={{ toolbar: CalendarToolbar }}
+                  components={{ toolbar: AdminCalToolbar }}
                   formats={{
                     timeGutterFormat: "HH:mm",
                     eventTimeRangeFormat: ({ start, end }) =>

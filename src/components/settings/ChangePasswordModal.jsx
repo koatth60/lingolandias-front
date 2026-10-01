@@ -7,7 +7,7 @@ import { changePassword } from "../../redux/userSlice";
 
 const PasswordField = ({ label, value, onChange, fieldKey, placeholder, show, onToggleShow }) => (
   <div className="group">
-    <label className="block text-gray-500 dark:text-gray-400 text-xs font-semibold uppercase tracking-widest mb-2">
+    <label className="block text-ll-ink2 text-[12.5px] font-medium mb-1.5">
       {label}
     </label>
     <div className="relative">

@@ -281,13 +281,13 @@ const TrelloDashboard = () => {
     : boards;
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-8">
+    <div className="w-full max-w-7xl mx-auto space-y-6">
 
       {/* ── Header ──────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-[28px] sm:text-[32px] font-semibold tracking-[-0.03em] text-ll-ink leading-[1.05]">Trello 2.0</h1>
-          <p className="text-[14px] text-ll-ink2 mt-2">
+          <h1 className="text-[22px] font-semibold tracking-[-0.02em] text-ll-ink leading-tight">Trello 2.0</h1>
+          <p className="text-[13.5px] text-ll-ink3 mt-1">
             {user?.name ? `Welcome back, ${user.name.split(' ')[0]} · ` : ''}{boards.length} board{boards.length !== 1 ? 's' : ''} in your workspace
           </p>
         </div>
@@ -311,17 +311,14 @@ const TrelloDashboard = () => {
       {/* ── Controls bar ────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-          </svg>
-          <span className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Your boards</span>
+          <span className="text-[13.5px] font-semibold text-ll-ink">Your boards</span>
           {boards.length > 0 && (
-            <span className="text-xs font-bold bg-ll-violet/10 text-ll-violet px-2 py-0.5 rounded-full">{boards.length}</span>
+            <span className="font-mono text-[11.5px] text-ll-ink3 px-1.5 py-px rounded-[5px] bg-ll-hover">{boards.length}</span>
           )}
         </div>
         {boards.length > 0 && (
           <div className="relative">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ll-ink3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
@@ -329,7 +326,7 @@ const TrelloDashboard = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search boards..."
-              className="pl-9 pr-4 py-2 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/60 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ll-violet/40 focus:border-ll-violet transition w-56"
+              className="pl-9 pr-3 h-[34px] text-[13px] rounded-[9px] border border-ll-line2 bg-ll-panel text-ll-ink placeholder:text-ll-ink3 focus:outline-none focus:border-ll-violet/60 transition-colors w-56"
             />
           </div>
         )}
@@ -339,25 +336,24 @@ const TrelloDashboard = () => {
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 gap-3">
           <div className="h-10 w-10 rounded-full border-4 border-ll-violet/30 border-t-ll-violet animate-spin" />
-          <p className="text-sm text-gray-400 dark:text-gray-500">Loading your workspace...</p>
+          <p className="text-[13px] text-ll-ink3">Loading your workspace...</p>
         </div>
       ) : boards.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div
-            className="w-20 h-20 rounded-2xl mb-6 flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, rgb(var(--ll-violet)) 0%, #c96ff0 100%)' }}
+            className="w-14 h-14 rounded-xl mb-5 flex items-center justify-center bg-ll-violet-tint text-ll-violet-ink"
           >
-            <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">No boards yet</h2>
-          <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-sm text-sm leading-relaxed">
+          <h2 className="text-[16px] font-semibold text-ll-ink mb-1.5">No boards yet</h2>
+          <p className="text-ll-ink3 mb-6 max-w-sm text-[13.5px] leading-relaxed">
             Create your first board to organize lessons, student progress, and language tasks.
           </p>
           <button
             onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 bg-ll-violet hover:bg-ll-violet-hover text-white font-semibold px-8 py-3 rounded-xl transition shadow-lg shadow-ll-violet/25"
+            className="ll-btn ll-btn-primary"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
@@ -367,10 +363,10 @@ const TrelloDashboard = () => {
         </div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <svg className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-10 h-10 text-ll-ink4 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          <p className="text-gray-500 dark:text-gray-400 text-sm">No boards match &ldquo;{search}&rdquo;</p>
+          <p className="text-ll-ink3 text-[13.5px]">No boards match &ldquo;{search}&rdquo;</p>
           <button onClick={() => setSearch('')} className="mt-2 text-xs text-ll-violet hover:underline">Clear search</button>
         </div>
       ) : (
@@ -378,7 +374,7 @@ const TrelloDashboard = () => {
           {filtered.map((board) => (
             <div
               key={board.id}
-              className="relative group rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 h-36"
+              className="relative group rounded-xl overflow-hidden cursor-pointer border border-ll-line hover:shadow-ll-2 transition-shadow duration-200 h-32"
               style={{ ...getBgStyle(board.background), fontFamily: board.fontFamily }}
               onClick={() => setActiveBoard(board)}
             >
@@ -407,14 +403,14 @@ const TrelloDashboard = () => {
 
           <button
             onClick={() => setShowCreate(true)}
-            className="group rounded-2xl h-36 border-2 border-dashed border-gray-200 dark:border-gray-700 hover:border-ll-violet dark:hover:border-ll-violet bg-gray-50/50 dark:bg-gray-800/20 hover:bg-ll-violet/5 text-gray-400 dark:text-gray-600 hover:text-ll-violet transition-all duration-200 flex flex-col items-center justify-center gap-2"
+            className="group rounded-xl h-32 border border-dashed border-ll-line2 hover:border-ll-violet/60 bg-ll-subtle hover:bg-ll-violet-tint text-ll-ink3 hover:text-ll-violet-ink transition-colors duration-150 flex flex-col items-center justify-center gap-2"
           >
-            <div className="w-10 h-10 rounded-xl border-2 border-dashed border-current flex items-center justify-center group-hover:scale-110 transition-transform">
+            <div className="w-9 h-9 rounded-lg border border-dashed border-current flex items-center justify-center">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
               </svg>
             </div>
-            <span className="text-sm font-semibold">New board</span>
+            <span className="text-[13px] font-medium">New board</span>
           </button>
         </div>
       )}

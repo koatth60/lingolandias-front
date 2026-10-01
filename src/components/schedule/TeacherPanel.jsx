@@ -205,20 +205,19 @@ const TeacherPanel = ({ students, events, teacherId, teacherName, embedded = fal
   };
 
   return (
-    <div className={embedded ? "ll-fade-up mt-3" : "ll-card relative overflow-hidden mt-4 p-5"}>
+    <div className={embedded ? "ll-fade-up mt-3" : "relative overflow-hidden mt-6"}>
       {!embedded && (<svg className="hw-only absolute right-0 bottom-0 w-[54px] h-[54px] z-[5] pointer-events-none opacity-70" style={{ stroke: 'rgb(var(--ll-ink-4))', fill: 'none', strokeWidth: .8, transform: 'rotate(180deg)' }} viewBox="0 0 54 54" aria-hidden="true"><path d="M0 0l54 54M0 0l26 54M0 0l54 24" /><path d="M0 14c8 0 14-2 14-14M0 28c16 0 26-6 28-28M0 42c24 0 38-10 42-42" /></svg>)}
-      <h3 className={`text-[15px] font-semibold text-ll-ink mb-4 ${embedded ? "hidden" : ""}`}>
+      <h3 className={`text-[15px] font-semibold text-ll-ink mb-3 ${embedded ? "hidden" : ""}`}>
         {t("teacherPanel.title")}
       </h3>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Students List */}
         <div>
-          <h4 className="text-[11.5px] font-medium text-ll-ink3 uppercase tracking-wide mb-2.5 flex items-center gap-1.5">
-            <FiUserPlus size={13} />
-            {t("teacherPanel.students")} <span className="font-mono tabular">{students.length}</span>
+          <h4 className="text-[13.5px] font-semibold text-ll-ink mb-2.5 flex items-center gap-2">
+            {t("teacherPanel.students")} <span className="font-mono tabular text-[11.5px] font-normal text-ll-ink3 px-1.5 py-px rounded-[5px] bg-ll-hover">{students.length}</span>
           </h4>
-          <div className="max-h-80 overflow-y-auto custom-scrollbar rounded-lg border border-ll-line divide-y divide-ll-line">
+          <div className="max-h-80 overflow-y-auto custom-scrollbar rounded-xl border border-ll-line divide-y divide-ll-line">
             {students.map((student) => {
               const initials = getInitials(student.name, student.lastName);
               const tint = tintFor(student.name);
@@ -263,8 +262,7 @@ const TeacherPanel = ({ students, events, teacherId, teacherName, embedded = fal
 
         {/* Actions */}
         <div>
-          <h4 className="text-[11.5px] font-medium text-ll-ink3 uppercase tracking-wide mb-2.5 flex items-center gap-1.5">
-            <FiCalendar size={13} />
+          <h4 className="text-[13.5px] font-semibold text-ll-ink mb-2.5">
             {t("teacherPanel.actions")}
           </h4>
 

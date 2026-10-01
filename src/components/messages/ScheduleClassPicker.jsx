@@ -240,7 +240,7 @@ const ScheduleClassPicker = ({ teacherId, students, defaultName, onClose, onConf
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">
+                    <label className="block text-[12.5px] font-medium text-ll-ink2 mb-1.5">
                       {t("messagesExtra.eventNameLabel")}
                     </label>
                     <input
@@ -252,15 +252,15 @@ const ScheduleClassPicker = ({ teacherId, students, defaultName, onClose, onConf
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">{t("addEvent.startTime")}</label>
+                    <label className="block text-[12.5px] font-medium text-ll-ink2 mb-1.5">{t("addEvent.startTime")}</label>
                     <TimeInput value={start} onChange={setStart} className="w-full px-4 py-2.5" />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">{t("addEvent.endTime")}</label>
+                    <label className="block text-[12.5px] font-medium text-ll-ink2 mb-1.5">{t("addEvent.endTime")}</label>
                     <TimeInput value={end} onChange={setEnd} className="w-full px-4 py-2.5" />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">{t("addEvent.recurrence")}</label>
+                    <label className="block text-[12.5px] font-medium text-ll-ink2 mb-1.5">{t("addEvent.recurrence")}</label>
                     <div className="flex gap-2">
                       {[{ value: 1, label: t("addEvent.everyWeek") }, { value: 2, label: t("addEvent.everyTwoWeeks") }].map((opt) => (
                         <button

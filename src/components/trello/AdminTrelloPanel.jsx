@@ -74,8 +74,8 @@ const BoardPreviewModal = ({ board, onClose }) => {
 };
 
 const ROLE_BADGE = {
-  admin: { label: 'Admin', className: 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400' },
-  teacher: { label: 'Teacher', className: 'bg-ll-violet/10 text-ll-violet dark:bg-ll-violet/15 dark:text-ll-violet-ink' },
+  admin: { label: 'Admin', className: 'bg-ll-gold-tint text-ll-gold-ink' },
+  teacher: { label: 'Teacher', className: 'bg-ll-violet-tint text-ll-violet-ink' },
 };
 
 const AdminTrelloPanel = () => {
@@ -117,40 +117,38 @@ const AdminTrelloPanel = () => {
   return (
     <div className="w-full max-w-7xl mx-auto">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold tracking-tight text-gray-800 dark:text-white">Trello Admin</h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Overview of all teacher workspaces</p>
+      <div className="mb-5">
+        <h1 className="text-[22px] font-semibold tracking-[-0.02em] text-ll-ink">Trello Admin</h1>
+        <p className="text-ll-ink3 mt-1 text-[13.5px]">Overview of all teacher workspaces</p>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      {/* Stats: one strip */}
+      <div className="grid grid-cols-3 rounded-xl border border-ll-line bg-ll-panel divide-x divide-ll-line mb-6">
         {[
-          { label: 'Total boards', value: boards.length, icon: '📋' },
-          { label: 'Active teachers', value: Object.keys(grouped).length, icon: '👩‍🏫' },
-          { label: 'Avg boards / teacher', value: Object.keys(grouped).length ? (boards.length / Object.keys(grouped).length).toFixed(1) : 0, icon: '📊' },
-          { label: 'Boards this session', value: boards.length, icon: '✨' },
+          { label: 'Total boards', value: boards.length },
+          { label: 'Active teachers', value: Object.keys(grouped).length },
+          { label: 'Avg boards / teacher', value: Object.keys(grouped).length ? (boards.length / Object.keys(grouped).length).toFixed(1) : 0 },
         ].map((stat) => (
-          <div key={stat.label} className="bg-white dark:bg-brand-dark-secondary rounded-2xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm">
-            <div className="text-2xl mb-1">{stat.icon}</div>
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{stat.label}</div>
+          <div key={stat.label} className="px-3 sm:px-5 py-3 sm:py-4">
+            <div className="font-mono text-[22px] font-medium leading-tight text-ll-ink">{stat.value}</div>
+            <div className="text-[12px] text-ll-ink3 mt-0.5">{stat.label}</div>
           </div>
         ))}
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3 mb-6">
+      <div className="flex flex-wrap gap-2 mb-6">
         <input
           type="text"
           placeholder="Search boards or teachers..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-ll-violet w-64"
+          className="h-9 px-3 rounded-lg border border-ll-line2 bg-ll-panel text-ll-ink text-[13.5px] placeholder:text-ll-ink3 focus:outline-none focus:border-ll-violet/60 w-full sm:w-64"
         />
         <select
           value={filterTeacher}
           onChange={(e) => setFilterTeacher(e.target.value)}
-          className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-ll-violet"
+          className="h-9 px-3 rounded-lg border border-ll-line2 bg-ll-panel text-ll-ink text-[13.5px] focus:outline-none focus:border-ll-violet/60"
         >
           <option value="">All teachers</option>
           {Object.keys(grouped).map((userId) => (
@@ -158,10 +156,7 @@ const AdminTrelloPanel = () => {
           ))}
         </select>
         {(search || filterTeacher) && (
-          <button
-            onClick={() => { setSearch(''); setFilterTeacher(''); }}
-            className="px-3 py-2 rounded-xl text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white border border-gray-200 dark:border-gray-700 transition"
-          >
+          <button onClick={() => { setSearch(''); setFilterTeacher(''); }} className="ll-btn ll-btn-secondary">
             Clear
           </button>
         )}
@@ -170,15 +165,15 @@ const AdminTrelloPanel = () => {
       {/* Boards grid */}
       {loading ? (
         <div className="flex justify-center py-20">
-          <div className="h-10 w-10 rounded-full border-4 border-ll-violet border-t-transparent animate-spin" />
+          <div className="h-8 w-8 rounded-full border-[3px] border-ll-violet/30 border-t-ll-violet animate-spin" />
         </div>
       ) : filteredBoards.length === 0 ? (
         <div className="text-center py-20">
-          <div className="text-5xl mb-4">🔍</div>
-          <p className="text-gray-500 dark:text-gray-400">No boards found</p>
+          <p className="text-[14px] font-semibold text-ll-ink">No boards found</p>
+          <p className="text-[13px] text-ll-ink3 mt-1">Try a different search.</p>
         </div>
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-7">
           {Object.keys(grouped)
             .filter((userId) => !filterTeacher || userId === filterTeacher)
             .filter((userId) =>
@@ -194,26 +189,26 @@ const AdminTrelloPanel = () => {
               return (
                 <div key={userId}>
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-ll-violet to-[#E8A23A] flex items-center justify-center text-white text-sm font-bold">
+                    <div className="w-8 h-8 rounded-full bg-ll-violet-tint text-ll-violet-ink flex items-center justify-center text-[12px] font-semibold">
                       {getTeacherName(userId).charAt(0)}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-gray-800 dark:text-white">{getTeacherName(userId)}</h3>
+                        <h3 className="text-[13.5px] font-semibold text-ll-ink">{getTeacherName(userId)}</h3>
                         {ROLE_BADGE[getTeacherRole(userId)] && (
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${ROLE_BADGE[getTeacherRole(userId)].className}`}>
+                          <span className={`text-[11.5px] font-medium px-2 py-px rounded-full ${ROLE_BADGE[getTeacherRole(userId)].className}`}>
                             {ROLE_BADGE[getTeacherRole(userId)].label}
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-gray-400 dark:text-gray-500">{teacherBoards.length} board{teacherBoards.length !== 1 ? 's' : ''}</p>
+                      <p className="text-[12px] text-ll-ink3">{teacherBoards.length} board{teacherBoards.length !== 1 ? 's' : ''}</p>
                     </div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 ml-11">
                     {teacherBoards.map((board) => (
                       <div
                         key={board.id}
-                        className="relative group rounded-xl overflow-hidden cursor-pointer shadow hover:shadow-lg transition-all duration-200 h-28"
+                        className="relative group rounded-xl overflow-hidden cursor-pointer border border-ll-line hover:shadow-ll-2 transition-shadow duration-200 h-28"
                         style={{ ...getBgStyle(board.background), fontFamily: board.fontFamily }}
                         onClick={() => setSelectedBoard(board)}
                       >

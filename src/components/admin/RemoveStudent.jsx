@@ -1,4 +1,3 @@
-import { alpha } from "../../utils/colorAlpha";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import Swal from "sweetalert2";
@@ -8,37 +7,25 @@ import { FiUserMinus, FiCheckCircle } from "react-icons/fi";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-const panelStyle = {
-  border: "1px solid rgb(var(--ll-violet) / 0.12)",
-};
-
-const UserRow = ({ person, selected, accentColor, onClick }) => (
+const UserRow = ({ person, selected, onClick }) => (
   <div
     onClick={onClick}
-    className="flex items-center gap-3 p-3 rounded-xl cursor-pointer mb-2 transition-all duration-150"
-    style={
-      selected
-        ? { background: `${alpha(accentColor,"14")}`, border: `1px solid ${alpha(accentColor,"50")}` }
-        : { background: "transparent", border: "1px solid transparent" }
-    }
-    onMouseEnter={(e) => { if (!selected) e.currentTarget.style.background = "rgb(var(--ll-violet) / 0.06)"; }}
-    onMouseLeave={(e) => { if (!selected) e.currentTarget.style.background = "transparent"; }}
+    className={`flex items-center gap-3 px-2.5 py-2 rounded-[9px] cursor-pointer mb-1 transition-colors ${
+      selected ? "bg-ll-violet-tint" : "hover:bg-ll-hover"
+    }`}
   >
     {person.avatarUrl ? (
-      <img src={person.avatarUrl} alt={`${person.name} ${person.lastName}`} className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
+      <img src={person.avatarUrl} alt={`${person.name} ${person.lastName}`} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
     ) : (
-      <div
-        className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-        style={{ background: selected ? `linear-gradient(135deg, ${accentColor}, ${alpha(accentColor,"aa")})` : "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}
-      >
+      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-semibold flex-shrink-0 ${selected ? "bg-ll-panel text-ll-violet-ink" : "bg-ll-hover text-ll-ink2"}`}>
         {person.name.charAt(0)}{person.lastName.charAt(0)}
       </div>
     )}
     <div className="min-w-0 flex-1">
-      <p className="text-sm font-semibold text-gray-800 dark:text-white truncate">{person.name} {person.lastName}</p>
-      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{person.email}</p>
+      <p className="text-[13.5px] font-medium text-ll-ink truncate">{person.name} {person.lastName}</p>
+      <p className="text-[12px] text-ll-ink3 truncate">{person.email}</p>
     </div>
-    {selected && <FiCheckCircle size={14} style={{ color: accentColor }} className="flex-shrink-0" />}
+    {selected && <FiCheckCircle size={15} className="flex-shrink-0 text-ll-violet" />}
   </div>
 );
 
@@ -90,22 +77,18 @@ const RemoveStudent = ({ teachers, onRefresh }) => {
 
   return (
     <section>
-      <div className="flex items-center gap-2 mb-5">
-        <FiUserMinus size={17} style={{ color: "#ef4444" }} />
-        <h2 className="text-lg font-extrabold text-gray-800 dark:text-white">{t("admin.removeTitle")}</h2>
+      <div className="flex items-center gap-2 mb-4">
+        <h2 className="text-[15px] font-semibold text-ll-ink">{t("admin.removeTitle")}</h2>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
         {/* ── 1. Select Teacher ── */}
-        <div className="relative rounded-2xl overflow-hidden" style={panelStyle}>
-          <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, rgb(var(--ll-violet)), transparent)" }} />
-          <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(248,248,250,0.85)" }} />
-          <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.55)" }} />
+        <div className="relative rounded-xl overflow-hidden border border-ll-line">
           <div className="relative z-10 p-4">
             <div className="flex items-center gap-2 mb-3">
-              <span className="w-5 h-5 rounded-full bg-ll-violet text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">1</span>
-              <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200">{t("admin.selectTeacherLabel")}</h3>
+              <span className="w-5 h-5 rounded-full bg-ll-hover text-ll-ink2 flex items-center justify-center font-mono text-[11px] flex-shrink-0">1</span>
+              <h3 className="text-[13.5px] font-semibold text-ll-ink">{t("admin.selectTeacherLabel")}</h3>
             </div>
             <div className="max-h-60 overflow-y-auto custom-scrollbar">
               {teachers.map((teacher) => (
@@ -113,7 +96,6 @@ const RemoveStudent = ({ teachers, onRefresh }) => {
                   key={teacher.id}
                   person={teacher}
                   selected={selectedTeacher?.id === teacher.id}
-                  accentColor="rgb(var(--ll-violet))"
                   onClick={() => handleTeacherSelect(teacher)}
                 />
               ))}
@@ -122,27 +104,23 @@ const RemoveStudent = ({ teachers, onRefresh }) => {
         </div>
 
         {/* ── 2. Select Student ── */}
-        <div className="relative rounded-2xl overflow-hidden" style={panelStyle}>
-          <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, #ef4444, transparent)" }} />
-          <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(248,248,250,0.85)" }} />
-          <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.55)" }} />
+        <div className="relative rounded-xl overflow-hidden border border-ll-line">
           <div className="relative z-10 p-4">
             <div className="flex items-center gap-2 mb-3">
-              <span className="w-5 h-5 rounded-full bg-[#ef4444] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">2</span>
-              <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200">{t("admin.selectStudentToRemove")}</h3>
+              <span className="w-5 h-5 rounded-full bg-ll-hover text-ll-ink2 flex items-center justify-center font-mono text-[11px] flex-shrink-0">2</span>
+              <h3 className="text-[13.5px] font-semibold text-ll-ink">{t("admin.selectStudentToRemove")}</h3>
             </div>
             <div className="max-h-60 overflow-y-auto custom-scrollbar">
               {!selectedTeacher ? (
-                <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-8">{t("admin.selectTeacherFirst")}</p>
+                <p className="text-[12.5px] text-ll-ink3 text-center py-8">{t("admin.selectTeacherFirst")}</p>
               ) : !selectedTeacher.students || selectedTeacher.students.length === 0 ? (
-                <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-8">{t("admin.noStudentsTeacher")}</p>
+                <p className="text-[12.5px] text-ll-ink3 text-center py-8">{t("admin.noStudentsTeacher")}</p>
               ) : (
                 selectedTeacher.students.map((student) => (
                   <UserRow
                     key={student.id}
                     person={student}
                     selected={selectedStudent === student.id}
-                    accentColor="#ef4444"
                     onClick={() => handleStudentSelect(student.id)}
                   />
                 ))
@@ -153,15 +131,11 @@ const RemoveStudent = ({ teachers, onRefresh }) => {
       </div>
 
       {/* ── Remove Button ── */}
-      <div className="flex justify-center mt-5">
+      <div className="flex justify-end mt-4">
         <button
           onClick={removeStudents}
           disabled={!selectedTeacher || !selectedStudent}
-          className="flex items-center gap-2 px-8 py-3 rounded-xl text-white text-sm font-bold transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
-          style={{
-            background: "linear-gradient(135deg, #ef4444, #dc2626)",
-            boxShadow: "0 4px 20px rgba(239,68,68,0.28)",
-          }}
+          className="ll-btn ll-btn-secondary !text-ll-danger disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <FiUserMinus size={15} />
           {t("admin.removeSelectedStudent")}

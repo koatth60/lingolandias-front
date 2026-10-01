@@ -44,20 +44,11 @@ const MobileClassList = ({ events, onEventClick, onEditTime, onManageParticipant
         return (
           <div key={dateStr}>
             {/* Day header */}
-            <div className="flex items-center gap-2 mb-2 px-1">
-              <span
-                className={`text-xs font-bold uppercase tracking-wider ${
-                  isTodayGroup
-                    ? "text-ll-violet dark:text-ll-violet-ink"
-                    : "text-gray-500 dark:text-gray-400"
-                }`}
-              >
+            <div className="flex items-center gap-3 mb-2 px-1 text-[12.5px] font-medium">
+              <span className={isTodayGroup ? "text-ll-violet-ink" : "text-ll-ink3"}>
                 {formatDayLabel(dateStr)}
               </span>
-              <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
-              {isTodayGroup && (
-                <span className="w-2 h-2 rounded-full bg-[#1FA48C] animate-pulse" />
-              )}
+              <div className="flex-1 h-px bg-ll-line" />
             </div>
 
             {/* Class cards */}
@@ -76,86 +67,40 @@ const MobileClassList = ({ events, onEventClick, onEditTime, onManageParticipant
                   <div key={`${ev.eventId}-${i}`} className="relative">
                   <button
                     onClick={() => onEventClick(ev)}
-                    className="w-full text-left rounded-xl p-3.5 transition-all duration-150 active:scale-[0.98]
-                               border border-gray-200 dark:border-white/10
-                               bg-white dark:bg-white/[0.04]
-                               hover:border-ll-violet/30 dark:hover:border-ll-violet/30
-                               hover:shadow-md"
-                    style={
-                      isNow
-                        ? {
-                            borderColor: "rgba(31,164,140,0.5)",
-                            background:
-                              "linear-gradient(135deg, rgba(31,164,140,0.08), rgba(31,164,140,0.02))",
-                            boxShadow: "0 2px 12px rgba(31,164,140,0.15)",
-                          }
-                        : isSoon
-                        ? {
-                            borderColor: "rgba(232,162,58,0.4)",
-                            background:
-                              "linear-gradient(135deg, rgba(232,162,58,0.06), rgba(232,162,58,0.02))",
-                          }
-                        : {}
-                    }
+                    className={`w-full text-left rounded-xl px-3.5 py-3 transition-colors border bg-ll-panel hover:bg-ll-subtle ${
+                      isNow ? "border-ll-teal/50" : isSoon ? "border-ll-gold/50" : "border-ll-line"
+                    }`}
                   >
                     <div className="flex items-center gap-3">
                       {/* Time block */}
-                      <div className="flex-shrink-0 text-center w-14">
-                        <p
-                          className={`text-sm font-bold ${
-                            isNow
-                              ? "text-[#1FA48C]"
-                              : "text-gray-800 dark:text-white"
-                          }`}
-                        >
+                      <div className="flex-shrink-0 w-12">
+                        <p className={`font-mono text-[14px] font-medium ${isNow ? "text-ll-teal-ink" : "text-ll-ink"}`}>
                           {startTime}
                         </p>
-                        <p className="text-[10px] text-gray-400 dark:text-gray-500">
-                          {endTime}
-                        </p>
+                        <p className="font-mono text-[11px] text-ll-ink3">{endTime}</p>
                       </div>
 
-                      {/* Divider */}
-                      <div
-                        className="w-0.5 h-10 rounded-full flex-shrink-0"
-                        style={{
-                          background: isNow
-                            ? "linear-gradient(180deg, #1FA48C, #17886F)"
-                            : "linear-gradient(180deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))",
-                        }}
-                      />
+                      <div className={`w-0.5 h-9 rounded-full flex-shrink-0 ${isNow ? "bg-ll-teal" : "bg-ll-violet"}`} />
 
                       {/* Info */}
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-gray-800 dark:text-white truncate">
-                          {ev.title}
-                        </p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <FiClock
-                            size={11}
-                            className="text-gray-400 dark:text-gray-500"
-                          />
-                          <span className="text-[11px] text-gray-500 dark:text-gray-400">
-                            {dayjs(ev.end).diff(dayjs(ev.start), "minute")}{" "}
-                            {t("mobileSchedule.min")}
+                        <p className="text-[14px] font-semibold text-ll-ink truncate">{ev.title}</p>
+                        <div className="flex items-center gap-2 mt-0.5 text-[12.5px] text-ll-ink3">
+                          <FiClock size={12} />
+                          <span>
+                            {dayjs(ev.end).diff(dayjs(ev.start), "minute")} {t("mobileSchedule.min")}
                           </span>
                           {isNow && (
-                            <span className="text-[10px] font-bold text-[#1FA48C] uppercase">
-                              ● {t("mobileSchedule.live")}
-                            </span>
+                            <span className="font-medium text-ll-teal-ink">● {t("mobileSchedule.live")}</span>
                           )}
                           {isSoon && (
-                            <span className="text-[10px] font-bold text-[#E8A23A] uppercase">
-                              {t("mobileSchedule.soon")}
-                            </span>
+                            <span className="font-medium text-ll-gold-ink">{t("mobileSchedule.soon")}</span>
                           )}
                         </div>
                       </div>
 
                       {/* Join icon + (teachers) the "..." menu, stacked so
-                          neither one has to float over the other — this used
-                          to be a separate absolutely-positioned corner overlay
-                          that visibly collided with this same button. */}
+                          neither one has to float over the other. */}
                       <div className="flex-shrink-0 flex flex-col items-center gap-1">
                         {user.role === "teacher" && (
                           <EventActionsMenu
@@ -164,18 +109,8 @@ const MobileClassList = ({ events, onEventClick, onEditTime, onManageParticipant
                             onManageParticipants={() => onManageParticipants(ev)}
                           />
                         )}
-                        <div
-                          className="w-9 h-9 rounded-xl flex items-center justify-center"
-                          style={{
-                            background: isNow
-                              ? "linear-gradient(135deg, #1FA48C, #17886F)"
-                              : "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))",
-                            boxShadow: isNow
-                              ? "0 2px 8px rgba(31,164,140,0.35)"
-                              : "0 2px 8px rgb(var(--ll-violet) / 0.25)",
-                          }}
-                        >
-                          <FiVideo size={14} className="text-white" />
+                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-ll-on-violet ${isNow ? "bg-ll-teal" : "bg-ll-violet"}`}>
+                          <FiVideo size={15} />
                         </div>
                       </div>
                     </div>

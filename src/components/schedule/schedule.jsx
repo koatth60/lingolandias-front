@@ -40,7 +40,7 @@ import Dropdown from "./Dropdown";
 import TeacherPanel from "./TeacherPanel";
 import AdminMeetingRooms from "./AdminMeetingRooms";
 import NewClassModal from "./NewClassModal";
-import { FiMessageSquare, FiUsers, FiChevronDown, FiCalendar } from "react-icons/fi";
+import { FiUsers, FiChevronDown, FiCalendar } from "react-icons/fi";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -322,7 +322,7 @@ const Schedule = () => {
         <Navbar header={header} />
 
         <div
-          className={`mt-3 sm:mt-4 flex flex-col xl:flex-row gap-4 px-3 sm:px-4 pb-6 flex-1 ${
+          className={`mt-3 sm:mt-5 flex flex-col xl:flex-row gap-4 px-3 sm:px-7 pb-6 flex-1 ${
             !isChatVisible && user.role !== "admin" ? "justify-center" : ""
           }`}
         >
@@ -335,7 +335,7 @@ const Schedule = () => {
                 {events.length > 0 || user.role === "teacher" ? (
                   <>
                     {/* Desktop: full calendar */}
-                    <div className="ll-card relative overflow-hidden hidden lg:block">
+                    <div className="relative overflow-hidden hidden lg:block">
                       <svg className="hw-only absolute left-0 top-0 w-[54px] h-[54px] z-[5] pointer-events-none opacity-70" style={{ stroke: 'rgb(var(--ll-ink-4))', fill: 'none', strokeWidth: .8 }} viewBox="0 0 54 54" aria-hidden="true"><path d="M0 0l54 54M0 0l26 54M0 0l54 24" /><path d="M0 14c8 0 14-2 14-14M0 28c16 0 26-6 28-28M0 42c24 0 38-10 42-42" /></svg>
                       <svg className="hw-only absolute right-3.5 bottom-0 w-[54px] h-[54px] z-[5] pointer-events-none opacity-70" style={{ stroke: 'rgb(var(--ll-ink-4))', fill: 'none', strokeWidth: .8, transform: 'rotate(180deg)' }} viewBox="0 0 54 54" aria-hidden="true"><path d="M0 0l54 54M0 0l26 54M0 0l54 24" /><path d="M0 14c8 0 14-2 14-14M0 28c16 0 26-6 28-28M0 42c24 0 38-10 42-42" /></svg>
                       <svg className="hw-only absolute left-[34%] top-1.5 w-[120px] h-[50px] z-[5] pointer-events-none" style={{ fill: 'rgb(var(--ll-ink-4))', opacity: .55 }} viewBox="0 0 170 70" aria-hidden="true">
@@ -383,12 +383,9 @@ const Schedule = () => {
                     </div>
 
                     {/* Mobile: class list cards */}
-                    <div className="lg:hidden ll-card overflow-hidden max-sm:!border-0 max-sm:!bg-transparent max-sm:!rounded-none">
-                      <div className="p-4 max-sm:p-0">
-                        <div className="flex items-center gap-2 mb-4 max-sm:px-1">
-                          <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 bg-ll-violet-tint text-ll-violet-ink">
-                            <FiMessageSquare size={14} />
-                          </div>
+                    <div className="lg:hidden">
+                      <div>
+                        <div className="flex items-center gap-2 mb-3 px-1">
                           <span className="text-[13.5px] font-semibold text-ll-ink">
                             {t("mobileSchedule.upcomingClasses")}
                           </span>
@@ -428,7 +425,7 @@ const Schedule = () => {
 
         {/* Teacher panel */}
         {user.role === "teacher" && user.students && user.students.length > 0 && (
-          <div className="px-3 sm:px-4 pb-6">
+          <div className="px-3 sm:px-7 pb-8">
             {/* Desktop: show directly */}
             <div className="hidden lg:block">
               <TeacherPanel
@@ -442,12 +439,9 @@ const Schedule = () => {
             <div className="lg:hidden">
               <button
                 onClick={() => setTeacherPanelOpen((p) => !p)}
-                className="ll-card w-full flex items-center justify-between p-4 transition-colors hover:bg-ll-subtle"
+                className="ll-card w-full flex items-center justify-between px-4 py-3 transition-colors hover:bg-ll-subtle"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-ll-violet-tint text-ll-violet-ink">
-                    <FiUsers size={15} />
-                  </div>
                   <span className="text-[13.5px] font-semibold text-ll-ink">
                     {t("teacherPanel.title")}
                   </span>

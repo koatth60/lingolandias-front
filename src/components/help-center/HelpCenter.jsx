@@ -1,9 +1,8 @@
-import { alpha } from "../../utils/colorAlpha";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import {
-  FiChevronDown, FiMail, FiMessageCircle,
+  FiChevronDown,
   FiSend, FiCheckCircle, FiAlertCircle,
 } from "react-icons/fi";
 import Dashboard from "../../sections/dashboard";
@@ -11,59 +10,25 @@ import Navbar from "../layout/navbar";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-const glassCard = {
-  border: "1px solid rgb(var(--ll-violet) / 0.15)",
-  boxShadow: "0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgb(var(--ll-violet) / 0.06)",
-};
-
-const FaqItem = ({ question, answer, index }) => {
+const FaqItem = ({ question, answer }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const colors = ["rgb(var(--ll-violet))", "#1FA48C", "#E8A23A"];
-  const accentColor = colors[index % colors.length];
 
   return (
-    <div
-      className="relative rounded-xl overflow-hidden transition-all duration-200"
-      style={{
-        border: `1px solid ${isOpen ? alpha(accentColor,"35") : "rgb(var(--ll-violet) / 0.10)"}`,
-        background: isOpen ? `${alpha(accentColor,"06")}` : "transparent",
-      }}
-    >
+    <div className="border-t border-ll-line first:border-t-0">
       <button
-        className="w-full flex justify-between items-center text-left p-4 sm:p-5 gap-4 focus:outline-none"
+        className="w-full flex justify-between items-center text-left py-3.5 gap-4 focus:outline-none"
         onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
       >
-        <div className="flex items-center gap-3 min-w-0">
-          {isOpen && (
-            <div
-              className="w-1 h-5 rounded-full flex-shrink-0"
-              style={{ background: `linear-gradient(to bottom, ${accentColor}, transparent)` }}
-            />
-          )}
-          <span className="text-sm sm:text-base font-semibold text-gray-700 dark:text-white leading-snug">
-            {question}
-          </span>
-        </div>
-        <div
-          className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-200"
-          style={{
-            background: isOpen ? accentColor : "rgb(var(--ll-violet) / 0.08)",
-            border: `1px solid ${isOpen ? accentColor : "rgb(var(--ll-violet) / 0.18)"}`,
-          }}
-        >
-          <FiChevronDown
-            size={14}
-            style={{ color: isOpen ? "#fff" : accentColor, transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}
-          />
-        </div>
+        <span className="text-[14px] font-medium text-ll-ink leading-snug">{question}</span>
+        <FiChevronDown
+          size={16}
+          className={`flex-shrink-0 text-ll-ink3 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+        />
       </button>
-
       {isOpen && (
-        <div className="px-4 sm:px-5 pb-4 sm:pb-5">
-          <div className="h-px mb-4 opacity-20" style={{ background: `linear-gradient(90deg, ${accentColor}, transparent)` }} />
-          <div className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-            {answer}
-          </div>
+        <div className="pb-4 text-[13.5px] text-ll-ink2 leading-relaxed max-w-[62ch]">
+          {answer}
         </div>
       )}
     </div>
@@ -163,192 +128,103 @@ const HelpCenter = () => {
     }
   };
 
-  const inputStyle = {
-    background: "rgb(var(--ll-violet) / 0.04)",
-    border: "1px solid rgb(var(--ll-violet) / 0.18)",
-    borderRadius: "10px",
-    color: "inherit",
-    width: "100%",
-    padding: "10px 14px",
-    fontSize: "14px",
-    outline: "none",
-    transition: "border-color 0.15s",
-  };
+  const field = "w-full h-9 mt-1 rounded-lg px-3 text-[13.5px] text-ll-ink bg-ll-panel border border-ll-line2 outline-none focus:border-ll-violet/60 transition-colors placeholder:text-ll-ink3";
+  const fieldRO = "w-full h-9 mt-1 rounded-lg px-3 text-[13.5px] text-ll-ink2 bg-ll-subtle border border-ll-line cursor-default outline-none";
+  const labelCls = "text-[12.5px] font-medium text-ll-ink2";
 
   return (
-    <div className="flex w-full relative min-h-screen">
-      {/* Backgrounds */}
-      <div className="absolute inset-0 pointer-events-none dark:hidden"
-        style={{ background: "linear-gradient(135deg, #f8f8fa 0%, #f2f2f6 100%)" }} />
-      
-      <div className="absolute inset-0 pointer-events-none overflow-hidden hidden dark:block">
-        <div className="absolute rounded-full blur-3xl opacity-10"
-          style={{ background: "radial-gradient(circle, rgb(var(--ll-violet) / 0.6), transparent 70%)", width: "500px", height: "500px", top: "-5%", right: "0%" }} />
-        <div className="absolute rounded-full blur-3xl opacity-8"
-          style={{ background: "radial-gradient(circle, rgba(31,164,140,0.4), transparent 70%)", width: "350px", height: "350px", bottom: "10%", left: "5%" }} />
-      </div>
-
+    <div className="flex w-full relative min-h-screen bg-ll-canvas">
       <Dashboard />
 
       <div className="ll-shell w-full min-w-0 relative z-10 flex flex-col">
         <Navbar header={t("nav.helpCenter")} />
 
-        <div className="px-3 sm:px-6 md:px-8 py-5 sm:py-8 flex flex-col gap-6 sm:gap-10 max-w-4xl mx-auto w-full">
+        <div className="px-3 sm:px-7 py-5 sm:py-8 flex flex-col gap-9 max-w-3xl mx-auto w-full">
 
-          {/* Hero */}
-          <div className="text-center py-2 sm:py-6">
-            <h1 className="hw-gothic text-3xl sm:text-5xl font-semibold tracking-[-0.03em] text-ll-ink mb-3">
+          <div>
+            <h1 className="hw-gothic text-[22px] font-semibold tracking-[-0.02em] text-ll-ink">
               {t("helpCenter.title")}
             </h1>
-            <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-              {t("helpCenter.subtitle")}
-            </p>
-            <div className="h-px mt-5 mx-auto max-w-xs opacity-40"
-              style={{ background: "linear-gradient(90deg, transparent, rgb(var(--ll-violet)), #E8A23A, #1FA48C, transparent)" }} />
+            <p className="text-[13.5px] text-ll-ink3 mt-1">{t("helpCenter.subtitle")}</p>
           </div>
 
-          {/* FAQ card */}
-          <div className="relative rounded-2xl overflow-hidden" style={glassCard}>
-            <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(255,255,255,0.80)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
-            <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.65)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
-            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-ll-violet via-[#E8A23A] to-[#1FA48C] opacity-70" />
-            <div className="relative z-10 p-5 sm:p-7">
-              <div className="flex items-center gap-2 mb-5">
-                <FiMessageCircle size={16} style={{ color: "rgb(var(--ll-violet))" }} />
-                <h2 className="text-base sm:text-lg font-extrabold text-gray-700 dark:text-white">
-                  {t("helpCenter.faq")}
-                </h2>
-              </div>
-              <div className="space-y-3">
-                {faqs.map((faq, index) => (
-                  <FaqItem key={index} question={faq.question} answer={faq.answer} index={index} />
-                ))}
-              </div>
+          {/* FAQ */}
+          <section>
+            <h2 className="text-[13.5px] font-semibold text-ll-ink mb-1">{t("helpCenter.faq")}</h2>
+            <div className="border-y border-ll-line">
+              {faqs.map((faq, index) => (
+                <FaqItem key={index} question={faq.question} answer={faq.answer} />
+              ))}
             </div>
-          </div>
+          </section>
 
-          {/* Contact form card */}
-          <div className="relative rounded-2xl overflow-hidden" style={glassCard}>
-            <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(255,255,255,0.80)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
-            <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.65)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
-            <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, #1FA48C, rgb(var(--ll-violet)), transparent)" }} />
-            <div className="relative z-10 p-5 sm:p-7">
+          {/* Contact */}
+          <section>
+            <h2 className="text-[13.5px] font-semibold text-ll-ink">{t("helpCenter.contactSupport")}</h2>
+            <p className="text-[13px] text-ll-ink3 mt-0.5 mb-4">{t("helpCenter.teamReply")}</p>
 
-              <div className="flex items-center gap-2 mb-1">
-                <div
-                  className="w-8 h-8 rounded-xl flex items-center justify-center"
-                  style={{ background: "rgba(31,164,140,0.12)", border: "1px solid rgba(31,164,140,0.28)" }}
-                >
-                  <FiMail size={15} style={{ color: "#1FA48C" }} />
-                </div>
-                <h2 className="text-base sm:text-lg font-extrabold text-gray-700 dark:text-white">
-                  {t("helpCenter.contactSupport")}
-                </h2>
+            {sent ? (
+              <div className="flex flex-col items-center gap-2 py-8 text-center rounded-xl border border-ll-line bg-ll-subtle">
+                <FiCheckCircle size={26} className="text-ll-teal" />
+                <p className="text-[14px] font-semibold text-ll-ink">{t("helpCenter.sent")}</p>
+                <p className="text-[12.5px] text-ll-ink3">{t("helpCenter.sentSubtitle", { email: user?.email })}</p>
+                <button onClick={() => setSent(false)} className="ll-btn ll-btn-secondary ll-btn-sm mt-2">
+                  {t("helpCenter.sendAnother")}
+                </button>
               </div>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-5 ml-10">
-                {t("helpCenter.teamReply")}
-              </p>
-
-              {sent ? (
-                <div
-                  className="flex flex-col items-center gap-3 py-8 text-center rounded-xl"
-                  style={{ background: "rgba(31,164,140,0.06)", border: "1px solid rgba(31,164,140,0.20)" }}
-                >
-                  <FiCheckCircle size={32} style={{ color: "#1FA48C" }} />
-                  <p className="text-sm font-semibold text-gray-700 dark:text-white">{t("helpCenter.sent")}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{t("helpCenter.sentSubtitle", { email: user?.email })}</p>
-                  <button
-                    onClick={() => setSent(false)}
-                    className="mt-2 text-xs font-semibold px-4 py-2 rounded-lg transition-all hover:opacity-80"
-                    style={{ background: "rgba(31,164,140,0.12)", color: "#1FA48C", border: "1px solid rgba(31,164,140,0.25)" }}
-                  >
-                    {t("helpCenter.sendAnother")}
-                  </button>
+            ) : (
+              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className={labelCls}>{t("helpCenter.name")}</label>
+                    <input type="text" readOnly value={`${user?.name || ""} ${user?.lastName || ""}`.trim()} className={fieldRO} />
+                  </div>
+                  <div>
+                    <label className={labelCls}>{t("helpCenter.email")}</label>
+                    <input type="text" readOnly value={user?.email || ""} className={fieldRO} />
+                  </div>
+                  <div>
+                    <label className={labelCls}>{t("helpCenter.language")}</label>
+                    <input type="text" readOnly value={user?.language || t("common.notSpecified")} className={fieldRO} />
+                  </div>
                 </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                  {/* Read-only user info row */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div>
-                      <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 block">{t("helpCenter.name")}</label>
-                      <input
-                        type="text"
-                        readOnly
-                        value={`${user?.name || ""} ${user?.lastName || ""}`.trim()}
-                        className="dark:text-white text-gray-500"
-                        style={{ ...inputStyle, opacity: 0.8, cursor: "default" }}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 block">{t("helpCenter.email")}</label>
-                      <input
-                        type="text"
-                        readOnly
-                        value={user?.email || ""}
-                        className="dark:text-white text-gray-500"
-                        style={{ ...inputStyle, opacity: 0.8, cursor: "default" }}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 block">{t("helpCenter.language")}</label>
-                      <input
-                        type="text"
-                        readOnly
-                        value={user?.language || t("common.notSpecified")}
-                        className="dark:text-white text-gray-500"
-                        style={{ ...inputStyle, opacity: 0.8, cursor: "default" }}
-                      />
-                    </div>
+
+                <div>
+                  <label className={labelCls}>{t("helpCenter.subject")}</label>
+                  <input
+                    type="text"
+                    placeholder={t("helpCenter.subjectPlaceholder")}
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value)}
+                    className={field}
+                  />
+                </div>
+
+                <div>
+                  <label className={labelCls}>{t("helpCenter.message")}</label>
+                  <textarea
+                    rows={5}
+                    placeholder={t("helpCenter.messagePlaceholder")}
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    className={`${field} !h-auto py-2 resize-none`}
+                  />
+                </div>
+
+                {formError && (
+                  <div className="flex items-start gap-2 text-[12.5px] text-red-500 p-3 rounded-lg bg-red-500/[0.07] border border-red-500/20">
+                    <FiAlertCircle size={14} className="flex-shrink-0 mt-0.5" />
+                    {formError}
                   </div>
+                )}
 
-                  {/* Subject */}
-                  <div>
-                    <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 block">{t("helpCenter.subject")}</label>
-                    <input
-                      type="text"
-                      placeholder={t("helpCenter.subjectPlaceholder")}
-                      value={subject}
-                      onChange={(e) => setSubject(e.target.value)}
-                      className="dark:text-white text-gray-700 placeholder-gray-400 focus:border-ll-violet"
-                      style={inputStyle}
-                    />
-                  </div>
-
-                  {/* Message */}
-                  <div>
-                    <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 block">{t("helpCenter.message")}</label>
-                    <textarea
-                      rows={5}
-                      placeholder={t("helpCenter.messagePlaceholder")}
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      className="dark:text-white text-gray-800 placeholder-gray-400 focus:border-ll-violet resize-none"
-                      style={inputStyle}
-                    />
-                  </div>
-
-                  {formError && (
-                    <div className="flex items-start gap-2 text-xs text-red-400 p-3 rounded-lg"
-                      style={{ background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.20)" }}>
-                      <FiAlertCircle size={13} className="flex-shrink-0 mt-0.5" />
-                      {formError}
-                    </div>
-                  )}
-
-                  <button
-                    type="submit"
-                    disabled={sending}
-                    className="self-end flex items-center gap-2 px-6 py-3 rounded-xl text-white text-sm font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
-                    style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", boxShadow: "0 4px 20px rgb(var(--ll-violet) / 0.35)" }}
-                  >
-                    <FiSend size={14} />
-                    {sending ? t("helpCenter.sending") : t("helpCenter.send")}
-                  </button>
-                </form>
-              )}
-            </div>
-          </div>
-
+                <button type="submit" disabled={sending} className="ll-btn ll-btn-primary self-end disabled:opacity-60">
+                  <FiSend size={14} />
+                  {sending ? t("helpCenter.sending") : t("helpCenter.send")}
+                </button>
+              </form>
+            )}
+          </section>
         </div>
       </div>
     </div>

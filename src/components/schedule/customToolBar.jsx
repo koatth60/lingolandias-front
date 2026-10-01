@@ -11,11 +11,11 @@ const CustomToolbar = ({ label, onNavigate, onView, view, actionsBar }) => {
   };
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 gap-3 border-b border-ll-line">
+    <div className="flex flex-col sm:flex-row items-center justify-between pb-4 gap-3">
 
       {/* Left: title + navigation */}
       <div className="flex items-center gap-3">
-        <span className="text-[13.5px] font-semibold text-ll-ink whitespace-nowrap">
+        <span className="text-[20px] font-semibold tracking-[-0.015em] text-ll-ink whitespace-nowrap">
           {t('toolbar.classesSchedule')}
         </span>
 
@@ -35,7 +35,7 @@ const CustomToolbar = ({ label, onNavigate, onView, view, actionsBar }) => {
       </div>
 
       {/* Center: current period label */}
-      <span className="text-[13px] font-mono tabular text-ll-ink order-first sm:order-none">
+      <span className="text-[11.5px] font-mono tabular text-ll-ink3 px-2 py-0.5 border border-ll-line rounded-md order-first sm:order-none">
         {label}
       </span>
 

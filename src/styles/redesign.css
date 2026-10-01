@@ -264,64 +264,70 @@ html.theme-hw .hw-gothic { font-family: 'Pirata One', Georgia, serif !important;
 }
 
 /* ── React Big Calendar ── */
-.rbc-toolbar { background: transparent !important; padding: 0 !important; margin-bottom: 0 !important; border: none !important; }
-.rbc-toolbar button { display: none !important; }
-.rbc-calendar, .dark .rbc-calendar { font-family: inherit; background: transparent !important; border: none !important; color: rgb(var(--ll-ink)) !important; height: 100%; }
-.rbc-time-view, .dark .rbc-time-view { border: 1px solid rgb(var(--ll-line)) !important; border-radius: 12px; overflow: hidden; background: rgb(var(--ll-panel)) !important; }
-.rbc-time-header, .dark .rbc-time-header { background: rgb(var(--ll-subtle)) !important; border-bottom: 1px solid rgb(var(--ll-line)) !important; }
-.rbc-time-header-content, .dark .rbc-time-header-content { border-left: 1px solid rgb(var(--ll-line)) !important; background: transparent !important; }
-.rbc-time-header-gutter, .dark .rbc-time-header-gutter { background: transparent !important; }
-.rbc-header, .dark .rbc-header {
+html .rbc-toolbar { background: transparent !important; padding: 0 !important; margin-bottom: 0 !important; border: none !important; }
+html .rbc-toolbar button { display: none !important; }
+html .rbc-calendar, .dark .rbc-calendar { font-family: inherit; background: transparent !important; border: none !important; color: rgb(var(--ll-ink)) !important; height: 100%; }
+html .rbc-time-view, .dark .rbc-time-view { border: 1px solid rgb(var(--ll-line)) !important; border-radius: 12px; overflow: hidden; background: rgb(var(--ll-panel)) !important; }
+html .rbc-time-header, .dark .rbc-time-header { background: rgb(var(--ll-subtle)) !important; border-bottom: 1px solid rgb(var(--ll-line)) !important; }
+html .rbc-time-header-content, .dark .rbc-time-header-content { border-left: 1px solid rgb(var(--ll-line)) !important; background: transparent !important; }
+html .rbc-time-header-gutter, .dark .rbc-time-header-gutter { background: transparent !important; }
+html .rbc-header, .dark .rbc-header {
   font-weight: 500; font-size: 12.5px; text-transform: none; letter-spacing: 0;
   color: rgb(var(--ll-ink-3)) !important; padding: 9px 8px;
   border-left: 1px solid rgb(var(--ll-line)) !important; border-bottom: none !important;
   background: transparent !important;
 }
-.rbc-header.rbc-today, .dark .rbc-header.rbc-today { color: rgb(var(--ll-violet-ink)) !important; font-weight: 600; }
-.rbc-allday-cell, .dark .rbc-allday-cell { background: transparent !important; }
-.rbc-time-gutter .rbc-label, .rbc-timeslot-group .rbc-label,
+html .rbc-header.rbc-today, .dark .rbc-header.rbc-today { color: rgb(var(--ll-violet-ink)) !important; font-weight: 600; }
+html .rbc-allday-cell, .dark .rbc-allday-cell { background: transparent !important; }
+html .rbc-time-gutter .rbc-label, html .rbc-timeslot-group .rbc-label,
 .dark .rbc-time-gutter .rbc-label, .dark .rbc-timeslot-group .rbc-label {
   color: rgb(var(--ll-ink-3)) !important; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 10.5px; font-weight: 400; padding-right: 8px;
 }
-.rbc-timeslot-group, .dark .rbc-timeslot-group { border-bottom: 1px solid rgb(var(--ll-line)) !important; min-height: 44px; }
-.rbc-time-slot, .dark .rbc-time-slot { border-top: none !important; }
-.rbc-time-content, .dark .rbc-time-content { border-top: 1px solid rgb(var(--ll-line)) !important; background: transparent !important; }
-.rbc-time-content > * + * > *, .dark .rbc-time-content > * + * > * { border-left: 1px solid rgb(var(--ll-line)) !important; }
-.rbc-today, .dark .rbc-today { background: rgb(var(--ll-violet) / .04) !important; }
-.rbc-event, .dark .rbc-event {
+html .rbc-timeslot-group, .dark .rbc-timeslot-group { border-bottom: 1px solid rgb(var(--ll-line)) !important; min-height: 40px; }
+html .rbc-time-slot, .dark .rbc-time-slot { border-top: none !important; }
+html .rbc-time-content, .dark .rbc-time-content { border-top: 1px solid rgb(var(--ll-line)) !important; background: transparent !important; }
+html .rbc-time-content > * + * > *, .dark .rbc-time-content > * + * > * { border-left: 1px solid rgb(var(--ll-line)) !important; }
+html .rbc-today, .dark .rbc-today { background: rgb(var(--ll-violet) / .04) !important; }
+html .rbc-event, .dark .rbc-event {
   border-radius: 7px !important; padding: 4px 8px !important; font-size: 12px; font-weight: 600;
   box-shadow: none; cursor: pointer;
 }
 /* Color carries meaning here, not decoration: violet is a 1:1 class, teal is a group class. */
-.rbc-event.rbc-event-solo, .dark .rbc-event.rbc-event-solo {
+html .rbc-event.rbc-event-solo, .dark .rbc-event.rbc-event-solo {
   background: rgb(var(--ll-violet-tint)) !important; color: rgb(var(--ll-violet-ink)) !important;
-  border-left: 3px solid rgb(var(--ll-violet)) !important;
+  border: 1px solid rgb(var(--ll-violet-line)) !important;
 }
-.rbc-event.rbc-event-group, .dark .rbc-event.rbc-event-group {
+html .rbc-event.rbc-event-group, .dark .rbc-event.rbc-event-group {
   background: rgb(var(--ll-teal-tint)) !important; color: rgb(var(--ll-teal-ink)) !important;
-  border-left: 3px solid rgb(var(--ll-teal)) !important;
+  border: 1px solid rgb(var(--ll-teal) / .35) !important;
 }
-.rbc-event:focus { outline: 2px solid rgb(var(--ll-violet)); outline-offset: 2px; }
-.rbc-event.rbc-selected, .dark .rbc-event.rbc-selected { box-shadow: 0 0 0 2px rgb(var(--ll-violet)) !important; }
-.rbc-event-label { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 10.5px; font-weight: 400; opacity: .85; }
-.rbc-current-time-indicator { background-color: rgb(var(--ll-ember)) !important; height: 2px; z-index: 3; }
-.rbc-current-time-indicator::before {
+html .rbc-event:focus { outline: 2px solid rgb(var(--ll-violet)); outline-offset: 2px; }
+html .rbc-event.rbc-selected, .dark .rbc-event.rbc-selected { box-shadow: 0 0 0 2px rgb(var(--ll-violet)) !important; }
+html .rbc-event-label { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 10.5px; font-weight: 400; opacity: .85; }
+html .rbc-current-time-indicator { background-color: rgb(var(--ll-ember)) !important; height: 2px; z-index: 3; }
+html .rbc-current-time-indicator::before {
   content: ''; position: absolute; width: 10px; height: 10px; border-radius: 50%;
   background: rgb(var(--ll-ember)); top: -4px; left: -5px; box-shadow: 0 0 0 3px rgb(var(--ll-panel));
 }
-.rbc-month-view, .dark .rbc-month-view { background: rgb(var(--ll-panel)) !important; border: 1px solid rgb(var(--ll-line)) !important; border-radius: 12px; overflow: hidden; }
-.rbc-month-header { background: rgb(var(--ll-subtle)); }
-.rbc-day-bg + .rbc-day-bg, .dark .rbc-day-bg + .rbc-day-bg { border-left: 1px solid rgb(var(--ll-line)) !important; }
-.rbc-month-row + .rbc-month-row, .dark .rbc-month-row + .rbc-month-row { border-top: 1px solid rgb(var(--ll-line)) !important; }
-.rbc-off-range-bg, .dark .rbc-off-range-bg { background: rgb(var(--ll-subtle)) !important; }
-.rbc-date-cell, .dark .rbc-date-cell { padding: 6px 8px; font-size: 12px; font-weight: 500; color: rgb(var(--ll-ink-3)) !important; }
-.rbc-date-cell.rbc-now, .dark .rbc-date-cell.rbc-now { color: rgb(var(--ll-violet-ink)) !important; font-weight: 700; }
-.rbc-show-more, .dark .rbc-show-more { color: rgb(var(--ll-violet-ink)) !important; font-weight: 600; font-size: 12px; background: transparent; }
-.rbc-agenda-view table, .dark .rbc-agenda-view table { border: 1px solid rgb(var(--ll-line)) !important; border-radius: 12px; overflow: hidden; background: rgb(var(--ll-panel)); }
-.rbc-agenda-view table thead > tr > th { background: rgb(var(--ll-subtle)); color: rgb(var(--ll-ink-3)); font-weight: 500; font-size: 12px; border-bottom: 1px solid rgb(var(--ll-line)) !important; padding: 9px 12px; }
-.rbc-agenda-date-cell, .rbc-agenda-time-cell, .dark .rbc-agenda-date-cell, .dark .rbc-agenda-time-cell { font-size: 12.5px; color: rgb(var(--ll-ink-2)) !important; padding: 9px 12px; }
-.rbc-agenda-event-cell, .dark .rbc-agenda-event-cell { padding: 9px 12px; color: rgb(var(--ll-ink)) !important; }
-.rbc-agenda-view table tbody > tr + tr, .rbc-agenda-view table tbody > tr > td + td { border-color: rgb(var(--ll-line)) !important; }
+html .rbc-month-view, .dark .rbc-month-view { background: rgb(var(--ll-panel)) !important; border: 1px solid rgb(var(--ll-line)) !important; border-radius: 12px; overflow: hidden; }
+html .rbc-month-header { background: rgb(var(--ll-subtle)); }
+html .rbc-day-bg + .rbc-day-bg, .dark .rbc-day-bg + .rbc-day-bg { border-left: 1px solid rgb(var(--ll-line)) !important; }
+html .rbc-month-row + .rbc-month-row, .dark .rbc-month-row + .rbc-month-row { border-top: 1px solid rgb(var(--ll-line)) !important; }
+html .rbc-off-range-bg, .dark .rbc-off-range-bg { background: rgb(var(--ll-subtle)) !important; }
+html .rbc-date-cell, .dark .rbc-date-cell { padding: 6px 8px; font-size: 12px; font-weight: 500; color: rgb(var(--ll-ink-3)) !important; }
+html .rbc-date-cell.rbc-now, .dark .rbc-date-cell.rbc-now { color: rgb(var(--ll-violet-ink)) !important; font-weight: 700; }
+html .rbc-show-more, .dark .rbc-show-more { color: rgb(var(--ll-violet-ink)) !important; font-weight: 600; font-size: 12px; background: transparent; }
+html .rbc-agenda-view table, .dark .rbc-agenda-view table { border: 1px solid rgb(var(--ll-line)) !important; border-radius: 12px; overflow: hidden; background: rgb(var(--ll-panel)); }
+html .rbc-agenda-view table thead > tr > th { background: rgb(var(--ll-subtle)); color: rgb(var(--ll-ink-3)); font-weight: 500; font-size: 12px; border-bottom: 1px solid rgb(var(--ll-line)) !important; padding: 9px 12px; }
+html .rbc-agenda-date-cell, html .rbc-agenda-time-cell, .dark .rbc-agenda-date-cell, .dark .rbc-agenda-time-cell { font-size: 12.5px; color: rgb(var(--ll-ink-2)) !important; padding: 9px 12px; }
+html .rbc-agenda-event-cell, .dark .rbc-agenda-event-cell { padding: 9px 12px; color: rgb(var(--ll-ink)) !important; }
+html .rbc-agenda-view table tbody > tr + tr, html .rbc-agenda-view table tbody > tr > td + td { border-color: rgb(var(--ll-line)) !important; }
+/* Classes are never all-day, so the empty all-day row only adds a tall blank header. */
+html .rbc-allday-cell, html .rbc-time-header-content > .rbc-allday-cell { display: none !important; }
+html .rbc-time-header-content .rbc-row-resource { border-bottom: none; }
+html .rbc-header a { color: inherit; font: inherit; }
+html .rbc-header.rbc-today a { color: inherit; }
+html .rbc-time-gutter .rbc-timeslot-group { color: rgb(var(--ll-ink-3)); }
 
 /* ── SweetAlert2 ── */
 .swal2-popup {
@@ -429,3 +435,21 @@ html.theme-hw .ll-login-footer { background: #0A0612; border-top-color: transpar
 .ll-chat-body { background: linear-gradient(rgb(var(--ll-panel)), rgb(var(--ll-subtle))); }
 .ll-chat-foot { background: rgb(var(--ll-subtle)); }
 html.theme-hw .ll-chat-body, html.theme-hw .ll-chat-foot { background: transparent; }
+
+/* Legacy "glass" modals and their rainbow accent line: flatten onto panel tokens. */
+.absolute.top-0.left-0.w-full.h-\[2px\], .absolute.top-0.left-0.w-full.h-\[3px\] { display: none; }
+.fixed [style*="backdrop-filter: blur(24px)"], .fixed [style*="backdrop-filter: blur(20px)"] {
+  background: rgb(var(--ll-panel)) !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+  border: 1px solid rgb(var(--ll-line)) !important;
+}
+.fixed .rounded-3xl { border-radius: 16px; }
+
+/* Admin sub-panels still carry inline glass/gradient styles; flatten them onto tokens. */
+.ll-shell [style*="backdrop-filter: blur(16px)"] { background: transparent !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+.ll-shell [style*="rgba(248, 248, 250, 0.85)"], .ll-shell [style*="rgba(13, 10, 30, 0.55)"] { background: rgb(var(--ll-subtle)) !important; }
+.ll-shell button[style*="linear-gradient(135deg, #1FA48C, #17886F)"], .ll-shell button[style*="linear-gradient(135deg, rgb(var(--ll-violet))"] {
+  background: rgb(var(--ll-violet)) !important; color: rgb(var(--ll-on-violet)) !important; border-radius: 8px !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 1px 2px rgb(var(--ll-shadow) / .25) !important;
+}
+.ll-shell button[style*="#ef4444"] { background: rgb(var(--ll-danger)) !important; border-radius: 8px !important; box-shadow: none !important; }
+.ll-shell button[class*="hover:scale-"]:hover, .fixed button[class*="hover:scale-"]:hover { transform: none !important; }

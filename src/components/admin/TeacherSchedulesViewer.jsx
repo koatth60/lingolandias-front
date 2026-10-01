@@ -1,47 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
-import { Calendar, dayjsLocalizer, Navigate } from "react-big-calendar";
+import { Calendar, dayjsLocalizer } from "react-big-calendar";
+import AdminCalToolbar from "./AdminCalToolbar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./studentAssignment.css";
-import { FiCalendar, FiChevronLeft, FiChevronRight, FiUser } from "react-icons/fi";
+import { FiCalendar, FiUser } from "react-icons/fi";
 import { projectSchedules, normalizeCalendarRange } from "../../utils/scheduleProjection";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-
-const ViewerToolbar = ({ label, onNavigate, onView, view }) => {
-  const { t } = useTranslation();
-  return (
-    <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-[#13102a] border-b border-gray-200 dark:border-white/[0.08] flex-wrap gap-3">
-      <div className="flex items-center gap-2">
-        <button onClick={() => onNavigate(Navigate.PREVIOUS)} className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-ll-violet-tint dark:hover:bg-ll-violet/10 hover:border-ll-violet hover:text-ll-violet-ink dark:hover:text-ll-violet-ink transition-all">
-          <FiChevronLeft size={18} />
-        </button>
-        <button onClick={() => onNavigate(Navigate.TODAY)} className="px-4 h-9 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-ll-violet-tint dark:hover:bg-ll-violet/10 hover:border-ll-violet hover:text-ll-violet-ink dark:hover:text-ll-violet-ink transition-all">
-          {t("common.today")}
-        </button>
-        <button onClick={() => onNavigate(Navigate.NEXT)} className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-ll-violet-tint dark:hover:bg-ll-violet/10 hover:border-ll-violet hover:text-ll-violet-ink dark:hover:text-ll-violet-ink transition-all">
-          <FiChevronRight size={18} />
-        </button>
-      </div>
-      <span className="text-base font-extrabold text-gray-900 dark:text-white">{label}</span>
-      <div className="flex items-center gap-1 p-1 rounded-xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10">
-        {["month", "week"].map((v) => (
-          <button
-            key={v}
-            onClick={() => onView(v)}
-            className={`px-4 h-8 rounded-lg text-sm font-bold capitalize transition-all ${
-              view === v ? "text-white shadow-md" : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white"
-            }`}
-            style={view === v ? { background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" } : {}}
-          >
-            {v}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-};
 
 // Read-only calendar of one teacher's classes, for admins — a direct look
 // without going through the "availability" slot-picker inside student
@@ -80,11 +47,11 @@ const TeacherSchedulesViewer = ({ teachers }) => {
     <div>
       <div className="flex items-center gap-3 mb-4 flex-wrap">
         <div className="relative">
-          <FiUser className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+          <FiUser className="absolute left-3 top-1/2 -translate-y-1/2 text-ll-ink3" size={14} />
           <select
             value={selectedTeacherId}
             onChange={(e) => setSelectedTeacherId(e.target.value)}
-            className="pl-9 pr-8 py-2.5 text-sm rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-ll-violet/40 focus:border-ll-violet transition min-w-[220px]"
+            className="pl-9 pr-8 h-9 text-[13.5px] rounded-lg border border-ll-line2 bg-ll-panel text-ll-ink focus:outline-none focus:border-ll-violet/60"
           >
             <option value="">{t("admin.teacherSchedulesSelect")}</option>
             {teachers.map((tc) => (
@@ -95,18 +62,18 @@ const TeacherSchedulesViewer = ({ teachers }) => {
       </div>
 
       {!selectedTeacherId ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center rounded-xl border border-dashed border-gray-200 dark:border-white/10">
-          <FiCalendar size={26} className="text-gray-300 dark:text-gray-600 mb-2" />
-          <p className="text-sm text-gray-400 dark:text-gray-500">{t("admin.teacherSchedulesEmpty")}</p>
+        <div className="flex flex-col items-center justify-center py-12 text-center rounded-xl border border-dashed border-ll-line2 bg-ll-subtle">
+          <FiCalendar size={26} className="text-ll-ink4 mb-2" />
+          <p className="text-[13.5px] text-ll-ink3">{t("admin.teacherSchedulesEmpty")}</p>
         </div>
       ) : (
         <div className="relative" style={{ height: "560px" }}>
           {loading && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-white/70 dark:bg-black/40 backdrop-blur-sm">
+            <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-ll-panel/70 backdrop-blur-sm">
               <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "rgb(var(--ll-violet))", borderTopColor: "transparent" }} />
             </div>
           )}
-          <div className="rbc-admin-cal h-full rounded-xl overflow-hidden border border-gray-200 dark:border-white/[0.07]">
+          <div className="rbc-admin-cal h-full rounded-xl overflow-hidden border border-ll-line">
             <Calendar
               localizer={localizer}
               events={events}
@@ -117,14 +84,14 @@ const TeacherSchedulesViewer = ({ teachers }) => {
               defaultView="week"
               defaultDate={new Date()}
               onRangeChange={(range) => setCalendarRange(normalizeCalendarRange(range))}
-              components={{ toolbar: ViewerToolbar }}
+              components={{ toolbar: AdminCalToolbar }}
               formats={{
                 timeGutterFormat: "HH:mm",
                 eventTimeRangeFormat: ({ start: s, end: e }) => `${dayjs(s).format("HH:mm")} – ${dayjs(e).format("HH:mm")}`,
               }}
               selectable={false}
               eventPropGetter={() => ({
-                style: { background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", border: "none", borderRadius: 6, color: "#fff", fontSize: 12, fontWeight: 600, padding: "2px 6px" },
+                style: { background: "rgb(var(--ll-violet-tint))", color: "rgb(var(--ll-violet-ink))", border: "1px solid rgb(var(--ll-violet-line))", borderRadius: 7, fontSize: 12, fontWeight: 600 },
               })}
             />
           </div>

@@ -1,3 +1,4 @@
+import { alpha } from "../../utils/colorAlpha";
 import { useCallback, useEffect, useState } from "react";
 import Dashboard from "../../sections/dashboard";
 import Navbar from "../layout/navbar";
@@ -14,8 +15,8 @@ import { FiUserPlus, FiUserX, FiUsers, FiBookOpen, FiGrid, FiCalendar } from "re
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const glassCard = {
-  border: "1px solid rgba(158,47,208,0.15)",
-  boxShadow: "0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(158,47,208,0.06)",
+  border: "1px solid rgb(var(--ll-violet) / 0.15)",
+  boxShadow: "0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgb(var(--ll-violet) / 0.06)",
 };
 
 const Admin = () => {
@@ -44,9 +45,9 @@ const Admin = () => {
   }, [refreshKey]);
 
   const stats = [
-    { label: t("admin.teachers"), value: adminStats.teacherCount, color: "#9E2FD0", icon: FiBookOpen },
-    { label: t("admin.allStudents"), value: adminStats.studentCount, color: "#26D9A1", icon: FiUsers },
-    { label: t("admin.unassigned"), value: adminStats.unassignedCount, color: "#F6B82E", icon: FiGrid },
+    { label: t("admin.teachers"), value: adminStats.teacherCount, color: "rgb(var(--ll-violet))", icon: FiBookOpen },
+    { label: t("admin.allStudents"), value: adminStats.studentCount, color: "#1FA48C", icon: FiUsers },
+    { label: t("admin.unassigned"), value: adminStats.unassignedCount, color: "#E8A23A", icon: FiGrid },
   ];
 
   return (
@@ -59,9 +60,9 @@ const Admin = () => {
       {/* Ambient orbs */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden hidden dark:block">
         <div className="absolute rounded-full blur-3xl opacity-10"
-          style={{ background: "radial-gradient(circle, rgba(158,47,208,0.6), transparent 70%)", width: "500px", height: "500px", top: "-5%", right: "0%" }} />
+          style={{ background: "radial-gradient(circle, rgb(var(--ll-violet) / 0.6), transparent 70%)", width: "500px", height: "500px", top: "-5%", right: "0%" }} />
         <div className="absolute rounded-full blur-3xl opacity-8"
-          style={{ background: "radial-gradient(circle, rgba(38,217,161,0.4), transparent 70%)", width: "350px", height: "350px", bottom: "10%", left: "5%" }} />
+          style={{ background: "radial-gradient(circle, rgba(31,164,140,0.4), transparent 70%)", width: "350px", height: "350px", bottom: "10%", left: "5%" }} />
       </div>
 
       <Dashboard />
@@ -85,7 +86,7 @@ const Admin = () => {
               <button
                 onClick={toggleUserModal}
                 className="flex items-center gap-2 text-white font-bold text-sm px-4 sm:px-5 py-2.5 rounded-xl transition-all hover:scale-[1.03] active:scale-[0.97]"
-                style={{ background: "linear-gradient(135deg, #26D9A1, #1fa07a)", boxShadow: "0 4px 14px rgba(38,217,161,0.35)" }}
+                style={{ background: "linear-gradient(135deg, #1FA48C, #17886F)", boxShadow: "0 4px 14px rgba(31,164,140,0.35)" }}
               >
                 <FiUserPlus size={15} /> {t("admin.createUser")}
               </button>
@@ -108,7 +109,7 @@ const Admin = () => {
                 <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: `linear-gradient(90deg, ${color}, transparent)` }} />
                 <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-3 w-full">
                   <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ background: `${color}18`, border: `1px solid ${color}35` }}>
+                    style={{ background: `${alpha(color,"18")}`, border: `1px solid ${alpha(color,"35")}` }}>
                     <Icon size={15} style={{ color }} />
                   </div>
                   <div className="text-center sm:text-left">
@@ -124,7 +125,7 @@ const Admin = () => {
           <div className="relative rounded-2xl overflow-hidden" style={glassCard}>
             <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
             <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.65)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
-            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#9E2FD0] via-[#F6B82E] to-[#26D9A1] opacity-70" />
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-ll-violet via-[#E8A23A] to-[#1FA48C] opacity-70" />
             <div className="relative z-10 p-4 sm:p-6">
               <StudentAssignment teachers={teachers} onRefresh={refresh} refreshKey={refreshKey} />
             </div>
@@ -144,7 +145,7 @@ const Admin = () => {
           <div className="relative rounded-2xl overflow-hidden" style={glassCard}>
             <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
             <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.65)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
-            <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, #26D9A1, #9E2FD0, transparent)" }} />
+            <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, #1FA48C, rgb(var(--ll-violet)), transparent)" }} />
             <div className="relative z-10 p-4 sm:p-6">
               <DisplayAllStudents refreshKey={refreshKey} />
             </div>
@@ -154,10 +155,10 @@ const Admin = () => {
           <div className="relative rounded-2xl overflow-hidden" style={glassCard}>
             <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
             <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.65)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
-            <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, #9E2FD0, #F6B82E, transparent)" }} />
+            <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, rgb(var(--ll-violet)), #E8A23A, transparent)" }} />
             <div className="relative z-10 p-4 sm:p-6">
               <h3 className="text-base font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-                <FiCalendar style={{ color: "#9E2FD0" }} />
+                <FiCalendar style={{ color: "rgb(var(--ll-violet))" }} />
                 {t("admin.teacherSchedulesTitle")}
               </h3>
               <TeacherSchedulesViewer teachers={teachers} />

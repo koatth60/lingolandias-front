@@ -4,14 +4,14 @@ import { formatDate, formatFilename, formatSize } from "../../utils/recordingFor
 const RecordingCard = ({ rec, onDelete, deleting, t }) => (
   <div
     className="flex items-center justify-between gap-3 p-4 rounded-xl transition-all bg-white dark:bg-white/[0.03]"
-    style={{ border: "1px solid rgba(158,47,208,0.15)" }}
+    style={{ border: "1px solid rgb(var(--ll-violet) / 0.15)" }}
   >
     <div className="flex items-center gap-3 min-w-0">
       <div
         className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center text-lg"
         style={{
-          background: "linear-gradient(135deg, rgba(158,47,208,0.2), rgba(123,34,168,0.1))",
-          border: "1px solid rgba(158,47,208,0.2)",
+          background: "linear-gradient(135deg, rgb(var(--ll-violet) / 0.2), rgba(90,31,192,0.1))",
+          border: "1px solid rgb(var(--ll-violet) / 0.2)",
         }}
       >
         🎬
@@ -33,7 +33,7 @@ const RecordingCard = ({ rec, onDelete, deleting, t }) => (
         target="_blank"
         rel="noopener noreferrer"
         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-opacity hover:opacity-80"
-        style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}
+        style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}
       >
         <FiExternalLink size={12} />
         {t("recordings.view")}

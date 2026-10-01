@@ -43,14 +43,28 @@ const getNextClasses = (user) => {
   if (user.role === "teacher") {
     const schedules = user.teacherSchedules;
     if (!schedules || schedules.length === 0) return [];
-    const computedSessions = schedules.map((session) => ({
-      ...session,
-      nextOccurrence: getNextOccurrence(session, now),
-    }));
-    const futureSessions = computedSessions
-      .filter((session) => session.nextOccurrence.isSameOrAfter(now))
+
+    // Mirrors the student branch below: a teacher with only 1-2 distinct
+    // classes still recurs weekly, so "next sessions" pads out to 3 rows
+    // with that same class's upcoming occurrences instead of trailing off
+    // into an almost-empty list.
+    const base = schedules
+      .map((session) => ({ ...session, nextOccurrence: getNextOccurrence(session, now) }))
       .sort((a, b) => a.nextOccurrence.diff(b.nextOccurrence));
-    return futureSessions.slice(0, 3);
+
+    if (base.length >= 3) return base.slice(0, 3);
+
+    const nextWeek = schedules.map((session) => ({
+      ...session,
+      nextOccurrence: getNextOccurrence(session, now).add(1, 'week'),
+    }));
+    const twoWeeks = schedules.map((session) => ({
+      ...session,
+      nextOccurrence: getNextOccurrence(session, now).add(2, 'week'),
+    }));
+    const combined = [...base, ...nextWeek, ...twoWeeks]
+      .sort((a, b) => a.nextOccurrence.diff(b.nextOccurrence));
+    return combined.slice(0, 3);
   } else {
     // Student logic
     const schedules = user.studentSchedules;

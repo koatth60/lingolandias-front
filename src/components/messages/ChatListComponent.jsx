@@ -12,43 +12,43 @@ import useUserSearch from "../../hooks/useUserSearch";
 const TYPE_META = {
   teacher: {
     wrap: "text-white",
-    gradient: "linear-gradient(135deg, #9E2FD0, #7b22a8)",
-    shadow: "0 2px 8px rgba(158,47,208,0.35)",
-    dot:  "bg-[#9E2FD0]",
+    gradient: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))",
+    shadow: "0 2px 8px rgb(var(--ll-violet) / 0.35)",
+    dot:  "bg-ll-violet",
     chipKey: "messagesExtra.chipTeacher",
-    chipStyle: "bg-[#9E2FD0]/10 text-[#9E2FD0] dark:bg-[#9E2FD0]/20",
+    chipStyle: "bg-ll-violet/10 text-ll-violet dark:bg-ll-violet/20",
   },
   group: {
     wrap: "text-white",
-    gradient: "linear-gradient(135deg, #F6B82E, #d4981a)",
-    shadow: "0 2px 8px rgba(246,184,46,0.35)",
-    dot:  "bg-[#F6B82E]",
+    gradient: "linear-gradient(135deg, #E8A23A, #C4860A)",
+    shadow: "0 2px 8px rgba(232,162,58,0.35)",
+    dot:  "bg-[#E8A23A]",
     chipKey: "messagesExtra.chipGroup",
-    chipStyle: "bg-[#F6B82E]/10 text-[#d4a017] dark:bg-[#F6B82E]/15 dark:text-[#F6B82E]",
+    chipStyle: "bg-[#E8A23A]/10 text-[#C4860A] dark:bg-[#E8A23A]/15 dark:text-[#E8A23A]",
   },
   general: {
     wrap: "text-white",
-    gradient: "linear-gradient(135deg, #26D9A1, #1fa07a)",
-    shadow: "0 2px 8px rgba(38,217,161,0.35)",
-    dot:  "bg-[#26D9A1]",
+    gradient: "linear-gradient(135deg, #1FA48C, #17886F)",
+    shadow: "0 2px 8px rgba(31,164,140,0.35)",
+    dot:  "bg-[#1FA48C]",
     chipKey: "messagesExtra.chipGeneral",
-    chipStyle: "bg-[#26D9A1]/10 text-[#1aad82] dark:bg-[#26D9A1]/15 dark:text-[#26D9A1]",
+    chipStyle: "bg-[#1FA48C]/10 text-[#1aad82] dark:bg-[#1FA48C]/15 dark:text-[#1FA48C]",
   },
   support: {
     wrap: "text-white",
-    gradient: "linear-gradient(135deg, #26D9A1, #1fa07a)",
-    shadow: "0 2px 8px rgba(38,217,161,0.35)",
-    dot:  "bg-[#26D9A1]",
+    gradient: "linear-gradient(135deg, #1FA48C, #17886F)",
+    shadow: "0 2px 8px rgba(31,164,140,0.35)",
+    dot:  "bg-[#1FA48C]",
     chipKey: "messagesExtra.chipGeneral",
-    chipStyle: "bg-[#26D9A1]/10 text-[#1aad82] dark:bg-[#26D9A1]/15 dark:text-[#26D9A1]",
+    chipStyle: "bg-[#1FA48C]/10 text-[#1aad82] dark:bg-[#1FA48C]/15 dark:text-[#1FA48C]",
   },
   dm: {
     wrap: "text-white",
-    gradient: "linear-gradient(135deg, #9E2FD0, #7b22a8)",
-    shadow: "0 2px 8px rgba(158,47,208,0.35)",
-    dot:  "bg-[#9E2FD0]",
+    gradient: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))",
+    shadow: "0 2px 8px rgb(var(--ll-violet) / 0.35)",
+    dot:  "bg-ll-violet",
     chipKey: "messagesExtra.chipDm",
-    chipStyle: "bg-[#9E2FD0]/10 text-[#9E2FD0] dark:bg-[#9E2FD0]/20",
+    chipStyle: "bg-ll-violet/10 text-ll-violet dark:bg-ll-violet/20",
   },
 };
 
@@ -133,17 +133,17 @@ const ChatListComponent = ({
       {/* ── Header ── */}
       <div className="px-4 pt-5 pb-4 flex-shrink-0 border-b border-gray-100 dark:border-white/5">
         <div className="flex items-center gap-2 mb-3">
-          <span className="w-1 h-5 rounded-full bg-[#9E2FD0]" />
+          <span className="w-1 h-5 rounded-full bg-ll-violet" />
           <h2 className="text-sm font-semibold tracking-tight text-gray-700 dark:text-white">
             {t("messagesExtra.chatsHeader")}
           </h2>
-          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#9E2FD0]/10 dark:bg-[#9E2FD0]/20 text-[#9E2FD0]">
+          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-ll-violet/10 dark:bg-ll-violet/20 text-ll-violet">
             {chats.length}
           </span>
           <button
             onClick={onNewGroup}
             title={t("messagesExtra.newGroupTitle")}
-            className="ml-auto p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-[#F6B82E] hover:bg-[#F6B82E]/10 transition-colors"
+            className="ml-auto p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-[#E8A23A] hover:bg-[#E8A23A]/10 transition-colors"
           >
             <FiPlus size={16} />
           </button>
@@ -165,7 +165,7 @@ const ChatListComponent = ({
                        border border-gray-200 dark:border-white/5
                        text-gray-700 dark:text-gray-300
                        placeholder-gray-400 dark:placeholder-gray-600
-                       outline-none focus:border-[#9E2FD0]/50 transition-colors"
+                       outline-none focus:border-ll-violet/50 transition-colors"
           />
         </div>
       </div>
@@ -183,12 +183,12 @@ const ChatListComponent = ({
             <div
               key={person.id}
               onClick={() => onStartChatWithUser(person)}
-              className="flex items-center gap-2.5 px-4 py-2.5 cursor-pointer hover:bg-purple-50 dark:hover:bg-white/[0.04] transition-colors"
+              className="flex items-center gap-2.5 px-4 py-2.5 cursor-pointer hover:bg-ll-violet-tint dark:hover:bg-white/[0.04] transition-colors"
             >
               {person.avatarUrl ? (
                 <img src={person.avatarUrl} alt={person.name} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
               ) : (
-                <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}>
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}>
                   {getInitials(`${person.name} ${person.lastName}`)}
                 </div>
               )}
@@ -239,10 +239,10 @@ const ChatListComponent = ({
                          transition-all duration-150 active:scale-[0.99]
                          ${openMenuId === chat.id ? "z-40" : ""}
                          ${isActive
-                           ? "bg-[#9E2FD0]/10 dark:bg-[#9E2FD0]/15 border border-[#9E2FD0]/25 dark:border-[#9E2FD0]/30"
-                           : "hover:bg-purple-50 dark:hover:bg-white/[0.04] border border-transparent"
+                           ? "bg-ll-violet/10 dark:bg-ll-violet/15 border border-ll-violet/25 dark:border-ll-violet/30"
+                           : "hover:bg-ll-violet-tint dark:hover:bg-white/[0.04] border border-transparent"
                          }`}
-              style={isActive ? { boxShadow: "0 2px 10px rgba(158,47,208,0.10)" } : undefined}
+              style={isActive ? { boxShadow: "0 2px 10px rgb(var(--ll-violet) / 0.10)" } : undefined}
             >
               {/* Icon avatar */}
               <div className="relative flex-shrink-0">
@@ -251,7 +251,7 @@ const ChatListComponent = ({
                 ) : chat.type === "dm" ? (
                   <div
                     className="w-10 h-10 rounded-2xl flex items-center justify-center text-white text-sm font-bold"
-                    style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}
+                    style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}
                   >
                     {getInitials(chat.name)}
                   </div>
@@ -273,12 +273,12 @@ const ChatListComponent = ({
                 <div className="flex items-center justify-between gap-1">
                   <p className={`flex items-center gap-1 text-sm tracking-tight leading-tight truncate ${
                       isActive
-                        ? "font-semibold text-[#9E2FD0] dark:text-purple-300"
+                        ? "font-semibold text-ll-violet dark:text-ll-violet-ink"
                         : unread > 0
                           ? "font-bold text-gray-900 dark:text-white"
                           : "font-medium text-gray-500 dark:text-gray-400"
                     }`}>
-                    {chat.pinned && <BsPinAngleFill size={10} className="text-[#F6B82E] flex-shrink-0" />}
+                    {chat.pinned && <BsPinAngleFill size={10} className="text-[#E8A23A] flex-shrink-0" />}
                     {chat.muted && <FiBellOff size={10} className="text-gray-400 flex-shrink-0" />}
                     <span className="truncate">{chat.name}</span>
                   </p>
@@ -289,7 +289,7 @@ const ChatListComponent = ({
                       </span>
                     )}
                     {unread > 0 && (
-                      <span className="min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-[#9E2FD0] text-white text-[9px] font-bold px-1">
+                      <span className="min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-ll-violet text-white text-[9px] font-bold px-1">
                         {unread > 99 ? "99+" : unread}
                       </span>
                     )}
@@ -373,8 +373,8 @@ const ChatListComponent = ({
           <button
             onClick={onLoadMoreChats}
             disabled={loadingMoreChats}
-            className="w-full text-xs font-medium py-2 rounded-xl text-[#9E2FD0] dark:text-purple-300
-                       bg-[#9E2FD0]/10 dark:bg-[#9E2FD0]/15 hover:bg-[#9E2FD0]/20 transition-colors
+            className="w-full text-xs font-medium py-2 rounded-xl text-ll-violet dark:text-ll-violet-ink
+                       bg-ll-violet/10 dark:bg-ll-violet/15 hover:bg-ll-violet/20 transition-colors
                        disabled:opacity-50"
           >
             {loadingMoreChats ? t("messagesExtra.searching") : t("messagesExtra.loadMoreChats")}

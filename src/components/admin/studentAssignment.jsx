@@ -1,3 +1,4 @@
+import { alpha } from "../../utils/colorAlpha";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Swal from "sweetalert2";
@@ -18,20 +19,20 @@ const CalendarToolbar = ({ label, onNavigate, onView, view }) => {
     <div className="flex items-center gap-2">
       <button
         onClick={() => onNavigate(Navigate.PREVIOUS)}
-        className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:border-purple-400 hover:text-purple-600 dark:hover:text-purple-400 transition-all"
+        className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-ll-violet-tint dark:hover:bg-ll-violet/10 hover:border-ll-violet hover:text-ll-violet-ink dark:hover:text-ll-violet-ink transition-all"
         title="Previous"
       >
         <FiChevronLeft size={18} />
       </button>
       <button
         onClick={() => onNavigate(Navigate.TODAY)}
-        className="px-4 h-9 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:border-purple-400 hover:text-purple-600 dark:hover:text-purple-400 transition-all"
+        className="px-4 h-9 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-ll-violet-tint dark:hover:bg-ll-violet/10 hover:border-ll-violet hover:text-ll-violet-ink dark:hover:text-ll-violet-ink transition-all"
       >
         {t("common.today")}
       </button>
       <button
         onClick={() => onNavigate(Navigate.NEXT)}
-        className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:border-purple-400 hover:text-purple-600 dark:hover:text-purple-400 transition-all"
+        className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-ll-violet-tint dark:hover:bg-ll-violet/10 hover:border-ll-violet hover:text-ll-violet-ink dark:hover:text-ll-violet-ink transition-all"
         title="Next"
       >
         <FiChevronRight size={18} />
@@ -52,7 +53,7 @@ const CalendarToolbar = ({ label, onNavigate, onView, view }) => {
               ? "text-white shadow-md"
               : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white"
           }`}
-          style={view === v ? { background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" } : {}}
+          style={view === v ? { background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" } : {}}
         >
           {v}
         </button>
@@ -80,7 +81,7 @@ const EventTimeModal = ({ selectedDate, initialStart, initialEnd, onClose, onAdd
         icon: "error",
         background: '#1a1a2e',
         color: '#fff',
-        confirmButtonColor: '#9E2FD0',
+        confirmButtonColor: 'rgb(var(--ll-violet))',
       });
       return;
     }
@@ -96,16 +97,16 @@ const EventTimeModal = ({ selectedDate, initialStart, initialEnd, onClose, onAdd
       <div
         className="relative w-full max-w-sm rounded-2xl bg-white dark:bg-[#0d0a1e]"
         style={{
-          border: "1px solid rgba(158,47,208,0.30)",
+          border: "1px solid rgb(var(--ll-violet) / 0.30)",
           boxShadow: "0 32px 64px rgba(0,0,0,0.5)",
           zIndex: 100002,
         }}
       >
-        <div className="absolute top-0 left-0 w-full h-[2px] rounded-t-2xl" style={{ background: "linear-gradient(90deg, #F6B82E, #9E2FD0)" }} />
+        <div className="absolute top-0 left-0 w-full h-[2px] rounded-t-2xl" style={{ background: "linear-gradient(90deg, #E8A23A, rgb(var(--ll-violet)))" }} />
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-base font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
-              <FiClock size={15} style={{ color: "#F6B82E" }} />
+              <FiClock size={15} style={{ color: "#E8A23A" }} />
               {t("addEvent.addClassTime")}
             </h3>
             <button
@@ -143,7 +144,7 @@ const EventTimeModal = ({ selectedDate, initialStart, initialEnd, onClose, onAdd
                         ? "text-white"
                         : "text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-white/10"
                     }`}
-                    style={recurrenceWeeks === opt.value ? { background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" } : {}}
+                    style={recurrenceWeeks === opt.value ? { background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" } : {}}
                   >
                     {opt.label}
                   </button>
@@ -154,7 +155,7 @@ const EventTimeModal = ({ selectedDate, initialStart, initialEnd, onClose, onAdd
               type="button"
               onClick={handleAdd}
               className="w-full py-3 rounded-xl text-white text-sm font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
-              style={{ background: "linear-gradient(135deg, #F6B82E, #d4981a)", boxShadow: "0 4px 14px rgba(246,184,46,0.28)" }}
+              style={{ background: "linear-gradient(135deg, #E8A23A, #C4860A)", boxShadow: "0 4px 14px rgba(232,162,58,0.28)" }}
             >
               <FiClock size={14} /> {t("addEvent.add")}
             </button>
@@ -173,7 +174,7 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 
 const panelStyle = {
-  border: "1px solid rgba(158,47,208,0.12)",
+  border: "1px solid rgb(var(--ll-violet) / 0.12)",
 };
 
 const UserRow = ({ person, selected, accentColor, onClick }) => (
@@ -183,9 +184,9 @@ const UserRow = ({ person, selected, accentColor, onClick }) => (
     style={
       selected
         ? {
-            background: `${accentColor}14`,
-            border: `1px solid ${accentColor}50`,
-            boxShadow: `0 2px 10px ${accentColor}18`,
+            background: `${alpha(accentColor,"14")}`,
+            border: `1px solid ${alpha(accentColor,"50")}`,
+            boxShadow: `0 2px 10px ${alpha(accentColor,"18")}`,
           }
         : {
             background: "transparent",
@@ -193,7 +194,7 @@ const UserRow = ({ person, selected, accentColor, onClick }) => (
           }
     }
     onMouseEnter={(e) => {
-      if (!selected) e.currentTarget.style.background = "rgba(158,47,208,0.06)";
+      if (!selected) e.currentTarget.style.background = "rgb(var(--ll-violet) / 0.06)";
     }}
     onMouseLeave={(e) => {
       if (!selected) e.currentTarget.style.background = "transparent";
@@ -204,7 +205,7 @@ const UserRow = ({ person, selected, accentColor, onClick }) => (
     ) : (
       <div
         className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-        style={{ background: selected ? `linear-gradient(135deg, ${accentColor}, ${accentColor}aa)` : "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}
+        style={{ background: selected ? `linear-gradient(135deg, ${accentColor}, ${alpha(accentColor,"aa")})` : "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}
       >
         {person.name.charAt(0)}{person.lastName.charAt(0)}
       </div>
@@ -354,7 +355,7 @@ const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
           text: t("admin.assignSuccess"),
           icon: "success",
           confirmButtonText: "Ok",
-          confirmButtonColor: "#9E2FD0",
+          confirmButtonColor: "rgb(var(--ll-violet))",
           timer: 3000,
           timerProgressBar: true,
         }).then(() => {
@@ -382,7 +383,7 @@ const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
   return (
     <section>
       <div className="flex items-center gap-2 mb-5">
-        <FiUserCheck size={17} style={{ color: "#9E2FD0" }} />
+        <FiUserCheck size={17} style={{ color: "rgb(var(--ll-violet))" }} />
         <h2 className="text-lg font-extrabold text-gray-800 dark:text-white">{t("admin.assignTitle")}</h2>
       </div>
 
@@ -390,12 +391,12 @@ const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
 
         {/* ── 1. Select Student ── */}
         <div className="relative rounded-2xl overflow-hidden" style={panelStyle}>
-          <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, #26D9A1, transparent)" }} />
+          <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, #1FA48C, transparent)" }} />
           <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(248,248,250,0.85)" }} />
           <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.55)" }} />
           <div className="relative z-10 p-4">
             <div className="flex items-center gap-2 mb-3">
-              <span className="w-5 h-5 rounded-full bg-[#26D9A1] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">1</span>
+              <span className="w-5 h-5 rounded-full bg-[#1FA48C] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">1</span>
               <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200">{t("admin.selectStudentLabel")}</h3>
             </div>
 
@@ -428,7 +429,7 @@ const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
                       key={student.id}
                       person={student}
                       selected={selectedStudent?.id === student.id}
-                      accentColor="#26D9A1"
+                      accentColor="#1FA48C"
                       onClick={() => setSelectedStudent(student)}
                     />
                   ))}
@@ -449,12 +450,12 @@ const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
 
         {/* ── 2. Select Teacher ── */}
         <div className="relative rounded-2xl overflow-hidden" style={panelStyle}>
-          <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, #9E2FD0, transparent)" }} />
+          <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, rgb(var(--ll-violet)), transparent)" }} />
           <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(248,248,250,0.85)" }} />
           <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.55)" }} />
           <div className="relative z-10 p-4">
             <div className="flex items-center gap-2 mb-3">
-              <span className="w-5 h-5 rounded-full bg-[#9E2FD0] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">2</span>
+              <span className="w-5 h-5 rounded-full bg-ll-violet text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">2</span>
               <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200">{t("admin.selectTeacherLabel")}</h3>
             </div>
             <div className="max-h-60 overflow-y-auto custom-scrollbar">
@@ -463,7 +464,7 @@ const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
                   key={teacher.id}
                   person={teacher}
                   selected={selectedTeacher?.id === teacher.id}
-                  accentColor="#9E2FD0"
+                  accentColor="rgb(var(--ll-violet))"
                   onClick={() => setSelectedTeacher(teacher)}
                 />
               ))}
@@ -473,12 +474,12 @@ const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
 
         {/* ── 3. Schedule ── */}
         <div className="relative rounded-2xl overflow-hidden flex flex-col min-h-[260px]" style={panelStyle}>
-          <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, #F6B82E, transparent)" }} />
+          <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, #E8A23A, transparent)" }} />
           <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(248,248,250,0.85)" }} />
           <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.55)" }} />
           <div className="relative z-10 p-4 flex flex-col h-full">
             <div className="flex items-center gap-2 mb-3">
-              <span className="w-5 h-5 rounded-full bg-[#F6B82E] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">3</span>
+              <span className="w-5 h-5 rounded-full bg-[#E8A23A] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">3</span>
               <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200">{t("admin.setSchedule")}</h3>
             </div>
 
@@ -486,7 +487,7 @@ const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
               onClick={handleCalendarOpen}
               disabled={!selectedTeacher || !selectedStudent}
               className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-white text-sm font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
-              style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 4px 14px rgba(158,47,208,0.30)" }}
+              style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", boxShadow: "0 4px 14px rgb(var(--ll-violet) / 0.30)" }}
             >
               <FiCalendar size={14} /> {t("admin.viewAvailability")}
             </button>
@@ -499,7 +500,7 @@ const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
                     <li
                       key={index}
                       className="text-xs px-3 py-1.5 rounded-lg flex items-center gap-2"
-                      style={{ background: "rgba(38,217,161,0.08)", border: "1px solid rgba(38,217,161,0.18)", color: "#26D9A1" }}
+                      style={{ background: "rgba(31,164,140,0.08)", border: "1px solid rgba(31,164,140,0.18)", color: "#1FA48C" }}
                     >
                       <FiClock size={10} className="flex-shrink-0" />
                       {dayjs(event.date).format("MMM DD")} · {formatDateTime(event.start)} – {formatDateTime(event.end)}
@@ -513,7 +514,7 @@ const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
               onClick={handleAssignClick}
               disabled={!selectedTeacher || !selectedStudent || events.length === 0}
               className="w-full mt-auto pt-3 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-white text-sm font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
-              style={{ background: "linear-gradient(135deg, #26D9A1, #1fa07a)", boxShadow: "0 4px 14px rgba(38,217,161,0.28)" }}
+              style={{ background: "linear-gradient(135deg, #1FA48C, #17886F)", boxShadow: "0 4px 14px rgba(31,164,140,0.28)" }}
             >
               <FiUserCheck size={14} /> {t("admin.assignStudent")}
             </button>
@@ -533,18 +534,18 @@ const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
             style={{
               maxWidth: "min(1100px, 96vw)",
               height: "min(800px, 90vh)",
-              border: "1px solid rgba(158,47,208,0.30)",
+              border: "1px solid rgb(var(--ll-violet) / 0.30)",
               boxShadow: "0 32px 80px rgba(0,0,0,0.5)",
               zIndex: 100000,
             }}
           >
             {/* gradient top bar */}
-            <div className="absolute top-0 left-0 w-full h-[3px] rounded-t-2xl" style={{ background: "linear-gradient(90deg, #9E2FD0, #F6B82E, #26D9A1)" }} />
+            <div className="absolute top-0 left-0 w-full h-[3px] rounded-t-2xl" style={{ background: "linear-gradient(90deg, rgb(var(--ll-violet)), #E8A23A, #1FA48C)" }} />
 
             {/* Header */}
             <div className="flex items-center justify-between px-6 pt-5 pb-4 flex-shrink-0 border-b border-gray-100 dark:border-white/[0.07]">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}>
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}>
                   <FiCalendar size={16} className="text-white" />
                 </div>
                 <div>
@@ -587,7 +588,7 @@ const StudentAssignment = ({ teachers, onRefresh, refreshKey }) => {
                   onSelectSlot={handleSelectSlot}
                   eventPropGetter={() => ({
                     style: {
-                      background: "linear-gradient(135deg, #9E2FD0, #7b22a8)",
+                      background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))",
                       border: "none",
                       borderRadius: 6,
                       color: "#fff",

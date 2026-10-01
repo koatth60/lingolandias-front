@@ -85,9 +85,9 @@ const Learning = () => {
       {/* Ambient orbs (dark only) */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden hidden dark:block">
         <div className="absolute rounded-full blur-3xl opacity-10"
-          style={{ background: "radial-gradient(circle, rgba(158,47,208,0.6), transparent 70%)", width: "500px", height: "500px", top: "-5%", right: "0%" }} />
+          style={{ background: "radial-gradient(circle, rgb(var(--ll-violet) / 0.6), transparent 70%)", width: "500px", height: "500px", top: "-5%", right: "0%" }} />
         <div className="absolute rounded-full blur-3xl opacity-8"
-          style={{ background: "radial-gradient(circle, rgba(38,217,161,0.4), transparent 70%)", width: "350px", height: "350px", bottom: "10%", left: "5%" }} />
+          style={{ background: "radial-gradient(circle, rgba(31,164,140,0.4), transparent 70%)", width: "350px", height: "350px", bottom: "10%", left: "5%" }} />
       </div>
 
       <Dashboard />
@@ -101,19 +101,19 @@ const Learning = () => {
           {showBanner && (
             <div
               className="relative rounded-2xl overflow-hidden"
-              style={{ border: "1px solid rgba(246,184,46,0.28)" }}
+              style={{ border: "1px solid rgba(232,162,58,0.28)" }}
             >
-              <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(246,184,46,0.07)" }} />
-              <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(246,184,46,0.06)" }} />
+              <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(232,162,58,0.07)" }} />
+              <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(232,162,58,0.06)" }} />
               <div className="relative z-10 flex items-start sm:items-center justify-between gap-3 p-4">
                 <div className="flex items-start sm:items-center gap-3">
-                  <FiInfo size={16} style={{ color: "#F6B82E" }} className="flex-shrink-0 mt-0.5 sm:mt-0" />
+                  <FiInfo size={16} style={{ color: "#E8A23A" }} className="flex-shrink-0 mt-0.5 sm:mt-0" />
                   <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     {t("learning.demoNotice")}
                   </p>
                 </div>
                 <button onClick={() => setShowBanner(false)} className="flex-shrink-0 transition-opacity hover:opacity-60">
-                  <FiX size={16} style={{ color: "#F6B82E" }} />
+                  <FiX size={16} style={{ color: "#E8A23A" }} />
                 </button>
               </div>
             </div>
@@ -121,7 +121,7 @@ const Learning = () => {
 
           {/* ── Hero ── */}
           <div className="text-center py-4 sm:py-8">
-            <p className="text-[10px] font-bold tracking-widest text-[#9E2FD0] uppercase mb-3">{t("learning.heroBadge")}</p>
+            <p className="text-[10px] font-bold tracking-widest text-ll-violet uppercase mb-3">{t("learning.heroBadge")}</p>
             <h1 className="text-3xl sm:text-5xl font-bold tracking-tight login-gradient-text mb-3 sm:mb-4">
               {t("learning.heroTitle")}
             </h1>
@@ -129,15 +129,15 @@ const Learning = () => {
               {t("learning.heroSubtitle")}
             </p>
             <div className="h-px mt-6 mx-auto max-w-xs opacity-40"
-              style={{ background: "linear-gradient(90deg, transparent, #9E2FD0, #F6B82E, #26D9A1, transparent)" }} />
+              style={{ background: "linear-gradient(90deg, transparent, rgb(var(--ll-violet)), #E8A23A, #1FA48C, transparent)" }} />
           </div>
 
           {/* ── Interactive Courses ── */}
           <section>
             <div className="flex items-center gap-3 mb-5 sm:mb-7">
               <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: "rgba(158,47,208,0.12)", border: "1px solid rgba(158,47,208,0.25)" }}>
-                <FiVideo size={15} style={{ color: "#9E2FD0" }} />
+                style={{ background: "rgb(var(--ll-violet) / 0.12)", border: "1px solid rgb(var(--ll-violet) / 0.25)" }}>
+                <FiVideo size={15} style={{ color: "rgb(var(--ll-violet))" }} />
               </div>
               <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-gray-800 dark:text-white">
                 {languageCourses.title}
@@ -154,8 +154,8 @@ const Learning = () => {
           <section>
             <div className="flex items-center gap-3 mb-5 sm:mb-7">
               <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: "rgba(38,217,161,0.12)", border: "1px solid rgba(38,217,161,0.25)" }}>
-                <FiBookOpen size={15} style={{ color: "#26D9A1" }} />
+                style={{ background: "rgba(31,164,140,0.12)", border: "1px solid rgba(31,164,140,0.25)" }}>
+                <FiBookOpen size={15} style={{ color: "#1FA48C" }} />
               </div>
               <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-gray-800 dark:text-white">
                 {ebooks.title}

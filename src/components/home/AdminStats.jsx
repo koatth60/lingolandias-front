@@ -2,10 +2,10 @@ import { useTranslation } from "react-i18next";
 import { FiUsers, FiBook, FiUserCheck } from "react-icons/fi";
 
 const STAT_COLORS = [
-  { gradient: "linear-gradient(135deg, #9E2FD0, #7b22a8)", shadow: "rgba(158,47,208,0.35)" },
-  { gradient: "linear-gradient(135deg, #26D9A1, #1fa07a)", shadow: "rgba(38,217,161,0.35)" },
-  { gradient: "linear-gradient(135deg, #F6B82E, #d4981a)", shadow: "rgba(246,184,46,0.35)" },
-  { gradient: "linear-gradient(135deg, #c084fc, #9E2FD0)", shadow: "rgba(192,132,252,0.35)" },
+  { gradient: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", shadow: "rgb(var(--ll-violet) / 0.35)" },
+  { gradient: "linear-gradient(135deg, #1FA48C, #17886F)", shadow: "rgba(31,164,140,0.35)" },
+  { gradient: "linear-gradient(135deg, #E8A23A, #C4860A)", shadow: "rgba(232,162,58,0.35)" },
+  { gradient: "linear-gradient(135deg, rgb(var(--ll-violet-ink)), rgb(var(--ll-violet)))", shadow: "rgba(184,158,255,0.35)" },
 ];
 
 const AdminStats = ({
@@ -38,14 +38,14 @@ const AdminStats = ({
         <div
           key={i}
           className="relative rounded-2xl overflow-hidden transition-transform duration-200 hover:-translate-y-1 shadow-sm dark:shadow-none"
-          style={{ border: "1px solid rgba(158,47,208,0.15)" }}
+          style={{ border: "1px solid rgb(var(--ll-violet) / 0.15)" }}
         >
           <div className="dark:hidden absolute inset-0 bg-white" />
           <div
             className="hidden dark:block absolute inset-0"
             style={{ background: "linear-gradient(135deg, rgba(13,10,30,0.94), rgba(26,26,46,0.92))" }}
           />
-          <div className="absolute top-0 left-0 w-full h-[1.5px] bg-gradient-to-r from-[#9E2FD0] via-[#F6B82E] to-[#26D9A1] opacity-50" />
+          <div className="absolute top-0 left-0 w-full h-[1.5px] bg-gradient-to-r from-ll-violet via-[#E8A23A] to-[#1FA48C] opacity-50" />
 
           <div className="relative z-10 p-3 sm:p-5">
             <div className="flex items-center justify-between mb-2 sm:mb-3">

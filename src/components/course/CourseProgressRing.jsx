@@ -9,9 +9,9 @@ const CourseProgressRing = ({ percent, size = 72, stroke = 6 }) => {
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
         <defs>
           <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#9E2FD0" />
-            <stop offset="55%" stopColor="#c084fc" />
-            <stop offset="100%" stopColor="#F6B82E" />
+            <stop offset="0%" stopColor="rgb(var(--ll-violet))" />
+            <stop offset="55%" stopColor="rgb(var(--ll-violet-ink))" />
+            <stop offset="100%" stopColor="#E8A23A" />
           </linearGradient>
         </defs>
         <circle

@@ -111,8 +111,8 @@ const IncomingCallBanner = () => {
         style={{
           backdropFilter: "blur(14px)",
           background: "rgba(13,10,30,0.94)",
-          border: "1px solid rgba(158,47,208,0.4)",
-          boxShadow: "0 8px 32px rgba(158,47,208,0.35)",
+          border: "1px solid rgb(var(--ll-violet) / 0.4)",
+          boxShadow: "0 8px 32px rgb(var(--ll-violet) / 0.35)",
         }}
       >
         {/* Just closes the banner — no callDeclined, no "missed call" logged.
@@ -124,18 +124,18 @@ const IncomingCallBanner = () => {
           onClick={dismiss}
           title="Dismiss"
           className="absolute -top-2 -right-2 w-5 h-5 rounded-full flex items-center justify-center text-gray-300 hover:text-white transition-colors"
-          style={{ background: "rgba(60,55,80,0.95)", border: "1px solid rgba(158,47,208,0.3)" }}
+          style={{ background: "rgba(60,55,80,0.95)", border: "1px solid rgb(var(--ll-violet) / 0.3)" }}
         >
           <FiX size={11} />
         </button>
         <div className="relative flex-shrink-0">
           <div
             className="w-11 h-11 rounded-full flex items-center justify-center text-white text-sm font-bold"
-            style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}
+            style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}
           >
             {isGroup ? <FiUsers size={18} /> : getInitials(incomingCall.callerName)}
           </div>
-          <span className="absolute inset-0 rounded-full border-2 border-[#9E2FD0] animate-ping" />
+          <span className="absolute inset-0 rounded-full border-2 border-ll-violet animate-ping" />
         </div>
         <div className="flex-1 min-w-0">
           {isGroup ? (
@@ -162,7 +162,7 @@ const IncomingCallBanner = () => {
           onClick={accept}
           title="Accept"
           className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-white transition-transform hover:scale-105 active:scale-95"
-          style={{ background: "#26D9A1" }}
+          style={{ background: "#1FA48C" }}
         >
           <FiPhone size={15} />
         </button>

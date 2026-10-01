@@ -37,234 +37,119 @@ const Navbar = ({ header }) => {
   };
 
   return (
-    <>
-    <header
-      className="sticky top-0 z-50 w-full"
-      style={{ backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)' }}
-    >
-      {/* Background layer — clean white / dark login gradient */}
-      <div
-        className="absolute inset-0"
-        style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(248,248,250,0.95) 100%)' }}
-      />
-      <div
-        className="hidden dark:block absolute inset-0"
-        style={{ background: 'linear-gradient(135deg, rgba(13,10,30,0.92) 0%, rgba(26,26,46,0.92) 55%, rgba(17,14,40,0.92) 100%)' }}
-      />
-
-      {/* Subtle ambient orbs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Light mode orbs */}
-        <div
-          className="navbar-orb dark:hidden"
-          style={{
-            background: 'radial-gradient(circle, rgba(158,47,208,0.18), transparent 70%)',
-            width: '200px', height: '200px',
-            top: '-80px', left: '-40px',
-            animationDuration: '8s',
-          }}
-        />
-        <div
-          className="navbar-orb dark:hidden"
-          style={{
-            background: 'radial-gradient(circle, rgba(246,184,46,0.12), transparent 70%)',
-            width: '160px', height: '160px',
-            top: '-60px', right: '10%',
-            animationDuration: '11s',
-            animationDelay: '3s',
-          }}
-        />
-        {/* Dark mode orbs */}
-        <div
-          className="navbar-orb hidden dark:block"
-          style={{
-            background: 'radial-gradient(circle, rgba(158,47,208,0.35), transparent 70%)',
-            width: '260px', height: '260px',
-            top: '-120px', left: '-60px',
-            animationDuration: '8s',
-          }}
-        />
-        <div
-          className="navbar-orb hidden dark:block"
-          style={{
-            background: 'radial-gradient(circle, rgba(246,184,46,0.18), transparent 70%)',
-            width: '200px', height: '200px',
-            top: '-100px', right: '5%',
-            animationDuration: '11s',
-            animationDelay: '3s',
-          }}
-        />
-      </div>
-
-      {/* Top accent gradient line — same as login */}
-      <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#9E2FD0] via-[#F6B82E] to-[#26D9A1] opacity-60 dark:opacity-80" />
-
-      {/* Bottom border — gradient */}
-      <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#9E2FD0]/20 to-transparent dark:via-[#9E2FD0]/40" />
-
-      {/* Content */}
-      <div className="relative z-10 flex items-center justify-between h-16 px-3 sm:px-4 md:px-6">
+    <header className="ll-navbar sticky top-0 z-50 w-full bg-ll-panel border-b border-ll-line">
+      <div className="flex items-center justify-between h-14 px-3 sm:px-4 md:px-6">
 
         {/* Left — sidebar toggle + page title */}
         <div className="flex items-center gap-2 sm:gap-4">
           <button
             onClick={() => dispatch(toggleSidebar())}
-            className="p-1.5 sm:p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-[#9E2FD0] dark:hover:text-white hover:bg-[#9E2FD0]/8 dark:hover:bg-white/5 transition-all duration-200"
+            className="hidden lg:block p-1.5 sm:p-2 rounded-lg text-ll-ink3 hover:text-ll-ink hover:bg-ll-hover transition-colors duration-150"
             aria-label="Toggle sidebar"
           >
-            <span
-              key={isSidebarOpen ? 'open' : 'closed'}
-              style={{ display: 'flex', animation: 'navbarTitleIn 0.18s ease-out both' }}
-            >
-              {isSidebarOpen
-                ? <FiChevronLeft size={18} className="sm:w-5 sm:h-5" />
-                : <FiMenu size={18} className="sm:w-5 sm:h-5" />
-              }
-            </span>
+            {isSidebarOpen
+              ? <FiChevronLeft size={18} className="sm:w-5 sm:h-5" />
+              : <FiMenu size={18} className="sm:w-5 sm:h-5" />
+            }
           </button>
 
           {/* Online dot + page header */}
           <div className="flex items-center gap-2">
             <div
-              className="w-2 h-2 rounded-full bg-[#26D9A1] flex-shrink-0"
-              style={{ boxShadow: '0 0 6px rgba(38,217,161,0.8)', animation: 'loginPulseOrb 2.5s ease-in-out infinite' }}
+              className="w-1.5 h-1.5 rounded-full bg-ll-teal flex-shrink-0"
+              style={{ boxShadow: '0 0 0 3px rgb(var(--ll-teal-tint))' }}
             />
-            <h1
-              key={header}
-              className="text-sm sm:text-base font-bold text-[#9E2FD0] dark:text-white tracking-tight"
-              style={{ animation: 'navbarTitleIn 0.25s ease-out both' }}
-            >
+            <h1 className="text-sm sm:text-[15px] font-semibold text-ll-ink tracking-tight">
               {header}
             </h1>
           </div>
         </div>
 
-        {/* Center — theme toggle (hidden on mobile, shown centered on md+) */}
-        <div className="hidden md:block absolute left-1/2 transform -translate-x-1/2">
-          <ThemeToggleButton />
-        </div>
-
-        {/* Right — user menu */}
+        {/* Right — theme toggle + user menu */}
         <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
-          {/* Theme toggle on mobile/tablet — sits next to avatar */}
-          <div className="md:hidden">
-            <ThemeToggleButton />
-          </div>
+          <ThemeToggleButton />
 
           {/* User menu */}
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-1 sm:gap-2 md:gap-3 p-1 sm:p-1.5 rounded-lg hover:bg-[#9E2FD0]/6 dark:hover:bg-white/5 transition-all duration-200"
+              className="flex items-center gap-1 sm:gap-2 md:gap-3 p-1 sm:p-1.5 rounded-lg hover:bg-ll-hover transition-colors duration-150"
             >
-              {/* Avatar with spinning ring */}
               <div className="relative w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0">
-                {/* Spinning conic ring — same as login logo, smaller */}
-                <div
-                  className="absolute rounded-full pointer-events-none"
-                  style={{
-                    inset: '-2px',
-                    background: 'conic-gradient(from 0deg, #9E2FD0, #c084fc, #F6B82E, #26D9A1, #9E2FD0)',
-                    animation: 'spin 7s linear infinite',
-                    WebkitMask: 'radial-gradient(farthest-side, transparent calc(100% - 2px), black calc(100% - 1.5px))',
-                    mask:        'radial-gradient(farthest-side, transparent calc(100% - 2px), black calc(100% - 1.5px))',
-                    opacity: 0.9,
-                  }}
-                />
                 <img
                   src={user?.avatarUrl || avatar}
                   alt={user?.name}
                   className="relative w-full h-full rounded-full object-cover"
                 />
-                {/* Online indicator */}
-                <span className="absolute bottom-0 right-0 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-[#26D9A1] rounded-full ring-1 ring-white dark:ring-[#0d0a1e]" />
+                <span className="absolute bottom-0 right-0 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-ll-teal rounded-full ring-2 ring-ll-panel" />
               </div>
 
-              {/* User name */}
-              <span className="hidden sm:inline-block text-sm font-semibold text-gray-700 dark:text-gray-200">
+              <span className="hw-gothic ll-nav-name hidden sm:inline-block text-[13px] font-medium text-ll-ink">
                 {user?.name?.split(' ')[0]}
               </span>
 
               <FiChevronDown
                 size={14}
-                className={`hidden sm:block text-gray-400 transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`}
+                className={`hidden sm:block text-ll-ink3 transition-transform duration-150 ${isDropdownOpen ? "rotate-180" : ""}`}
               />
             </button>
 
             {/* Dropdown */}
             {isDropdownOpen && (
-              <div
-                className="absolute right-0 top-10 sm:top-12 w-56 sm:w-64 rounded-2xl z-50 overflow-hidden"
-                style={{
-                  backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-                  border: '1px solid rgba(158,47,208,0.20)',
-                  boxShadow: '0 20px 50px rgba(0,0,0,0.18), 0 0 0 1px rgba(255,255,255,0.08) inset',
-                  animation: 'navbarDropdownIn 0.2s cubic-bezier(0.16,1,0.3,1) both',
-                  transformOrigin: 'top right',
-                }}
-              >
-                {/* Dropdown bg */}
-                <div
-                  className="absolute inset-0"
-                  style={{ background: 'linear-gradient(135deg, rgba(250,245,255,0.95) 0%, rgba(243,232,255,0.95) 100%)' }}
-                />
-                <div
-                  className="hidden dark:block absolute inset-0"
-                  style={{ background: 'linear-gradient(135deg, rgba(13,10,30,0.96) 0%, rgba(26,26,46,0.96) 100%)' }}
-                />
-                {/* Top accent line */}
-                <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#9E2FD0] via-[#F6B82E] to-[#26D9A1] opacity-70" />
-
-                {/* Dropdown content */}
-                <div className="relative z-10">
-                  {/* User info */}
-                  <div className="px-4 py-3 border-b border-[#9E2FD0]/10 dark:border-[#9E2FD0]/20">
-                    <p className="text-sm font-bold text-gray-900 dark:text-white">
-                      {user?.name} {user?.lastName}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{user?.email}</p>
-                    <div className="flex items-center gap-1.5 mt-1.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-[#26D9A1]" style={{ boxShadow: '0 0 4px rgba(38,217,161,0.8)' }} />
-                      <span className="text-xs text-[#26D9A1] font-medium">{t("navbar.online")}</span>
-                    </div>
+              <div className="ll-user-menu ll-fade-up absolute right-0 top-10 sm:top-12 w-56 sm:w-64 rounded-xl z-50 overflow-hidden bg-ll-panel border border-ll-line shadow-ll-pop">
+                <div className="relative px-4 py-3 border-b border-ll-line">
+                  <svg className="hw-only absolute right-0 top-0 w-[84px] h-[84px] pointer-events-none opacity-70" style={{ stroke: 'rgb(var(--ll-ink-4))', fill: 'none', strokeWidth: .8 }} viewBox="0 0 150 150" aria-hidden="true"><path d="M150 0 40 110M150 0 95 150M150 0 0 60M150 0 0 5" /><path d="M118 0c2 10 8 18 20 21 4 1 8 2 12 2M86 0c3 22 15 37 36 42 9 2 19 3 28 3M52 0c4 34 23 57 55 64 14 3 29 4 43 4M20 1c6 48 34 79 79 90 17 4 34 5 51 5" /></svg>
+                  <div className="hw-only ll-dangle absolute right-[54px] top-0 w-4 pointer-events-none" aria-hidden="true">
+                    <i className="block w-px h-5 mx-auto" style={{ background: 'rgb(var(--ll-ink-3))' }} />
+                    <svg className="block w-4 h-[14px] -mt-px" viewBox="0 0 20 18"><g stroke="#120A1C" strokeWidth="1.2" fill="none" strokeLinecap="round"><path d="M7 7 2 3M7 9 1 8M7 11l-5 4M8 12l-3 5M13 7l5-4M13 9l6-1M13 11l5 4M12 12l3 5" /></g><ellipse cx="10" cy="9.5" rx="3.6" ry="4.2" fill="#120A1C" /><circle cx="10" cy="4.8" r="2.2" fill="#120A1C" /><circle cx="9.2" cy="4.6" r=".5" fill="#F08A2C" /><circle cx="10.8" cy="4.6" r=".5" fill="#F08A2C" /></svg>
                   </div>
-
-                  {/* Menu items */}
-                  <div className="py-1.5">
-                    {[
-                      { href: '/profile', label: t("navbar.profile"), icon: FiUser },
-                      { href: '/settings', label: t("navbar.settings"), icon: FiSettings },
-                      { href: '/help-center', label: t("navbar.helpCenter"), icon: FiHelpCircle },
-                      ...(user?.role !== 'admin'
-                        ? [{ href: '/course', label: t("nav.course"), icon: FiBookOpen }]
-                        : []),
-                    ].map(({ href, label, icon: Icon }, i) => (
-                      <a
-                        key={href}
-                        href={href}
-                        className="flex items-center gap-2.5 px-4 py-2.5 sm:py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-[#9E2FD0]/8 dark:hover:bg-[#9E2FD0]/15 hover:text-[#9E2FD0] dark:hover:text-white transition-colors duration-200"
-                        style={{ animation: `navbarItemFadeIn 0.2s ease-out ${120 + i * 50}ms both` }}
-                      >
-                        <Icon size={14} className="flex-shrink-0 opacity-70" />
-                        {label}
-                      </a>
-                    ))}
+                  <p className="relative text-[13.5px] font-semibold text-ll-ink hw-gothic ll-menu-name">
+                    {user?.name} {user?.lastName}
+                  </p>
+                  <p className="text-xs text-ll-ink3 mt-0.5">{user?.email}</p>
+                  <div className="flex items-center gap-1.5 mt-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-ll-teal" />
+                    <span className="text-xs text-ll-teal-ink font-medium">{t("navbar.online")}</span>
                   </div>
+                </div>
 
-                  {/* Gradient divider */}
-                  <div className="h-px bg-gradient-to-r from-transparent via-[#9E2FD0]/25 to-transparent dark:via-[#9E2FD0]/40 mx-3" />
-
-                  {/* Logout */}
-                  <div className="py-1.5">
-                    <button
-                      onClick={handleLogout}
-                      className="w-full text-left flex items-center gap-2.5 px-4 py-2.5 sm:py-2 text-sm font-medium text-[#F6B82E] hover:bg-[#F6B82E]/8 dark:hover:bg-[#F6B82E]/10 transition-colors duration-200"
-                      style={{ animation: 'navbarItemFadeIn 0.2s ease-out 270ms both' }}
+                <div className="py-1.5">
+                  {[
+                    { href: '/profile', label: t("navbar.profile"), icon: FiUser },
+                    { href: '/settings', label: t("navbar.settings"), icon: FiSettings },
+                    { href: '/help-center', label: t("navbar.helpCenter"), icon: FiHelpCircle },
+                    ...(user?.role !== 'admin'
+                      ? [{ href: '/course', label: t("nav.course"), icon: FiBookOpen }]
+                      : []),
+                  ].map(({ href, label, icon: Icon }) => (
+                    <a
+                      key={href}
+                      href={href}
+                      className="flex items-center gap-2.5 px-4 py-2.5 sm:py-2 text-sm text-ll-ink2 hover:bg-ll-hover hover:text-ll-ink transition-colors duration-150"
                     >
-                      <FiLogOut size={14} className="flex-shrink-0 opacity-80" />
-                      {t("navbar.logout")}
-                    </button>
-                  </div>
+                      <Icon size={14} className="flex-shrink-0 opacity-70" />
+                      {label}
+                    </a>
+                  ))}
+                </div>
+
+                <div className="h-px bg-ll-line mx-3" />
+
+                <div className="relative py-1.5">
+                  <svg className="hw-only absolute right-0 bottom-0 w-[120px] h-[34px] pointer-events-none" viewBox="0 0 120 34" aria-hidden="true">
+                    <path d="M0 26c30-8 60-6 120-2v10H0z" fill="#1A1226" />
+                    <path d="M70 28V18a7 7 0 0 1 14 0v10z" fill="#241A33" />
+                    <path d="M95 28V10M89 15h12" stroke="#241A33" strokeWidth="3" strokeLinecap="round" />
+                    <ellipse cx="56" cy="27" rx="6" ry="4.5" fill="#F08A2C" />
+                    <path className="ll-flicker" d="M53 26.5l1.4-1.8 1.4 1.8zM57 26.5l1.4-1.8 1.4 1.8zM53.5 29c1.7 1.4 4 1.4 5.5 0" fill="#FFE08A" stroke="#FFE08A" strokeWidth=".6" />
+                  </svg>
+                  <button
+                    onClick={handleLogout}
+                    className="relative w-full text-left flex items-center gap-2.5 px-4 py-2.5 sm:py-2 text-sm font-medium text-ll-danger hover:bg-ll-hover transition-colors duration-150"
+                  >
+                    <FiLogOut size={14} className="flex-shrink-0 opacity-80" />
+                    {t("navbar.logout")}
+                  </button>
                 </div>
               </div>
             )}
@@ -272,7 +157,6 @@ const Navbar = ({ header }) => {
         </div>
       </div>
     </header>
-  </>
   );
 };
 

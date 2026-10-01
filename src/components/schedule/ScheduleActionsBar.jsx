@@ -19,13 +19,12 @@ const ScheduleActionsBar = ({ user, handleJoinMeeting, loading }) => {
     <div>
         <Dropdown
           buttonText={t("common.actions")}
-          buttonClassName="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold text-white rounded-lg transition-opacity hover:opacity-85"
-          buttonStyle={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 2px 8px rgba(158,47,208,0.35)" }}
+          buttonClassName="ll-btn ll-btn-primary ll-btn-sm"
         >
           {(user.role === "teacher" || user.role === "user") && (
             <button
               onClick={() => handleJoinMeeting()}
-              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-[#9E2FD0]/5 dark:hover:bg-white/5 flex items-center"
+              className="block w-full text-left px-4 py-2 text-sm text-ll-ink2 hover:bg-ll-hover flex items-center"
               role="menuitem"
             >
               <FiUsers className="mr-2" /> {t("chatList.groupClass")}
@@ -43,7 +42,7 @@ const ScheduleActionsBar = ({ user, handleJoinMeeting, loading }) => {
                 <button
                   key={lang}
                   onClick={() => handleJoinMeeting(roomName)}
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-[#9E2FD0]/5 dark:hover:bg-white/5 flex items-center"
+                  className="block w-full text-left px-4 py-2 text-sm text-ll-ink2 hover:bg-ll-hover flex items-center"
                   role="menuitem"
                 >
                   <FiVideo className="mr-2" /> {roomName}

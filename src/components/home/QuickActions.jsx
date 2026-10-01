@@ -3,9 +3,9 @@ import { FiBarChart2, FiUsers, FiSettings } from "react-icons/fi";
 import { useTranslation } from "react-i18next";
 
 const ACTIONS_CONFIG = [
-  { icon: FiBarChart2, titleKey: "quickActions.analytics", descKey: "quickActions.analyticsDesc", gradient: "linear-gradient(135deg, #9E2FD0, #7b22a8)", shadow: "rgba(158,47,208,0.35)", to: null },
-  { icon: FiUsers, titleKey: "quickActions.manageUsers", descKey: "quickActions.manageUsersDesc", gradient: "linear-gradient(135deg, #26D9A1, #1fa07a)", shadow: "rgba(38,217,161,0.35)", to: "/admin" },
-  { icon: FiSettings, titleKey: "quickActions.platformSettings", descKey: "quickActions.platformSettingsDesc", gradient: "linear-gradient(135deg, #F6B82E, #d4981a)", shadow: "rgba(246,184,46,0.35)", to: "/settings" },
+  { icon: FiBarChart2, titleKey: "quickActions.analytics", descKey: "quickActions.analyticsDesc", gradient: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", shadow: "rgb(var(--ll-violet) / 0.35)", to: null },
+  { icon: FiUsers, titleKey: "quickActions.manageUsers", descKey: "quickActions.manageUsersDesc", gradient: "linear-gradient(135deg, #1FA48C, #17886F)", shadow: "rgba(31,164,140,0.35)", to: "/admin" },
+  { icon: FiSettings, titleKey: "quickActions.platformSettings", descKey: "quickActions.platformSettingsDesc", gradient: "linear-gradient(135deg, #E8A23A, #C4860A)", shadow: "rgba(232,162,58,0.35)", to: "/settings" },
 ];
 
 const QuickActions = () => {
@@ -18,7 +18,7 @@ const QuickActions = () => {
       <h3 className="text-base font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
         <span
           className="inline-block w-1 h-4 rounded-full flex-shrink-0"
-          style={{ background: "linear-gradient(to bottom, #9E2FD0, #F6B82E)" }}
+          style={{ background: "linear-gradient(to bottom, rgb(var(--ll-violet)), #E8A23A)" }}
         />
         {t("quickActions.title")}
       </h3>
@@ -28,7 +28,7 @@ const QuickActions = () => {
             key={title}
             onClick={() => to && navigate(to)}
             className="group relative rounded-2xl p-5 flex items-start gap-4 text-left transition-transform duration-200 hover:-translate-y-1 shadow-sm dark:shadow-none"
-            style={{ border: "1px solid rgba(158,47,208,0.15)", cursor: to ? "pointer" : "default" }}
+            style={{ border: "1px solid rgb(var(--ll-violet) / 0.15)", cursor: to ? "pointer" : "default" }}
           >
             <div className="dark:hidden absolute inset-0 rounded-2xl bg-white" />
             <div

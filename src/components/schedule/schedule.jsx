@@ -1,3 +1,4 @@
+import HalloweenChatScene from "../common/HalloweenChatScene";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -39,7 +40,7 @@ import Dropdown from "./Dropdown";
 import TeacherPanel from "./TeacherPanel";
 import AdminMeetingRooms from "./AdminMeetingRooms";
 import NewClassModal from "./NewClassModal";
-import { FiMessageSquare, FiUsers, FiChevronDown } from "react-icons/fi";
+import { FiMessageSquare, FiUsers, FiChevronDown, FiCalendar } from "react-icons/fi";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -228,7 +229,8 @@ const Schedule = () => {
 
   const CustomEvent = ({ event }) => (
     <div className="group relative flex items-center justify-center text-center h-full w-full text-[10px] sm:text-[13px] flex-wrap gap-1">
-      {event.isGroupClass && <FiUsers size={10} className="flex-shrink-0" />}
+      {event.isGroupClass && <FiUsers size={10} className="hw-hide flex-shrink-0" />}
+      {event.isGroupClass ? (<svg className="hw-only flex-shrink-0" width="12" height="13" viewBox="0 0 40 46" aria-hidden="true"><path d="M20 2C10.5 2 4 9.5 4 19.5V42l4-3 4 3 4-3 4 3 4-3 4 3 4-3 4 3V19.5C36 9.5 29.5 2 20 2z" fill="rgba(246,242,255,.94)" /><ellipse cx="14.5" cy="19" rx="3" ry="4" fill="#140E1C" /><ellipse cx="25.5" cy="19" rx="3" ry="4" fill="#140E1C" /></svg>) : (<svg className="hw-only flex-shrink-0" width="13" height="12" viewBox="0 0 96 90" aria-hidden="true"><path d="M48 20c-1-7 2-12 7-15" stroke="#3CCB8F" strokeWidth="6" fill="none" strokeLinecap="round" /><ellipse cx="30" cy="53" rx="21" ry="30" fill="#C85E12" /><ellipse cx="66" cy="53" rx="21" ry="30" fill="#C85E12" /><ellipse cx="48" cy="53" rx="22" ry="33" fill="#F08A2C" /><path d="M28 47l8-12 8 12zM52 47l8-12 8 12z" fill="#FFE08A" /><path d="M24 64c8 9 40 9 48 0l-6 2-4-4-5 4-5-4-5 4-5-4-4 4z" fill="#FFE08A" /></svg>)}
       <span>{event.title}</span>
       {user.role === "teacher" && (
         <EventActionsMenu
@@ -313,39 +315,14 @@ const Schedule = () => {
   };
 
   return (
-    <div className="flex w-full relative min-h-screen">
-      {/* Page background — light white / dark login gradient */}
-      <div
-        className="absolute inset-0 pointer-events-none dark:hidden"
-        style={{ background: 'linear-gradient(135deg, #f8f8fa 0%, #f2f2f6 100%)' }}
-      />
-      <div
-        className="absolute inset-0 pointer-events-none hidden dark:block"
-        style={{ background: 'linear-gradient(135deg, #0d0a1e 0%, #1a1a2e 55%, #110e28 100%)' }}
-      />
-      {/* Ambient orbs on page level */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden hidden dark:block">
-        <div className="absolute rounded-full blur-3xl opacity-10"
-          style={{ background: 'radial-gradient(circle, rgba(158,47,208,0.6), transparent 70%)', width: '600px', height: '600px', top: '-10%', right: '-5%' }} />
-        <div className="absolute rounded-full blur-3xl opacity-8"
-          style={{ background: 'radial-gradient(circle, rgba(38,217,161,0.4), transparent 70%)', width: '400px', height: '400px', bottom: '5%', left: '10%' }} />
-      </div>
-      {/* Subtle grid texture */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-[0.012] dark:opacity-[0.020]"
-        style={{
-          backgroundImage: `linear-gradient(rgba(158,47,208,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(158,47,208,0.8) 1px, transparent 1px)`,
-          backgroundSize: '48px 48px',
-        }}
-      />
-
+    <div className="flex w-full relative min-h-screen bg-ll-canvas">
       <Dashboard />
 
-      <div className="w-full relative z-10 flex flex-col min-h-screen">
+      <div className="ll-shell w-full relative z-10 flex flex-col">
         <Navbar header={header} />
 
         <div
-          className={`mt-4 flex flex-col xl:flex-row gap-4 px-4 pb-6 flex-1 ${
+          className={`mt-3 sm:mt-4 flex flex-col xl:flex-row gap-4 px-3 sm:px-4 pb-6 flex-1 ${
             !isChatVisible && user.role !== "admin" ? "justify-center" : ""
           }`}
         >
@@ -358,28 +335,20 @@ const Schedule = () => {
                 {events.length > 0 || user.role === "teacher" ? (
                   <>
                     {/* Desktop: full calendar */}
-                    <div
-                      className="relative rounded-2xl overflow-hidden hidden lg:block"
-                      style={{
-                        border: '1px solid rgba(158,47,208,0.15)',
-                        boxShadow: '0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(158,47,208,0.06)',
-                      }}
-                    >
-                      <div
-                        className="absolute inset-0 dark:hidden"
-                        style={{
-                          background: 'rgba(255,255,255,0.88)',
-                          backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-                        }}
-                      />
-                      <div
-                        className="absolute inset-0 hidden dark:block"
-                        style={{
-                          background: 'rgba(13,10,30,0.65)',
-                          backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-                        }}
-                      />
-                      <div className="relative z-10 h-[630px]">
+                    <div className="ll-card relative overflow-hidden hidden lg:block">
+                      <svg className="hw-only absolute left-0 top-0 w-[54px] h-[54px] z-[5] pointer-events-none opacity-70" style={{ stroke: 'rgb(var(--ll-ink-4))', fill: 'none', strokeWidth: .8 }} viewBox="0 0 54 54" aria-hidden="true"><path d="M0 0l54 54M0 0l26 54M0 0l54 24" /><path d="M0 14c8 0 14-2 14-14M0 28c16 0 26-6 28-28M0 42c24 0 38-10 42-42" /></svg>
+                      <svg className="hw-only absolute right-3.5 bottom-0 w-[54px] h-[54px] z-[5] pointer-events-none opacity-70" style={{ stroke: 'rgb(var(--ll-ink-4))', fill: 'none', strokeWidth: .8, transform: 'rotate(180deg)' }} viewBox="0 0 54 54" aria-hidden="true"><path d="M0 0l54 54M0 0l26 54M0 0l54 24" /><path d="M0 14c8 0 14-2 14-14M0 28c16 0 26-6 28-28M0 42c24 0 38-10 42-42" /></svg>
+                      <svg className="hw-only absolute left-[34%] top-1.5 w-[120px] h-[50px] z-[5] pointer-events-none" style={{ fill: 'rgb(var(--ll-ink-4))', opacity: .55 }} viewBox="0 0 170 70" aria-hidden="true">
+                        <svg x="10" y="30" width="40" height="16" viewBox="0 0 40 16"><path className="ll-bob" d="M20 5.5c.8-1.6 1.6-2.3 2.2-2.3.2.9.1 1.6-.3 2.2 2.6-.4 5.9-2.3 8.4-5.4.3 2.6 2.9 4.9 9.7 5.2-3.4 1-5.9 3.5-6.4 7.6-1.7-1.9-4.4-2.4-6.2-1-1.3-1.9-3.6-2.8-5.3-1.3-.8-.6-1.5-.6-2.2 0-1.7-1.5-4-.6-5.3 1.3-1.8-1.4-4.5-.9-6.2 1C7.9 8.7 5.4 6.2 2 5.2 8.8 4.9 11.4 2.6 11.7 0c2.5 3.1 5.8 5 8.4 5.4-.4-.6-.5-1.3-.3-2.2.6 0 1.4.7 2.2 2.3" /></svg>
+                        <svg x="70" y="8" width="28" height="11" viewBox="0 0 40 16"><path className="ll-bob" d="M20 5.5c.8-1.6 1.6-2.3 2.2-2.3.2.9.1 1.6-.3 2.2 2.6-.4 5.9-2.3 8.4-5.4.3 2.6 2.9 4.9 9.7 5.2-3.4 1-5.9 3.5-6.4 7.6-1.7-1.9-4.4-2.4-6.2-1-1.3-1.9-3.6-2.8-5.3-1.3-.8-.6-1.5-.6-2.2 0-1.7-1.5-4-.6-5.3 1.3-1.8-1.4-4.5-.9-6.2 1C7.9 8.7 5.4 6.2 2 5.2 8.8 4.9 11.4 2.6 11.7 0c2.5 3.1 5.8 5 8.4 5.4-.4-.6-.5-1.3-.3-2.2.6 0 1.4.7 2.2 2.3" /></svg>
+                        <svg x="118" y="44" width="22" height="9" viewBox="0 0 40 16"><path className="ll-bob" d="M20 5.5c.8-1.6 1.6-2.3 2.2-2.3.2.9.1 1.6-.3 2.2 2.6-.4 5.9-2.3 8.4-5.4.3 2.6 2.9 4.9 9.7 5.2-3.4 1-5.9 3.5-6.4 7.6-1.7-1.9-4.4-2.4-6.2-1-1.3-1.9-3.6-2.8-5.3-1.3-.8-.6-1.5-.6-2.2 0-1.7-1.5-4-.6-5.3 1.3-1.8-1.4-4.5-.9-6.2 1C7.9 8.7 5.4 6.2 2 5.2 8.8 4.9 11.4 2.6 11.7 0c2.5 3.1 5.8 5 8.4 5.4-.4-.6-.5-1.3-.3-2.2.6 0 1.4.7 2.2 2.3" /></svg>
+                      </svg>
+                      <HalloweenChatScene calm gyBottom="bottom-0" fogBottom="bottom-0" gyHeight="h-24" />
+                      <div className="hw-only absolute top-[104px] right-[3%] w-[72px] h-[72px] rounded-full z-[2] pointer-events-none opacity-55" style={{ background: 'radial-gradient(circle at 38% 35%,#FFF6E0 0%,#FFE3A8 42%,#F2C46A 78%,#D9A24A 100%)', boxShadow: '0 0 40px 8px rgba(245,196,81,.18),0 0 120px 30px rgba(240,138,44,.08)' }} aria-hidden="true">
+                        <span className="absolute rounded-full" style={{ width: '20%', height: '20%', left: '52%', top: '23%', background: 'rgba(170,110,40,.22)' }} />
+                        <span className="absolute rounded-full" style={{ width: '12%', height: '12%', left: '27%', top: '59%', background: 'rgba(170,110,40,.22)', boxShadow: '22px 5px 0 -3px rgba(170,110,40,.2)' }} />
+                      </div>
+                        <div className="relative z-[1] h-[630px]">
                         <PerfectScrollbar
                           className={user?.settings?.darkMode ? "dark-scrollbar" : ""}
                         >
@@ -397,19 +366,7 @@ const Schedule = () => {
                             onSelectSlot={handleSelectSlot}
                             onRangeChange={(range) => setCalendarRange(normalizeCalendarRange(range))}
                             eventPropGetter={(event) => ({
-                              style: {
-                                background: event.isGroupClass
-                                  ? 'linear-gradient(135deg, #26D9A1, #1fa07a)'
-                                  : 'linear-gradient(135deg, #9E2FD0, #7b22a8)',
-                                color: 'white',
-                                borderRadius: '8px',
-                                border: 'none',
-                                boxShadow: event.isGroupClass
-                                  ? '0 3px 10px rgba(38,217,161,0.35)'
-                                  : '0 3px 10px rgba(158,47,208,0.35)',
-                                fontSize: '0.82em',
-                                padding: '3px 8px',
-                              },
+                              className: event.isGroupClass ? "rbc-event-group" : "rbc-event-solo",
                             })}
                             style={{ height: '100%', minHeight: '630px' }}
                             formats={{
@@ -426,41 +383,13 @@ const Schedule = () => {
                     </div>
 
                     {/* Mobile: class list cards */}
-                    <div
-                      className="lg:hidden relative rounded-2xl overflow-hidden"
-                      style={{
-                        border: '1px solid rgba(158,47,208,0.15)',
-                        boxShadow: '0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(158,47,208,0.06)',
-                      }}
-                    >
-                      <div
-                        className="absolute inset-0 dark:hidden"
-                        style={{
-                          background: 'rgba(255,255,255,0.88)',
-                          backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-                        }}
-                      />
-                      <div
-                        className="absolute inset-0 hidden dark:block"
-                        style={{
-                          background: 'rgba(13,10,30,0.65)',
-                          backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-                        }}
-                      />
-                      {/* Top accent */}
-                      <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#9E2FD0] via-[#F6B82E] to-[#26D9A1] opacity-60 z-10" />
-                      <div className="relative z-10 p-4">
-                        <div className="flex items-center gap-2 mb-4">
-                          <div
-                            className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                            style={{
-                              background: "linear-gradient(135deg, #9E2FD0, #7b22a8)",
-                              boxShadow: "0 2px 8px rgba(158,47,208,0.35)",
-                            }}
-                          >
-                            <FiMessageSquare size={14} className="text-white" />
+                    <div className="lg:hidden ll-card overflow-hidden max-sm:!border-0 max-sm:!bg-transparent max-sm:!rounded-none">
+                      <div className="p-4 max-sm:p-0">
+                        <div className="flex items-center gap-2 mb-4 max-sm:px-1">
+                          <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 bg-ll-violet-tint text-ll-violet-ink">
+                            <FiMessageSquare size={14} />
                           </div>
-                          <span className="text-sm font-extrabold login-gradient-text">
+                          <span className="text-[13.5px] font-semibold text-ll-ink">
                             {t("mobileSchedule.upcomingClasses")}
                           </span>
                         </div>
@@ -476,28 +405,15 @@ const Schedule = () => {
                   </>
                 ) : (
                   /* Empty state */
-                  <div
-                    className="relative rounded-2xl overflow-hidden flex items-center justify-center"
-                    style={{
-                      height: '400px',
-                      border: '1px solid rgba(158,47,208,0.15)',
-                      boxShadow: '0 8px 32px rgba(0,0,0,0.06)',
-                    }}
-                  >
-                    <div className="absolute inset-0 dark:hidden" style={{ background: 'rgba(255,255,255,0.88)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }} />
-                    <div className="absolute inset-0 hidden dark:block" style={{ background: 'rgba(13,10,30,0.65)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }} />
-                    <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#9E2FD0] via-[#F6B82E] to-[#26D9A1] opacity-60" />
-                    <div className="relative z-10 text-center px-6">
-                      <div
-                        className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
-                        style={{ background: 'linear-gradient(135deg, rgba(158,47,208,0.15), rgba(246,184,46,0.08))', border: '1px solid rgba(158,47,208,0.2)' }}
-                      >
-                        <span className="text-3xl">📅</span>
+                  <div className="ll-card flex items-center justify-center" style={{ height: '400px' }}>
+                    <div className="text-center px-6">
+                      <div className="w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-4 bg-ll-violet-tint text-ll-violet-ink">
+                        <FiCalendar size={24} />
                       </div>
-                      <h2 className="text-xl font-bold text-gray-700 dark:text-gray-200 mb-2">
+                      <h2 className="text-[16px] font-semibold text-ll-ink mb-1.5">
                         {user.role === "teacher" ? t("schedule.noStudents") : t("schedule.noTeacher")}
                       </h2>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
+                      <p className="text-[13.5px] text-ll-ink3 max-w-xs mx-auto">
                         {user.role === "teacher"
                           ? t("schedule.contactAdmin")
                           : t("schedule.contactAdminStudent")}
@@ -512,7 +428,7 @@ const Schedule = () => {
 
         {/* Teacher panel */}
         {user.role === "teacher" && user.students && user.students.length > 0 && (
-          <div className="px-4 pb-6">
+          <div className="px-3 sm:px-4 pb-6">
             {/* Desktop: show directly */}
             <div className="hidden lg:block">
               <TeacherPanel
@@ -526,29 +442,27 @@ const Schedule = () => {
             <div className="lg:hidden">
               <button
                 onClick={() => setTeacherPanelOpen((p) => !p)}
-                className="w-full flex items-center justify-between p-4 rounded-2xl border border-gray-200 dark:border-[#9E2FD0]/20 bg-white/80 dark:bg-white/5 backdrop-blur-sm transition-colors"
+                className="ll-card w-full flex items-center justify-between p-4 transition-colors hover:bg-ll-subtle"
               >
                 <div className="flex items-center gap-3">
-                  <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center"
-                    style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 2px 8px rgba(158,47,208,0.3)" }}
-                  >
-                    <FiUsers size={15} className="text-white" />
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-ll-violet-tint text-ll-violet-ink">
+                    <FiUsers size={15} />
                   </div>
-                  <span className="text-sm font-bold text-gray-800 dark:text-white">
+                  <span className="text-[13.5px] font-semibold text-ll-ink">
                     {t("teacherPanel.title")}
                   </span>
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#9E2FD0]/10 text-[#9E2FD0]">
+                  <span className="ll-pill bg-ll-violet-tint text-ll-violet-ink">
                     {user.students.length}
                   </span>
                 </div>
                 <FiChevronDown
                   size={18}
-                  className={`text-gray-400 transition-transform duration-200 ${teacherPanelOpen ? "rotate-180" : ""}`}
+                  className={`text-ll-ink3 transition-transform duration-200 ${teacherPanelOpen ? "rotate-180" : ""}`}
                 />
               </button>
               {teacherPanelOpen && (
                 <TeacherPanel
+                  embedded
                   students={user.students}
                   events={events}
                   teacherId={user.id}

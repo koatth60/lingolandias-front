@@ -22,7 +22,7 @@ const EditEventTimeModal = ({ eventTitle, eventDetails, handleEventDetailsChange
         <div className="relative z-10 p-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2 min-w-0">
-              <FiEdit2 className="text-[#9E2FD0] flex-shrink-0" size={20} />
+              <FiEdit2 className="text-ll-violet flex-shrink-0" size={20} />
               <h3 className="text-xl font-bold text-gray-900 dark:text-white truncate">
                 {eventTitle || t("editEvent.editEvent")}
               </h3>
@@ -55,7 +55,7 @@ const EditEventTimeModal = ({ eventTitle, eventDetails, handleEventDetailsChange
               <button
                 type="submit"
                 className="flex-1 py-3 px-4 rounded-xl font-medium text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
-                style={{ background: "linear-gradient(135deg, #26D9A1, #1fa07a)", boxShadow: "0 4px 15px rgba(38,217,161,0.3)" }}
+                style={{ background: "linear-gradient(135deg, #1FA48C, #17886F)", boxShadow: "0 4px 15px rgba(31,164,140,0.3)" }}
               >
                 <FiCheck className="inline mr-2" size={16} />
                 {t("editEvent.update")}

@@ -12,8 +12,8 @@ const Invitados = () => {
         <div className="absolute inset-0 pointer-events-none dark:hidden" style={{ background: "linear-gradient(135deg, #f8f8fa 0%, #f2f2f6 100%)" }} />
         <div className="absolute inset-0 pointer-events-none hidden dark:block" style={{ background: "linear-gradient(135deg, #0d0a1e 0%, #1a1a2e 55%, #110e28 100%)" }} />
         <div className="absolute inset-0 pointer-events-none overflow-hidden hidden dark:block">
-          <div className="absolute rounded-full blur-3xl opacity-10" style={{ background: "radial-gradient(circle, rgba(158,47,208,0.6), transparent 70%)", width: "600px", height: "600px", top: "-10%", right: "-5%" }} />
-          <div className="absolute rounded-full blur-3xl opacity-8" style={{ background: "radial-gradient(circle, rgba(38,217,161,0.4), transparent 70%)", width: "400px", height: "400px", bottom: "5%", left: "10%" }} />
+          <div className="absolute rounded-full blur-3xl opacity-10" style={{ background: "radial-gradient(circle, rgb(var(--ll-violet) / 0.6), transparent 70%)", width: "600px", height: "600px", top: "-10%", right: "-5%" }} />
+          <div className="absolute rounded-full blur-3xl opacity-8" style={{ background: "radial-gradient(circle, rgba(31,164,140,0.4), transparent 70%)", width: "400px", height: "400px", bottom: "5%", left: "10%" }} />
         </div>
 
         <Dashboard />

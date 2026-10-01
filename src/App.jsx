@@ -12,6 +12,8 @@ import FilePreviewModal from './components/common/FilePreviewModal';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import { UploadProvider } from './context/UploadContext';
 import UploadStatusBar from './components/common/UploadStatusBar';
+import HalloweenInvite from './components/common/HalloweenInvite';
+import { useHalloween } from './context/HalloweenContext';
 
 // Lazy-load all post-login routes — keeps initial bundle small. The sidebar
 // nav routes are imported from routePrefetch.js's shared map instead of an
@@ -45,17 +47,21 @@ function App() {
   const darkMode = userInfo?.user?.settings?.darkMode;
   const savedLanguage = userInfo?.user?.settings?.language;
   const { i18n } = useTranslation();
+  const { enabled: halloween } = useHalloween();
 
   // Apply dark class to <html> so Tailwind dark: selectors work everywhere,
   // including portal-rendered modals and native browser UI on all browsers/OS.
+  // Halloween forces dark regardless of the user's own setting — it rides on
+  // top of it (see HalloweenContext) rather than replacing it, so turning
+  // Halloween off falls back to whatever the account's real preference is.
   useEffect(() => {
     const html = document.documentElement;
-    if (darkMode) {
+    if (darkMode || halloween) {
       html.classList.add('dark');
     } else {
       html.classList.remove('dark');
     }
-  }, [darkMode]);
+  }, [darkMode, halloween]);
 
   // Sync language from user settings to i18n on login/reload
   useEffect(() => {
@@ -67,8 +73,9 @@ function App() {
 
   return (
     <UploadProvider>
-    <div className="bg-brand-light dark:bg-brand-dark min-h-screen">
+    <div className="bg-ll-canvas min-h-screen">
       <UploadStatusBar />
+      <HalloweenInvite />
       <Router>
         <UnreadTabTitle />
         <NotificationsListener />
@@ -81,7 +88,7 @@ function App() {
           limit={3}
           transition={Slide}
           newestOnTop
-          theme="light"
+          theme={darkMode || halloween ? "dark" : "light"}
         />
         <Suspense fallback={null}>
         <Routes>
@@ -138,7 +145,7 @@ function App() {
                       <button
                         onClick={() => window.location.reload()}
                         className="px-4 py-2 rounded-full text-white text-sm font-semibold"
-                        style={{ background: 'linear-gradient(135deg, #9E2FD0, #7b22a8)' }}
+                        style={{ background: 'linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))' }}
                       >
                         Reload
                       </button>

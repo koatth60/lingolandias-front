@@ -13,7 +13,9 @@
     "online": "En Línea",
     "learning": "Aprendizaje",
     "invitados": "Invitados",
-    "course": "Tour de la Plataforma"
+    "course": "Tour de la Plataforma",
+    "workspace": "Espacio de trabajo",
+    "more": "Más"
   },
   "navbar": {
     "profile": "Perfil",
@@ -44,16 +46,46 @@
     "announcementCta": "Ver ahora",
     "announcementDismiss": "Más tarde",
     "items": {
-      "welcome": { "title": "Bienvenida", "desc": "Oriéntate en Lingolandias." },
-      "schedule": { "title": "Mi Horario", "desc": "Consulta y gestiona tus clases en el calendario." },
-      "messages": { "title": "Mensajes", "desc": "Chats, grupos, menciones y agendar una clase desde una conversación." },
-      "recordings": { "title": "Grabaciones de Clases", "desc": "Encuentra y vuelve a ver tus sesiones pasadas." },
-      "support": { "title": "Soporte", "desc": "Contacta directamente al equipo de Lingolandias." },
-      "trello": { "title": "Trello 2.0", "desc": "Planifica tus clases con tableros y tarjetas — o migra tu Trello real." },
-      "guests": { "title": "Invitados", "desc": "Trae expertos externos a tus clases." },
-      "profile": { "title": "Perfil", "desc": "Gestiona tu información y consulta a tus alumnos." },
-      "settings": { "title": "Configuración", "desc": "Modo oscuro, notificaciones, idioma y cuenta." },
-      "help-center": { "title": "Centro de Ayuda", "desc": "Preguntas frecuentes y contacto directo con soporte." }
+      "welcome": {
+        "title": "Bienvenida",
+        "desc": "Oriéntate en Lingolandias."
+      },
+      "schedule": {
+        "title": "Mi Horario",
+        "desc": "Consulta y gestiona tus clases en el calendario."
+      },
+      "messages": {
+        "title": "Mensajes",
+        "desc": "Chats, grupos, menciones y agendar una clase desde una conversación."
+      },
+      "recordings": {
+        "title": "Grabaciones de Clases",
+        "desc": "Encuentra y vuelve a ver tus sesiones pasadas."
+      },
+      "support": {
+        "title": "Soporte",
+        "desc": "Contacta directamente al equipo de Lingolandias."
+      },
+      "trello": {
+        "title": "Trello 2.0",
+        "desc": "Planifica tus clases con tableros y tarjetas — o migra tu Trello real."
+      },
+      "guests": {
+        "title": "Invitados",
+        "desc": "Trae expertos externos a tus clases."
+      },
+      "profile": {
+        "title": "Perfil",
+        "desc": "Gestiona tu información y consulta a tus alumnos."
+      },
+      "settings": {
+        "title": "Configuración",
+        "desc": "Modo oscuro, notificaciones, idioma y cuenta."
+      },
+      "help-center": {
+        "title": "Centro de Ayuda",
+        "desc": "Preguntas frecuentes y contacto directo con soporte."
+      }
     }
   },
   "login": {
@@ -105,7 +137,7 @@
     "rights": "© {{year}} Lingolandias. Todos los Derechos Reservados."
   },
   "home": {
-    "pageTitle": "Página de Inicio",
+    "pageTitle": "Panel Principal",
     "online": "En Línea",
     "welcomeBack": "¡Bienvenido de nuevo, {{name}}!",
     "subtitle": "Tu viaje hacia la fluidez continúa. Cada sesión te acerca un paso más a tus metas.",
@@ -128,7 +160,16 @@
       "a3": "Absolutamente. Nuestros métodos innovadores integran la gramática de manera fluida, para que aprendas las reglas sin ejercicios tediosos.",
       "q4": "¿Qué pasa si no podemos asistir a clases?",
       "a4": "La flexibilidad es clave. Puedes reprogramar hasta 24 horas antes de tu clase, y siempre somos comprensivos en emergencias."
-    }
+    },
+    "comingSoon": "Pronto",
+    "startsIn": "Empieza en",
+    "goTo": "Ir a",
+    "upcomingCount": "{{count}} sesiones próximas",
+    "upcomingCount_one": "{{count}} sesión próxima",
+    "upNext": "Próxima clase",
+    "openSchedule": "Abrir horario",
+    "wordOfDayTitle": "Palabra del día",
+    "viewAll": "Ver todo"
   },
   "adminHome": {
     "adminPanel": "Panel de Admin",
@@ -173,6 +214,7 @@
     "polish": "Polaco"
   },
   "recordings": {
+    "short": "Grabaciones",
     "title": "Grabaciones de Clases",
     "count": "{{count}} grabación(es) guardada(s)",
     "refresh": "Actualizar",
@@ -262,7 +304,20 @@
     "desktopInstallerStep3": "Listo. Desde ahora se abre sola cada vez que enciendes tu PC.",
     "desktopInstallerButton": "Descargar instalador",
     "desktopInstallerSmartscreen": "Windows puede mostrarte \"Windows protegió tu PC\" la primera vez — es normal en apps nuevas. Dale \"Más información\" y luego \"Ejecutar de todas formas\".",
-    "desktopInstallerNote": "Esto es aparte de la app que ya hayas instalado desde el navegador arriba — puedes tener las dos, o usar solo esta."
+    "desktopInstallerNote": "Esto es aparte de la app que ya hayas instalado desde el navegador arriba — puedes tener las dos, o usar solo esta.",
+    "darkModeLockedHalloween": "Bloqueado mientras el tema de Halloween está activo",
+    "halloweenTheme": "Tema de Halloween",
+    "halloweenThemeDesc": "Un look de miedo para octubre"
+  },
+  "halloween": {
+    "inviteTitle": "¿Quieres probar el tema de Halloween?",
+    "inviteBody": "Lingolandias tiene un look de miedo para octubre: colores nuevos, un cementerio en tus chats y algunas sorpresas. Puedes quitarlo cuando quieras en Configuración → Apariencia.",
+    "try": "Probarlo",
+    "notNow": "Ahora no",
+    "confirmTitle": "¿Conservar Halloween el resto de octubre?",
+    "confirmBody": "¿Te gusta cómo se ve? Déjalo hasta fin de mes o vuelve a tu tema de siempre. Puedes cambiarlo cuando quieras en Configuración → Apariencia.",
+    "keep": "Conservar Halloween",
+    "revert": "Volver a mi tema"
   },
   "changePassword": {
     "title": "Cambiar Contraseña",
@@ -507,7 +562,9 @@
   "upcomingClass": {
     "join": "Unirse",
     "message": "Mensaje",
-    "viewInCalendar": "Ver en calendario"
+    "viewInCalendar": "Ver en calendario",
+    "groupClass": "Clase grupal",
+    "oneOnOneSession": "Sesión 1:1"
   },
   "errorBoundary": {
     "message": "Algo salió mal."
@@ -608,7 +665,9 @@
     "classesSchedule": "Horario de Clases",
     "week": "Semana",
     "day": "Día",
-    "agenda": "Agenda"
+    "agenda": "Agenda",
+    "group": "Grupo",
+    "oneOnOne": "1:1"
   },
   "adminRooms": {
     "liveRooms": "Salas en Vivo Disponibles",
@@ -664,7 +723,7 @@
     "preview": "Vista Previa",
     "download": "Descargar",
     "readyToSend": "Listo para enviar.",
-    "uploading": "Subiendo...",
+    "uploading": "Subiendo {{name}}…",
     "typePlaceholder": "Escribe un mensaje...",
     "formatText": "Formato de texto",
     "formatBold": "Negrita",
@@ -687,7 +746,6 @@
     "clearText": "Todos los mensajes se eliminarán permanentemente y no podrán recuperarse.",
     "clearConfirm": "Sí, borrar todo",
     "clearCancel": "Cancelar",
-    "uploading": "Subiendo {{name}}…",
     "uploadFailedTitle": "Error al subir",
     "uploadError": {
       "upload_failed": "No se pudo subir el archivo. Revisa tu conexión y vuelve a pulsar enviar.",

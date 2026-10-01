@@ -8,10 +8,10 @@ const LABELS = [
   { name: 'Grammar',        color: '#0079BF' },
   { name: 'Vocabulary',     color: '#61BD4F' },
   { name: 'Speaking',       color: '#FF9F1A' },
-  { name: 'Listening',      color: '#9E2FD0' },
+  { name: 'Listening',      color: '#6A2BD8' },
   { name: 'Reading',        color: '#00C2E0' },
   { name: 'Writing',        color: '#EB5A46' },
-  { name: 'Pronunciation',  color: '#F6B82E' },
+  { name: 'Pronunciation',  color: '#E8A23A' },
   { name: 'Culture',        color: '#344563' },
   { name: 'Translation',    color: '#C377E0' },
   { name: 'Conversation',   color: '#51E898' },
@@ -22,7 +22,7 @@ const LABELS = [
   { name: 'Advanced',       color: '#E91E8C' },
   { name: 'Review',         color: '#026AA7' },
   { name: 'Important',      color: '#CF513D' },
-  { name: 'Fun Activity',   color: '#26D9A1' },
+  { name: 'Fun Activity',   color: '#1FA48C' },
   { name: 'History',        color: '#6B3A2A' },
   { name: 'Literature',     color: '#4A1D96' },
 ];
@@ -41,7 +41,7 @@ const FONT_FAMILIES = [
 
 const TEXT_COLORS = [
   '#000000','#374151','#6B7280','#EF4444','#F59E0B',
-  '#10B981','#3B82F6','#8B5CF6','#EC4899','#0079BF','#9E2FD0','#F6B82E',
+  '#10B981','#3B82F6','#8B5CF6','#EC4899','#0079BF','#6A2BD8','#E8A23A',
 ];
 
 // ─── RICH TEXT EDITOR ─────────────────────────────────────────────────────────
@@ -256,7 +256,7 @@ const RichEditor = forwardRef(({ html, onChange, placeholder }, ref) => {
         onBlur={() => { setFocused(false); setShowColorPicker(false); setShowFontSize(false); setShowFontFamily(false); }}
         onMouseUp={handleMouseUp}
         onKeyUp={handleKeyUp}
-        className="min-h-[100px] max-h-64 overflow-y-auto w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#9E2FD0] transition-colors"
+        className="min-h-[100px] max-h-64 overflow-y-auto w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ll-violet transition-colors"
         style={{ lineHeight: '1.6', wordBreak: 'break-word' }}
         data-placeholder={placeholder}
       />
@@ -310,7 +310,7 @@ const Checklist = ({ items, onChange }) => {
           <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
             <div
               className="h-full rounded-full transition-all duration-300"
-              style={{ width: pct + '%', backgroundColor: pct === 100 ? '#61BD4F' : '#9E2FD0' }}
+              style={{ width: pct + '%', backgroundColor: pct === 100 ? '#61BD4F' : 'rgb(var(--ll-violet))' }}
             />
           </div>
         </div>
@@ -322,7 +322,7 @@ const Checklist = ({ items, onChange }) => {
               type="checkbox"
               checked={item.done}
               onChange={() => toggle(item.id)}
-              className="mt-0.5 h-4 w-4 rounded accent-[#9E2FD0] cursor-pointer flex-shrink-0"
+              className="mt-0.5 h-4 w-4 rounded accent-ll-violet cursor-pointer flex-shrink-0"
             />
             <span className={`flex-1 text-sm text-gray-800 dark:text-gray-200 ${item.done ? 'line-through text-gray-400 dark:text-gray-500' : ''}`}>
               {item.text}
@@ -343,9 +343,9 @@ const Checklist = ({ items, onChange }) => {
           onChange={(e) => setNewText(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') add(); }}
           placeholder="Add an item..."
-          className="flex-1 px-2.5 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#9E2FD0]"
+          className="flex-1 px-2.5 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-ll-violet"
         />
-        <button onClick={add} className="px-3 py-1.5 text-xs bg-[#9E2FD0] hover:bg-[#8a27b5] text-white rounded-lg transition">Add</button>
+        <button onClick={add} className="px-3 py-1.5 text-xs bg-ll-violet hover:bg-ll-violet-hover text-white rounded-lg transition">Add</button>
       </div>
     </div>
   );
@@ -354,7 +354,7 @@ const Checklist = ({ items, onChange }) => {
 // ─── LABELS PICKER ────────────────────────────────────────────────────────────
 const LabelsPicker = ({ selected, onChange }) => {
   const [customName, setCustomName] = useState('');
-  const [customColor, setCustomColor] = useState('#9E2FD0');
+  const [customColor, setCustomColor] = useState('#6A2BD8');
 
   const isSelected = (name) => selected.some((s) => s.name === name);
 
@@ -414,12 +414,12 @@ const LabelsPicker = ({ selected, onChange }) => {
             onChange={(e) => setCustomName(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') addCustom(); }}
             placeholder="e.g. Phonetics, Idioms..."
-            className="flex-1 px-2.5 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#9E2FD0]"
+            className="flex-1 px-2.5 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-ll-violet"
           />
           <button
             onClick={addCustom}
             disabled={!customName.trim()}
-            className="px-3 py-1.5 text-xs bg-[#9E2FD0] hover:bg-[#8a27b5] text-white rounded-lg transition disabled:opacity-40"
+            className="px-3 py-1.5 text-xs bg-ll-violet hover:bg-ll-violet-hover text-white rounded-lg transition disabled:opacity-40"
           >
             Add
           </button>
@@ -435,7 +435,7 @@ const SideBtn = ({ icon, label, onClick, active }) => (
     onClick={onClick}
     className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors
       ${active
-        ? 'bg-[#9E2FD0]/15 text-[#9E2FD0] dark:text-purple-300'
+        ? 'bg-ll-violet/15 text-ll-violet dark:text-ll-violet-ink'
         : 'bg-gray-100 dark:bg-gray-700/60 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
       }`}
   >
@@ -597,7 +597,7 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') setEditingName(false); }}
-                    className="w-full bg-transparent border-b-2 border-[#9E2FD0] focus:outline-none"
+                    className="w-full bg-transparent border-b-2 border-ll-violet focus:outline-none"
                     style={{
                       fontFamily: titleStyle.fontFamily || 'inherit',
                       fontSize: titleStyle.fontSize || '1.25rem',
@@ -612,7 +612,7 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
                     <select
                       value={titleStyle.fontFamily || ''}
                       onChange={(e) => updateTitleStyle('fontFamily', e.target.value || undefined)}
-                      className="text-xs px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-[#9E2FD0]"
+                      className="text-xs px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-ll-violet"
                     >
                       <option value="">Default font</option>
                       {FONT_OPTIONS.map((f) => (
@@ -623,7 +623,7 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
                     <select
                       value={titleStyle.fontSize || ''}
                       onChange={(e) => updateTitleStyle('fontSize', e.target.value || undefined)}
-                      className="text-xs px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-[#9E2FD0]"
+                      className="text-xs px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-ll-violet"
                     >
                       <option value="">Default size</option>
                       {['14px','16px','18px','20px','24px','28px','32px','36px','42px'].map((s) => (
@@ -634,13 +634,13 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
                     <button
                       type="button"
                       onClick={() => updateTitleStyle('fontWeight', titleStyle.fontWeight === 'bold' ? 'normal' : 'bold')}
-                      className={`w-7 h-7 rounded text-xs font-bold flex items-center justify-center transition ${titleStyle.fontWeight === 'bold' ? 'bg-[#9E2FD0] text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200'}`}
+                      className={`w-7 h-7 rounded text-xs font-bold flex items-center justify-center transition ${titleStyle.fontWeight === 'bold' ? 'bg-ll-violet text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200'}`}
                     >B</button>
                     {/* Italic */}
                     <button
                       type="button"
                       onClick={() => updateTitleStyle('fontStyle', titleStyle.fontStyle === 'italic' ? 'normal' : 'italic')}
-                      className={`w-7 h-7 rounded text-xs italic flex items-center justify-center transition ${titleStyle.fontStyle === 'italic' ? 'bg-[#9E2FD0] text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200'}`}
+                      className={`w-7 h-7 rounded text-xs italic flex items-center justify-center transition ${titleStyle.fontStyle === 'italic' ? 'bg-ll-violet text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200'}`}
                     >I</button>
                     {/* Color */}
                     <div className="flex items-center gap-1">
@@ -665,7 +665,7 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
                     <button
                       type="button"
                       onClick={() => setEditingName(false)}
-                      className="ml-auto text-xs px-3 py-1 bg-[#9E2FD0] hover:bg-[#8a27b5] text-white rounded-lg transition"
+                      className="ml-auto text-xs px-3 py-1 bg-ll-violet hover:bg-ll-violet-hover text-white rounded-lg transition"
                     >Done</button>
                   </div>
                 </div>
@@ -768,7 +768,7 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
                     <div className="flex gap-2">
                       <button
                         onClick={() => setEditingDescription(false)}
-                        className="px-3 py-1.5 text-xs bg-[#9E2FD0] hover:bg-[#8a27b5] text-white rounded-lg transition font-medium"
+                        className="px-3 py-1.5 text-xs bg-ll-violet hover:bg-ll-violet-hover text-white rounded-lg transition font-medium"
                       >
                         Done
                       </button>
@@ -827,7 +827,7 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
                       <button
                         key={l.id}
                         onClick={() => { onMoved(card.id, l.id); }}
-                        className="px-3 py-2 text-sm font-medium rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-[#9E2FD0]/15 hover:text-[#9E2FD0] transition border border-gray-200 dark:border-gray-600"
+                        className="px-3 py-2 text-sm font-medium rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-ll-violet/15 hover:text-ll-violet transition border border-gray-200 dark:border-gray-600"
                       >
                         → {l.name}
                       </button>
@@ -859,7 +859,7 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
                       type="date"
                       value={dueDate}
                       onChange={(e) => setDueDate(e.target.value)}
-                      className="px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#9E2FD0]"
+                      className="px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ll-violet"
                     />
                     {dueDate && (
                       <button onClick={() => setDueDate('')} className="text-xs text-red-500 hover:text-red-700">Remove</button>
@@ -879,7 +879,7 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
 
                 {/* Add comment */}
                 <div className="flex gap-2 mb-4">
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#9E2FD0] to-[#F6B82E] flex-shrink-0 flex items-center justify-center text-white text-xs font-bold">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-ll-violet to-[#E8A23A] flex-shrink-0 flex items-center justify-center text-white text-xs font-bold">
                     U
                   </div>
                   <div className="flex-1">
@@ -889,10 +889,10 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
                       onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleAddComment(); } }}
                       placeholder="Write a comment..."
                       rows={2}
-                      className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#9E2FD0] resize-none"
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ll-violet resize-none"
                     />
                     {newComment.trim() && (
-                      <button onClick={handleAddComment} className="mt-1 px-3 py-1.5 text-xs bg-[#9E2FD0] hover:bg-[#8a27b5] text-white rounded-lg transition">
+                      <button onClick={handleAddComment} className="mt-1 px-3 py-1.5 text-xs bg-ll-violet hover:bg-ll-violet-hover text-white rounded-lg transition">
                         Save
                       </button>
                     )}
@@ -903,7 +903,7 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
                 <div className="space-y-3">
                   {comments.map((c) => (
                     <div key={c.id} className="flex gap-2">
-                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#9E2FD0] to-[#F6B82E] flex-shrink-0 flex items-center justify-center text-white text-xs font-bold">
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-ll-violet to-[#E8A23A] flex-shrink-0 flex items-center justify-center text-white text-xs font-bold">
                         U
                       </div>
                       <div className="flex-1">
@@ -968,7 +968,7 @@ const TrelloCardDetail = ({ card, list, lists, onClose, onUpdated, onDeleted, on
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-5 py-2 rounded-xl bg-[#9E2FD0] hover:bg-[#8a27b5] text-white text-sm font-medium transition disabled:opacity-50"
+              className="px-5 py-2 rounded-xl bg-ll-violet hover:bg-ll-violet-hover text-white text-sm font-medium transition disabled:opacity-50"
             >
               {saving ? 'Saving...' : 'Save changes'}
             </button>

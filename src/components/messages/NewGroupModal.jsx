@@ -52,8 +52,8 @@ const NewGroupModal = ({ currentUserId, currentUserRole, onClose, onCreate }) =>
         <div className="relative z-10 p-5 flex flex-col min-h-0 flex-1">
           <div className="flex items-center justify-between mb-4 flex-shrink-0">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-[#F6B82E]/15">
-                <FiUsers size={15} className="text-[#F6B82E]" />
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-[#E8A23A]/15">
+                <FiUsers size={15} className="text-[#E8A23A]" />
               </div>
               <h2 className="text-base font-bold text-gray-900 dark:text-white">{t("messagesExtra.newGroupTitle")}</h2>
             </div>
@@ -72,7 +72,7 @@ const NewGroupModal = ({ currentUserId, currentUserRole, onClose, onCreate }) =>
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder={t("messagesExtra.groupNamePlaceholder")}
-            className="w-full mb-3 px-3.5 py-2.5 rounded-xl text-sm bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-[#9E2FD0]/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:border-[#9E2FD0] transition-colors flex-shrink-0"
+            className="w-full mb-3 px-3.5 py-2.5 rounded-xl text-sm bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-ll-violet/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:border-ll-violet transition-colors flex-shrink-0"
           />
 
           {selected.length > 0 && (
@@ -81,7 +81,7 @@ const NewGroupModal = ({ currentUserId, currentUserRole, onClose, onCreate }) =>
                 <span
                   key={u.id}
                   onClick={() => toggleMember(u)}
-                  className="flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded-full bg-[#9E2FD0]/10 text-[#9E2FD0] dark:bg-[#9E2FD0]/20 cursor-pointer hover:bg-[#9E2FD0]/20"
+                  className="flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded-full bg-ll-violet/10 text-ll-violet dark:bg-ll-violet/20 cursor-pointer hover:bg-ll-violet/20"
                 >
                   {u.name}
                   <FiX size={11} />
@@ -97,7 +97,7 @@ const NewGroupModal = ({ currentUserId, currentUserRole, onClose, onCreate }) =>
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t("messagesExtra.searchMembersPlaceholder")}
-              className="w-full pl-9 pr-3 py-2.5 rounded-xl text-sm bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-[#9E2FD0]/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:border-[#9E2FD0] transition-colors"
+              className="w-full pl-9 pr-3 py-2.5 rounded-xl text-sm bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-ll-violet/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:border-ll-violet transition-colors"
             />
           </div>
 
@@ -113,13 +113,13 @@ const NewGroupModal = ({ currentUserId, currentUserRole, onClose, onCreate }) =>
                   key={u.id}
                   onClick={() => toggleMember(u)}
                   className={`flex items-center gap-2.5 px-2.5 py-2 rounded-xl cursor-pointer transition-colors ${
-                    isSelected ? "bg-[#9E2FD0]/10 dark:bg-[#9E2FD0]/15" : "hover:bg-gray-50 dark:hover:bg-white/5"
+                    isSelected ? "bg-ll-violet/10 dark:bg-ll-violet/15" : "hover:bg-gray-50 dark:hover:bg-white/5"
                   }`}
                 >
                   {u.avatarUrl ? (
                     <img src={u.avatarUrl} alt={u.name} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
                   ) : (
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}>
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}>
                       {getInitials(u.name, u.lastName)}
                     </div>
                   )}
@@ -127,7 +127,7 @@ const NewGroupModal = ({ currentUserId, currentUserRole, onClose, onCreate }) =>
                     <p className="text-xs font-medium text-gray-800 dark:text-gray-100 truncate">{u.name} {u.lastName}</p>
                     <p className="text-[10px] text-gray-400 truncate">{u.email}</p>
                   </div>
-                  {isSelected && <FiCheck size={16} className="text-[#9E2FD0] flex-shrink-0" />}
+                  {isSelected && <FiCheck size={16} className="text-ll-violet flex-shrink-0" />}
                 </div>
               );
             })}
@@ -139,7 +139,7 @@ const NewGroupModal = ({ currentUserId, currentUserRole, onClose, onCreate }) =>
                 type="checkbox"
                 checked={scheduleAsClass}
                 onChange={(e) => setScheduleAsClass(e.target.checked)}
-                className="accent-[#9E2FD0]"
+                className="accent-ll-violet"
               />
               {t("messagesExtra.scheduleAsClassToggle")}
             </label>
@@ -149,7 +149,7 @@ const NewGroupModal = ({ currentUserId, currentUserRole, onClose, onCreate }) =>
             onClick={handleSubmit}
             disabled={!name.trim() || !selected.length || submitting}
             className="mt-4 w-full py-2.5 rounded-xl font-medium text-white transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:hover:scale-100 flex-shrink-0"
-            style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 4px 15px rgba(158,47,208,0.3)" }}
+            style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", boxShadow: "0 4px 15px rgb(var(--ll-violet) / 0.3)" }}
           >
             {submitting ? t("messagesExtra.creating") : t("messagesExtra.createGroup")}
           </button>

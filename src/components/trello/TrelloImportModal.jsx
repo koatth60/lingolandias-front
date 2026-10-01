@@ -104,7 +104,7 @@ const TrelloImportModal = ({ userId, initialToken, onClose, onImported }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-white dark:bg-[#1a1a2e] rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden border border-gray-200 dark:border-[#9E2FD0]/30 max-h-[85vh] flex flex-col">
+      <div className="bg-white dark:bg-[#1a1a2e] rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden border border-gray-200 dark:border-ll-violet/30 max-h-[85vh] flex flex-col">
         <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
           <h3 className="text-lg font-bold text-gray-800 dark:text-white">Migrate from Trello</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-white text-2xl leading-none p-1">×</button>
@@ -131,7 +131,7 @@ const TrelloImportModal = ({ userId, initialToken, onClose, onImported }) => {
             </div>
           ) : loading ? (
             <div className="flex flex-col items-center justify-center py-10 gap-3">
-              <div className="h-8 w-8 rounded-full border-4 border-[#9E2FD0]/30 border-t-[#9E2FD0] animate-spin" />
+              <div className="h-8 w-8 rounded-full border-4 border-ll-violet/30 border-t-ll-violet animate-spin" />
               <p className="text-sm text-gray-400 dark:text-gray-500">Loading your Trello boards...</p>
             </div>
           ) : remoteBoards.length === 0 ? (
@@ -165,7 +165,7 @@ const TrelloImportModal = ({ userId, initialToken, onClose, onImported }) => {
                         className={`flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg transition ${
                           isImported
                             ? 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400'
-                            : 'bg-[#9E2FD0] hover:bg-[#8a27b5] text-white disabled:opacity-50'
+                            : 'bg-ll-violet hover:bg-ll-violet-hover text-white disabled:opacity-50'
                         }`}
                       >
                         {isImported ? 'Imported ✓' : isImporting ? 'Importing...' : 'Import'}
@@ -183,7 +183,7 @@ const TrelloImportModal = ({ userId, initialToken, onClose, onImported }) => {
             <button onClick={handleDisconnect} className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
               Disconnect Trello account
             </button>
-            <button onClick={onClose} className="text-sm font-medium text-[#9E2FD0] hover:underline">
+            <button onClick={onClose} className="text-sm font-medium text-ll-violet hover:underline">
               Done
             </button>
           </div>

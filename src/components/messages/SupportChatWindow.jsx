@@ -359,9 +359,9 @@ const SupportChatWindow = () => {
     }
     if (AUDIO_EXTS.has(ext)) {
       return (
-        <div className="rounded-xl min-w-[200px] px-3 py-2.5" style={{ background: "rgba(246,184,46,0.10)", border: "1px solid rgba(246,184,46,0.30)" }}>
+        <div className="rounded-xl min-w-[200px] px-3 py-2.5" style={{ background: "rgba(232,162,58,0.10)", border: "1px solid rgba(232,162,58,0.30)" }}>
           <div className="flex items-center gap-1.5 mb-2">
-            <FiMusic size={11} className="flex-shrink-0" style={{ color: "#d4950a" }} />
+            <FiMusic size={11} className="flex-shrink-0" style={{ color: "#C4860A" }} />
             <p className="text-[11px] font-semibold truncate flex-1 min-w-0 text-gray-800 dark:text-gray-100">{fileName}</p>
           </div>
           <AudioPlayer src={fileUrl} variant="voiceNote" isSender={isSender} />
@@ -372,8 +372,8 @@ const SupportChatWindow = () => {
       return (
         <div className="rounded-xl overflow-hidden max-w-[280px]">
           <video src={fileUrl} controls className="w-full max-h-48 object-contain bg-black" />
-          <div className="px-2.5 py-1.5 flex items-center gap-1.5" style={{ background: "rgba(246,184,46,0.10)" }}>
-            <FiVideo size={11} style={{ color: "#d4950a" }} />
+          <div className="px-2.5 py-1.5 flex items-center gap-1.5" style={{ background: "rgba(232,162,58,0.10)" }}>
+            <FiVideo size={11} style={{ color: "#C4860A" }} />
             <span className="text-[11px] truncate text-gray-700 dark:text-gray-300">{fileName}</span>
           </div>
         </div>
@@ -383,9 +383,9 @@ const SupportChatWindow = () => {
     return (
       <a href={fileUrl} target="_blank" rel="noopener noreferrer"
         className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all min-w-[190px] max-w-[260px] no-underline"
-        style={{ background: "rgba(246,184,46,0.10)", border: "1px solid rgba(246,184,46,0.30)" }}>
+        style={{ background: "rgba(232,162,58,0.10)", border: "1px solid rgba(232,162,58,0.30)" }}>
         <div className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center"
-          style={{ background: "linear-gradient(135deg, #F6B82E, #d4950a)" }}>
+          style={{ background: "linear-gradient(135deg, #E8A23A, #C4860A)" }}>
           <FileIconComp size={14} className="text-white" />
         </div>
         <div className="min-w-0 flex-1">
@@ -434,10 +434,10 @@ const SupportChatWindow = () => {
 
       {/* Drag-and-drop overlay */}
       {isDraggingFile && (
-        <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none bg-[#F6B82E]/10 dark:bg-[#F6B82E]/15 backdrop-blur-[1px]">
-          <div className="flex flex-col items-center gap-2 px-6 py-5 rounded-2xl border-2 border-dashed" style={{ borderColor: "#F6B82E", background: "rgba(255,255,255,0.9)" }}>
-            <FiPaperclip size={22} style={{ color: "#F6B82E" }} />
-            <p className="text-sm font-semibold" style={{ color: "#d4950a" }}>{t("chatWindow.dropFilesHere")}</p>
+        <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none bg-[#E8A23A]/10 dark:bg-[#E8A23A]/15 backdrop-blur-[1px]">
+          <div className="flex flex-col items-center gap-2 px-6 py-5 rounded-2xl border-2 border-dashed" style={{ borderColor: "#E8A23A", background: "rgba(255,255,255,0.9)" }}>
+            <FiPaperclip size={22} style={{ color: "#E8A23A" }} />
+            <p className="text-sm font-semibold" style={{ color: "#C4860A" }}>{t("chatWindow.dropFilesHere")}</p>
           </div>
         </div>
       )}
@@ -445,33 +445,33 @@ const SupportChatWindow = () => {
       {/* Ambient orbs */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden hidden dark:block" aria-hidden="true">
         <div className="absolute rounded-full blur-3xl opacity-15"
-          style={{ background: "radial-gradient(circle, rgba(246,184,46,0.5), transparent 70%)", width: 320, height: 320, top: "-8%", right: "-5%" }} />
+          style={{ background: "radial-gradient(circle, rgba(232,162,58,0.5), transparent 70%)", width: 320, height: 320, top: "-8%", right: "-5%" }} />
         <div className="absolute rounded-full blur-3xl opacity-10"
-          style={{ background: "radial-gradient(circle, rgba(38,217,161,0.4), transparent 70%)", width: 260, height: 260, bottom: "-5%", left: "-5%" }} />
+          style={{ background: "radial-gradient(circle, rgba(31,164,140,0.4), transparent 70%)", width: 260, height: 260, bottom: "-5%", left: "-5%" }} />
       </div>
 
       {/* ── Header ── */}
       <div className="relative flex-shrink-0 z-10">
         <div className="absolute top-0 left-0 w-full h-[2px] z-10"
-          style={{ background: "linear-gradient(90deg, #F6B82E, #26D9A1, #F6B82E)" }} />
+          style={{ background: "linear-gradient(90deg, #E8A23A, #1FA48C, #E8A23A)" }} />
         <div className="absolute inset-0 dark:hidden"
-          style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.98), rgba(255,250,235,0.98))", borderBottom: "1px solid rgba(246,184,46,0.12)" }} />
+          style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.98), rgba(255,250,235,0.98))", borderBottom: "1px solid rgba(232,162,58,0.12)" }} />
         <div className="absolute inset-0 hidden dark:block"
-          style={{ background: "linear-gradient(135deg, rgba(20,16,40,0.98), rgba(30,22,55,0.98))", borderBottom: "1px solid rgba(246,184,46,0.18)" }} />
+          style={{ background: "linear-gradient(135deg, rgba(20,16,40,0.98), rgba(30,22,55,0.98))", borderBottom: "1px solid rgba(232,162,58,0.18)" }} />
 
         <div className="relative z-10 flex items-center gap-3 px-4 py-3 mt-[2px]">
           {/* Icon */}
           <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: "linear-gradient(135deg, #F6B82E, #d4950a)", boxShadow: "0 3px 12px rgba(246,184,46,0.35)" }}>
+            style={{ background: "linear-gradient(135deg, #E8A23A, #C4860A)", boxShadow: "0 3px 12px rgba(232,162,58,0.35)" }}>
             <FiRadio size={17} className="text-white" />
           </div>
 
           <div className="flex-1 min-w-0">
             <p className="text-sm font-extrabold truncate"
-              style={{ background: "linear-gradient(90deg, #F6B82E, #26D9A1)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+              style={{ background: "linear-gradient(90deg, #E8A23A, #1FA48C)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
               {t("supportChat.title")}
             </p>
-            <p className="text-[10px] font-semibold" style={{ color: "#26D9A1" }}>
+            <p className="text-[10px] font-semibold" style={{ color: "#1FA48C" }}>
               ● {t("supportChat.staffChannel")}
             </p>
           </div>
@@ -489,8 +489,8 @@ const SupportChatWindow = () => {
           {chatMessages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-48 gap-3">
               <div className="w-14 h-14 rounded-full flex items-center justify-center border"
-                style={{ background: "rgba(246,184,46,0.1)", borderColor: "rgba(246,184,46,0.25)" }}>
-                <FiRadio size={24} style={{ color: "#F6B82E" }} />
+                style={{ background: "rgba(232,162,58,0.1)", borderColor: "rgba(232,162,58,0.25)" }}>
+                <FiRadio size={24} style={{ color: "#E8A23A" }} />
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 text-center max-w-[200px]">
                 {t("supportChat.noUpdates")}
@@ -531,10 +531,10 @@ const SupportChatWindow = () => {
                           msg.userUrl ? (
                             <img src={msg.userUrl} alt="avatar"
                               className="w-7 h-7 rounded-full object-cover shadow"
-                              style={{ ring: adminMsg ? "2px solid #F6B82E" : undefined }} />
+                              style={{ ring: adminMsg ? "2px solid #E8A23A" : undefined }} />
                           ) : (
                             <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shadow"
-                              style={{ background: adminMsg ? "linear-gradient(135deg, #F6B82E, #d4950a)" : avatarColor }}>
+                              style={{ background: adminMsg ? "linear-gradient(135deg, #E8A23A, #C4860A)" : avatarColor }}>
                               {initials}
                             </div>
                           )
@@ -573,11 +573,11 @@ const SupportChatWindow = () => {
                         <div className="rounded-2xl rounded-br-sm text-white text-sm leading-relaxed shadow-md overflow-hidden"
                           style={{
                             background: user?.role === "admin"
-                              ? "linear-gradient(135deg, #F6B82E, #d4950a)"
-                              : "linear-gradient(135deg, #9E2FD0, #7b22a8)",
+                              ? "linear-gradient(135deg, #E8A23A, #C4860A)"
+                              : "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))",
                             boxShadow: user?.role === "admin"
-                              ? "0 3px 10px rgba(246,184,46,0.30)"
-                              : "0 3px 10px rgba(158,47,208,0.30)",
+                              ? "0 3px 10px rgba(232,162,58,0.30)"
+                              : "0 3px 10px rgb(var(--ll-violet) / 0.30)",
                           }}>
                           <div className="px-3.5 py-2">
                             {user?.role === "admin" && (
@@ -614,16 +614,16 @@ const SupportChatWindow = () => {
                         {showUsername && msg.username && msg.username !== "undefined" && (
                           <div className="flex items-center gap-1.5 mb-1.5 ml-1">
                             <p className={`font-bold truncate ${adminMsg ? "text-xs" : "text-[10px]"}`}
-                              style={{ color: adminMsg ? "#F6B82E" : "#9E2FD0" }}>
+                              style={{ color: adminMsg ? "#E8A23A" : "rgb(var(--ll-violet))" }}>
                               {msg.username}
                             </p>
                             {adminMsg && (
                               <span className="flex items-center gap-1 text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full"
                                 style={{
-                                  background: "linear-gradient(135deg, rgba(246,184,46,0.30), rgba(246,184,46,0.15))",
-                                  color: "#d4950a",
-                                  border: "1.5px solid rgba(246,184,46,0.55)",
-                                  boxShadow: "0 0 8px rgba(246,184,46,0.25)",
+                                  background: "linear-gradient(135deg, rgba(232,162,58,0.30), rgba(232,162,58,0.15))",
+                                  color: "#C4860A",
+                                  border: "1.5px solid rgba(232,162,58,0.55)",
+                                  boxShadow: "0 0 8px rgba(232,162,58,0.25)",
                                   letterSpacing: "0.05em",
                                 }}>
                                 <HiShieldCheck size={10} /> {t("supportChat.adminBadge")}
@@ -636,8 +636,8 @@ const SupportChatWindow = () => {
                           {adminMsg ? (
                             <div className="rounded-2xl rounded-bl-sm text-white text-sm leading-relaxed shadow-md overflow-hidden"
                               style={{
-                                background: "linear-gradient(135deg, #F6B82E, #d4950a)",
-                                boxShadow: "0 3px 10px rgba(246,184,46,0.30)",
+                                background: "linear-gradient(135deg, #E8A23A, #C4860A)",
+                                boxShadow: "0 3px 10px rgba(232,162,58,0.30)",
                               }}>
                               <div className="px-3.5 py-2">
                                 {msg.replyTo && (
@@ -657,8 +657,8 @@ const SupportChatWindow = () => {
                             <div className="rounded-2xl rounded-bl-sm text-sm leading-relaxed shadow-sm bg-white dark:bg-white/[0.07] text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-white/10 overflow-hidden">
                               <div className="px-3.5 py-2">
                                 {msg.replyTo && (
-                                  <div className="mb-1.5 pl-2 border-l-2 border-[#F6B82E]/60 rounded bg-[#F6B82E]/5 dark:bg-white/5 text-xs" style={{ padding: "4px 6px" }}>
-                                    <p className="font-semibold text-[10px] mb-0.5" style={{ color: "#d4950a" }}>{msg.replyTo.username}</p>
+                                  <div className="mb-1.5 pl-2 border-l-2 border-[#E8A23A]/60 rounded bg-[#E8A23A]/5 dark:bg-white/5 text-xs" style={{ padding: "4px 6px" }}>
+                                    <p className="font-semibold text-[10px] mb-0.5" style={{ color: "#C4860A" }}>{msg.replyTo.username}</p>
                                     <p className="line-clamp-2 text-[11px] text-gray-500 dark:text-gray-400">{msg.replyTo.message}</p>
                                   </div>
                                 )}
@@ -712,13 +712,13 @@ const SupportChatWindow = () => {
       )}
 
       {/* ── Input ── */}
-      <div className="relative flex-shrink-0 z-10 p-3 bg-white dark:bg-[#0f0c26] border-t border-gray-100 dark:border-[rgba(246,184,46,0.10)]">
+      <div className="relative flex-shrink-0 z-10 p-3 bg-white dark:bg-[#0f0c26] border-t border-gray-100 dark:border-[rgba(232,162,58,0.10)]">
 
         {/* Editing banner */}
         {editingMsg && (
           <div className="flex items-center justify-between gap-2 px-3 py-1.5 mb-2 rounded-lg"
-            style={{ background: "rgba(246,184,46,0.10)", border: "1px solid rgba(246,184,46,0.30)" }}>
-            <div className="flex items-center gap-1.5 text-xs" style={{ color: "#d4950a" }}>
+            style={{ background: "rgba(232,162,58,0.10)", border: "1px solid rgba(232,162,58,0.30)" }}>
+            <div className="flex items-center gap-1.5 text-xs" style={{ color: "#C4860A" }}>
               <FiEdit2 size={12} />
               <span>{t("chatWindow.editing")}</span>
             </div>
@@ -731,11 +731,11 @@ const SupportChatWindow = () => {
         {/* Reply banner */}
         {replyTo && !editingMsg && (
           <div className="flex items-center justify-between gap-2 px-3 py-1.5 mb-2 rounded-lg"
-            style={{ background: "rgba(158,47,208,0.06)", border: "1px solid rgba(158,47,208,0.20)" }}>
+            style={{ background: "rgb(var(--ll-violet) / 0.06)", border: "1px solid rgb(var(--ll-violet) / 0.20)" }}>
             <div className="flex items-center gap-1.5 min-w-0">
-              <FiCornerUpLeft size={12} className="flex-shrink-0" style={{ color: "#9E2FD0" }} />
+              <FiCornerUpLeft size={12} className="flex-shrink-0" style={{ color: "rgb(var(--ll-violet))" }} />
               <div className="min-w-0">
-                <p className="text-[10px] font-semibold" style={{ color: "#9E2FD0" }}>{replyTo.username}</p>
+                <p className="text-[10px] font-semibold" style={{ color: "rgb(var(--ll-violet))" }}>{replyTo.username}</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{replyTo.message}</p>
               </div>
             </div>
@@ -753,11 +753,11 @@ const SupportChatWindow = () => {
         />
         {stagedFile && !editingMsg && (
           <div className="flex items-center gap-2 px-3 py-2 mb-2 rounded-lg"
-            style={{ background: "rgba(246,184,46,0.10)", border: "1px solid rgba(246,184,46,0.30)" }}>
+            style={{ background: "rgba(232,162,58,0.10)", border: "1px solid rgba(232,162,58,0.30)" }}>
             {stagedFile.previewUrl ? (
               <img src={stagedFile.previewUrl} alt="preview" className="w-9 h-9 rounded-lg object-cover flex-shrink-0" />
             ) : (
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "linear-gradient(135deg, #F6B82E, #d4950a)" }}>
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "linear-gradient(135deg, #E8A23A, #C4860A)" }}>
                 <FiFile size={14} className="text-white" />
               </div>
             )}
@@ -768,7 +768,7 @@ const SupportChatWindow = () => {
           </div>
         )}
 
-        <div className="flex items-end gap-2 bg-gray-50 dark:bg-white/5 rounded-xl px-3 py-2 border border-gray-200 dark:border-white/10 focus-within:border-[rgba(246,184,46,0.5)] dark:focus-within:border-[rgba(246,184,46,0.4)] transition-colors">
+        <div className="flex items-end gap-2 bg-gray-50 dark:bg-white/5 rounded-xl px-3 py-2 border border-gray-200 dark:border-white/10 focus-within:border-[rgba(232,162,58,0.5)] dark:focus-within:border-[rgba(232,162,58,0.4)] transition-colors">
           <button onClick={() => setShowEmojiPicker((p) => !p)}
             className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg
                        text-gray-400 hover:text-amber-500 transition-colors self-end">
@@ -799,7 +799,7 @@ const SupportChatWindow = () => {
             onClick={sendMessage}
             disabled={(!message.trim() && !stagedFile) || isUploading}
             className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:opacity-90 active:scale-95 disabled:opacity-30 self-end"
-            style={{ background: "linear-gradient(135deg, #F6B82E, #d4950a)", boxShadow: "0 2px 8px rgba(246,184,46,0.35)" }}
+            style={{ background: "linear-gradient(135deg, #E8A23A, #C4860A)", boxShadow: "0 2px 8px rgba(232,162,58,0.35)" }}
           >
             {isUploading ? (
               <div className="w-3.5 h-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin" />

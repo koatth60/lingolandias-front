@@ -65,7 +65,7 @@ const AvatarPicker = ({ value, onChange, size = 64, align = "center" }) => {
         ) : (
           <div
             className="w-full h-full flex items-center justify-center text-white font-bold"
-            style={{ background: "linear-gradient(135deg, #F6B82E, #9E2FD0)" }}
+            style={{ background: "linear-gradient(135deg, #E8A23A, rgb(var(--ll-violet)))" }}
           >
             <FiUsers size={Math.round(size * 0.35)} />
           </div>
@@ -122,13 +122,13 @@ const AvatarPicker = ({ value, onChange, size = 64, align = "center" }) => {
                 onChange={(e) => setUrlInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && applyUrl()}
                 placeholder="https://..."
-                className="flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-800 dark:text-gray-100 outline-none focus:border-[#9E2FD0]"
+                className="flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-800 dark:text-gray-100 outline-none focus:border-ll-violet"
               />
               <button
                 type="button"
                 onClick={applyUrl}
                 className="px-2 rounded-lg text-white text-xs font-medium"
-                style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}
+                style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}
               >
                 <FiCheck size={13} />
               </button>
@@ -141,7 +141,7 @@ const AvatarPicker = ({ value, onChange, size = 64, align = "center" }) => {
                   key={src}
                   type="button"
                   onClick={() => { onChange(src); closeMenu(); }}
-                  className="w-10 h-10 rounded-full overflow-hidden border-2 border-transparent hover:border-[#9E2FD0] transition-colors"
+                  className="w-10 h-10 rounded-full overflow-hidden border-2 border-transparent hover:border-ll-violet transition-colors"
                 >
                   <img src={src} alt="" className="w-full h-full object-cover" />
                 </button>

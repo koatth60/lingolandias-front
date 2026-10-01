@@ -2,10 +2,10 @@
 
 export const BACKGROUND_PRESETS = [
   { label: 'Ocean Blue', value: '#0079BF' },
-  { label: 'Grape', value: '#9E2FD0' },
+  { label: 'Grape', value: '#6A2BD8' },
   { label: 'Midnight', value: '#1a1a2e' },
-  { label: 'Forest', value: '#26D9A1' },
-  { label: 'Sunset', value: '#F6B82E' },
+  { label: 'Forest', value: '#1FA48C' },
+  { label: 'Sunset', value: '#E8A23A' },
   { label: 'Rose', value: '#E91E8C' },
   { label: 'Purple Rain', value: 'linear-gradient(135deg,#667eea 0%,#764ba2 100%)' },
   { label: 'Peach', value: 'linear-gradient(135deg,#f6d365 0%,#fda085 100%)' },

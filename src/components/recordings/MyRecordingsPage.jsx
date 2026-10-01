@@ -96,7 +96,7 @@ const MyRecordingsPage = () => {
         <button
           onClick={fetchRecordings}
           className="p-2.5 rounded-xl text-gray-500 dark:text-gray-400 hover:text-white transition-all"
-          style={{ border: "1px solid rgba(158,47,208,0.2)" }}
+          style={{ border: "1px solid rgb(var(--ll-violet) / 0.2)" }}
           title={t("recordings.refresh")}
         >
           <FiRefreshCw size={16} />
@@ -105,12 +105,12 @@ const MyRecordingsPage = () => {
 
       {loading ? (
         <div className="flex justify-center py-20">
-          <div className="h-10 w-10 rounded-full border-4 border-[#9E2FD0] border-t-transparent animate-spin" />
+          <div className="h-10 w-10 rounded-full border-4 border-ll-violet border-t-transparent animate-spin" />
         </div>
       ) : (
         <div className="flex gap-6" style={{ minHeight: "50vh" }}>
           {isTeacher && (
-            <div className="w-64 flex-shrink-0 rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(158,47,208,0.15)" }}>
+            <div className="w-64 flex-shrink-0 rounded-2xl overflow-hidden" style={{ border: "1px solid rgb(var(--ll-violet) / 0.15)" }}>
               <div className="p-3 space-y-1 max-h-[70vh] overflow-y-auto">
                 {students.length === 0 ? (
                   <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-8">
@@ -125,9 +125,9 @@ const MyRecordingsPage = () => {
                         key={studentId}
                         onClick={() => setActiveStudent(studentId)}
                         className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center justify-between gap-2 ${
-                          isActive ? "text-white shadow-lg" : "text-gray-600 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-white/5"
+                          isActive ? "text-white shadow-lg" : "text-gray-600 dark:text-gray-300 hover:bg-ll-violet-tint dark:hover:bg-white/5"
                         }`}
-                        style={isActive ? { background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" } : {}}
+                        style={isActive ? { background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" } : {}}
                       >
                         <span className="flex items-center gap-2 min-w-0">
                           <FiUser size={13} className="flex-shrink-0" />
@@ -135,7 +135,7 @@ const MyRecordingsPage = () => {
                         </span>
                         <span
                           className={`flex-shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                            isActive ? "bg-white/20 text-white" : "bg-[rgba(158,47,208,0.15)] text-[#9E2FD0]"
+                            isActive ? "bg-white/20 text-white" : "bg-[rgb(var(--ll-violet) / 0.15)] text-ll-violet"
                           }`}
                         >
                           {group.recordings.length}

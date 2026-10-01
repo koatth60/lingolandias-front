@@ -5,18 +5,18 @@ const Accordion = ({ title, children }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="border-b border-gray-200 dark:border-[#9E2FD0]/20">
+    <div className="border-b border-gray-200 dark:border-ll-violet/20">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex justify-between items-center p-4 focus:outline-none group"
       >
-        <span className="text-lg font-medium text-gray-800 dark:text-white group-hover:text-[#9E2FD0] transition-colors">
+        <span className="text-lg font-medium text-gray-800 dark:text-white group-hover:text-ll-violet transition-colors">
           {title}
         </span>
         <FiChevronDown 
           size={20} 
           className={`text-gray-500 dark:text-gray-400 transition-all duration-300 ${
-            isOpen ? 'rotate-180 text-[#9E2FD0]' : ''
+            isOpen ? 'rotate-180 text-ll-violet' : ''
           }`}
         />
       </button>

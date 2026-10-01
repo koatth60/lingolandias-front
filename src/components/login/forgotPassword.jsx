@@ -1,3 +1,4 @@
+import HalloweenScenery from "../common/HalloweenScenery";
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FiMail, FiCheckCircle, FiArrowLeft, FiArrowRight } from 'react-icons/fi';
@@ -6,22 +7,22 @@ import Footer from './Footer';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const FLOATING_CHARS = [
-  { char: '文', left: '4%',  delay: '0s',    duration: '16s', size: '1.5rem', color: '#9E2FD0', opacity: 0.18 },
-  { char: 'A',  left: '11%', delay: '3s',    duration: '13s', size: '1.1rem', color: '#F6B82E', opacity: 0.14 },
-  { char: 'の', left: '19%', delay: '7s',    duration: '17s', size: '1.7rem', color: '#26D9A1', opacity: 0.16 },
-  { char: 'α',  left: '27%', delay: '1s',    duration: '14s', size: '1.2rem', color: '#c084fc', opacity: 0.15 },
-  { char: 'Ñ',  left: '34%', delay: '5s',    duration: '15s', size: '1.3rem', color: '#F6B82E', opacity: 0.13 },
-  { char: '한', left: '41%', delay: '9s',    duration: '12s', size: '1.6rem', color: '#9E2FD0', opacity: 0.17 },
-  { char: 'Ü',  left: '49%', delay: '2s',    duration: '19s', size: '1.0rem', color: '#26D9A1', opacity: 0.12 },
-  { char: '語', left: '57%', delay: '6s',    duration: '15s', size: '1.5rem', color: '#F6B82E', opacity: 0.16 },
-  { char: 'β',  left: '64%', delay: '0.5s',  duration: '13s', size: '1.2rem', color: '#9E2FD0', opacity: 0.14 },
-  { char: 'Ã',  left: '71%', delay: '4s',    duration: '18s', size: '1.1rem', color: '#26D9A1', opacity: 0.13 },
-  { char: 'あ', left: '78%', delay: '8s',    duration: '14s', size: '1.6rem', color: '#c084fc', opacity: 0.17 },
-  { char: 'π',  left: '85%', delay: '2.5s',  duration: '16s', size: '1.1rem', color: '#F6B82E', opacity: 0.12 },
-  { char: '字', left: '92%', delay: '10s',   duration: '12s', size: '1.4rem', color: '#9E2FD0', opacity: 0.15 },
-  { char: 'λ',  left: '16%', delay: '11s',   duration: '20s', size: '1.3rem', color: '#26D9A1', opacity: 0.13 },
-  { char: '学', left: '52%', delay: '13s',   duration: '15s', size: '1.5rem', color: '#c084fc', opacity: 0.16 },
-  { char: 'é',  left: '88%', delay: '1.5s',  duration: '11s', size: '1.0rem', color: '#F6B82E', opacity: 0.12 },
+  { char: '文', left: '4%',  delay: '0s',    duration: '16s', size: '1.5rem', color: 'rgb(var(--ll-violet))', opacity: 0.18 },
+  { char: 'A',  left: '11%', delay: '3s',    duration: '13s', size: '1.1rem', color: '#E8A23A', opacity: 0.14 },
+  { char: 'の', left: '19%', delay: '7s',    duration: '17s', size: '1.7rem', color: '#1FA48C', opacity: 0.16 },
+  { char: 'α',  left: '27%', delay: '1s',    duration: '14s', size: '1.2rem', color: 'rgb(var(--ll-violet-ink))', opacity: 0.15 },
+  { char: 'Ñ',  left: '34%', delay: '5s',    duration: '15s', size: '1.3rem', color: '#E8A23A', opacity: 0.13 },
+  { char: '한', left: '41%', delay: '9s',    duration: '12s', size: '1.6rem', color: 'rgb(var(--ll-violet))', opacity: 0.17 },
+  { char: 'Ü',  left: '49%', delay: '2s',    duration: '19s', size: '1.0rem', color: '#1FA48C', opacity: 0.12 },
+  { char: '語', left: '57%', delay: '6s',    duration: '15s', size: '1.5rem', color: '#E8A23A', opacity: 0.16 },
+  { char: 'β',  left: '64%', delay: '0.5s',  duration: '13s', size: '1.2rem', color: 'rgb(var(--ll-violet))', opacity: 0.14 },
+  { char: 'Ã',  left: '71%', delay: '4s',    duration: '18s', size: '1.1rem', color: '#1FA48C', opacity: 0.13 },
+  { char: 'あ', left: '78%', delay: '8s',    duration: '14s', size: '1.6rem', color: 'rgb(var(--ll-violet-ink))', opacity: 0.17 },
+  { char: 'π',  left: '85%', delay: '2.5s',  duration: '16s', size: '1.1rem', color: '#E8A23A', opacity: 0.12 },
+  { char: '字', left: '92%', delay: '10s',   duration: '12s', size: '1.4rem', color: 'rgb(var(--ll-violet))', opacity: 0.15 },
+  { char: 'λ',  left: '16%', delay: '11s',   duration: '20s', size: '1.3rem', color: '#1FA48C', opacity: 0.13 },
+  { char: '学', left: '52%', delay: '13s',   duration: '15s', size: '1.5rem', color: 'rgb(var(--ll-violet-ink))', opacity: 0.16 },
+  { char: 'é',  left: '88%', delay: '1.5s',  duration: '11s', size: '1.0rem', color: '#E8A23A', opacity: 0.12 },
 ];
 
 const FloatingChars = () => (
@@ -96,27 +97,28 @@ const ForgotPassword = () => {
 
   const pageShell = (children) => (
     <div
-      className="min-h-screen flex flex-col relative overflow-hidden"
+      className="ll-login-bg min-h-screen flex flex-col relative overflow-hidden"
       style={{ background: 'linear-gradient(135deg, #0d0a1e 0%, #1a1a2e 55%, #110e28 100%)' }}
     >
       {/* Ambient glow orbs */}
       <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
         <div
           className="login-orb w-48 h-48 sm:w-80 sm:h-80 md:w-[520px] md:h-[520px] top-[-8%] left-[-8%]"
-          style={{ background: 'radial-gradient(circle, rgba(158,47,208,0.35), transparent 70%)', animationDuration: '8s', animationDelay: '0s' }}
+          style={{ background: 'radial-gradient(circle, rgb(var(--ll-violet) / 0.35), transparent 70%)', animationDuration: '8s', animationDelay: '0s' }}
         />
         <div
           className="login-orb w-40 h-40 sm:w-64 sm:h-64 md:w-[420px] md:h-[420px] bottom-[-8%] right-[-6%]"
-          style={{ background: 'radial-gradient(circle, rgba(246,184,46,0.22), transparent 70%)', animationDuration: '10s', animationDelay: '2s' }}
+          style={{ background: 'radial-gradient(circle, rgba(232,162,58,0.22), transparent 70%)', animationDuration: '10s', animationDelay: '2s' }}
         />
         <div
           className="login-orb w-32 h-32 sm:w-52 sm:h-52 md:w-[320px] md:h-[320px] top-[38%] right-[22%]"
-          style={{ background: 'radial-gradient(circle, rgba(38,217,161,0.14), transparent 70%)', animationDuration: '13s', animationDelay: '5s' }}
+          style={{ background: 'radial-gradient(circle, rgba(31,164,140,0.14), transparent 70%)', animationDuration: '13s', animationDelay: '5s' }}
         />
       </div>
 
       {/* Floating language characters */}
       <FloatingChars />
+      <HalloweenScenery />
 
       {/* Subtle grid texture */}
       <div
@@ -154,14 +156,14 @@ const ForgotPassword = () => {
           {/* Top accent */}
           <div
             className="h-px mb-8 opacity-40"
-            style={{ background: 'linear-gradient(90deg, transparent, #26D9A1, #9E2FD0, transparent)' }}
+            style={{ background: 'linear-gradient(90deg, transparent, #1FA48C, rgb(var(--ll-violet)), transparent)' }}
           />
 
           <div
             className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6"
-            style={{ background: 'rgba(38,217,161,0.12)', border: '1px solid rgba(38,217,161,0.3)' }}
+            style={{ background: 'rgba(31,164,140,0.12)', border: '1px solid rgba(31,164,140,0.3)' }}
           >
-            <FiCheckCircle size={28} style={{ color: '#26D9A1' }} />
+            <FiCheckCircle size={28} style={{ color: '#1FA48C' }} />
           </div>
 
           <h2 className="text-xl font-extrabold text-white mb-3">{t('forgotPassword.successTitle')}</h2>
@@ -171,8 +173,8 @@ const ForgotPassword = () => {
             href="/login"
             className="inline-flex items-center justify-center gap-2 w-full py-3 px-6 rounded-xl font-bold text-white text-sm transition-transform duration-150 hover:scale-[1.02] active:scale-[0.98]"
             style={{
-              background: 'linear-gradient(135deg, #9E2FD0 0%, #7b22a8 50%, #b84a10 100%)',
-              boxShadow: '0 4px 24px rgba(158,47,208,0.4)',
+              background: 'linear-gradient(135deg, rgb(var(--ll-violet)) 0%, rgb(var(--ll-violet-hover)) 50%, #b84a10 100%)',
+              boxShadow: '0 4px 24px rgb(var(--ll-violet) / 0.4)',
             }}
           >
             <FiArrowLeft size={15} />
@@ -206,7 +208,7 @@ const ForgotPassword = () => {
         {/* Divider */}
         <div
           className="h-px mb-6 opacity-30"
-          style={{ background: 'linear-gradient(90deg, transparent, #9E2FD0, #F6B82E, transparent)' }}
+          style={{ background: 'linear-gradient(90deg, transparent, rgb(var(--ll-violet)), #E8A23A, transparent)' }}
         />
 
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -217,7 +219,7 @@ const ForgotPassword = () => {
             </label>
             <div className="relative">
               <FiMail
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-purple-400 transition-colors duration-200"
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-ll-violet-ink transition-colors duration-200"
                 size={16}
               />
               <input
@@ -235,8 +237,8 @@ const ForgotPassword = () => {
                 }}
                 onFocus={(e) => {
                   if (status.type !== 'error') {
-                    e.target.style.borderColor = 'rgba(158,47,208,0.7)';
-                    e.target.style.background = 'rgba(158,47,208,0.08)';
+                    e.target.style.borderColor = 'rgb(var(--ll-violet) / 0.7)';
+                    e.target.style.background = 'rgb(var(--ll-violet) / 0.08)';
                   }
                 }}
                 onBlur={(e) => {
@@ -258,10 +260,10 @@ const ForgotPassword = () => {
               style={
                 status.type === 'error'
                   ? { background: 'rgba(239,68,68,0.08)', borderColor: 'rgba(239,68,68,0.25)' }
-                  : { background: 'rgba(38,217,161,0.08)', borderColor: 'rgba(38,217,161,0.25)' }
+                  : { background: 'rgba(31,164,140,0.08)', borderColor: 'rgba(31,164,140,0.25)' }
               }
             >
-              <span style={{ color: status.type === 'error' ? '#ef4444' : '#26D9A1' }} className="shrink-0 mt-0.5">
+              <span style={{ color: status.type === 'error' ? '#ef4444' : '#1FA48C' }} className="shrink-0 mt-0.5">
                 ⚠
               </span>
               <span style={{ color: status.type === 'error' ? '#fca5a5' : '#6ee7b7' }}>{status.message}</span>
@@ -274,8 +276,8 @@ const ForgotPassword = () => {
             disabled={isLoading || !email}
             className="relative w-full py-3 px-6 rounded-xl font-bold text-white text-sm overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed transition-transform duration-150 hover:scale-[1.02] active:scale-[0.98]"
             style={{
-              background: 'linear-gradient(135deg, #9E2FD0 0%, #7b22a8 50%, #b84a10 100%)',
-              boxShadow: '0 4px 24px rgba(158,47,208,0.4)',
+              background: 'linear-gradient(135deg, rgb(var(--ll-violet)) 0%, rgb(var(--ll-violet-hover)) 50%, #b84a10 100%)',
+              boxShadow: '0 4px 24px rgb(var(--ll-violet) / 0.4)',
             }}
           >
             <span className="login-btn-shine absolute inset-0 pointer-events-none" />
@@ -302,7 +304,7 @@ const ForgotPassword = () => {
           <p className="text-center text-sm text-gray-500 pt-1">
             <a
               href="/login"
-              className="text-purple-400 hover:text-orange-400 transition-colors duration-200 font-medium"
+              className="text-ll-violet-ink hover:text-orange-400 transition-colors duration-200 font-medium"
             >
               {t('forgotPassword.rememberPassword')}
             </a>

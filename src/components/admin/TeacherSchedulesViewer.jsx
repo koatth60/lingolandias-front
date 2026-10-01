@@ -14,13 +14,13 @@ const ViewerToolbar = ({ label, onNavigate, onView, view }) => {
   return (
     <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-[#13102a] border-b border-gray-200 dark:border-white/[0.08] flex-wrap gap-3">
       <div className="flex items-center gap-2">
-        <button onClick={() => onNavigate(Navigate.PREVIOUS)} className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:border-purple-400 hover:text-purple-600 dark:hover:text-purple-400 transition-all">
+        <button onClick={() => onNavigate(Navigate.PREVIOUS)} className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-ll-violet-tint dark:hover:bg-ll-violet/10 hover:border-ll-violet hover:text-ll-violet-ink dark:hover:text-ll-violet-ink transition-all">
           <FiChevronLeft size={18} />
         </button>
-        <button onClick={() => onNavigate(Navigate.TODAY)} className="px-4 h-9 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:border-purple-400 hover:text-purple-600 dark:hover:text-purple-400 transition-all">
+        <button onClick={() => onNavigate(Navigate.TODAY)} className="px-4 h-9 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-ll-violet-tint dark:hover:bg-ll-violet/10 hover:border-ll-violet hover:text-ll-violet-ink dark:hover:text-ll-violet-ink transition-all">
           {t("common.today")}
         </button>
-        <button onClick={() => onNavigate(Navigate.NEXT)} className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:border-purple-400 hover:text-purple-600 dark:hover:text-purple-400 transition-all">
+        <button onClick={() => onNavigate(Navigate.NEXT)} className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-ll-violet-tint dark:hover:bg-ll-violet/10 hover:border-ll-violet hover:text-ll-violet-ink dark:hover:text-ll-violet-ink transition-all">
           <FiChevronRight size={18} />
         </button>
       </div>
@@ -33,7 +33,7 @@ const ViewerToolbar = ({ label, onNavigate, onView, view }) => {
             className={`px-4 h-8 rounded-lg text-sm font-bold capitalize transition-all ${
               view === v ? "text-white shadow-md" : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white"
             }`}
-            style={view === v ? { background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" } : {}}
+            style={view === v ? { background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" } : {}}
           >
             {v}
           </button>
@@ -84,7 +84,7 @@ const TeacherSchedulesViewer = ({ teachers }) => {
           <select
             value={selectedTeacherId}
             onChange={(e) => setSelectedTeacherId(e.target.value)}
-            className="pl-9 pr-8 py-2.5 text-sm rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#9E2FD0]/40 focus:border-[#9E2FD0] transition min-w-[220px]"
+            className="pl-9 pr-8 py-2.5 text-sm rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-ll-violet/40 focus:border-ll-violet transition min-w-[220px]"
           >
             <option value="">{t("admin.teacherSchedulesSelect")}</option>
             {teachers.map((tc) => (
@@ -103,7 +103,7 @@ const TeacherSchedulesViewer = ({ teachers }) => {
         <div className="relative" style={{ height: "560px" }}>
           {loading && (
             <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-white/70 dark:bg-black/40 backdrop-blur-sm">
-              <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "#9E2FD0", borderTopColor: "transparent" }} />
+              <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "rgb(var(--ll-violet))", borderTopColor: "transparent" }} />
             </div>
           )}
           <div className="rbc-admin-cal h-full rounded-xl overflow-hidden border border-gray-200 dark:border-white/[0.07]">
@@ -124,7 +124,7 @@ const TeacherSchedulesViewer = ({ teachers }) => {
               }}
               selectable={false}
               eventPropGetter={() => ({
-                style: { background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", border: "none", borderRadius: 6, color: "#fff", fontSize: 12, fontWeight: 600, padding: "2px 6px" },
+                style: { background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", border: "none", borderRadius: 6, color: "#fff", fontSize: 12, fontWeight: 600, padding: "2px 6px" },
               })}
             />
           </div>

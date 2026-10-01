@@ -1,3 +1,4 @@
+import { alpha } from "../../utils/colorAlpha";
 import { useEffect, useState } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -10,18 +11,18 @@ import {
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-const LANG_COLORS = { english: "#9E2FD0", spanish: "#26D9A1", polish: "#F6B82E", unknown: "#6b7280" };
+const LANG_COLORS = { english: "rgb(var(--ll-violet))", spanish: "#1FA48C", polish: "#E8A23A", unknown: "#6b7280" };
 const LANG_LABELS = { english: "English", spanish: "Spanish", polish: "Polish", unknown: "Other" };
 
 /* ── Stat Card ── */
 const StatCard = ({ icon: Icon, label, value, sub, color }) => (
-  <div className="relative rounded-2xl overflow-hidden" style={{ border: `1px solid ${color}22` }}>
+  <div className="relative rounded-2xl overflow-hidden" style={{ border: `1px solid ${alpha(color,"22")}` }}>
     <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: `linear-gradient(90deg, ${color}, transparent)` }} />
     <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(248,248,250,0.88)" }} />
     <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.55)" }} />
     <div className="relative z-10 p-5 flex items-center gap-4">
       <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-        style={{ background: `${color}18`, border: `1px solid ${color}33` }}>
+        style={{ background: `${alpha(color,"18")}`, border: `1px solid ${alpha(color,"33")}` }}>
         <Icon size={18} style={{ color }} />
       </div>
       <div>
@@ -35,20 +36,20 @@ const StatCard = ({ icon: Icon, label, value, sub, color }) => (
 
 /* ── Chart Card ── */
 const ChartCard = ({ title, icon: Icon, color, badge, children }) => (
-  <div className="relative rounded-2xl overflow-hidden" style={{ border: `1px solid ${color}22` }}>
+  <div className="relative rounded-2xl overflow-hidden" style={{ border: `1px solid ${alpha(color,"22")}` }}>
     <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: `linear-gradient(90deg, ${color}, transparent)` }} />
     <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(248,248,250,0.88)" }} />
     <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.55)" }} />
     <div className="relative z-10 p-5">
       <div className="flex items-center gap-2 mb-5">
         <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-          style={{ background: `${color}18`, border: `1px solid ${color}33` }}>
+          style={{ background: `${alpha(color,"18")}`, border: `1px solid ${alpha(color,"33")}` }}>
           <Icon size={13} style={{ color }} />
         </div>
         <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200">{title}</h3>
         {badge && (
           <span className="ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full"
-            style={{ background: `${color}18`, color, border: `1px solid ${color}33` }}>
+            style={{ background: `${alpha(color,"18")}`, color, border: `1px solid ${alpha(color,"33")}` }}>
             {badge}
           </span>
         )}
@@ -86,7 +87,7 @@ const TeacherStatusList = ({ allTeachers, activeNames }) => {
           <span key={t.id}
             className="text-xs font-semibold px-3 py-1 rounded-full"
             style={isActive
-              ? { background: "rgba(38,217,161,0.12)", color: "#26D9A1", border: "1px solid rgba(38,217,161,0.25)" }
+              ? { background: "rgba(31,164,140,0.12)", color: "#1FA48C", border: "1px solid rgba(31,164,140,0.25)" }
               : { background: "rgba(239,68,68,0.08)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.18)" }}>
             {t.name} {t.lastName}
           </span>
@@ -122,7 +123,7 @@ const AnalyticsDashboard = () => {
     return (
       <div className="flex items-center justify-center py-24">
         <div className="w-7 h-7 rounded-full border-2 border-t-transparent animate-spin"
-          style={{ borderColor: "#9E2FD0 transparent transparent transparent" }} />
+          style={{ borderColor: "rgb(var(--ll-violet)) transparent transparent transparent" }} />
       </div>
     );
   }
@@ -147,31 +148,31 @@ const AnalyticsDashboard = () => {
 
       {/* ── Row 1: Platform overview stat cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={FiUser}      label="Teachers"           value={stats?.teacherCount}    color="#9E2FD0" />
-        <StatCard icon={FiUsers}     label="Students"           value={stats?.studentCount}    color="#26D9A1" />
-        <StatCard icon={FiVideo}     label="Classes This Week"  value={sessions?.weeklyClassCount  ?? "—"} color="#F6B82E" sub="last 7 days" />
+        <StatCard icon={FiUser}      label="Teachers"           value={stats?.teacherCount}    color="rgb(var(--ll-violet))" />
+        <StatCard icon={FiUsers}     label="Students"           value={stats?.studentCount}    color="#1FA48C" />
+        <StatCard icon={FiVideo}     label="Classes This Week"  value={sessions?.weeklyClassCount  ?? "—"} color="#E8A23A" sub="last 7 days" />
         <StatCard icon={FiActivity}  label="Classes This Month" value={sessions?.monthlyClassCount ?? "—"} color="#ef4444" sub="last 30 days" />
       </div>
 
       {/* ── Row 2: students per teacher + language donut ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2">
-          <ChartCard title="Students per Teacher" icon={FiBarChart2} color="#9E2FD0">
+          <ChartCard title="Students per Teacher" icon={FiBarChart2} color="rgb(var(--ll-violet))">
             {teacherBarData.length === 0 ? <Empty /> : (
               <ResponsiveContainer width="100%" height={Math.max(220, teacherBarData.length * 30)}>
                 <BarChart data={teacherBarData} layout="vertical" margin={{ left: 0, right: 24 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(158,47,208,0.08)" horizontal={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--ll-violet) / 0.08)" horizontal={false} />
                   <XAxis type="number" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} allowDecimals={false} />
                   <YAxis type="category" dataKey="shortName" width={90} tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
-                  <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(158,47,208,0.06)" }} />
-                  <Bar dataKey="count" name="students" fill="#9E2FD0" radius={[0, 6, 6, 0]} maxBarSize={16} />
+                  <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgb(var(--ll-violet) / 0.06)" }} />
+                  <Bar dataKey="count" name="students" fill="rgb(var(--ll-violet))" radius={[0, 6, 6, 0]} maxBarSize={16} />
                 </BarChart>
               </ResponsiveContainer>
             )}
           </ChartCard>
         </div>
 
-        <ChartCard title="Language Distribution" icon={FiPieChart} color="#26D9A1">
+        <ChartCard title="Language Distribution" icon={FiPieChart} color="#1FA48C">
           {langData.length === 0 ? <Empty /> : (
             <>
               <div className="relative">
@@ -206,29 +207,29 @@ const AnalyticsDashboard = () => {
 
       {/* ── Row 3: Weekly hours per teacher ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <ChartCard title="Weekly Teaching Hours" icon={FiClock} color="#F6B82E" badge="last 7 days">
+        <ChartCard title="Weekly Teaching Hours" icon={FiClock} color="#E8A23A" badge="last 7 days">
           {weeklyHoursData.length === 0 ? <Empty msg="No completed classes tracked yet" /> : (
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={weeklyHoursData} layout="vertical" margin={{ left: 0, right: 24 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(246,184,46,0.08)" horizontal={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(232,162,58,0.08)" horizontal={false} />
                 <XAxis type="number" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
                 <YAxis type="category" dataKey="shortName" width={72} tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
-                <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(246,184,46,0.06)" }} />
-                <Bar dataKey="hours" name="hrs" fill="#F6B82E" radius={[0, 6, 6, 0]} maxBarSize={18} />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(232,162,58,0.06)" }} />
+                <Bar dataKey="hours" name="hrs" fill="#E8A23A" radius={[0, 6, 6, 0]} maxBarSize={18} />
               </BarChart>
             </ResponsiveContainer>
           )}
         </ChartCard>
 
-        <ChartCard title="Monthly Teaching Hours" icon={FiCalendar} color="#9E2FD0" badge="last 30 days">
+        <ChartCard title="Monthly Teaching Hours" icon={FiCalendar} color="rgb(var(--ll-violet))" badge="last 30 days">
           {monthlyHoursData.length === 0 ? <Empty msg="No completed classes tracked yet" /> : (
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={monthlyHoursData} layout="vertical" margin={{ left: 0, right: 24 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(158,47,208,0.08)" horizontal={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--ll-violet) / 0.08)" horizontal={false} />
                 <XAxis type="number" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
                 <YAxis type="category" dataKey="shortName" width={72} tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
-                <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(158,47,208,0.06)" }} />
-                <Bar dataKey="hours" name="hrs" fill="#9E2FD0" radius={[0, 6, 6, 0]} maxBarSize={18} />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgb(var(--ll-violet) / 0.06)" }} />
+                <Bar dataKey="hours" name="hrs" fill="rgb(var(--ll-violet))" radius={[0, 6, 6, 0]} maxBarSize={18} />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -236,7 +237,7 @@ const AnalyticsDashboard = () => {
       </div>
 
       {/* ── Row 4: Active / Inactive teachers this month ── */}
-      <ChartCard title="Teacher Activity This Month" icon={FiActivity} color="#26D9A1"
+      <ChartCard title="Teacher Activity This Month" icon={FiActivity} color="#1FA48C"
         badge={`${sessions?.activeTeacherNames?.length ?? 0} / ${teachers.length} active`}>
         {teachers.length === 0 ? <Empty /> : (
           <TeacherStatusList allTeachers={teachers} activeNames={sessions?.activeTeacherNames ?? []} />
@@ -244,21 +245,21 @@ const AnalyticsDashboard = () => {
       </ChartCard>
 
       {/* ── Row 5: Assignment rate ── */}
-      <div className="relative rounded-2xl overflow-hidden p-5" style={{ border: "1px solid rgba(38,217,161,0.22)" }}>
-        <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, #26D9A1, transparent)" }} />
+      <div className="relative rounded-2xl overflow-hidden p-5" style={{ border: "1px solid rgba(31,164,140,0.22)" }}>
+        <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, #1FA48C, transparent)" }} />
         <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(248,248,250,0.88)" }} />
         <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.55)" }} />
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <FiUserCheck size={14} style={{ color: "#26D9A1" }} />
+              <FiUserCheck size={14} style={{ color: "#1FA48C" }} />
               <span className="text-sm font-bold text-gray-700 dark:text-gray-200">Student Assignment Rate</span>
             </div>
-            <span className="text-lg font-extrabold" style={{ color: "#26D9A1" }}>{assignedPct}%</span>
+            <span className="text-lg font-extrabold" style={{ color: "#1FA48C" }}>{assignedPct}%</span>
           </div>
-          <div className="w-full h-3 rounded-full overflow-hidden" style={{ background: "rgba(38,217,161,0.12)" }}>
+          <div className="w-full h-3 rounded-full overflow-hidden" style={{ background: "rgba(31,164,140,0.12)" }}>
             <div className="h-full rounded-full transition-all duration-700"
-              style={{ width: `${assignedPct}%`, background: "linear-gradient(90deg, #26D9A1, #1fa07a)" }} />
+              style={{ width: `${assignedPct}%`, background: "linear-gradient(90deg, #1FA48C, #17886F)" }} />
           </div>
           <div className="flex justify-between mt-2">
             <span className="text-xs text-gray-400">{assignedCount} assigned</span>

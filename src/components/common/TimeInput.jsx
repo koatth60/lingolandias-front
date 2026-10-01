@@ -62,7 +62,7 @@ const TimeInput = ({ value, onChange, className = "" }) => {
 
   return (
     <div
-      className={`flex items-center gap-1.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-500/20 transition-all duration-200 ${className}`}
+      className={`flex items-center gap-1.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 focus-within:border-ll-violet focus-within:ring-2 focus-within:ring-ll-violet/20 transition-all duration-200 ${className}`}
     >
       <input
         type="text"
@@ -95,7 +95,7 @@ const TimeInput = ({ value, onChange, className = "" }) => {
                 ? "text-white"
                 : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white"
             }`}
-            style={meridiem === mer ? { background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" } : {}}
+            style={meridiem === mer ? { background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" } : {}}
           >
             {mer}
           </button>

@@ -48,7 +48,7 @@ const MobileClassList = ({ events, onEventClick, onEditTime, onManageParticipant
               <span
                 className={`text-xs font-bold uppercase tracking-wider ${
                   isTodayGroup
-                    ? "text-[#9E2FD0] dark:text-[#c084fc]"
+                    ? "text-ll-violet dark:text-ll-violet-ink"
                     : "text-gray-500 dark:text-gray-400"
                 }`}
               >
@@ -56,7 +56,7 @@ const MobileClassList = ({ events, onEventClick, onEditTime, onManageParticipant
               </span>
               <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
               {isTodayGroup && (
-                <span className="w-2 h-2 rounded-full bg-[#26D9A1] animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-[#1FA48C] animate-pulse" />
               )}
             </div>
 
@@ -79,21 +79,21 @@ const MobileClassList = ({ events, onEventClick, onEditTime, onManageParticipant
                     className="w-full text-left rounded-xl p-3.5 transition-all duration-150 active:scale-[0.98]
                                border border-gray-200 dark:border-white/10
                                bg-white dark:bg-white/[0.04]
-                               hover:border-[#9E2FD0]/30 dark:hover:border-[#9E2FD0]/30
+                               hover:border-ll-violet/30 dark:hover:border-ll-violet/30
                                hover:shadow-md"
                     style={
                       isNow
                         ? {
-                            borderColor: "rgba(38,217,161,0.5)",
+                            borderColor: "rgba(31,164,140,0.5)",
                             background:
-                              "linear-gradient(135deg, rgba(38,217,161,0.08), rgba(38,217,161,0.02))",
-                            boxShadow: "0 2px 12px rgba(38,217,161,0.15)",
+                              "linear-gradient(135deg, rgba(31,164,140,0.08), rgba(31,164,140,0.02))",
+                            boxShadow: "0 2px 12px rgba(31,164,140,0.15)",
                           }
                         : isSoon
                         ? {
-                            borderColor: "rgba(246,184,46,0.4)",
+                            borderColor: "rgba(232,162,58,0.4)",
                             background:
-                              "linear-gradient(135deg, rgba(246,184,46,0.06), rgba(246,184,46,0.02))",
+                              "linear-gradient(135deg, rgba(232,162,58,0.06), rgba(232,162,58,0.02))",
                           }
                         : {}
                     }
@@ -104,7 +104,7 @@ const MobileClassList = ({ events, onEventClick, onEditTime, onManageParticipant
                         <p
                           className={`text-sm font-bold ${
                             isNow
-                              ? "text-[#26D9A1]"
+                              ? "text-[#1FA48C]"
                               : "text-gray-800 dark:text-white"
                           }`}
                         >
@@ -120,8 +120,8 @@ const MobileClassList = ({ events, onEventClick, onEditTime, onManageParticipant
                         className="w-0.5 h-10 rounded-full flex-shrink-0"
                         style={{
                           background: isNow
-                            ? "linear-gradient(180deg, #26D9A1, #1fa07a)"
-                            : "linear-gradient(180deg, #9E2FD0, #7b22a8)",
+                            ? "linear-gradient(180deg, #1FA48C, #17886F)"
+                            : "linear-gradient(180deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))",
                         }}
                       />
 
@@ -140,12 +140,12 @@ const MobileClassList = ({ events, onEventClick, onEditTime, onManageParticipant
                             {t("mobileSchedule.min")}
                           </span>
                           {isNow && (
-                            <span className="text-[10px] font-bold text-[#26D9A1] uppercase">
+                            <span className="text-[10px] font-bold text-[#1FA48C] uppercase">
                               ● {t("mobileSchedule.live")}
                             </span>
                           )}
                           {isSoon && (
-                            <span className="text-[10px] font-bold text-[#F6B82E] uppercase">
+                            <span className="text-[10px] font-bold text-[#E8A23A] uppercase">
                               {t("mobileSchedule.soon")}
                             </span>
                           )}
@@ -168,11 +168,11 @@ const MobileClassList = ({ events, onEventClick, onEditTime, onManageParticipant
                           className="w-9 h-9 rounded-xl flex items-center justify-center"
                           style={{
                             background: isNow
-                              ? "linear-gradient(135deg, #26D9A1, #1fa07a)"
-                              : "linear-gradient(135deg, #9E2FD0, #7b22a8)",
+                              ? "linear-gradient(135deg, #1FA48C, #17886F)"
+                              : "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))",
                             boxShadow: isNow
-                              ? "0 2px 8px rgba(38,217,161,0.35)"
-                              : "0 2px 8px rgba(158,47,208,0.25)",
+                              ? "0 2px 8px rgba(31,164,140,0.35)"
+                              : "0 2px 8px rgb(var(--ll-violet) / 0.25)",
                           }}
                         >
                           <FiVideo size={14} className="text-white" />

@@ -5,7 +5,9 @@ import App from "./App.jsx";
 import { Provider } from "react-redux";
 import store from "./redux/store.js";
 import "./index.css";
+import "./styles/redesign.css";
 import { ThemeProvider } from "./context/ThemeContext.jsx";
+import { HalloweenProvider } from "./context/HalloweenContext.jsx";
 import "./i18n/index.js";
 
 // No-ops with no DSN set, so local dev stays silent by default. Also covers
@@ -54,9 +56,11 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <Provider store={store}>
       <ThemeProvider>
-        <div className="relative">
-          <App />
-        </div>
+        <HalloweenProvider>
+          <div className="relative">
+            <App />
+          </div>
+        </HalloweenProvider>
       </ThemeProvider>
     </Provider>
   </React.StrictMode>

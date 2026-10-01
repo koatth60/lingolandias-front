@@ -11,10 +11,10 @@ const UpdateAvailableBanner = () => {
     // Full-width-minus-margins on mobile (a forced rounded-full pill made
     // the text wrap into an unreadable narrow column on a phone screen);
     // reverts to the original centered, content-width pill from sm: up.
-    <div className="fixed bottom-5 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-auto z-[9999]
+    <div className="ll-above-tabbar fixed bottom-5 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:w-auto z-[9999]
                     flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-4 py-3 sm:py-2.5
                     rounded-2xl sm:rounded-full shadow-2xl text-sm text-white"
-      style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 8px 24px rgba(158,47,208,0.4)" }}>
+      style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", boxShadow: "0 8px 24px rgb(var(--ll-violet) / 0.4)" }}>
       <span className="font-medium">{t("common.updateAvailable")}</span>
       <button
         onClick={() => window.location.reload()}

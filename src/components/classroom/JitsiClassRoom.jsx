@@ -391,7 +391,7 @@ const JitsiClassRoom = () => {
         <button
           onClick={() => window.location.reload()}
           className="px-4 py-2 rounded-full text-white text-sm font-semibold"
-          style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}
+          style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}
         >
           Reload
         </button>
@@ -411,7 +411,7 @@ const JitsiClassRoom = () => {
         <button
           onClick={() => navigate(user.role === "admin" ? "/home" : "/schedule")}
           className="px-4 py-2 rounded-full text-white text-sm font-semibold"
-          style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}
+          style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}
         >
           Go back
         </button>
@@ -608,7 +608,7 @@ const JitsiClassRoom = () => {
               <button
                 onClick={() => window.location.reload()}
                 className="px-4 py-2 rounded-full text-white text-sm font-semibold"
-                style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}
+                style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}
               >
                 Reload
               </button>
@@ -637,7 +637,7 @@ const JitsiClassRoom = () => {
             <button
               onClick={() => window.location.reload()}
               className="px-4 py-2 rounded-full text-white text-sm font-semibold"
-              style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}
+              style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}
             >
               Reload
             </button>
@@ -657,7 +657,7 @@ const JitsiClassRoom = () => {
           <button
             onClick={() => window.location.reload()}
             className="px-4 py-2 rounded-full text-white text-sm font-semibold"
-            style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}
+            style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}
           >
             Reload
           </button>
@@ -876,7 +876,7 @@ const JitsiClassRoom = () => {
             className="absolute bottom-0 left-0 w-full pointer-events-none z-10 transition-all duration-300"
             style={{
               height: showChat ? "3px" : "0px",
-              background: "linear-gradient(90deg, #9E2FD0, #F6B82E, #26D9A1)",
+              background: "linear-gradient(90deg, rgb(var(--ll-violet)), #E8A23A, #1FA48C)",
             }}
           />
         )}
@@ -902,9 +902,9 @@ const JitsiClassRoom = () => {
             onClick={openChatFromToast}
             className="absolute top-4 right-4 z-20 flex items-center gap-2.5 pl-3 pr-4 py-2.5 rounded-2xl text-left transition-transform hover:scale-[1.02] active:scale-[0.98] chat-slide-in"
             style={{
-              background: "linear-gradient(135deg, rgba(158,47,208,0.92), rgba(123,34,168,0.92))",
+              background: "linear-gradient(135deg, rgb(var(--ll-violet) / 0.92), rgba(90,31,192,0.92))",
               backdropFilter: "blur(8px)",
-              boxShadow: "0 4px 20px rgba(158,47,208,0.4)",
+              boxShadow: "0 4px 20px rgb(var(--ll-violet) / 0.4)",
               maxWidth: "280px",
             }}
           >

@@ -1,3 +1,4 @@
+import HalloweenChatScene from "../common/HalloweenChatScene";
 // ChatWindowComponent.jsx
 import { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
@@ -260,7 +261,7 @@ const ChatWindowComponent = ({
         showCancelButton: true,
         confirmButtonText: t("messagesExtra.mentionAddConfirm"),
         cancelButtonText: t("messagesExtra.cancel"),
-        confirmButtonColor: "#9E2FD0",
+        confirmButtonColor: "rgb(var(--ll-violet))",
       }).then(({ isConfirmed }) => {
         if (!isConfirmed) return;
         insertMentionToken(candidate);
@@ -602,9 +603,9 @@ const ChatWindowComponent = ({
     if (AUDIO_EXTS.has(ext)) {
       return (
         <div className="rounded-xl min-w-[210px] px-3 py-2.5"
-          style={{ background: "rgba(158,47,208,0.08)", border: "1px solid rgba(158,47,208,0.25)" }}>
+          style={{ background: "rgb(var(--ll-violet) / 0.08)", border: "1px solid rgb(var(--ll-violet) / 0.25)" }}>
           <div className="flex items-center gap-1.5 mb-2">
-            <FiMusic size={11} className="flex-shrink-0 text-purple-500 dark:text-purple-400" />
+            <FiMusic size={11} className="flex-shrink-0 text-ll-violet-ink dark:text-ll-violet-ink" />
             <p className="text-[11px] font-semibold truncate text-gray-800 dark:text-gray-100 flex-1 min-w-0">{fileName}</p>
           </div>
           <AudioPlayer src={fileUrl} variant="voiceNote" />
@@ -616,20 +617,20 @@ const ChatWindowComponent = ({
       return (
         <div className="rounded-xl overflow-hidden max-w-[300px]">
           <video src={fileUrl} controls className="w-full max-h-48 object-contain bg-black" />
-          <div className="px-2.5 py-1.5 flex items-center gap-1.5" style={{ background: "rgba(158,47,208,0.06)" }}>
-            <FiVideo size={11} className="text-purple-500 dark:text-purple-400" />
+          <div className="px-2.5 py-1.5 flex items-center gap-1.5" style={{ background: "rgb(var(--ll-violet) / 0.06)" }}>
+            <FiVideo size={11} className="text-ll-violet-ink dark:text-ll-violet-ink" />
             <span className="text-[11px] truncate text-gray-700 dark:text-gray-300">{fileName}</span>
           </div>
         </div>
       );
     }
 
-    const extColor = EXT_COLORS[extUpper] || "#9E2FD0";
+    const extColor = EXT_COLORS[extUpper] || "rgb(var(--ll-violet))";
     const FileIconComp = ["doc", "docx", "txt", "pdf", "csv"].includes(ext) ? FiFileText : FiFile;
     return (
       <a href={fileUrl} target="_blank" rel="noopener noreferrer"
         className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all min-w-[200px] max-w-[280px] group/file no-underline"
-        style={{ background: "rgba(158,47,208,0.07)", border: "1px solid rgba(158,47,208,0.22)" }}>
+        style={{ background: "rgb(var(--ll-violet) / 0.07)", border: "1px solid rgb(var(--ll-violet) / 0.22)" }}>
         <div className="flex-shrink-0 w-10 h-10 rounded-xl flex flex-col items-center justify-center shadow-sm"
           style={{ background: extColor }}>
           <FileIconComp size={14} className="text-white mb-0.5" />
@@ -637,9 +638,9 @@ const ChatWindowComponent = ({
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-xs font-semibold truncate leading-snug text-gray-800 dark:text-gray-100">{fileName}</p>
-          <p className="text-[10px] uppercase font-medium tracking-wide mt-0.5 text-purple-600 dark:text-purple-400">{extUpper} file</p>
+          <p className="text-[10px] uppercase font-medium tracking-wide mt-0.5 text-ll-violet-ink dark:text-ll-violet-ink">{extUpper} file</p>
         </div>
-        <FiDownload size={14} className="flex-shrink-0 transition-transform group-hover/file:translate-y-0.5 text-purple-500 dark:text-purple-400" />
+        <FiDownload size={14} className="flex-shrink-0 transition-transform group-hover/file:translate-y-0.5 text-ll-violet-ink dark:text-ll-violet-ink" />
       </a>
     );
   };
@@ -922,7 +923,7 @@ const ChatWindowComponent = ({
     return (
       <>
         {translatedText.slice(0, idx)}
-        <span className="font-semibold rounded px-1" style={{ background: "rgba(158,47,208,0.15)", color: "inherit" }}>
+        <span className="font-semibold rounded px-1" style={{ background: "rgb(var(--ll-violet) / 0.15)", color: "inherit" }}>
           @{targetName}
         </span>
         {translatedText.slice(idx + targetName.length)}
@@ -945,10 +946,10 @@ const ChatWindowComponent = ({
             className="font-semibold rounded px-1"
             style={
               isMe
-                ? { background: "rgba(246,184,46,0.35)", color: "inherit" }
+                ? { background: "rgba(232,162,58,0.35)", color: "inherit" }
                 : isSender
                 ? { background: "rgba(255,255,255,0.25)", color: "inherit" }
-                : { background: "rgba(158,47,208,0.15)", color: "inherit" }
+                : { background: "rgb(var(--ll-violet) / 0.15)", color: "inherit" }
             }
           >
             @{name}
@@ -981,11 +982,11 @@ const ChatWindowComponent = ({
           file(s), same as pasting or picking via the paperclip. */}
       {isDraggingFile && (
         <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none
-                        bg-[#9E2FD0]/10 dark:bg-[#9E2FD0]/15 backdrop-blur-[1px]">
+                        bg-ll-violet/10 dark:bg-ll-violet/15 backdrop-blur-[1px]">
           <div className="flex flex-col items-center gap-2 px-6 py-5 rounded-2xl border-2 border-dashed
-                          border-[#9E2FD0] bg-white/90 dark:bg-[#1a1a2e]/90">
-            <FiPaperclip size={22} className="text-[#9E2FD0]" />
-            <p className="text-sm font-semibold text-[#9E2FD0]">{t("chatWindow.dropFilesHere")}</p>
+                          border-ll-violet bg-white/90 dark:bg-[#1a1a2e]/90">
+            <FiPaperclip size={22} className="text-ll-violet" />
+            <p className="text-sm font-semibold text-ll-violet">{t("chatWindow.dropFilesHere")}</p>
           </div>
         </div>
       )}
@@ -994,10 +995,11 @@ const ChatWindowComponent = ({
           completely flat with nothing to give the chat area any depth. */}
       <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
         <div className="absolute rounded-full blur-3xl opacity-[0.07] dark:opacity-20"
-          style={{ background: "radial-gradient(circle, rgba(158,47,208,0.5), transparent 70%)", width: "400px", height: "400px", top: "-10%", right: "-5%" }} />
+          style={{ background: "radial-gradient(circle, rgb(var(--ll-violet) / 0.5), transparent 70%)", width: "400px", height: "400px", top: "-10%", right: "-5%" }} />
         <div className="absolute rounded-full blur-3xl opacity-[0.06] dark:opacity-15"
-          style={{ background: "radial-gradient(circle, rgba(38,217,161,0.4), transparent 70%)", width: "350px", height: "350px", bottom: "-5%", left: "-5%" }} />
+          style={{ background: "radial-gradient(circle, rgba(31,164,140,0.4), transparent 70%)", width: "350px", height: "350px", bottom: "-5%", left: "-5%" }} />
       </div>
+      <HalloweenChatScene />
 
       {/* Header */}
       <div className="relative flex items-center gap-3 px-4 py-3 flex-shrink-0
@@ -1017,9 +1019,9 @@ const ChatWindowComponent = ({
             else if (chatType === "group") onViewGroupMembers?.();
           }}
           className={`w-9 h-9 rounded-2xl flex items-center justify-center flex-shrink-0
-                        bg-purple-100 dark:bg-purple-500/20 border border-purple-200 dark:border-purple-500/30
-                        ${chatType === "dm" || chatType === "group" ? "cursor-pointer hover:bg-purple-200 dark:hover:bg-purple-500/30 transition-colors" : ""}`}>
-          <FaComments className="text-purple-600 dark:text-purple-400" size={15} />
+                        bg-ll-violet-tint dark:bg-ll-violet/20 border border-ll-violet-line dark:border-ll-violet/30
+                        ${chatType === "dm" || chatType === "group" ? "cursor-pointer hover:bg-ll-violet-tint dark:hover:bg-ll-violet/30 transition-colors" : ""}`}>
+          <FaComments className="text-ll-violet-ink dark:text-ll-violet-ink" size={15} />
         </div>
 
         {/* Name + status */}
@@ -1038,7 +1040,7 @@ const ChatWindowComponent = ({
               <button onClick={handleJoinGeneralClass} title="Join video class"
                 className="flex items-center gap-1.5 px-2.5 py-1 rounded-full flex-shrink-0
                            text-white text-[11px] font-semibold transition-all duration-150 hover:scale-105 active:scale-95"
-                style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 2px 8px rgba(158,47,208,0.4)" }}>
+                style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", boxShadow: "0 2px 8px rgb(var(--ll-violet) / 0.4)" }}>
                 <FiVideo size={13} />
                 <span>Join</span>
               </button>
@@ -1055,8 +1057,8 @@ const ChatWindowComponent = ({
           {/* Online indicator — only meaningful for a 1:1 DM with a known peer */}
           {chatType === "dm" && otherOnline !== null && (
             <span className="flex items-center gap-1 mt-0.5">
-              <span className={`w-1.5 h-1.5 rounded-full ${otherOnline ? "bg-[#26D9A1]" : "bg-gray-400 dark:bg-gray-500"}`} />
-              <span className={`text-[11px] font-medium ${otherOnline ? "text-[#26D9A1]" : "text-gray-400 dark:text-gray-500"}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${otherOnline ? "bg-[#1FA48C]" : "bg-gray-400 dark:bg-gray-500"}`} />
+              <span className={`text-[11px] font-medium ${otherOnline ? "text-[#1FA48C]" : "text-gray-400 dark:text-gray-500"}`}>
                 {t(otherOnline ? "chatWindow.activeNow" : "chatWindow.offline")}
               </span>
             </span>
@@ -1076,7 +1078,7 @@ const ChatWindowComponent = ({
 
       {/* Accent line */}
       <div className="relative h-[2px] flex-shrink-0 z-10 opacity-70 dark:opacity-100"
-           style={{ background: "linear-gradient(90deg, #9E2FD0, #F6B82E, #26D9A1)" }} />
+           style={{ background: "linear-gradient(90deg, rgb(var(--ll-violet)), #E8A23A, #1FA48C)" }} />
 
       {/* Messages — the scroll container stays mounted while empty or
           loading (it used to be swapped for the spinner, so every cold open
@@ -1085,12 +1087,12 @@ const ChatWindowComponent = ({
       {chatMessages.length === 0 && (
         <div className="absolute inset-0 z-10 flex items-center justify-center">
           {isLoading ? (
-            <div className="w-8 h-8 rounded-full border-4 border-[#9E2FD0]/30 border-t-[#9E2FD0] animate-spin" />
+            <div className="w-8 h-8 rounded-full border-4 border-ll-violet/30 border-t-ll-violet animate-spin" />
           ) : (
             <div className="flex flex-col items-center justify-center gap-3">
-              <div className="w-14 h-14 rounded-full bg-purple-100 dark:bg-purple-500/20
-                             border border-purple-200 dark:border-purple-500/30 flex items-center justify-center">
-                <FaComments className="text-purple-400" size={24} />
+              <div className="w-14 h-14 rounded-full bg-ll-violet-tint dark:bg-ll-violet/20
+                             border border-ll-violet-line dark:border-ll-violet/30 flex items-center justify-center">
+                <FaComments className="text-ll-violet-ink" size={24} />
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400">{t("chatWindow.noMessages")}</p>
             </div>
@@ -1107,14 +1109,14 @@ const ChatWindowComponent = ({
         style={{ overflowAnchor: "auto" }}
         options={{ suppressScrollX: true }}
       >
-        <div ref={contentRef} className="p-4 sm:p-6">
+        <div ref={contentRef} className="px-2.5 py-3 sm:p-6">
           {hasMore && chatMessages.length > 0 && (
             <div className="flex justify-center mb-4">
               <button
                 onClick={handleLoadOlder}
                 disabled={loadingMore}
-                className="text-xs font-medium px-3 py-1.5 rounded-full text-[#9E2FD0] dark:text-purple-300
-                           bg-[#9E2FD0]/10 dark:bg-[#9E2FD0]/15 hover:bg-[#9E2FD0]/20 transition-colors
+                className="text-xs font-medium px-3 py-1.5 rounded-full text-ll-violet dark:text-ll-violet-ink
+                           bg-ll-violet/10 dark:bg-ll-violet/15 hover:bg-ll-violet/20 transition-colors
                            disabled:opacity-50"
               >
                 {loadingMore ? t("chatWindow.loading", "Loading...") : t("chatWindow.loadMore")}
@@ -1149,7 +1151,7 @@ const ChatWindowComponent = ({
                 let icon = <FiUsers size={12} className="text-gray-400 flex-shrink-0" />;
                 let text = "";
                 if (msg.messageType === "member_added") {
-                  icon = <FiUserPlus size={12} className="text-[#26D9A1] flex-shrink-0" />;
+                  icon = <FiUserPlus size={12} className="text-[#1FA48C] flex-shrink-0" />;
                   text = renderSystemTextWithTag(
                     t("messagesExtra.systemMemberAdded", { actor: msg.username, target: meta.targetName }),
                     meta.targetName
@@ -1164,21 +1166,21 @@ const ChatWindowComponent = ({
                   icon = <FiLogOut size={12} className="text-gray-400 flex-shrink-0" />;
                   text = t("messagesExtra.systemMemberLeft", { actor: msg.username });
                 } else if (msg.messageType === "group_renamed") {
-                  icon = <FiEdit2 size={12} className="text-[#9E2FD0] flex-shrink-0" />;
+                  icon = <FiEdit2 size={12} className="text-ll-violet flex-shrink-0" />;
                   text = t("messagesExtra.systemGroupRenamed", { actor: msg.username, oldName: meta.oldName, newName: meta.newName });
                 }
                 return (
                   <div key={msg.id || index} data-msg-id={msg.id}>
                     {showTimestamp && (
                       <div className="flex items-center gap-3 my-5">
-                        <div className="flex-1 h-px bg-[#9E2FD0]/15 dark:bg-white/10" />
-                        <span className="text-[10px] font-semibold text-[#9E2FD0] dark:text-purple-300
-                                       px-3 py-1 rounded-full bg-[#9E2FD0]/[0.06] dark:bg-black/40
-                                       backdrop-blur-sm border border-[#9E2FD0]/15 dark:border-white/10"
-                                       style={{ boxShadow: "0 1px 4px rgba(158,47,208,0.08)" }}>
+                        <div className="flex-1 h-px bg-ll-violet/15 dark:bg-white/10" />
+                        <span className="text-[10px] font-semibold text-ll-violet dark:text-ll-violet-ink
+                                       px-3 py-1 rounded-full bg-ll-violet/[0.06] dark:bg-black/40
+                                       backdrop-blur-sm border border-ll-violet/15 dark:border-white/10"
+                                       style={{ boxShadow: "0 1px 4px rgb(var(--ll-violet) / 0.08)" }}>
                           {formatTimestamp(msg.timestamp)}
                         </span>
-                        <div className="flex-1 h-px bg-[#9E2FD0]/15 dark:bg-white/10" />
+                        <div className="flex-1 h-px bg-ll-violet/15 dark:bg-white/10" />
                       </div>
                     )}
                     <li className="flex justify-center my-1">
@@ -1196,14 +1198,14 @@ const ChatWindowComponent = ({
                   <div key={msg.id || index} data-msg-id={msg.id}>
                     {showTimestamp && (
                       <div className="flex items-center gap-3 my-5">
-                        <div className="flex-1 h-px bg-[#9E2FD0]/15 dark:bg-white/10" />
-                        <span className="text-[10px] font-semibold text-[#9E2FD0] dark:text-purple-300
-                                       px-3 py-1 rounded-full bg-[#9E2FD0]/[0.06] dark:bg-black/40
-                                       backdrop-blur-sm border border-[#9E2FD0]/15 dark:border-white/10"
-                                       style={{ boxShadow: "0 1px 4px rgba(158,47,208,0.08)" }}>
+                        <div className="flex-1 h-px bg-ll-violet/15 dark:bg-white/10" />
+                        <span className="text-[10px] font-semibold text-ll-violet dark:text-ll-violet-ink
+                                       px-3 py-1 rounded-full bg-ll-violet/[0.06] dark:bg-black/40
+                                       backdrop-blur-sm border border-ll-violet/15 dark:border-white/10"
+                                       style={{ boxShadow: "0 1px 4px rgb(var(--ll-violet) / 0.08)" }}>
                           {formatTimestamp(msg.timestamp)}
                         </span>
-                        <div className="flex-1 h-px bg-[#9E2FD0]/15 dark:bg-white/10" />
+                        <div className="flex-1 h-px bg-ll-violet/15 dark:bg-white/10" />
                       </div>
                     )}
                     <li className="flex justify-center my-1.5">
@@ -1215,7 +1217,7 @@ const ChatWindowComponent = ({
                         <button
                           onClick={handleJoinGeneralClass}
                           className="text-xs font-semibold px-2.5 py-1 rounded-full text-white flex-shrink-0"
-                          style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}
+                          style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}
                         >
                           {t("messagesExtra.joinCall")}
                         </button>
@@ -1229,14 +1231,14 @@ const ChatWindowComponent = ({
                 <div key={msg.id || index} data-msg-id={msg.id}>
                   {showTimestamp && (
                     <div className="flex items-center gap-3 my-5">
-                      <div className="flex-1 h-px bg-[#9E2FD0]/15 dark:bg-white/10" />
-                      <span className="text-[10px] font-semibold text-[#9E2FD0] dark:text-purple-300
-                                     px-3 py-1 rounded-full bg-[#9E2FD0]/[0.06] dark:bg-black/40
-                                     backdrop-blur-sm border border-[#9E2FD0]/15 dark:border-white/10"
-                                     style={{ boxShadow: "0 1px 4px rgba(158,47,208,0.08)" }}>
+                      <div className="flex-1 h-px bg-ll-violet/15 dark:bg-white/10" />
+                      <span className="text-[10px] font-semibold text-ll-violet dark:text-ll-violet-ink
+                                     px-3 py-1 rounded-full bg-ll-violet/[0.06] dark:bg-black/40
+                                     backdrop-blur-sm border border-ll-violet/15 dark:border-white/10"
+                                     style={{ boxShadow: "0 1px 4px rgb(var(--ll-violet) / 0.08)" }}>
                         {formatTimestamp(msg.timestamp)}
                       </span>
-                      <div className="flex-1 h-px bg-[#9E2FD0]/15 dark:bg-white/10" />
+                      <div className="flex-1 h-px bg-ll-violet/15 dark:bg-white/10" />
                     </div>
                   )}
 
@@ -1249,12 +1251,12 @@ const ChatWindowComponent = ({
                           msg.avatarUrl ? (
                             <img src={msg.avatarUrl} alt="avatar"
                               onClick={() => msg.senderId && onViewProfile?.(msg.senderId)}
-                              className="w-8 h-8 rounded-full object-cover shadow ring-2 ring-purple-200 dark:ring-purple-500/30 cursor-pointer hover:opacity-80 transition-opacity" />
+                              className="w-8 h-8 rounded-full object-cover shadow ring-2 ring-ll-violet-line dark:ring-ll-violet/30 cursor-pointer hover:opacity-80 transition-opacity" />
                           ) : (
                             <div
                               onClick={() => msg.senderId && onViewProfile?.(msg.senderId)}
                               className="w-8 h-8 rounded-full flex items-center justify-center
-                                          text-white text-xs font-bold shadow ring-2 ring-purple-200 dark:ring-purple-500/30 cursor-pointer hover:opacity-80 transition-opacity"
+                                          text-white text-xs font-bold shadow ring-2 ring-ll-violet-line dark:ring-ll-violet/30 cursor-pointer hover:opacity-80 transition-opacity"
                               style={{ background: avatarColor }}>
                               {initials}
                             </div>
@@ -1264,22 +1266,22 @@ const ChatWindowComponent = ({
                     )}
 
                     {isSender ? (
-                      <div className="flex flex-col items-end max-w-[75%] sm:max-w-[60%]">
-                      <div className="flex items-end gap-1.5">
+                      <div className="flex flex-col items-end max-w-[88%] sm:max-w-[60%]">
+                      <div className="relative flex items-end gap-1.5">
                         {/* Reply + options */}
-                        <div className="flex items-center gap-0.5 self-end mb-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                        <div className="flex items-center gap-0.5 self-end mb-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150 max-sm:absolute max-sm:-top-8 max-sm:right-0 max-sm:z-10 max-sm:bg-ll-panel max-sm:border max-sm:border-ll-line max-sm:rounded-full max-sm:shadow-ll-1 max-sm:px-0.5">
                           <button
                             onClick={() => setReplyTo({ id: msg.id, message: legacyFileUrl ? "📎 File" : (msg.message || "📎 File"), username: msg.username })}
                             className="p-1.5 rounded-full text-gray-500 dark:text-gray-400
-                                       hover:text-purple-600 dark:hover:text-purple-400
-                                       hover:bg-purple-50 dark:hover:bg-white/10 transition-colors duration-150">
+                                       hover:text-ll-violet-ink dark:hover:text-ll-violet-ink
+                                       hover:bg-ll-violet-tint dark:hover:bg-white/10 transition-colors duration-150">
                             <FiCornerUpLeft size={13} />
                           </button>
                           <div className="relative">
                             <button onClick={() => toggleOptionsMenu(msg.id)}
                               className="p-1.5 rounded-full text-gray-500 dark:text-gray-400
-                                         hover:text-purple-600 dark:hover:text-purple-400
-                                         hover:bg-purple-50 dark:hover:bg-white/10 transition-colors duration-150">
+                                         hover:text-ll-violet-ink dark:hover:text-ll-violet-ink
+                                         hover:bg-ll-violet-tint dark:hover:bg-white/10 transition-colors duration-150">
                               <BsThreeDots size={14} />
                             </button>
                             {openMessageId === msg.id && (
@@ -1297,12 +1299,12 @@ const ChatWindowComponent = ({
                         <div className={`relative rounded-2xl rounded-br-sm ${
                             isImageOnly ? "overflow-hidden"
                             : isFileOnly ? ""
-                            : "px-4 py-2.5 text-white text-sm leading-relaxed"
+                            : "ll-bubble-out px-4 py-2.5 text-white text-sm leading-relaxed"
                           } ${msg._pending ? "opacity-60" : ""} ${msg._failed ? "ring-2 ring-red-400/70" : ""}`}
                           style={isImageOnly
                             ? { boxShadow: "0 4px 16px rgba(0,0,0,0.25)" }
                             : isFileOnly ? {}
-                            : { background: "linear-gradient(135deg, #9E2FD0 0%, #7b22a8 100%)", boxShadow: "0 3px 10px rgba(158,47,208,0.35)" }}>
+                            : { background: "linear-gradient(135deg, rgb(var(--ll-violet)) 0%, rgb(var(--ll-violet-hover)) 100%)", boxShadow: "0 3px 10px rgb(var(--ll-violet) / 0.35)" }}>
                           {/* Reply quote in bubble */}
                           {msg.replyTo && (
                             <div className="mb-2 pl-2 border-l-2 border-white/50 rounded bg-white/10 text-xs" style={{ padding: "4px 6px" }}>
@@ -1348,18 +1350,18 @@ const ChatWindowComponent = ({
                           <span className="text-[10px] mt-0.5 mr-1 text-gray-400">{t("chatWindow.sending")}</span>
                         ) : (
                           isLastOwnMessage && chatType === "dm" && (
-                            <span className={`text-[10px] mt-0.5 mr-1 ${isSeen ? "text-[#9E2FD0]" : "text-gray-400"}`}>
+                            <span className={`text-[10px] mt-0.5 mr-1 ${isSeen ? "text-ll-violet" : "text-gray-400"}`}>
                               {isSeen ? t("chatWindow.seen") : t("chatWindow.sent")}
                             </span>
                           )
                         )}
                       </div>
                     ) : (
-                      <div className="max-w-[75%] sm:max-w-[60%]">
+                      <div className="max-w-[84%] sm:max-w-[60%]">
                         {showUsername && msg.username && msg.username !== "undefined" && (
                           <p
                             onClick={() => msg.senderId && onViewProfile?.(msg.senderId)}
-                            className="text-[11px] font-semibold text-purple-600 dark:text-purple-400 mb-1 ml-1 cursor-pointer hover:underline w-fit"
+                            className="text-[11px] font-semibold text-ll-violet-ink dark:text-ll-violet-ink mb-1 ml-1 cursor-pointer hover:underline w-fit"
                           >
                             {msg.username}
                           </p>
@@ -1374,8 +1376,8 @@ const ChatWindowComponent = ({
                             style={isImageOnly ? { boxShadow: "0 4px 16px rgba(0,0,0,0.16)" } : isFileOnly ? {} : { boxShadow: "0 2px 8px rgba(20,20,40,0.08)" }}>
                             {/* Reply quote in received bubble */}
                             {msg.replyTo && (
-                              <div className="mb-2 pl-2 border-l-2 border-[#9E2FD0]/60 rounded bg-[#9E2FD0]/5 dark:bg-white/5 text-xs" style={{ padding: "4px 6px" }}>
-                                <p className="font-semibold text-[10px] mb-0.5 text-[#9E2FD0] dark:text-purple-300">{msg.replyTo.username}</p>
+                              <div className="mb-2 pl-2 border-l-2 border-ll-violet/60 rounded bg-ll-violet/5 dark:bg-white/5 text-xs" style={{ padding: "4px 6px" }}>
+                                <p className="font-semibold text-[10px] mb-0.5 text-ll-violet dark:text-ll-violet-ink">{msg.replyTo.username}</p>
                                 <p className="line-clamp-2 text-[11px] text-gray-500 dark:text-gray-400">{stripMentionMarkup(msg.replyTo.message)}</p>
                               </div>
                             )}
@@ -1399,7 +1401,7 @@ const ChatWindowComponent = ({
                             className="absolute left-full top-1/2 -translate-y-1/2 ml-1
                                        opacity-0 group-hover:opacity-100 transition-opacity
                                        p-1.5 rounded-full text-gray-400
-                                       hover:text-purple-600 dark:hover:text-purple-400
+                                       hover:text-ll-violet-ink dark:hover:text-ll-violet-ink
                                        hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
                             <FiCornerUpLeft size={13} />
                           </button>
@@ -1426,7 +1428,7 @@ const ChatWindowComponent = ({
         <button onClick={scrollToBottom}
           className="absolute right-4 z-20 w-9 h-9 rounded-full flex items-center justify-center shadow-lg
                      transition-all hover:scale-110 active:scale-95"
-          style={{ bottom: "80px", background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 4px 12px rgba(158,47,208,0.4)" }}>
+          style={{ bottom: "80px", background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", boxShadow: "0 4px 12px rgb(var(--ll-violet) / 0.4)" }}>
           <FiArrowDown size={16} className="text-white" />
           {newMsgCount > 0 && (
             <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500
@@ -1467,18 +1469,18 @@ const ChatWindowComponent = ({
                   onClick={() => insertMention(candidate)}
                   className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors ${
                     i === mentionActiveIndex
-                      ? "bg-[#9E2FD0]/10 dark:bg-[#9E2FD0]/20"
+                      ? "bg-ll-violet/10 dark:bg-ll-violet/20"
                       : "hover:bg-gray-50 dark:hover:bg-white/5"
                   }`}
                 >
                   <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[11px] font-bold flex-shrink-0"
-                    style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}>
+                    style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}>
                     {candidate.name.slice(0, 1).toUpperCase()}
                   </div>
                   <span className="text-sm text-gray-800 dark:text-white truncate flex-1">{candidate.name}</span>
                   {candidate.isMember === false && (
                     <span className="flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-md flex-shrink-0
-                                     bg-[#F6B82E]/15 text-[#d4a017] dark:text-[#F6B82E]">
+                                     bg-[#E8A23A]/15 text-[#C4860A] dark:text-[#E8A23A]">
                       <FiUserPlus size={10} />
                       {t("messagesExtra.addPeople")}
                     </span>
@@ -1550,11 +1552,11 @@ const ChatWindowComponent = ({
         {/* Reply banner */}
         {replyTo && !editingMsg && (
           <div className="flex items-center justify-between gap-2 px-3 py-1.5 mb-2 rounded-lg
-                         bg-[#9E2FD0]/5 dark:bg-[#9E2FD0]/10 border border-[#9E2FD0]/20">
+                         bg-ll-violet/5 dark:bg-ll-violet/10 border border-ll-violet/20">
             <div className="flex items-center gap-1.5 min-w-0">
-              <FiCornerUpLeft size={12} className="text-[#9E2FD0] flex-shrink-0" />
+              <FiCornerUpLeft size={12} className="text-ll-violet flex-shrink-0" />
               <div className="min-w-0">
-                <p className="text-[10px] font-semibold text-[#9E2FD0] dark:text-purple-300">{replyTo.username}</p>
+                <p className="text-[10px] font-semibold text-ll-violet dark:text-ll-violet-ink">{replyTo.username}</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{stripMentionMarkup(replyTo.message)}</p>
               </div>
             </div>
@@ -1564,9 +1566,11 @@ const ChatWindowComponent = ({
           </div>
         )}
 
-        <div className="flex items-end gap-1.5 bg-gray-50 dark:bg-black/40 rounded-2xl px-3 py-2
+        <div className="relative">
+          <svg className="hw-only ll-peek absolute right-16 -top-[18px] z-0 w-[34px] h-10 pointer-events-none" viewBox="0 0 40 46" aria-hidden="true"><path d="M20 2C10.5 2 4 9.5 4 19.5V42l4-3 4 3 4-3 4 3 4-3 4 3 4-3 4 3V19.5C36 9.5 29.5 2 20 2z" fill="rgba(246,242,255,.94)" /><ellipse cx="14.5" cy="19" rx="2.6" ry="3.6" fill="#140E1C" /><ellipse cx="25.5" cy="19" rx="2.6" ry="3.6" fill="#140E1C" /><ellipse cx="20" cy="28" rx="2.4" ry="3" fill="#140E1C" /></svg>
+        <div className="ll-composer relative z-[1] flex items-end gap-1.5 bg-gray-50 dark:bg-black/40 rounded-2xl px-3 py-2
                         border border-gray-200 dark:border-white/10
-                        focus-within:border-purple-400 dark:focus-within:border-purple-500/50
+                        focus-within:border-ll-violet dark:focus-within:border-ll-violet/50
                         transition-colors duration-200">
 
           <div className="flex items-center gap-0.5 flex-shrink-0 self-end mb-0.5">
@@ -1577,7 +1581,7 @@ const ChatWindowComponent = ({
               <button
                 onClick={() => setShowMoreOptions((p) => !p)}
                 className="sm:hidden p-1 rounded-lg text-gray-500 dark:text-gray-400
-                           hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-150">
+                           hover:text-ll-violet-ink dark:hover:text-ll-violet-ink transition-colors duration-150">
                 <FiPlus size={18} className={`transition-transform duration-150 ${showMoreOptions ? "rotate-45" : ""}`} />
               </button>
             )}
@@ -1597,14 +1601,14 @@ const ChatWindowComponent = ({
                 onClick={() => { setShowFormatMenu((p) => !p); setShowEmojiPicker(false); setShowMoreOptions(false); }}
                 title={t("chatWindow.formatText")}
                 className="p-1 rounded-lg text-gray-500 dark:text-gray-400
-                           hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-150">
+                           hover:text-ll-violet-ink dark:hover:text-ll-violet-ink transition-colors duration-150">
                 <BsType size={17} />
               </button>
 
               {/* File button */}
               <button onClick={() => { fileInputRef.current?.click(); setShowMoreOptions(false); }} disabled={isUploading}
                 className="p-1 rounded-lg text-gray-500 dark:text-gray-400
-                           hover:text-purple-600 dark:hover:text-purple-400
+                           hover:text-ll-violet-ink dark:hover:text-ll-violet-ink
                            disabled:opacity-40 transition-colors duration-150" title="Attach file">
                 <FiPaperclip size={17} className={isUploading ? "animate-pulse" : ""} />
               </button>
@@ -1627,7 +1631,7 @@ const ChatWindowComponent = ({
               title={isRecording ? t("chatWindow.stopRecording") : t("chatWindow.recordVoiceNote")}
               className={isRecording
                 ? "p-1.5 rounded-full bg-red-500 text-white animate-pulse transition-colors duration-150"
-                : "p-1 rounded-lg text-gray-500 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-150"}>
+                : "p-1 rounded-lg text-gray-500 dark:text-gray-400 hover:text-ll-violet-ink dark:hover:text-ll-violet-ink transition-colors duration-150"}>
               {isRecording ? <FiSquare size={13} /> : <FiMic size={17} />}
             </button>
           </div>
@@ -1665,11 +1669,12 @@ const ChatWindowComponent = ({
                        disabled:opacity-30 disabled:cursor-not-allowed
                        hover:scale-105 active:scale-95 text-white"
             style={{
-              background: (message.trim() || stagedFiles.length > 0) ? "linear-gradient(135deg, #9E2FD0, #7b22a8)" : "#9E2FD0",
+              background: (message.trim() || stagedFiles.length > 0) ? "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" : "rgb(var(--ll-violet))",
               opacity: (message.trim() || stagedFiles.length > 0) ? 1 : 0.3,
             }}>
             <img src={send} alt="send" className="w-4 h-4 brightness-200" />
           </button>
+        </div>
         </div>
 
         {showEmojiPicker && (
@@ -1697,8 +1702,8 @@ const ChatWindowComponent = ({
                   onClick={() => wrapSelection(delimiter)}
                   title={label}
                   className="p-2 rounded-lg text-gray-600 dark:text-gray-300
-                             hover:text-purple-600 dark:hover:text-purple-400
-                             hover:bg-purple-50 dark:hover:bg-white/10 transition-colors"
+                             hover:text-ll-violet-ink dark:hover:text-ll-violet-ink
+                             hover:bg-ll-violet-tint dark:hover:bg-white/10 transition-colors"
                 >
                   <Icon size={16} />
                 </button>

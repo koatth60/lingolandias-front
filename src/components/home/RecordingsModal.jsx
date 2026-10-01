@@ -85,12 +85,12 @@ const RecordingsModal = ({ onClose }) => {
       <div
         className="relative w-full max-w-4xl flex flex-col rounded-2xl overflow-hidden shadow-2xl"
         style={{
-          border: "1px solid rgba(158,47,208,0.25)",
+          border: "1px solid rgb(var(--ll-violet) / 0.25)",
           maxHeight: "85vh",
         }}
       >
         {/* Gradient bar */}
-        <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#9E2FD0] via-[#F6B82E] to-[#26D9A1]" />
+        <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-ll-violet via-[#E8A23A] to-[#1FA48C]" />
 
         {/* Background */}
         <div
@@ -101,11 +101,11 @@ const RecordingsModal = ({ onClose }) => {
         />
 
         {/* Header */}
-        <div className="relative z-10 flex items-center justify-between px-6 py-4 border-b border-[rgba(158,47,208,0.15)]">
+        <div className="relative z-10 flex items-center justify-between px-6 py-4 border-b border-[rgb(var(--ll-violet) / 0.15)]">
           <div className="flex items-center gap-3">
             <div
               className="w-9 h-9 rounded-xl flex items-center justify-center"
-              style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}
+              style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}
             >
               <FiVideo className="text-white" size={17} />
             </div>
@@ -138,7 +138,7 @@ const RecordingsModal = ({ onClose }) => {
 
           {/* Sidebar */}
           {allTabs.length > 0 && (
-            <div className="w-52 flex-shrink-0 border-r border-[rgba(158,47,208,0.12)] overflow-y-auto p-3 space-y-1">
+            <div className="w-52 flex-shrink-0 border-r border-[rgb(var(--ll-violet) / 0.12)] overflow-y-auto p-3 space-y-1">
               {allTabs.map((teacher) => {
                 const group = recordings[teacher];
                 const count = group?.recordings?.length || 0;
@@ -156,7 +156,7 @@ const RecordingsModal = ({ onClose }) => {
                     }`}
                     style={
                       isActive
-                        ? { background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }
+                        ? { background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }
                         : {}
                     }
                   >
@@ -182,7 +182,7 @@ const RecordingsModal = ({ onClose }) => {
                         className={`flex-shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
                           isActive
                             ? "bg-white/20 text-white"
-                            : "bg-[rgba(158,47,208,0.15)] text-[#9E2FD0]"
+                            : "bg-[rgb(var(--ll-violet) / 0.15)] text-ll-violet"
                         }`}
                       >
                         {count}
@@ -201,8 +201,8 @@ const RecordingsModal = ({ onClose }) => {
                 <div
                   className="w-8 h-8 rounded-full"
                   style={{
-                    border: "2px solid rgba(158,47,208,0.2)",
-                    borderTopColor: "#9E2FD0",
+                    border: "2px solid rgb(var(--ll-violet) / 0.2)",
+                    borderTopColor: "rgb(var(--ll-violet))",
                     animation: "spin 0.8s linear infinite",
                   }}
                 />

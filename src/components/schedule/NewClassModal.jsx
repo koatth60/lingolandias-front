@@ -81,7 +81,7 @@ const NewClassModal = ({ show, teacherId, teacherName, teacherEmail, teacherAvat
   const handleSubmit = async () => {
     if (!selected.length || !start || !end || submitting) return;
     if (end <= start) {
-      Swal.fire({ title: t("common.error"), text: t("addEvent.endBeforeStart"), icon: "error", confirmButtonColor: "#9E2FD0" });
+      Swal.fire({ title: t("common.error"), text: t("addEvent.endBeforeStart"), icon: "error", confirmButtonColor: "rgb(var(--ll-violet))" });
       return;
     }
     setSubmitting(true);
@@ -213,7 +213,7 @@ const NewClassModal = ({ show, teacherId, teacherName, teacherEmail, teacherAvat
       onCreated?.(data.schedules || []);
       onClose();
     } catch (err) {
-      Swal.fire({ title: t("common.error"), text: err.message, icon: "error", confirmButtonColor: "#9E2FD0" });
+      Swal.fire({ title: t("common.error"), text: err.message, icon: "error", confirmButtonColor: "rgb(var(--ll-violet))" });
     } finally {
       setSubmitting(false);
     }
@@ -227,13 +227,13 @@ const NewClassModal = ({ show, teacherId, teacherName, teacherEmail, teacherAvat
     >
       <div
         className="relative w-full max-w-md rounded-2xl bg-white dark:bg-[#0d0a1e] flex flex-col overflow-hidden"
-        style={{ maxHeight: "90vh", border: "1px solid rgba(158,47,208,0.30)", boxShadow: "0 32px 80px rgba(0,0,0,0.5)", zIndex: 100000 }}
+        style={{ maxHeight: "90vh", border: "1px solid rgb(var(--ll-violet) / 0.30)", boxShadow: "0 32px 80px rgba(0,0,0,0.5)", zIndex: 100000 }}
       >
-        <div className="absolute top-0 left-0 w-full h-[3px]" style={{ background: "linear-gradient(90deg, #9E2FD0, #F6B82E, #26D9A1)" }} />
+        <div className="absolute top-0 left-0 w-full h-[3px]" style={{ background: "linear-gradient(90deg, rgb(var(--ll-violet)), #E8A23A, #1FA48C)" }} />
 
         <div className="flex items-center justify-between px-5 pt-5 pb-4 flex-shrink-0 border-b border-gray-100 dark:border-white/[0.07]">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}>
               <FiCalendar size={16} className="text-white" />
             </div>
             <div className="min-w-0">
@@ -259,9 +259,9 @@ const NewClassModal = ({ show, teacherId, teacherName, teacherEmail, teacherAvat
                 {selected.map((p) => (
                   <span
                     key={p.id}
-                    className="flex items-center gap-1.5 pl-1 pr-2 py-1 rounded-full text-xs font-medium bg-[#9E2FD0]/10 text-[#9E2FD0] dark:bg-[#9E2FD0]/20"
+                    className="flex items-center gap-1.5 pl-1 pr-2 py-1 rounded-full text-xs font-medium bg-ll-violet/10 text-ll-violet dark:bg-ll-violet/20"
                   >
-                    <span className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white" style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}>
+                    <span className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white" style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}>
                       {getInitials(p.name, p.lastName)}
                     </span>
                     {p.name} {p.lastName}
@@ -279,7 +279,7 @@ const NewClassModal = ({ show, teacherId, teacherName, teacherEmail, teacherAvat
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={t("newClassModal.searchPlaceholder")}
-                className="w-full pl-9 pr-3 py-2.5 rounded-xl text-sm bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-[#9E2FD0]/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:border-[#9E2FD0]"
+                className="w-full pl-9 pr-3 py-2.5 rounded-xl text-sm bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-ll-violet/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:border-ll-violet"
               />
             </div>
             {query.trim().length >= 2 && (
@@ -294,7 +294,7 @@ const NewClassModal = ({ show, teacherId, teacherName, teacherEmail, teacherAvat
                     onClick={() => addPerson(u)}
                     className="flex items-center gap-2.5 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
                   >
-                    <span className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0" style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}>
+                    <span className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0" style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}>
                       {getInitials(u.name, u.lastName)}
                     </span>
                     <div className="min-w-0 flex-1">
@@ -307,7 +307,7 @@ const NewClassModal = ({ show, teacherId, teacherName, teacherEmail, teacherAvat
               </div>
             )}
             {existingLink && (
-              <p className="mt-2 text-[11px] text-[#26D9A1] flex items-center gap-1.5">
+              <p className="mt-2 text-[11px] text-[#1FA48C] flex items-center gap-1.5">
                 <FiCalendar size={11} />
                 {t("newClassModal.existingLinkNote")}
               </p>
@@ -324,7 +324,7 @@ const NewClassModal = ({ show, teacherId, teacherName, teacherEmail, teacherAvat
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={t("newClassModal.namePlaceholder")}
-              className="w-full px-3.5 py-2.5 rounded-xl text-sm bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-[#9E2FD0]/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:border-[#9E2FD0]"
+              className="w-full px-3.5 py-2.5 rounded-xl text-sm bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-ll-violet/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:border-ll-violet"
             />
           </div>
 
@@ -352,7 +352,7 @@ const NewClassModal = ({ show, teacherId, teacherName, teacherEmail, teacherAvat
                   className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all duration-200 ${
                     recurrenceWeeks === opt.value ? "text-white" : "text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-white/10"
                   }`}
-                  style={recurrenceWeeks === opt.value ? { background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" } : {}}
+                  style={recurrenceWeeks === opt.value ? { background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" } : {}}
                 >
                   {opt.label}
                 </button>
@@ -367,7 +367,7 @@ const NewClassModal = ({ show, teacherId, teacherName, teacherEmail, teacherAvat
             onClick={handleSubmit}
             disabled={submitting || !selected.length || !start || !end}
             className="w-full py-3 rounded-xl text-white text-sm font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
-            style={{ background: "linear-gradient(135deg, #F6B82E, #d4981a)", boxShadow: "0 4px 14px rgba(246,184,46,0.28)" }}
+            style={{ background: "linear-gradient(135deg, #E8A23A, #C4860A)", boxShadow: "0 4px 14px rgba(232,162,58,0.28)" }}
           >
             <FiClock size={14} /> {submitting ? t("messagesExtra.creating") : t("newClassModal.create")}
           </button>

@@ -1,3 +1,4 @@
+import { alpha } from "../../utils/colorAlpha";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
@@ -11,21 +12,21 @@ import Navbar from "../layout/navbar";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const glassCard = {
-  border: "1px solid rgba(158,47,208,0.15)",
-  boxShadow: "0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(158,47,208,0.06)",
+  border: "1px solid rgb(var(--ll-violet) / 0.15)",
+  boxShadow: "0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgb(var(--ll-violet) / 0.06)",
 };
 
 const FaqItem = ({ question, answer, index }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const colors = ["#9E2FD0", "#26D9A1", "#F6B82E"];
+  const colors = ["rgb(var(--ll-violet))", "#1FA48C", "#E8A23A"];
   const accentColor = colors[index % colors.length];
 
   return (
     <div
       className="relative rounded-xl overflow-hidden transition-all duration-200"
       style={{
-        border: `1px solid ${isOpen ? accentColor + "35" : "rgba(158,47,208,0.10)"}`,
-        background: isOpen ? `${accentColor}06` : "transparent",
+        border: `1px solid ${isOpen ? alpha(accentColor,"35") : "rgb(var(--ll-violet) / 0.10)"}`,
+        background: isOpen ? `${alpha(accentColor,"06")}` : "transparent",
       }}
     >
       <button
@@ -46,8 +47,8 @@ const FaqItem = ({ question, answer, index }) => {
         <div
           className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-200"
           style={{
-            background: isOpen ? accentColor : "rgba(158,47,208,0.08)",
-            border: `1px solid ${isOpen ? accentColor : "rgba(158,47,208,0.18)"}`,
+            background: isOpen ? accentColor : "rgb(var(--ll-violet) / 0.08)",
+            border: `1px solid ${isOpen ? accentColor : "rgb(var(--ll-violet) / 0.18)"}`,
           }}
         >
           <FiChevronDown
@@ -163,8 +164,8 @@ const HelpCenter = () => {
   };
 
   const inputStyle = {
-    background: "rgba(158,47,208,0.04)",
-    border: "1px solid rgba(158,47,208,0.18)",
+    background: "rgb(var(--ll-violet) / 0.04)",
+    border: "1px solid rgb(var(--ll-violet) / 0.18)",
     borderRadius: "10px",
     color: "inherit",
     width: "100%",
@@ -183,9 +184,9 @@ const HelpCenter = () => {
         style={{ background: "linear-gradient(135deg, #0d0a1e 0%, #1a1a2e 55%, #110e28 100%)" }} />
       <div className="absolute inset-0 pointer-events-none overflow-hidden hidden dark:block">
         <div className="absolute rounded-full blur-3xl opacity-10"
-          style={{ background: "radial-gradient(circle, rgba(158,47,208,0.6), transparent 70%)", width: "500px", height: "500px", top: "-5%", right: "0%" }} />
+          style={{ background: "radial-gradient(circle, rgb(var(--ll-violet) / 0.6), transparent 70%)", width: "500px", height: "500px", top: "-5%", right: "0%" }} />
         <div className="absolute rounded-full blur-3xl opacity-8"
-          style={{ background: "radial-gradient(circle, rgba(38,217,161,0.4), transparent 70%)", width: "350px", height: "350px", bottom: "10%", left: "5%" }} />
+          style={{ background: "radial-gradient(circle, rgba(31,164,140,0.4), transparent 70%)", width: "350px", height: "350px", bottom: "10%", left: "5%" }} />
       </div>
 
       <Dashboard />
@@ -199,29 +200,29 @@ const HelpCenter = () => {
           <div className="text-center py-2 sm:py-6">
             <div
               className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold mb-4"
-              style={{ background: "rgba(158,47,208,0.10)", border: "1px solid rgba(158,47,208,0.25)", color: "#9E2FD0" }}
+              style={{ background: "rgb(var(--ll-violet) / 0.10)", border: "1px solid rgb(var(--ll-violet) / 0.25)", color: "rgb(var(--ll-violet))" }}
             >
               <FiHelpCircle size={11} />
               {t("helpCenter.support")}
             </div>
-            <h1 className="text-3xl sm:text-5xl font-extrabold login-gradient-text mb-3">
+            <h1 className="hw-gothic text-3xl sm:text-5xl font-extrabold login-gradient-text mb-3">
               {t("helpCenter.title")}
             </h1>
             <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 max-w-md mx-auto">
               {t("helpCenter.subtitle")}
             </p>
             <div className="h-px mt-5 mx-auto max-w-xs opacity-40"
-              style={{ background: "linear-gradient(90deg, transparent, #9E2FD0, #F6B82E, #26D9A1, transparent)" }} />
+              style={{ background: "linear-gradient(90deg, transparent, rgb(var(--ll-violet)), #E8A23A, #1FA48C, transparent)" }} />
           </div>
 
           {/* FAQ card */}
           <div className="relative rounded-2xl overflow-hidden" style={glassCard}>
             <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(255,255,255,0.80)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
             <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.65)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
-            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#9E2FD0] via-[#F6B82E] to-[#26D9A1] opacity-70" />
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-ll-violet via-[#E8A23A] to-[#1FA48C] opacity-70" />
             <div className="relative z-10 p-5 sm:p-7">
               <div className="flex items-center gap-2 mb-5">
-                <FiMessageCircle size={16} style={{ color: "#9E2FD0" }} />
+                <FiMessageCircle size={16} style={{ color: "rgb(var(--ll-violet))" }} />
                 <h2 className="text-base sm:text-lg font-extrabold text-gray-700 dark:text-white">
                   {t("helpCenter.faq")}
                 </h2>
@@ -238,15 +239,15 @@ const HelpCenter = () => {
           <div className="relative rounded-2xl overflow-hidden" style={glassCard}>
             <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(255,255,255,0.80)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
             <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.65)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
-            <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, #26D9A1, #9E2FD0, transparent)" }} />
+            <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, #1FA48C, rgb(var(--ll-violet)), transparent)" }} />
             <div className="relative z-10 p-5 sm:p-7">
 
               <div className="flex items-center gap-2 mb-1">
                 <div
                   className="w-8 h-8 rounded-xl flex items-center justify-center"
-                  style={{ background: "rgba(38,217,161,0.12)", border: "1px solid rgba(38,217,161,0.28)" }}
+                  style={{ background: "rgba(31,164,140,0.12)", border: "1px solid rgba(31,164,140,0.28)" }}
                 >
-                  <FiMail size={15} style={{ color: "#26D9A1" }} />
+                  <FiMail size={15} style={{ color: "#1FA48C" }} />
                 </div>
                 <h2 className="text-base sm:text-lg font-extrabold text-gray-700 dark:text-white">
                   {t("helpCenter.contactSupport")}
@@ -259,15 +260,15 @@ const HelpCenter = () => {
               {sent ? (
                 <div
                   className="flex flex-col items-center gap-3 py-8 text-center rounded-xl"
-                  style={{ background: "rgba(38,217,161,0.06)", border: "1px solid rgba(38,217,161,0.20)" }}
+                  style={{ background: "rgba(31,164,140,0.06)", border: "1px solid rgba(31,164,140,0.20)" }}
                 >
-                  <FiCheckCircle size={32} style={{ color: "#26D9A1" }} />
+                  <FiCheckCircle size={32} style={{ color: "#1FA48C" }} />
                   <p className="text-sm font-semibold text-gray-700 dark:text-white">{t("helpCenter.sent")}</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">{t("helpCenter.sentSubtitle", { email: user?.email })}</p>
                   <button
                     onClick={() => setSent(false)}
                     className="mt-2 text-xs font-semibold px-4 py-2 rounded-lg transition-all hover:opacity-80"
-                    style={{ background: "rgba(38,217,161,0.12)", color: "#26D9A1", border: "1px solid rgba(38,217,161,0.25)" }}
+                    style={{ background: "rgba(31,164,140,0.12)", color: "#1FA48C", border: "1px solid rgba(31,164,140,0.25)" }}
                   >
                     {t("helpCenter.sendAnother")}
                   </button>
@@ -316,7 +317,7 @@ const HelpCenter = () => {
                       placeholder={t("helpCenter.subjectPlaceholder")}
                       value={subject}
                       onChange={(e) => setSubject(e.target.value)}
-                      className="dark:text-white text-gray-700 placeholder-gray-400 focus:border-[#9E2FD0]"
+                      className="dark:text-white text-gray-700 placeholder-gray-400 focus:border-ll-violet"
                       style={inputStyle}
                     />
                   </div>
@@ -329,7 +330,7 @@ const HelpCenter = () => {
                       placeholder={t("helpCenter.messagePlaceholder")}
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
-                      className="dark:text-white text-gray-800 placeholder-gray-400 focus:border-[#9E2FD0] resize-none"
+                      className="dark:text-white text-gray-800 placeholder-gray-400 focus:border-ll-violet resize-none"
                       style={inputStyle}
                     />
                   </div>
@@ -346,7 +347,7 @@ const HelpCenter = () => {
                     type="submit"
                     disabled={sending}
                     className="self-end flex items-center gap-2 px-6 py-3 rounded-xl text-white text-sm font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
-                    style={{ background: "linear-gradient(135deg, #9E2FD0, #7a20a8)", boxShadow: "0 4px 20px rgba(158,47,208,0.35)" }}
+                    style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", boxShadow: "0 4px 20px rgb(var(--ll-violet) / 0.35)" }}
                   >
                     <FiSend size={14} />
                     {sending ? t("helpCenter.sending") : t("helpCenter.send")}

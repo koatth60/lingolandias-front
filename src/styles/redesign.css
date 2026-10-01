@@ -1,0 +1,422 @@
+/* Lingolandias redesign — design tokens and global surfaces.
+   Colors are RGB triplets so Tailwind can apply alpha: rgb(var(--ll-violet) / .1) */
+
+:root {
+  --ll-canvas: 245 244 248;
+  --ll-panel: 255 255 255;
+  --ll-sidebar: 245 244 248;
+  --ll-subtle: 250 249 252;
+  --ll-hover: 244 242 248;
+  --ll-line: 226 223 235;
+  --ll-line-2: 209 205 222;
+  --ll-ink: 23 20 31;
+  --ll-ink-2: 78 74 92;
+  --ll-ink-3: 114 110 130;
+  --ll-ink-4: 162 158 176;
+  --ll-violet: 106 43 216;
+  --ll-violet-hover: 90 31 192;
+  --ll-violet-ink: 90 31 192;
+  --ll-violet-tint: 243 238 254;
+  --ll-violet-line: 221 208 251;
+  --ll-on-violet: 255 255 255;
+  --ll-gold: 232 162 58;
+  --ll-gold-ink: 143 92 12;
+  --ll-gold-tint: 253 244 228;
+  --ll-teal: 31 164 140;
+  --ll-teal-ink: 14 117 99;
+  --ll-teal-tint: 229 246 242;
+  --ll-ember: 224 120 47;
+  --ll-danger: 220 53 69;
+  --ll-shadow: 42 17 82;
+  --ll-bubble-in: 241 239 246;
+  --ll-deep: 42 17 82;
+}
+
+html.dark {
+  --ll-canvas: 14 13 19;
+  --ll-panel: 20 18 26;
+  --ll-sidebar: 14 13 19;
+  --ll-subtle: 24 22 31;
+  --ll-hover: 32 29 41;
+  --ll-line: 37 34 46;
+  --ll-line-2: 49 45 60;
+  --ll-ink: 238 236 244;
+  --ll-ink-2: 180 176 194;
+  --ll-ink-3: 140 136 156;
+  --ll-ink-4: 95 91 110;
+  --ll-violet: 116 70 238;
+  --ll-violet-hover: 133 88 247;
+  --ll-violet-ink: 184 158 255;
+  --ll-violet-tint: 34 26 56;
+  --ll-violet-line: 59 45 102;
+  --ll-on-violet: 255 255 255;
+  --ll-gold: 235 170 69;
+  --ll-gold-ink: 242 193 115;
+  --ll-gold-tint: 39 32 21;
+  --ll-teal: 43 190 159;
+  --ll-teal-ink: 99 215 189;
+  --ll-teal-tint: 15 36 30;
+  --ll-ember: 238 135 64;
+  --ll-danger: 240 90 104;
+  --ll-shadow: 0 0 0;
+  --ll-bubble-in: 34 31 44;
+}
+
+/* Halloween always renders on the dark base. */
+html.dark.theme-hw {
+  --ll-canvas: 13 9 19;
+  --ll-panel: 20 14 28;
+  --ll-sidebar: 13 9 19;
+  --ll-subtle: 24 17 34;
+  --ll-hover: 33 24 41;
+  --ll-line: 42 32 51;
+  --ll-line-2: 55 42 67;
+  --ll-ink: 243 238 247;
+  --ll-ink-2: 189 178 201;
+  --ll-ink-3: 147 135 160;
+  --ll-ink-4: 98 86 111;
+  --ll-violet: 240 138 44;
+  --ll-violet-hover: 245 155 69;
+  --ll-violet-ink: 255 176 102;
+  --ll-violet-tint: 42 26 14;
+  --ll-violet-line: 90 50 18;
+  --ll-on-violet: 26 13 2;
+  --ll-gold: 245 196 81;
+  --ll-gold-ink: 247 210 122;
+  --ll-gold-tint: 42 34 16;
+  --ll-teal: 60 203 143;
+  --ll-teal-ink: 123 227 178;
+  --ll-teal-tint: 15 36 25;
+  --ll-ember: 166 107 255;
+  --ll-bubble-in: 35 26 44;
+}
+
+html { background: rgb(var(--ll-canvas)); }
+
+body {
+  font-family: 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: rgb(var(--ll-ink));
+  background: rgb(var(--ll-canvas));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "ss01", "cv11";
+}
+
+html.theme-hw body {
+  background-color: rgb(var(--ll-canvas));
+  background-image:
+    radial-gradient(1.3px 1.3px at 14px 22px, rgba(255,255,255,.45) 50%, transparent 60%),
+    radial-gradient(1px 1px at 96px 64px, rgba(255,255,255,.28) 50%, transparent 60%),
+    radial-gradient(1.6px 1.6px at 152px 138px, rgba(255,214,150,.45) 50%, transparent 60%),
+    radial-gradient(1px 1px at 44px 160px, rgba(255,255,255,.25) 50%, transparent 60%),
+    radial-gradient(1.2px 1.2px at 128px 12px, rgba(255,255,255,.32) 50%, transparent 60%);
+  background-size: 180px 180px;
+}
+
+::selection { background: rgb(var(--ll-violet) / .18); color: rgb(var(--ll-violet-ink)); }
+
+:focus-visible { outline: 2px solid rgb(var(--ll-violet)); outline-offset: 2px; }
+
+.tabular, .font-mono { font-variant-numeric: tabular-nums; }
+
+* { scrollbar-color: rgb(var(--ll-line-2)) transparent; scrollbar-width: thin; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgb(var(--ll-line-2)); border-radius: 999px; border: 3px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background: rgb(var(--ll-ink-4)); border: 3px solid transparent; background-clip: padding-box; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgb(var(--ll-line-2)); }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+
+/* ── Legacy decoration neutralised: gradient text, glow orbs, pulsing badges ── */
+.login-gradient-text {
+  background: none !important;
+  -webkit-text-fill-color: currentColor !important;
+  color: rgb(var(--ll-ink));
+  animation: none !important;
+}
+.navbar-orb { display: none !important; }
+.notification-badge { animation: none !important; }
+.hover-glow:hover { box-shadow: 0 1px 2px rgb(var(--ll-shadow) / .05), 0 8px 24px -12px rgb(var(--ll-shadow) / .22); transform: none; }
+.gradient-border { border: 1px solid rgb(var(--ll-line)); background-image: none; background: rgb(var(--ll-panel)); }
+.dark .gradient-border { background-image: none; }
+
+.msg-chat-bg, .dark .msg-chat-bg {
+  background-color: rgb(var(--ll-subtle));
+  background-image: none;
+}
+html.theme-hw .msg-chat-bg {
+  background-image: radial-gradient(45% 55% at 100% 0%, rgba(245,196,81,.08), transparent 70%);
+}
+
+.msg-options-card, .light .msg-options-card, :not(.dark) .msg-options-card {
+  background: rgb(var(--ll-panel));
+  border: 1px solid rgb(var(--ll-line));
+  box-shadow: 0 1px 2px rgb(var(--ll-shadow) / .08), 0 16px 40px -16px rgb(var(--ll-shadow) / .35);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-radius: 10px;
+}
+
+/* The main content column floats on the canvas with an 8px inset on every
+   edge but the one touching the sidebar — matches the approved comp, where
+   the sidebar sits flush and the page panel is its own rounded card. */
+.ll-shell {
+  margin: 8px 8px 8px 0;
+  background: rgb(var(--ll-panel));
+  border: 1px solid rgb(var(--ll-line));
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgb(var(--ll-shadow) / .06);
+  min-height: calc(100vh - 16px);
+  overflow: hidden;
+}
+html.dark .ll-shell, html.theme-hw .ll-shell {
+  box-shadow: 0 1px 2px rgb(var(--ll-shadow) / .3);
+}
+
+/* ── Reusable redesign primitives ── */
+.ll-card {
+  background: rgb(var(--ll-panel));
+  border: 1px solid rgb(var(--ll-line-2));
+  border-radius: 12px;
+}
+.ll-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  height: 32px; padding: 0 13px; border-radius: 8px;
+  font-size: 13px; font-weight: 500; white-space: nowrap;
+  border: 1px solid transparent;
+  transition: background-color .12s, border-color .12s, color .12s;
+}
+.ll-btn:disabled { opacity: .5; cursor: not-allowed; }
+.ll-btn-primary { background: rgb(var(--ll-violet)); color: rgb(var(--ll-on-violet)); box-shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 1px 2px rgb(var(--ll-shadow) / .25); }
+.ll-btn-primary:hover:not(:disabled) { background: rgb(var(--ll-violet-hover)); }
+.ll-btn-secondary { background: rgb(var(--ll-panel)); color: rgb(var(--ll-ink)); border-color: rgb(var(--ll-line-2)); box-shadow: 0 1px 2px rgb(var(--ll-shadow) / .06); }
+.ll-btn-secondary:hover:not(:disabled) { background: rgb(var(--ll-subtle)); }
+.ll-btn-tint { background: rgb(var(--ll-violet-tint)); color: rgb(var(--ll-violet-ink)); }
+.ll-btn-tint:hover:not(:disabled) { background: rgb(var(--ll-violet-line) / .6); }
+.ll-btn-ghost { background: transparent; color: rgb(var(--ll-ink-2)); }
+.ll-btn-ghost:hover:not(:disabled) { background: rgb(var(--ll-hover)); color: rgb(var(--ll-ink)); }
+.ll-btn-sm { height: 28px; padding: 0 10px; font-size: 12.5px; border-radius: 7px; }
+
+.ll-pill { display: inline-flex; align-items: center; gap: 5px; height: 20px; padding: 0 7px; border-radius: 999px; font-size: 11.5px; font-weight: 500; white-space: nowrap; }
+.ll-pill-dot { width: 6px; height: 6px; border-radius: 999px; display: block; }
+
+/* Logo corner marks, taken from the two brackets around the "L". */
+.ll-brackets { position: relative; }
+.ll-brackets::before, .ll-brackets::after { content: ""; position: absolute; width: 14px; height: 14px; border: 0 solid currentColor; pointer-events: none; }
+.ll-brackets::before { top: 0; right: 0; border-top-width: 1.5px; border-right-width: 1.5px; }
+.ll-brackets::after { bottom: 0; left: 0; border-bottom-width: 1.5px; border-left-width: 1.5px; }
+
+/* The one gradient: the logo's orb, reserved for the "up next" moment. */
+.ll-orb-surface {
+  background:
+    radial-gradient(38% 60% at 88% 8%, rgba(242,179,61,.95) 0%, rgba(242,179,61,0) 70%),
+    radial-gradient(30% 50% at 72% 42%, rgba(224,120,47,.75) 0%, rgba(224,120,47,0) 70%),
+    radial-gradient(40% 70% at 96% 92%, rgba(31,164,140,.9) 0%, rgba(31,164,140,0) 70%),
+    radial-gradient(45% 80% at 62% 100%, rgba(155,48,255,.85) 0%, rgba(155,48,255,0) 70%),
+    linear-gradient(115deg, #2A1152 0%, #3B1670 45%, #4A1C8C 100%);
+}
+html.theme-hw .ll-orb-surface {
+  background:
+    radial-gradient(circle 34px at 80% 30%, #FFE7B8 0%, #FFD08A 55%, rgba(255,208,138,0) 100%),
+    radial-gradient(circle 150px at 80% 30%, rgba(240,138,44,.55) 0%, rgba(240,138,44,0) 70%),
+    radial-gradient(60% 45% at 30% 105%, rgba(166,107,255,.55) 0%, rgba(166,107,255,0) 70%),
+    radial-gradient(50% 40% at 95% 110%, rgba(60,203,143,.35) 0%, rgba(60,203,143,0) 70%),
+    linear-gradient(160deg, #120A22 0%, #1C0F33 55%, #2A1242 100%);
+}
+
+.ll-wotd-surface {
+  background: radial-gradient(70% 90% at 100% 0%, rgb(var(--ll-gold-tint)) 0%, transparent 60%), rgb(var(--ll-panel));
+}
+
+.ll-logo-orb {
+  border-radius: 999px; display: grid; place-items: center; color: #fff;
+  font-family: 'Bodoni Moda', Didot, Georgia, serif; font-weight: 500; line-height: 1;
+  background:
+    radial-gradient(60% 55% at 55% 18%, #F2B33D 0%, rgba(242,179,61,0) 70%),
+    radial-gradient(45% 45% at 12% 78%, #1FA48C 0%, rgba(31,164,140,0) 70%),
+    radial-gradient(60% 60% at 80% 70%, #9B30FF 0%, rgba(155,48,255,0) 70%),
+    #3B1670;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.15);
+}
+
+/* Halloween helpers */
+.hw-only { display: none !important; }
+html.theme-hw .hw-only { display: revert !important; }
+html.theme-hw .hw-hide { display: none !important; }
+html.theme-hw .hw-gothic { font-family: 'Pirata One', Georgia, serif !important; font-weight: 400 !important; letter-spacing: .01em !important; }
+
+@keyframes llFlicker { 0%{opacity:1} 9%{opacity:.72} 11%{opacity:1} 38%{opacity:.9} 41%{opacity:.55} 44%{opacity:1} 68%{opacity:.94} 71%{opacity:.7} 74%{opacity:1} }
+@keyframes llBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+@keyframes llDangle { 0%,100%{transform:translateY(0) rotate(0)} 50%{transform:translateY(10px) rotate(2deg)} }
+@keyframes llFog { from{transform:translateX(-3%)} to{transform:translateX(3%)} }
+@keyframes llGhostIn { from{opacity:0;transform:translate(-180px,40px) rotate(-12deg)} to{opacity:1;transform:none} }
+@keyframes llPop { from{opacity:0;transform:translateY(12px) scale(.98)} to{opacity:1;transform:none} }
+@keyframes llPeek { 0%,55%,100%{transform:translateY(34px)} 65%,90%{transform:translateY(-6px)} }
+.ll-flicker { animation: llFlicker 2.8s steps(1,end) infinite; }
+.ll-bob { animation: llBob 3.6s ease-in-out infinite; }
+.ll-dangle { transform-origin: 50% 0; animation: llDangle 5s ease-in-out infinite; }
+.ll-fog { animation: llFog 14s ease-in-out infinite alternate; }
+.ll-ghost-in { animation: llGhostIn 1.8s cubic-bezier(.16,1,.3,1) both, llBob 3.6s ease-in-out 1.8s infinite; }
+.ll-pop { animation: llPop .5s cubic-bezier(.16,1,.3,1) .3s both; }
+.ll-peek { transform: translateY(34px); animation: llPeek 4.5s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .ll-flicker, .ll-bob, .ll-dangle, .ll-fog, .ll-ghost-in, .ll-pop, .ll-peek { animation: none; }
+}
+
+/* ── React Big Calendar ── */
+.rbc-toolbar { background: transparent !important; padding: 0 !important; margin-bottom: 0 !important; border: none !important; }
+.rbc-toolbar button { display: none !important; }
+.rbc-calendar, .dark .rbc-calendar { font-family: inherit; background: transparent !important; border: none !important; color: rgb(var(--ll-ink)) !important; height: 100%; }
+.rbc-time-view, .dark .rbc-time-view { border: 1px solid rgb(var(--ll-line)) !important; border-radius: 12px; overflow: hidden; background: rgb(var(--ll-panel)) !important; }
+.rbc-time-header, .dark .rbc-time-header { background: rgb(var(--ll-subtle)) !important; border-bottom: 1px solid rgb(var(--ll-line)) !important; }
+.rbc-time-header-content, .dark .rbc-time-header-content { border-left: 1px solid rgb(var(--ll-line)) !important; background: transparent !important; }
+.rbc-time-header-gutter, .dark .rbc-time-header-gutter { background: transparent !important; }
+.rbc-header, .dark .rbc-header {
+  font-weight: 500; font-size: 12.5px; text-transform: none; letter-spacing: 0;
+  color: rgb(var(--ll-ink-3)) !important; padding: 9px 8px;
+  border-left: 1px solid rgb(var(--ll-line)) !important; border-bottom: none !important;
+  background: transparent !important;
+}
+.rbc-header.rbc-today, .dark .rbc-header.rbc-today { color: rgb(var(--ll-violet-ink)) !important; font-weight: 600; }
+.rbc-allday-cell, .dark .rbc-allday-cell { background: transparent !important; }
+.rbc-time-gutter .rbc-label, .rbc-timeslot-group .rbc-label,
+.dark .rbc-time-gutter .rbc-label, .dark .rbc-timeslot-group .rbc-label {
+  color: rgb(var(--ll-ink-3)) !important; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 10.5px; font-weight: 400; padding-right: 8px;
+}
+.rbc-timeslot-group, .dark .rbc-timeslot-group { border-bottom: 1px solid rgb(var(--ll-line)) !important; min-height: 44px; }
+.rbc-time-slot, .dark .rbc-time-slot { border-top: none !important; }
+.rbc-time-content, .dark .rbc-time-content { border-top: 1px solid rgb(var(--ll-line)) !important; background: transparent !important; }
+.rbc-time-content > * + * > *, .dark .rbc-time-content > * + * > * { border-left: 1px solid rgb(var(--ll-line)) !important; }
+.rbc-today, .dark .rbc-today { background: rgb(var(--ll-violet) / .04) !important; }
+.rbc-event, .dark .rbc-event {
+  border-radius: 7px !important; padding: 4px 8px !important; font-size: 12px; font-weight: 600;
+  box-shadow: none; cursor: pointer;
+}
+/* Color carries meaning here, not decoration: violet is a 1:1 class, teal is a group class. */
+.rbc-event.rbc-event-solo, .dark .rbc-event.rbc-event-solo {
+  background: rgb(var(--ll-violet-tint)) !important; color: rgb(var(--ll-violet-ink)) !important;
+  border-left: 3px solid rgb(var(--ll-violet)) !important;
+}
+.rbc-event.rbc-event-group, .dark .rbc-event.rbc-event-group {
+  background: rgb(var(--ll-teal-tint)) !important; color: rgb(var(--ll-teal-ink)) !important;
+  border-left: 3px solid rgb(var(--ll-teal)) !important;
+}
+.rbc-event:focus { outline: 2px solid rgb(var(--ll-violet)); outline-offset: 2px; }
+.rbc-event.rbc-selected, .dark .rbc-event.rbc-selected { box-shadow: 0 0 0 2px rgb(var(--ll-violet)) !important; }
+.rbc-event-label { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 10.5px; font-weight: 400; opacity: .85; }
+.rbc-current-time-indicator { background-color: rgb(var(--ll-ember)) !important; height: 2px; z-index: 3; }
+.rbc-current-time-indicator::before {
+  content: ''; position: absolute; width: 10px; height: 10px; border-radius: 50%;
+  background: rgb(var(--ll-ember)); top: -4px; left: -5px; box-shadow: 0 0 0 3px rgb(var(--ll-panel));
+}
+.rbc-month-view, .dark .rbc-month-view { background: rgb(var(--ll-panel)) !important; border: 1px solid rgb(var(--ll-line)) !important; border-radius: 12px; overflow: hidden; }
+.rbc-month-header { background: rgb(var(--ll-subtle)); }
+.rbc-day-bg + .rbc-day-bg, .dark .rbc-day-bg + .rbc-day-bg { border-left: 1px solid rgb(var(--ll-line)) !important; }
+.rbc-month-row + .rbc-month-row, .dark .rbc-month-row + .rbc-month-row { border-top: 1px solid rgb(var(--ll-line)) !important; }
+.rbc-off-range-bg, .dark .rbc-off-range-bg { background: rgb(var(--ll-subtle)) !important; }
+.rbc-date-cell, .dark .rbc-date-cell { padding: 6px 8px; font-size: 12px; font-weight: 500; color: rgb(var(--ll-ink-3)) !important; }
+.rbc-date-cell.rbc-now, .dark .rbc-date-cell.rbc-now { color: rgb(var(--ll-violet-ink)) !important; font-weight: 700; }
+.rbc-show-more, .dark .rbc-show-more { color: rgb(var(--ll-violet-ink)) !important; font-weight: 600; font-size: 12px; background: transparent; }
+.rbc-agenda-view table, .dark .rbc-agenda-view table { border: 1px solid rgb(var(--ll-line)) !important; border-radius: 12px; overflow: hidden; background: rgb(var(--ll-panel)); }
+.rbc-agenda-view table thead > tr > th { background: rgb(var(--ll-subtle)); color: rgb(var(--ll-ink-3)); font-weight: 500; font-size: 12px; border-bottom: 1px solid rgb(var(--ll-line)) !important; padding: 9px 12px; }
+.rbc-agenda-date-cell, .rbc-agenda-time-cell, .dark .rbc-agenda-date-cell, .dark .rbc-agenda-time-cell { font-size: 12.5px; color: rgb(var(--ll-ink-2)) !important; padding: 9px 12px; }
+.rbc-agenda-event-cell, .dark .rbc-agenda-event-cell { padding: 9px 12px; color: rgb(var(--ll-ink)) !important; }
+.rbc-agenda-view table tbody > tr + tr, .rbc-agenda-view table tbody > tr > td + td { border-color: rgb(var(--ll-line)) !important; }
+
+/* ── SweetAlert2 ── */
+.swal2-popup {
+  background: rgb(var(--ll-panel)) !important; color: rgb(var(--ll-ink)) !important;
+  border: 1px solid rgb(var(--ll-line)); border-radius: 14px !important;
+  box-shadow: 0 1px 2px rgb(var(--ll-shadow) / .08), 0 24px 60px -20px rgb(var(--ll-shadow) / .45) !important;
+  font-family: inherit !important;
+}
+.swal2-title { color: rgb(var(--ll-ink)) !important; font-size: 18px !important; font-weight: 600 !important; letter-spacing: -.01em; }
+.swal2-html-container { color: rgb(var(--ll-ink-2)) !important; font-size: 14px !important; }
+.swal2-styled { border-radius: 8px !important; font-size: 13.5px !important; font-weight: 500 !important; padding: 8px 16px !important; box-shadow: none !important; }
+.swal2-styled.swal2-confirm { background: rgb(var(--ll-violet)) !important; color: rgb(var(--ll-on-violet)) !important; }
+.swal2-styled.swal2-cancel { background: rgb(var(--ll-panel)) !important; color: rgb(var(--ll-ink)) !important; border: 1px solid rgb(var(--ll-line-2)) !important; }
+.swal2-styled.swal2-deny { background: rgb(var(--ll-danger)) !important; }
+.swal2-input, .swal2-textarea, .swal2-select { background: rgb(var(--ll-panel)) !important; color: rgb(var(--ll-ink)) !important; border: 1px solid rgb(var(--ll-line-2)) !important; border-radius: 8px !important; box-shadow: none !important; font-size: 14px !important; }
+
+/* ── react-toastify ── */
+.Toastify__toast {
+  background: rgb(var(--ll-panel)) !important; color: rgb(var(--ll-ink)) !important;
+  border: 1px solid rgb(var(--ll-line)); border-radius: 10px !important;
+  box-shadow: 0 1px 2px rgb(var(--ll-shadow) / .08), 0 16px 40px -16px rgb(var(--ll-shadow) / .35) !important;
+  font-family: inherit !important; font-size: 13.5px;
+}
+.Toastify__close-button { color: rgb(var(--ll-ink-3)) !important; }
+.Toastify__progress-bar { background: rgb(var(--ll-violet)) !important; }
+
+html.theme-hw .ll-wotd-surface {
+  background: radial-gradient(60% 80% at 90% 10%, rgba(240,138,44,.16), transparent 70%), rgb(var(--ll-panel));
+}
+html.theme-hw .ll-nav-active { border-color: rgb(var(--ll-violet-line)); box-shadow: 0 0 0 1px rgba(240,138,44,.12), 0 8px 22px -10px rgba(240,138,44,.55); }
+
+/* ── Halloween: legibility + browser surfaces ── */
+html.theme-hw .bg-ll-violet.text-white,
+html.theme-hw [style*="--ll-violet)"].text-white,
+html.theme-hw [style*="--ll-violet-hover)"].text-white { color: rgb(var(--ll-on-violet)); }
+html.theme-hw ::selection { background: rgb(var(--ll-violet) / .35); color: rgb(var(--ll-ink)); }
+html.theme-hw { scrollbar-color: rgb(var(--ll-line-2)) transparent; }
+html.theme-hw :focus-visible { outline-color: rgb(var(--ll-violet)); }
+
+/* Halloween chat: own bubbles are solid orange with dark ink, like the comp. */
+html.theme-hw .ll-bubble-out { color: rgb(var(--ll-on-violet)); background: rgb(var(--ll-violet)) !important; box-shadow: none !important; }
+html.theme-hw .ll-bubble-out [class*="text-white"] { color: rgb(var(--ll-on-violet) / .7); }
+html.theme-hw .ll-bubble-out a { color: inherit; text-decoration: underline; }
+
+html.theme-hw .ll-login-bg { background: linear-gradient(160deg, #07050B 0%, #120A22 55%, #1C0F33 100%) !important; }
+html.theme-hw h1.hw-gothic { font-size: 1.9em; line-height: 1.05; color: #FFE9C7; }
+html.theme-hw .login-gradient-text { background: none !important; -webkit-text-fill-color: currentColor; color: #FFE9C7; }
+
+@keyframes llFadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.ll-fade-up { animation: llFadeUp .24s cubic-bezier(.16,1,.3,1) both; }
+@media (prefers-reduced-motion: reduce) { .ll-fade-up { animation: none; } }
+
+/* ── Phone app chrome: bottom tab bar replaces the sidebar below lg ── */
+:root { --ll-tabbar-h: calc(64px + env(safe-area-inset-bottom)); }
+@keyframes llSheetUp { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes llFadeIn { from { opacity: 0; } to { opacity: 1; } }
+.ll-sheet-up { animation: llSheetUp .28s cubic-bezier(.16,1,.3,1) both; }
+.ll-fade-in { animation: llFadeIn .2s ease-out both; }
+.ll-tabbar { transition: transform .22s cubic-bezier(.16,1,.3,1); }
+html.ll-chat-open .ll-tabbar { transform: translateY(105%); pointer-events: none; }
+@media (max-width: 1023.98px) {
+  .ll-shell { margin: 0 0 var(--ll-tabbar-h) 0; min-height: calc(100vh - var(--ll-tabbar-h)); border-radius: 0; border-width: 0; box-shadow: none; }
+  html.ll-chat-open .ll-shell { margin-bottom: 0; min-height: 100vh; }
+}
+@media (prefers-reduced-motion: reduce) { .ll-sheet-up, .ll-fade-in, .ll-tabbar { animation: none; transition: none; } }
+/* hw-only forces display, so "hide on phones" needs its own, stronger rule. */
+@media (max-width: 639.98px) { html.theme-hw .hw-only.hw-sm-up { display: none !important; } }
+@media (max-width: 1023.98px) { html.ll-chat-open .ll-navbar { display: none; } }
+/* Floating status bars sit above the phone tab bar instead of under it. */
+@media (max-width: 1023.98px) {
+  .ll-above-tabbar { bottom: calc(var(--ll-tabbar-h) + 12px) !important; }
+  html.ll-chat-open .ll-above-tabbar { bottom: 16px !important; }
+}
+/* Phones: a smaller, higher moon so it never sits behind the session details. */
+@media (max-width: 639.98px) {
+  html.theme-hw .ll-orb-surface {
+    background:
+      radial-gradient(circle 24px at 88% 16%, #FFE7B8 0%, #FFD08A 55%, rgba(255,208,138,0) 100%),
+      radial-gradient(circle 90px at 88% 16%, rgba(240,138,44,.5) 0%, rgba(240,138,44,0) 70%),
+      radial-gradient(60% 45% at 30% 105%, rgba(166,107,255,.55) 0%, rgba(166,107,255,0) 70%),
+      radial-gradient(50% 40% at 95% 110%, rgba(60,203,143,.35) 0%, rgba(60,203,143,0) 70%),
+      linear-gradient(160deg, #120A22 0%, #1C0F33 55%, #2A1242 100%);
+  }
+}
+/* Text fields already show focus on their container; no second box inside it. */
+html.theme-hw textarea:focus-visible, html.theme-hw input:focus-visible { outline: none; }
+/* The composer hides the ghost's lower half, so it only peeks over the top edge. */
+html.theme-hw .ll-composer { background-color: rgb(var(--ll-panel)) !important; }
+
+/* Halloween user menu: warm border + glow like the comp's invite card, gothic name. */
+html.theme-hw .ll-user-menu { border-color: rgb(var(--ll-line-2)); box-shadow: 0 1px 2px rgb(var(--ll-shadow) / .5), 0 24px 60px -20px rgba(240,138,44,.35); }
+html.theme-hw .ll-menu-name { font-size: 20px; line-height: 1.1; color: #FFE9C7; }
+
+/* Halloween calendar: let the night scene show through the grid. */
+html.theme-hw .rbc-time-view { background: rgb(var(--ll-panel) / .5) !important; }
+html.theme-hw .rbc-time-header { background: rgb(var(--ll-subtle) / .7) !important; }
+html.theme-hw .rbc-today { background: rgb(var(--ll-violet) / .08) !important; }
+html.theme-hw .ll-nav-name { font-size: 18px; line-height: 1; color: #FFE9C7; }

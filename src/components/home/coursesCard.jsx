@@ -1,10 +1,10 @@
 import { FiArrowRight, FiClock } from "react-icons/fi";
 
 const LEVEL_COLORS = {
-  "Beginner":     { color: "#26D9A1", bg: "rgba(38,217,161,0.15)",  border: "rgba(38,217,161,0.35)" },
-  "Intermediate": { color: "#F6B82E", bg: "rgba(246,184,46,0.15)",  border: "rgba(246,184,46,0.35)" },
+  "Beginner":     { color: "#1FA48C", bg: "rgba(31,164,140,0.15)",  border: "rgba(31,164,140,0.35)" },
+  "Intermediate": { color: "#E8A23A", bg: "rgba(232,162,58,0.15)",  border: "rgba(232,162,58,0.35)" },
   "Advanced":     { color: "#ef4444", bg: "rgba(239,68,68,0.15)",   border: "rgba(239,68,68,0.35)"  },
-  "All Levels":   { color: "#9E2FD0", bg: "rgba(158,47,208,0.15)",  border: "rgba(158,47,208,0.35)" },
+  "All Levels":   { color: "rgb(var(--ll-violet))", bg: "rgb(var(--ll-violet) / 0.15)",  border: "rgb(var(--ll-violet) / 0.35)" },
 };
 
 const CoursesCard = ({ title, description, image, button, level, duration }) => {
@@ -13,14 +13,14 @@ const CoursesCard = ({ title, description, image, button, level, duration }) => 
   return (
     <div
       className="relative rounded-2xl overflow-hidden flex flex-col transition-transform duration-200 hover:-translate-y-1"
-      style={{ border: "1px solid rgba(158,47,208,0.15)", boxShadow: "0 6px 24px rgba(0,0,0,0.08)" }}
+      style={{ border: "1px solid rgb(var(--ll-violet) / 0.15)", boxShadow: "0 6px 24px rgba(0,0,0,0.08)" }}
     >
       {/* Glass backgrounds */}
       <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }} />
       <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.80)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }} />
 
       {/* Top accent bar */}
-      <div className="absolute top-0 left-0 w-full h-[2px] z-10" style={{ background: "linear-gradient(90deg, #9E2FD0, #F6B82E, #26D9A1)" }} />
+      <div className="absolute top-0 left-0 w-full h-[2px] z-10" style={{ background: "linear-gradient(90deg, rgb(var(--ll-violet)), #E8A23A, #1FA48C)" }} />
 
       {/* Image */}
       <div className="relative z-10 overflow-hidden" style={{ height: "180px" }}>
@@ -49,7 +49,7 @@ const CoursesCard = ({ title, description, image, button, level, duration }) => 
         {/* Button */}
         <button
           className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-white text-sm font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] group"
-          style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 4px 14px rgba(158,47,208,0.30)" }}
+          style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", boxShadow: "0 4px 14px rgb(var(--ll-violet) / 0.30)" }}
         >
           {button}
           <FiArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform duration-150" />

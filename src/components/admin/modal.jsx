@@ -49,12 +49,12 @@ const Modal = ({ isOpen, onClose, onSave }) => {
       <div
         className="relative w-full max-w-sm rounded-2xl overflow-hidden"
         style={{
-          border: "1px solid rgba(158,47,208,0.25)",
-          boxShadow: "0 24px 60px rgba(0,0,0,0.35), 0 4px 16px rgba(158,47,208,0.15)",
+          border: "1px solid rgb(var(--ll-violet) / 0.25)",
+          boxShadow: "0 24px 60px rgba(0,0,0,0.35), 0 4px 16px rgb(var(--ll-violet) / 0.15)",
         }}
       >
         {/* Top accent line */}
-        <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#9E2FD0] via-[#F6B82E] to-[#26D9A1]" />
+        <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-ll-violet via-[#E8A23A] to-[#1FA48C]" />
 
         {/* Glass background */}
         <div
@@ -73,7 +73,7 @@ const Modal = ({ isOpen, onClose, onSave }) => {
             <div className="flex items-center gap-2.5">
               <div
                 className="w-8 h-8 rounded-xl flex items-center justify-center"
-                style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 3px 10px rgba(158,47,208,0.4)" }}
+                style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", boxShadow: "0 3px 10px rgb(var(--ll-violet) / 0.4)" }}
               >
                 <FiCamera size={15} className="text-white" />
               </div>
@@ -84,7 +84,7 @@ const Modal = ({ isOpen, onClose, onSave }) => {
             <button
               onClick={reset}
               className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
-              style={{ background: "rgba(158,47,208,0.07)", border: "1px solid rgba(158,47,208,0.15)" }}
+              style={{ background: "rgb(var(--ll-violet) / 0.07)", border: "1px solid rgb(var(--ll-violet) / 0.15)" }}
             >
               <FiX size={14} />
             </button>
@@ -99,12 +99,12 @@ const Modal = ({ isOpen, onClose, onSave }) => {
             className="relative rounded-xl overflow-hidden flex flex-col items-center justify-center mb-5 transition-all duration-200"
             style={{
               height: "180px",
-              border: `2px dashed ${dragging ? "#9E2FD0" : preview ? "rgba(38,217,161,0.45)" : "rgba(158,47,208,0.25)"}`,
+              border: `2px dashed ${dragging ? "rgb(var(--ll-violet))" : preview ? "rgba(31,164,140,0.45)" : "rgb(var(--ll-violet) / 0.25)"}`,
               background: dragging
-                ? "rgba(158,47,208,0.06)"
+                ? "rgb(var(--ll-violet) / 0.06)"
                 : preview
                 ? "transparent"
-                : "rgba(158,47,208,0.03)",
+                : "rgb(var(--ll-violet) / 0.03)",
               cursor: preview ? "default" : "pointer",
             }}
           >
@@ -129,9 +129,9 @@ const Modal = ({ isOpen, onClose, onSave }) => {
               <>
                 <div
                   className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3"
-                  style={{ background: "rgba(158,47,208,0.10)", border: "1px solid rgba(158,47,208,0.20)" }}
+                  style={{ background: "rgb(var(--ll-violet) / 0.10)", border: "1px solid rgb(var(--ll-violet) / 0.20)" }}
                 >
-                  <FiUpload size={22} style={{ color: "#9E2FD0" }} />
+                  <FiUpload size={22} style={{ color: "rgb(var(--ll-violet))" }} />
                 </div>
                 <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
                   {dragging ? t("uploadModal.dropHere") : t("uploadModal.clickOrDrag")}
@@ -157,9 +157,9 @@ const Modal = ({ isOpen, onClose, onSave }) => {
               onClick={reset}
               className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-80"
               style={{
-                background: "rgba(158,47,208,0.08)",
-                border: "1px solid rgba(158,47,208,0.20)",
-                color: "#9E2FD0",
+                background: "rgb(var(--ll-violet) / 0.08)",
+                border: "1px solid rgb(var(--ll-violet) / 0.20)",
+                color: "rgb(var(--ll-violet))",
               }}
             >
               {t("uploadModal.cancel")}
@@ -170,9 +170,9 @@ const Modal = ({ isOpen, onClose, onSave }) => {
               className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
               style={{
                 background: file
-                  ? "linear-gradient(135deg, #26D9A1, #1fa07a)"
-                  : "rgba(38,217,161,0.3)",
-                boxShadow: file ? "0 4px 16px rgba(38,217,161,0.35)" : "none",
+                  ? "linear-gradient(135deg, #1FA48C, #17886F)"
+                  : "rgba(31,164,140,0.3)",
+                boxShadow: file ? "0 4px 16px rgba(31,164,140,0.35)" : "none",
               }}
             >
               <FiCheck size={15} />

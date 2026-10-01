@@ -1,3 +1,4 @@
+import { alpha } from "../../utils/colorAlpha";
 import { useTranslation } from "react-i18next";
 import { FiX, FiMail, FiMessageSquare, FiMapPin, FiBookOpen } from "react-icons/fi";
 
@@ -16,17 +17,17 @@ const ROLE_LABEL_KEY = {
 // Matches the role-color convention used across the app (profile.jsx hero
 // card, admin badges, etc.) so the same role always reads the same color.
 const ROLE_GRADIENT = {
-  teacher: "linear-gradient(135deg, #26D9A1, #1fa07a)",
-  admin: "linear-gradient(135deg, #F6B82E, #d49c1f)",
-  user: "linear-gradient(135deg, #9E2FD0, #7b22a8)",
+  teacher: "linear-gradient(135deg, #1FA48C, #17886F)",
+  admin: "linear-gradient(135deg, #E8A23A, #C4860A)",
+  user: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))",
 };
 
 // Same language <-> color/flag mapping as DisplayAllStudents' LANG_CONFIG and
 // userModal's language picker, kept in sync deliberately for recognizability.
 const LANGUAGE_META = {
-  english: { flag: "🇬🇧", color: "#9E2FD0" },
-  spanish: { flag: "🇪🇸", color: "#26D9A1" },
-  polish: { flag: "🇵🇱", color: "#F6B82E" },
+  english: { flag: "🇬🇧", color: "rgb(var(--ll-violet))" },
+  spanish: { flag: "🇪🇸", color: "#1FA48C" },
+  polish: { flag: "🇵🇱", color: "#E8A23A" },
 };
 
 const ProfileCard = ({ user, onClose, onMessage, isSelf }) => {
@@ -56,7 +57,7 @@ const ProfileCard = ({ user, onClose, onMessage, isSelf }) => {
         style={{ background: "#ffffff" }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="dark:block hidden absolute inset-0" style={{ background: "#151530" }} />
+        <div className="dark:block hidden absolute inset-0" style={{ background: "rgb(var(--ll-panel))" }} />
 
         {/* Cover banner — the person's own cover photo if they set one,
             otherwise the role-colored gradient fallback */}
@@ -90,19 +91,19 @@ const ProfileCard = ({ user, onClose, onMessage, isSelf }) => {
               <img
                 src={user.avatarUrl}
                 alt={user.name}
-                className="w-24 h-24 rounded-full object-cover shadow-lg ring-4 ring-white dark:ring-[#151530]"
+                className="w-24 h-24 rounded-full object-cover shadow-lg ring-4 ring-white dark:ring-ll-panel"
               />
             ) : (
               <div
-                className="w-24 h-24 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg ring-4 ring-white dark:ring-[#151530]"
+                className="w-24 h-24 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg ring-4 ring-white dark:ring-ll-panel"
                 style={{ background: roleGradient }}
               >
                 {getInitials(user.name, user.lastName)}
               </div>
             )}
             <span
-              className={`absolute bottom-1.5 right-1.5 w-4 h-4 rounded-full border-2 border-white dark:border-[#151530] ${
-                isOnline ? "bg-[#26D9A1]" : "bg-gray-400 dark:bg-gray-600"
+              className={`absolute bottom-1.5 right-1.5 w-4 h-4 rounded-full border-2 border-white dark:border-ll-panel ${
+                isOnline ? "bg-[#1FA48C]" : "bg-gray-400 dark:bg-gray-600"
               }`}
             />
           </div>
@@ -121,7 +122,7 @@ const ProfileCard = ({ user, onClose, onMessage, isSelf }) => {
               </span>
             )}
             <span className="inline-flex items-center gap-1 text-[11px] font-medium text-gray-500 dark:text-gray-400">
-              <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? "bg-[#26D9A1]" : "bg-gray-400 dark:bg-gray-600"}`} />
+              <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? "bg-[#1FA48C]" : "bg-gray-400 dark:bg-gray-600"}`} />
               {t(isOnline ? "profileCard.activeNow" : "profileCard.offline")}
             </span>
           </div>
@@ -170,7 +171,7 @@ const ProfileCard = ({ user, onClose, onMessage, isSelf }) => {
             {langMeta && (
               <div
                 className="flex items-center gap-2 px-3 py-2 rounded-xl"
-                style={{ background: `${langMeta.color}12`, border: `1px solid ${langMeta.color}30` }}
+                style={{ background: `${alpha(langMeta.color,"12")}`, border: `1px solid ${alpha(langMeta.color,"30")}` }}
               >
                 <FiBookOpen size={14} style={{ color: langMeta.color }} className="flex-shrink-0" />
                 <span className="text-xs font-medium text-gray-700 dark:text-gray-200">
@@ -185,7 +186,7 @@ const ProfileCard = ({ user, onClose, onMessage, isSelf }) => {
             <button
               onClick={() => onMessage(user)}
               className="mt-5 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-medium text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
-              style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 4px 15px rgba(158,47,208,0.3)" }}
+              style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", boxShadow: "0 4px 15px rgb(var(--ll-violet) / 0.3)" }}
             >
               <FiMessageSquare size={15} />
               {t("profileCard.sendMessage")}

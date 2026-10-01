@@ -24,8 +24,8 @@ const useMessageFormatter = (onFileClick) => {
             className="font-semibold rounded px-1"
             style={
               isMe
-                ? { background: "rgba(246,184,46,0.25)", color: "inherit" }
-                : { background: "rgba(158,47,208,0.15)", color: "inherit" }
+                ? { background: "rgba(232,162,58,0.25)", color: "inherit" }
+                : { background: "rgb(var(--ll-violet) / 0.15)", color: "inherit" }
             }
           >
             @{name}
@@ -108,9 +108,9 @@ const useMessageFormatter = (onFileClick) => {
     if (["mp3", "wav", "ogg", "m4a", "aac", "flac"].includes(ext)) {
       return (
         <div className="rounded-xl min-w-[210px] px-3 py-2.5"
-          style={{ background: "rgba(158,47,208,0.08)", border: "1px solid rgba(158,47,208,0.25)" }}>
+          style={{ background: "rgb(var(--ll-violet) / 0.08)", border: "1px solid rgb(var(--ll-violet) / 0.25)" }}>
           <div className="flex items-center gap-1.5 mb-2">
-            <FiMusic size={11} className="flex-shrink-0 text-purple-500 dark:text-purple-400" />
+            <FiMusic size={11} className="flex-shrink-0 text-ll-violet-ink dark:text-ll-violet-ink" />
             <p className="text-[11px] font-semibold truncate text-gray-800 dark:text-gray-100 flex-1 min-w-0">{fileName}</p>
           </div>
           <AudioPlayer src={fileUrl} variant="voiceNote" />
@@ -124,9 +124,9 @@ const useMessageFormatter = (onFileClick) => {
           <video src={fileUrl} controls className="w-full max-h-48 object-contain bg-black" />
           <div
             className="px-2.5 py-1.5 flex items-center gap-1.5"
-            style={{ background: "rgba(158,47,208,0.06)" }}
+            style={{ background: "rgb(var(--ll-violet) / 0.06)" }}
           >
-            <FiVideo size={11} className="text-purple-500 dark:text-purple-400" />
+            <FiVideo size={11} className="text-ll-violet-ink dark:text-ll-violet-ink" />
             <span className="text-[11px] truncate text-gray-700 dark:text-gray-300">
               {fileName}
             </span>
@@ -137,7 +137,7 @@ const useMessageFormatter = (onFileClick) => {
 
     // Generic file download card (PDF, DOC, TXT, ZIP, etc.)
     const extUpper = ext.toUpperCase();
-    const extColor = EXT_COLORS[extUpper] || "#9E2FD0";
+    const extColor = EXT_COLORS[extUpper] || "rgb(var(--ll-violet))";
     const FileIconComp = ["doc", "docx", "txt", "pdf", "csv"].includes(ext) ? FiFileText : FiFile;
 
     return (
@@ -145,8 +145,8 @@ const useMessageFormatter = (onFileClick) => {
         onClick={() => onFileClick(fileUrl)}
         className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all min-w-[200px] max-w-[280px] group/file text-left w-full"
         style={{
-          background: "rgba(158,47,208,0.07)",
-          border: "1px solid rgba(158,47,208,0.22)",
+          background: "rgb(var(--ll-violet) / 0.07)",
+          border: "1px solid rgb(var(--ll-violet) / 0.22)",
         }}
       >
         <div
@@ -162,13 +162,13 @@ const useMessageFormatter = (onFileClick) => {
           <p className="text-xs font-semibold truncate leading-snug text-gray-800 dark:text-gray-100">
             {fileName}
           </p>
-          <p className="text-[10px] uppercase font-medium tracking-wide mt-0.5 text-purple-600 dark:text-purple-400">
+          <p className="text-[10px] uppercase font-medium tracking-wide mt-0.5 text-ll-violet-ink dark:text-ll-violet-ink">
             {extUpper} · tap to preview
           </p>
         </div>
         <FiDownload
           size={14}
-          className="flex-shrink-0 transition-transform group-hover/file:translate-y-0.5 text-purple-500 dark:text-purple-400"
+          className="flex-shrink-0 transition-transform group-hover/file:translate-y-0.5 text-ll-violet-ink dark:text-ll-violet-ink"
         />
       </button>
     );

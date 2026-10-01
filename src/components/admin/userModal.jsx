@@ -6,10 +6,10 @@ import { useTranslation } from "react-i18next";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const onFocus = (e) => {
-  e.target.style.borderColor = "rgba(158,47,208,0.7)";
+  e.target.style.borderColor = "rgb(var(--ll-violet) / 0.7)";
   e.target.style.background = document.documentElement.classList.contains("dark")
-    ? "rgba(158,47,208,0.10)"
-    : "rgba(158,47,208,0.06)";
+    ? "rgb(var(--ll-violet) / 0.10)"
+    : "rgb(var(--ll-violet) / 0.06)";
 };
 const onBlur = (e) => {
   e.target.style.borderColor = "";
@@ -46,7 +46,7 @@ const CustomSelect = ({ value, onChange, placeholder, options }) => {
           background: document.documentElement.classList.contains("dark")
             ? "rgba(255,255,255,0.05)"
             : "rgba(243,244,246,1)",
-          borderColor: open ? "rgba(158,47,208,0.7)" : "rgba(209,213,219,1)",
+          borderColor: open ? "rgb(var(--ll-violet) / 0.7)" : "rgba(209,213,219,1)",
           color: selected ? "inherit" : "rgba(156,163,175,1)",
         }}
       >
@@ -63,7 +63,7 @@ const CustomSelect = ({ value, onChange, placeholder, options }) => {
         <div
           className="absolute left-0 right-0 mt-1 rounded-xl overflow-hidden z-50"
           style={{
-            border: "1px solid rgba(158,47,208,0.25)",
+            border: "1px solid rgb(var(--ll-violet) / 0.25)",
             boxShadow: "0 12px 32px rgba(0,0,0,0.22)",
           }}
         >
@@ -72,7 +72,7 @@ const CustomSelect = ({ value, onChange, placeholder, options }) => {
           {/* Dark bg */}
           <div className="absolute inset-0 hidden dark:block" style={{ background: "#0d0a1e" }} />
           {/* Accent line */}
-          <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#9E2FD0] via-[#F6B82E] to-[#26D9A1]" />
+          <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-ll-violet via-[#E8A23A] to-[#1FA48C]" />
 
           <div className="relative z-10 py-1 pt-2">
             {options.map((opt) => {
@@ -83,13 +83,13 @@ const CustomSelect = ({ value, onChange, placeholder, options }) => {
                   type="button"
                   onClick={() => { onChange(opt.value); setOpen(false); }}
                   className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors duration-150 text-gray-800 dark:text-gray-200"
-                  style={isSelected ? { background: "rgba(158,47,208,0.10)", color: "#9E2FD0", fontWeight: 700 } : {}}
-                  onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.background = "rgba(158,47,208,0.06)"; }}
+                  style={isSelected ? { background: "rgb(var(--ll-violet) / 0.10)", color: "rgb(var(--ll-violet))", fontWeight: 700 } : {}}
+                  onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.background = "rgb(var(--ll-violet) / 0.06)"; }}
                   onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.background = ""; }}
                 >
                   {opt.flag && <span className="text-base leading-none">{opt.flag}</span>}
                   <span className="flex-1 text-left">{opt.label}</span>
-                  {isSelected && <FiCheck size={13} className="text-[#9E2FD0]" />}
+                  {isSelected && <FiCheck size={13} className="text-ll-violet" />}
                 </button>
               );
             })}
@@ -168,7 +168,7 @@ const UserModal = ({ show, handleClose, onCreated }) => {
         {/* Top accent */}
         <div
           className="absolute top-0 left-0 w-full h-[2px] z-10 rounded-t-3xl"
-          style={{ background: "linear-gradient(90deg, #26D9A1, #9E2FD0, #F6B82E)" }}
+          style={{ background: "linear-gradient(90deg, #1FA48C, rgb(var(--ll-violet)), #E8A23A)" }}
         />
 
         <div className="relative z-10 p-6 sm:p-8">
@@ -176,9 +176,9 @@ const UserModal = ({ show, handleClose, onCreated }) => {
           <div className="flex items-center gap-3 mb-6">
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: "rgba(38,217,161,0.12)", border: "1px solid rgba(38,217,161,0.28)" }}
+              style={{ background: "rgba(31,164,140,0.12)", border: "1px solid rgba(31,164,140,0.28)" }}
             >
-              <FiUserPlus size={17} style={{ color: "#26D9A1" }} />
+              <FiUserPlus size={17} style={{ color: "#1FA48C" }} />
             </div>
             <div>
               <h2 className="text-lg font-extrabold text-gray-800 dark:text-white leading-tight">{t("userModal.title")}</h2>
@@ -195,7 +195,7 @@ const UserModal = ({ show, handleClose, onCreated }) => {
           {/* Divider */}
           <div
             className="h-px mb-6 opacity-20"
-            style={{ background: "linear-gradient(90deg, transparent, #9E2FD0, #F6B82E, transparent)" }}
+            style={{ background: "linear-gradient(90deg, transparent, rgb(var(--ll-violet)), #E8A23A, transparent)" }}
           />
 
           <form onSubmit={createUser} className="space-y-4">
@@ -287,7 +287,7 @@ const UserModal = ({ show, handleClose, onCreated }) => {
               <button
                 type="submit"
                 className="flex-1 py-3 rounded-xl text-white text-sm font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
-                style={{ background: "linear-gradient(135deg, #26D9A1, #1fa07a)", boxShadow: "0 4px 20px rgba(38,217,161,0.35)" }}
+                style={{ background: "linear-gradient(135deg, #1FA48C, #17886F)", boxShadow: "0 4px 20px rgba(31,164,140,0.35)" }}
               >
                 <FiUserPlus size={14} />
                 {t("userModal.create")}

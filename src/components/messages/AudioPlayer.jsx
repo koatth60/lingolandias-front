@@ -107,20 +107,20 @@ const AudioPlayer = ({ src, variant = "file", isSender = false }) => {
   if (variant === "voiceNote") {
     const bars = waveform || FLAT_BARS;
     const playedBars = Math.round((progress / 100) * BAR_COUNT);
-    const playedColor = isSender ? "rgba(255,255,255,0.9)" : "#9E2FD0";
-    const unplayedColor = isSender ? "rgba(255,255,255,0.32)" : "rgba(158,47,208,0.22)";
+    const playedColor = isSender ? "rgba(255,255,255,0.9)" : "rgb(var(--ll-violet))";
+    const unplayedColor = isSender ? "rgba(255,255,255,0.32)" : "rgb(var(--ll-violet) / 0.22)";
     return (
       <div className="flex items-center gap-2 min-w-[190px]">
         <audio ref={audioRef} src={src} preload="metadata" className="hidden" />
         <button
           onClick={togglePlay}
           className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-transform hover:scale-105 active:scale-95"
-          style={{ background: isSender ? "rgba(255,255,255,0.22)" : "rgba(158,47,208,0.12)" }}
+          style={{ background: isSender ? "rgba(255,255,255,0.22)" : "rgb(var(--ll-violet) / 0.12)" }}
         >
           {isPlaying ? (
-            <FiPause size={13} className={isSender ? "text-white" : "text-[#9E2FD0]"} />
+            <FiPause size={13} className={isSender ? "text-white" : "text-ll-violet"} />
           ) : (
-            <FiPlay size={13} className={`ml-0.5 ${isSender ? "text-white" : "text-[#9E2FD0]"}`} />
+            <FiPlay size={13} className={`ml-0.5 ${isSender ? "text-white" : "text-ll-violet"}`} />
           )}
         </button>
         <div onClick={handleSeek} className="flex-1 flex items-center gap-[2px] h-7 cursor-pointer">
@@ -149,22 +149,22 @@ const AudioPlayer = ({ src, variant = "file", isSender = false }) => {
         onClick={togglePlay}
         className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-white
                    transition-transform hover:scale-105 active:scale-95"
-        style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 2px 6px rgba(158,47,208,0.35)" }}
+        style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", boxShadow: "0 2px 6px rgb(var(--ll-violet) / 0.35)" }}
       >
         {isPlaying ? <FiPause size={13} /> : <FiPlay size={13} className="ml-0.5" />}
       </button>
       <div className="flex-1 min-w-0">
         <div
           onClick={handleSeek}
-          className="relative h-1.5 rounded-full bg-[#9E2FD0]/15 dark:bg-white/10 cursor-pointer group"
+          className="relative h-1.5 rounded-full bg-ll-violet/15 dark:bg-white/10 cursor-pointer group"
         >
           <div
             className="absolute inset-y-0 left-0 rounded-full pointer-events-none"
-            style={{ width: `${progress}%`, background: "linear-gradient(90deg, #9E2FD0, #7b22a8)" }}
+            style={{ width: `${progress}%`, background: "linear-gradient(90deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}
           />
           <div
             className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-white shadow
-                       border border-[#9E2FD0]/40 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                       border border-ll-violet/40 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
             style={{ left: `calc(${progress}% - 5px)` }}
           />
         </div>

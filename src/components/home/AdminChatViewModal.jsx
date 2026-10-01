@@ -157,7 +157,7 @@ const AdminChatViewModal = ({ classItem, adminUserId, onClose }) => {
         className="relative z-10 w-full max-w-2xl flex flex-col rounded-2xl overflow-hidden"
         style={{
           height: "min(80vh, 700px)",
-          border: "1px solid rgba(158,47,208,0.28)",
+          border: "1px solid rgb(var(--ll-violet) / 0.28)",
           boxShadow: "0 32px 80px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06) inset",
           animation: "navbarDropdownIn 0.22s cubic-bezier(0.16,1,0.3,1) both",
           transformOrigin: "center top",
@@ -178,16 +178,16 @@ const AdminChatViewModal = ({ classItem, adminUserId, onClose }) => {
         />
 
         {/* Top accent line */}
-        <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#9E2FD0] via-[#F6B82E] to-[#26D9A1] opacity-80" />
+        <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-ll-violet via-[#E8A23A] to-[#1FA48C] opacity-80" />
 
         {/* ── Header ── */}
-        <div className="relative z-10 flex-shrink-0 flex items-center justify-between px-5 py-3.5 border-b border-[#9E2FD0]/10 dark:border-[#9E2FD0]/20 mt-[2px]">
+        <div className="relative z-10 flex-shrink-0 flex items-center justify-between px-5 py-3.5 border-b border-ll-violet/10 dark:border-ll-violet/20 mt-[2px]">
           <div className="flex items-center gap-3">
             <div
               className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
               style={{
-                background: "linear-gradient(135deg, #9E2FD0, #7b22a8)",
-                boxShadow: "0 2px 10px rgba(158,47,208,0.40)",
+                background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))",
+                boxShadow: "0 2px 10px rgb(var(--ll-violet) / 0.40)",
               }}
             >
               <FiMessageSquare size={16} className="text-white" />
@@ -205,9 +205,9 @@ const AdminChatViewModal = ({ classItem, adminUserId, onClose }) => {
             <span
               className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold"
               style={{
-                background: "rgba(246,184,46,0.10)",
-                border: "1px solid rgba(246,184,46,0.28)",
-                color: "#F6B82E",
+                background: "rgba(232,162,58,0.10)",
+                border: "1px solid rgba(232,162,58,0.28)",
+                color: "#E8A23A",
               }}
             >
               <FiEye size={10} />
@@ -215,7 +215,7 @@ const AdminChatViewModal = ({ classItem, adminUserId, onClose }) => {
             </span>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-[#9E2FD0] dark:hover:text-white hover:bg-[#9E2FD0]/8 dark:hover:bg-white/10 transition-colors"
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-ll-violet dark:hover:text-white hover:bg-ll-violet/8 dark:hover:bg-white/10 transition-colors"
             >
               <FiX size={16} />
             </button>
@@ -223,23 +223,23 @@ const AdminChatViewModal = ({ classItem, adminUserId, onClose }) => {
         </div>
 
         {/* ── Participants strip ── */}
-        <div className="relative z-10 flex-shrink-0 flex flex-wrap items-center gap-4 px-5 py-2.5 border-b border-[#9E2FD0]/8 dark:border-[#9E2FD0]/15"
-             style={{ background: "rgba(158,47,208,0.04)" }}>
+        <div className="relative z-10 flex-shrink-0 flex flex-wrap items-center gap-4 px-5 py-2.5 border-b border-ll-violet/8 dark:border-ll-violet/15"
+             style={{ background: "rgb(var(--ll-violet) / 0.04)" }}>
           {/* Teacher */}
           <div className="flex items-center gap-2">
             <img
               src={classItem.teacherAvatar}
               alt={classItem.teacherName}
               className="w-7 h-7 rounded-full object-cover flex-shrink-0"
-              style={{ boxShadow: "0 0 0 2px rgba(38,217,161,0.55)" }}
+              style={{ boxShadow: "0 0 0 2px rgba(31,164,140,0.55)" }}
             />
             <div>
-              <p className="text-[10px] font-bold text-[#26D9A1] uppercase tracking-wider leading-none">Teacher</p>
+              <p className="text-[10px] font-bold text-[#1FA48C] uppercase tracking-wider leading-none">Teacher</p>
               <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{classItem.teacherName}</p>
             </div>
           </div>
 
-          <div className="h-8 w-px bg-gradient-to-b from-transparent via-[#9E2FD0]/20 to-transparent" />
+          <div className="h-8 w-px bg-gradient-to-b from-transparent via-ll-violet/20 to-transparent" />
 
           {/* Student */}
           <div className="flex items-center gap-2">
@@ -247,10 +247,10 @@ const AdminChatViewModal = ({ classItem, adminUserId, onClose }) => {
               src={classItem.studentAvatar}
               alt={classItem.studentName}
               className="w-7 h-7 rounded-full object-cover flex-shrink-0"
-              style={{ boxShadow: "0 0 0 2px rgba(158,47,208,0.55)" }}
+              style={{ boxShadow: "0 0 0 2px rgb(var(--ll-violet) / 0.55)" }}
             />
             <div>
-              <p className="text-[10px] font-bold text-[#9E2FD0] uppercase tracking-wider leading-none">Student</p>
+              <p className="text-[10px] font-bold text-ll-violet uppercase tracking-wider leading-none">Student</p>
               <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">{classItem.studentName}</p>
             </div>
           </div>
@@ -265,8 +265,8 @@ const AdminChatViewModal = ({ classItem, adminUserId, onClose }) => {
               <div
                 className="w-10 h-10 rounded-full mx-auto mb-3"
                 style={{
-                  border: "3px solid rgba(158,47,208,0.15)",
-                  borderTopColor: "#9E2FD0",
+                  border: "3px solid rgb(var(--ll-violet) / 0.15)",
+                  borderTopColor: "rgb(var(--ll-violet))",
                   animation: "spin 0.8s linear infinite",
                 }}
               />
@@ -282,9 +282,9 @@ const AdminChatViewModal = ({ classItem, adminUserId, onClose }) => {
               <div className="flex flex-col items-center justify-center h-full gap-3 py-12">
                 <div
                   className="w-14 h-14 rounded-full flex items-center justify-center"
-                  style={{ background: "rgba(158,47,208,0.10)", border: "1px solid rgba(158,47,208,0.20)" }}
+                  style={{ background: "rgb(var(--ll-violet) / 0.10)", border: "1px solid rgb(var(--ll-violet) / 0.20)" }}
                 >
-                  <FiMessageSquare size={22} className="text-[#9E2FD0]" />
+                  <FiMessageSquare size={22} className="text-ll-violet" />
                 </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
                   No messages in this class chat yet.
@@ -307,8 +307,8 @@ const AdminChatViewModal = ({ classItem, adminUserId, onClose }) => {
                         <span
                           className="text-[10px] font-medium text-gray-500 dark:text-gray-400 px-3 py-1 rounded-full border"
                           style={{
-                            background: "rgba(158,47,208,0.05)",
-                            borderColor: "rgba(158,47,208,0.15)",
+                            background: "rgb(var(--ll-violet) / 0.05)",
+                            borderColor: "rgb(var(--ll-violet) / 0.15)",
                           }}
                         >
                           {formatTimestamp(msg.timestamp)}
@@ -327,14 +327,14 @@ const AdminChatViewModal = ({ classItem, adminUserId, onClose }) => {
                                 src={msg.avatarUrl}
                                 alt="avatar"
                                 className="w-8 h-8 rounded-full object-cover"
-                                style={{ boxShadow: "0 0 0 2px rgba(158,47,208,0.35)" }}
+                                style={{ boxShadow: "0 0 0 2px rgb(var(--ll-violet) / 0.35)" }}
                               />
                             ) : (
                               <div
                                 className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
                                 style={{
                                   background: generateColor(msg.username || ""),
-                                  boxShadow: "0 0 0 2px rgba(158,47,208,0.35)",
+                                  boxShadow: "0 0 0 2px rgb(var(--ll-violet) / 0.35)",
                                 }}
                               >
                                 {getInitials(msg.username)}
@@ -351,7 +351,7 @@ const AdminChatViewModal = ({ classItem, adminUserId, onClose }) => {
                         {isFirstFromUser && msg.username && (
                           <p
                             className={`text-[10px] font-semibold mb-1 px-1 ${
-                              isTeacher ? "text-[#26D9A1]" : "text-[#9E2FD0]"
+                              isTeacher ? "text-[#1FA48C]" : "text-ll-violet"
                             }`}
                           >
                             {msg.username}
@@ -364,11 +364,11 @@ const AdminChatViewModal = ({ classItem, adminUserId, onClose }) => {
                           className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
                             isTeacher
                               ? "rounded-br-sm text-white"
-                              : "rounded-bl-sm text-gray-800 dark:text-gray-100 bg-white dark:bg-[#1e1e38] border border-gray-200 dark:border-[#9E2FD0]/20 shadow-sm dark:shadow-none"
+                              : "rounded-bl-sm text-gray-800 dark:text-gray-100 bg-white dark:bg-[#1e1e38] border border-gray-200 dark:border-ll-violet/20 shadow-sm dark:shadow-none"
                           }`}
                           style={
                             isTeacher
-                              ? { background: "linear-gradient(135deg, #9E2FD0 0%, #7b22a8 100%)" }
+                              ? { background: "linear-gradient(135deg, rgb(var(--ll-violet)) 0%, rgb(var(--ll-violet-hover)) 100%)" }
                               : {}
                           }
                         >
@@ -396,14 +396,14 @@ const AdminChatViewModal = ({ classItem, adminUserId, onClose }) => {
                                 src={msg.avatarUrl}
                                 alt="avatar"
                                 className="w-8 h-8 rounded-full object-cover"
-                                style={{ boxShadow: "0 0 0 2px rgba(38,217,161,0.45)" }}
+                                style={{ boxShadow: "0 0 0 2px rgba(31,164,140,0.45)" }}
                               />
                             ) : (
                               <div
                                 className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
                                 style={{
-                                  background: "linear-gradient(135deg, #26D9A1, #1fa07a)",
-                                  boxShadow: "0 0 0 2px rgba(38,217,161,0.45)",
+                                  background: "linear-gradient(135deg, #1FA48C, #17886F)",
+                                  boxShadow: "0 0 0 2px rgba(31,164,140,0.45)",
                                 }}
                               >
                                 {getInitials(msg.username)}
@@ -424,12 +424,12 @@ const AdminChatViewModal = ({ classItem, adminUserId, onClose }) => {
 
         {/* ── Read-only footer ── */}
         <div
-          className="relative z-10 flex-shrink-0 px-5 py-2.5 border-t border-[#9E2FD0]/10 dark:border-[#9E2FD0]/15"
-          style={{ background: "rgba(158,47,208,0.03)" }}
+          className="relative z-10 flex-shrink-0 px-5 py-2.5 border-t border-ll-violet/10 dark:border-ll-violet/15"
+          style={{ background: "rgb(var(--ll-violet) / 0.03)" }}
         >
           <p className="text-[11px] text-center text-gray-400 dark:text-gray-500">
             <FiEye size={11} className="inline mr-1 mb-px" />
-            Viewing as <span className="text-[#F6B82E] font-semibold">observer</span> — this chat is read-only
+            Viewing as <span className="text-[#E8A23A] font-semibold">observer</span> — this chat is read-only
           </p>
         </div>
       </div>

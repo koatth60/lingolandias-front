@@ -59,10 +59,10 @@ const MessageReactions = ({ reactions, currentUserId, onToggle, align = "start" 
             title={names.join(", ")}
             className={`flex items-center gap-1 text-[11px] leading-none px-1.5 py-0.5 rounded-full border transition-colors ${
               mine
-                ? "bg-[#9E2FD0]/15 border-[#9E2FD0]/40 text-[#9E2FD0]"
+                ? "bg-ll-violet/15 border-ll-violet/40 text-ll-violet"
                 : "bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300"
             }`}
-            style={{ boxShadow: mine ? "0 1px 4px rgba(158,47,208,0.15)" : "0 1px 3px rgba(20,20,40,0.06)" }}
+            style={{ boxShadow: mine ? "0 1px 4px rgb(var(--ll-violet) / 0.15)" : "0 1px 3px rgba(20,20,40,0.06)" }}
           >
             <span>{emoji}</span>
             <span>{reactors.length}</span>
@@ -72,7 +72,7 @@ const MessageReactions = ({ reactions, currentUserId, onToggle, align = "start" 
 
       <button
         onClick={() => setPickerOpen((v) => !v)}
-        className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full text-gray-400 hover:text-[#9E2FD0] hover:bg-gray-100 dark:hover:bg-white/5 ${
+        className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full text-gray-400 hover:text-ll-violet hover:bg-gray-100 dark:hover:bg-white/5 ${
           hasReactions ? "" : `absolute -top-6 ${align === "end" ? "right-0" : "left-0"}`
         }`}
       >

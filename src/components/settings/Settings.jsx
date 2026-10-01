@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import {
   FiMoon, FiBell, FiBellOff, FiUser, FiEye,
   FiShield, FiLogOut, FiGlobe, FiSun, FiCheck, FiChevronDown, FiPlay, FiMessageSquare,
-  FiMonitor, FiDownload, FiZap, FiAlertTriangle, FiClock,
+  FiMonitor, FiDownload, FiClock,
 } from "react-icons/fi";
 import { toast } from "react-toastify";
 import Dashboard from "../../sections/dashboard";
@@ -15,6 +15,7 @@ import { performLogout } from "../../auth/session";
 import ChangePasswordModal from "./ChangePasswordModal";
 import useNotificationSound from "../../hooks/useNotificationSound";
 import useInstallPrompt from "../../hooks/useInstallPrompt";
+import { useHalloween } from "../../context/HalloweenContext";
 
 function urlBase64ToUint8Array(base64String) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -72,45 +73,31 @@ async function unsubscribeFromPush() {
   });
 }
 
-const glassCard = {
-  border: "1px solid rgba(158,47,208,0.15)",
-  boxShadow: "0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(158,47,208,0.06)",
-};
-
-const BrandToggle = ({ checked, onChange }) => (
-  <div
-    className="relative w-11 h-6 cursor-pointer rounded-full transition-colors duration-200"
-    style={{
-      background: checked ? "#9E2FD0" : "rgba(158,158,158,0.25)",
-      border: `1px solid ${checked ? "#9E2FD0" : "rgba(158,158,158,0.3)"}`,
-    }}
+const BrandToggle = ({ checked, onChange, disabled }) => (
+  <button
+    type="button"
+    disabled={disabled}
     onClick={onChange}
+    className={`relative w-10 h-[22px] rounded-full transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed ${checked ? "bg-ll-violet" : "bg-ll-hover border border-ll-line2"}`}
   >
     <div
-      className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-200 flex items-center justify-center"
-      style={{ transform: checked ? "translateX(22px)" : "translateX(2px)" }}
+      className="absolute top-0.5 w-[18px] h-[18px] bg-white rounded-full shadow-sm transition-transform duration-150 flex items-center justify-center"
+      style={{ transform: checked ? "translateX(20px)" : "translateX(2px)" }}
     >
-      {checked && <FiCheck size={10} style={{ color: "#9E2FD0" }} />}
+      {checked && <FiCheck size={10} className="text-ll-violet" />}
     </div>
-  </div>
+  </button>
 );
 
 const LangOption = ({ value: val, label, flag, selected, onSelect }) => (
   <button
     type="button"
     onClick={() => onSelect(val)}
-    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors duration-150"
-    style={
-      selected
-        ? { background: "rgba(158,47,208,0.12)", color: "#9E2FD0", fontWeight: 700 }
-        : { color: "inherit" }
-    }
-    onMouseEnter={(e) => { if (!selected) e.currentTarget.style.background = "rgba(158,47,208,0.06)"; }}
-    onMouseLeave={(e) => { if (!selected) e.currentTarget.style.background = ""; }}
+    className={`w-full flex items-center gap-3 px-3.5 py-2.5 text-sm transition-colors ${selected ? "bg-ll-violet-tint text-ll-violet-ink font-medium" : "text-ll-ink2 hover:bg-ll-hover"}`}
   >
     <span className="text-lg leading-none">{flag}</span>
     <span>{label}</span>
-    {selected && <FiCheck size={13} className="ml-auto text-[#9E2FD0]" />}
+    {selected && <FiCheck size={13} className="ml-auto" />}
   </button>
 );
 
@@ -141,51 +128,19 @@ const BrandSelect = ({ value, onChange }) => {
 
   return (
     <div className="relative" ref={ref}>
-      <button
-        type="button"
-        onClick={() => setOpen((p) => !p)}
-        className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200"
-        style={{
-          background: "rgba(158,47,208,0.08)",
-          border: `1px solid ${open ? "rgba(158,47,208,0.6)" : "rgba(158,47,208,0.22)"}`,
-          minWidth: "130px",
-          color: "inherit",
-        }}
-      >
-        <span className="text-base leading-none">{selected.flag}</span>
-        <span className="flex-1 text-left text-gray-700 dark:text-gray-200">{selected.label}</span>
-        <FiChevronDown
-          size={13}
-          className={`text-[#9E2FD0] transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-        />
+      <button type="button" onClick={() => setOpen((p) => !p)} className="ll-btn ll-btn-secondary min-w-[130px] justify-between">
+        <span className="flex items-center gap-2">
+          <span className="text-base leading-none">{selected.flag}</span>
+          <span>{selected.label}</span>
+        </span>
+        <FiChevronDown size={13} className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`} />
       </button>
 
       {open && (
-        <div
-          className="absolute right-0 mt-1.5 rounded-xl overflow-hidden z-50"
-          style={{
-            minWidth: "100%",
-            border: "1px solid rgba(158,47,208,0.22)",
-            boxShadow: "0 12px 32px rgba(0,0,0,0.18)",
-          }}
-        >
-          {/* Light bg */}
-          <div className="absolute inset-0 dark:hidden bg-white" />
-          {/* Dark bg */}
-          <div className="absolute inset-0 hidden dark:block" style={{ background: "#1a1a2e" }} />
-          {/* top accent */}
-          <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#9E2FD0] via-[#F6B82E] to-[#26D9A1]" />
-
-          <div className="relative z-10 py-1 pt-2">
-            {OPTIONS.map((opt) => (
-              <LangOption
-                key={opt.value}
-                {...opt}
-                selected={opt.value === value}
-                onSelect={handleSelect}
-              />
-            ))}
-          </div>
+        <div className="ll-card absolute right-0 mt-1.5 min-w-full overflow-hidden z-50 shadow-ll-pop py-1">
+          {OPTIONS.map((opt) => (
+            <LangOption key={opt.value} {...opt} selected={opt.value === value} onSelect={handleSelect} />
+          ))}
         </div>
       )}
     </div>
@@ -199,6 +154,7 @@ const Settings = () => {
   const { userInfo } = useSelector((state) => state.user);
   const [activeTab, setActiveTab] = useState("appearance");
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const { enabled: halloween, setEnabled: setHalloween } = useHalloween();
 
   const darkMode = userInfo?.user?.settings?.darkMode || false;
   const notificationSound = userInfo?.user?.settings?.notificationSound !== false;
@@ -223,18 +179,15 @@ const Settings = () => {
   ];
 
   const SettingRow = ({ icon: Icon, label, description, children }) => (
-    <div className="flex items-center justify-between gap-4 py-4 border-b border-black/5 dark:border-white/5 last:border-0">
+    <div className="flex items-center justify-between gap-4 py-3.5 border-b border-ll-line last:border-0">
       <div className="flex items-center gap-3 min-w-0">
-        <div
-          className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-          style={{ background: "rgba(158,47,208,0.08)", border: "1px solid rgba(158,47,208,0.15)" }}
-        >
-          <Icon size={14} style={{ color: "#9E2FD0" }} />
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-ll-violet-tint text-ll-violet-ink">
+          <Icon size={14} />
         </div>
         <div className="min-w-0">
-          <span className="block text-sm font-semibold text-gray-700 dark:text-gray-200 truncate">{label}</span>
+          <span className="block text-[13.5px] font-medium text-ll-ink truncate">{label}</span>
           {description && (
-            <span className="block text-xs text-gray-400 dark:text-gray-500 truncate">{description}</span>
+            <span className="block text-[12px] text-ll-ink3 truncate">{description}</span>
           )}
         </div>
       </div>
@@ -329,24 +282,29 @@ const Settings = () => {
     navigate("/login");
   };
 
-  const accentForTab = {
-    appearance: "#9E2FD0",
-    notifications: "#26D9A1",
-    app: "#60A5FA",
-    account: "#F6B82E",
-  };
-
   const renderContent = () => {
     switch (activeTab) {
       case "appearance":
         return (
           <div>
-            <div className="flex items-center gap-2 mb-5">
-              <FiEye size={15} style={{ color: "#9E2FD0" }} />
-              <h2 className="text-base font-extrabold text-gray-800 dark:text-white">{t("settings.appearance")}</h2>
+            <div className="flex items-center gap-2 mb-4">
+              <FiEye size={15} className="text-ll-violet-ink" />
+              <h2 className="text-[15px] font-semibold text-ll-ink">{t("settings.appearance")}</h2>
             </div>
-            <SettingRow icon={darkMode ? FiMoon : FiSun} label={t("settings.darkMode")}>
-              <BrandToggle checked={darkMode} onChange={handleDarkModeToggle} />
+            <SettingRow icon={darkMode ? FiMoon : FiSun} label={t("settings.darkMode")} description={halloween ? t("settings.darkModeLockedHalloween") : undefined}>
+              <BrandToggle checked={darkMode || halloween} onChange={handleDarkModeToggle} disabled={halloween} />
+            </SettingRow>
+            <SettingRow
+              icon={() => (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 7.5c-4.6 0-7.5 2.8-7.5 6.3S7.4 20 12 20s7.5-2.7 7.5-6.2S16.6 7.5 12 7.5z" />
+                  <path d="M12 7.5V5c0-.9.7-1.8 1.8-2" />
+                </svg>
+              )}
+              label={t("settings.halloweenTheme")}
+              description={t("settings.halloweenThemeDesc")}
+            >
+              <BrandToggle checked={halloween} onChange={() => setHalloween(!halloween)} />
             </SettingRow>
           </div>
         );
@@ -354,9 +312,9 @@ const Settings = () => {
       case "notifications":
         return (
           <div>
-            <div className="flex items-center gap-2 mb-5">
-              <FiBell size={15} style={{ color: "#26D9A1" }} />
-              <h2 className="text-base font-extrabold text-gray-800 dark:text-white">{t("settings.notifications")}</h2>
+            <div className="flex items-center gap-2 mb-4">
+              <FiBell size={15} className="text-ll-teal-ink" />
+              <h2 className="text-[15px] font-semibold text-ll-ink">{t("settings.notifications")}</h2>
             </div>
             <SettingRow icon={notificationSound ? FiBell : FiBellOff} label={t("settings.notificationSound")}>
               <div className="flex items-center gap-2">
@@ -364,7 +322,7 @@ const Settings = () => {
                   type="button"
                   onClick={playTestSound}
                   title={t("settings.testSound")}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 dark:text-gray-300 hover:text-[#9E2FD0] hover:bg-[#9E2FD0]/8 transition-colors"
+                  className="ll-btn ll-btn-ghost ll-btn-sm !px-1.5"
                 >
                   <FiPlay size={13} />
                 </button>
@@ -396,121 +354,66 @@ const Settings = () => {
       case "app":
         return (
           <div>
-            <div className="flex items-center gap-2 mb-5">
-              <FiMonitor size={15} style={{ color: "#60A5FA" }} />
-              <h2 className="text-base font-extrabold text-gray-800 dark:text-white">{t("settings.desktopApp")}</h2>
+            <div className="flex items-center gap-2 mb-4">
+              <FiMonitor size={15} className="text-ll-ink2" />
+              <h2 className="text-[15px] font-semibold text-ll-ink">{t("settings.desktopApp")}</h2>
             </div>
-            <div
-              className="flex flex-col items-center text-center gap-4 py-6 px-4 rounded-2xl"
-              style={{ background: "rgba(158,47,208,0.05)", border: "1px solid rgba(158,47,208,0.12)" }}
-            >
-              <img src="/icons/icon-96.png" alt="" className="w-16 h-16 rounded-2xl shadow-lg" />
+            <div className="flex flex-col items-center text-center gap-4 py-6 px-4 rounded-xl bg-ll-subtle border border-ll-line">
+              <img src="/icons/icon-96.png" alt="" className="w-14 h-14 rounded-xl" />
               <div>
-                <p className="font-bold text-gray-800 dark:text-white">{t("settings.desktopAppTitle")}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-xs">
+                <p className="text-[13.5px] font-semibold text-ll-ink">{t("settings.desktopAppTitle")}</p>
+                <p className="text-[12.5px] text-ll-ink3 mt-1 max-w-xs">
                   {t("settings.desktopAppDesc")}
                 </p>
               </div>
 
               {isInstalled ? (
-                <span className="flex items-center gap-2 text-sm font-semibold text-[#26D9A1]">
+                <span className="flex items-center gap-2 text-[13px] font-medium text-ll-teal-ink">
                   <FiCheck size={16} /> {t("settings.appAlreadyInstalled")}
                 </span>
               ) : canInstall ? (
-                <button
-                  onClick={handleInstallApp}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
-                  style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 4px 15px rgba(158,47,208,0.3)" }}
-                >
+                <button onClick={handleInstallApp} className="ll-btn ll-btn-primary">
                   <FiDownload size={16} /> {t("settings.installApp")}
                 </button>
               ) : (
-                <p className="text-xs text-gray-400 max-w-xs">{t("settings.installUnavailable")}</p>
+                <p className="text-[12px] text-ll-ink3 max-w-xs">{t("settings.installUnavailable")}</p>
               )}
             </div>
-
-            {/* Desktop .exe installer (Electron-packaged) — hidden for now,
-                revisit before shipping again. See Lingolandias-Setup.exe on the VPS.
-            <div className="flex items-center gap-2 mt-8 mb-5">
-              <FiZap size={15} style={{ color: "#26D9A1" }} />
-              <h2 className="text-base font-extrabold text-gray-800 dark:text-white">{t("settings.desktopInstallerTitle")}</h2>
-            </div>
-            <div
-              className="flex flex-col items-center text-center gap-4 py-6 px-4 rounded-2xl"
-              style={{ background: "rgba(38,217,161,0.05)", border: "1px solid rgba(38,217,161,0.12)" }}
-            >
-              <FiMonitor size={40} style={{ color: "#26D9A1" }} />
-              <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm">
-                {t("settings.desktopInstallerDesc")}
-              </p>
-
-              <ol className="text-sm text-gray-600 dark:text-gray-300 text-left space-y-1.5 max-w-xs">
-                <li><span className="font-bold text-[#26D9A1]">1.</span> {t("settings.desktopInstallerStep1")}</li>
-                <li><span className="font-bold text-[#26D9A1]">2.</span> {t("settings.desktopInstallerStep2")}</li>
-                <li><span className="font-bold text-[#26D9A1]">3.</span> {t("settings.desktopInstallerStep3")}</li>
-              </ol>
-
-              <div
-                className="flex items-start gap-2 text-left text-xs text-gray-500 dark:text-gray-400 max-w-xs py-2.5 px-3 rounded-lg"
-                style={{ background: "rgba(246,184,46,0.08)", border: "1px solid rgba(246,184,46,0.2)" }}
-              >
-                <FiAlertTriangle size={14} className="flex-shrink-0 mt-0.5" style={{ color: "#F6B82E" }} />
-                <span>{t("settings.desktopInstallerSmartscreen")}</span>
-              </div>
-
-              <a
-                href="https://lingolandias.com/app/Lingolandias-Setup.exe"
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
-                style={{ background: "linear-gradient(135deg, #26D9A1, #1fa07a)", boxShadow: "0 4px 15px rgba(38,217,161,0.3)" }}
-              >
-                <FiDownload size={16} /> {t("settings.desktopInstallerButton")}
-              </a>
-              <p className="text-xs text-gray-400 max-w-xs">{t("settings.desktopInstallerNote")}</p>
-            </div>
-            */}
           </div>
         );
 
       case "account":
         return (
           <div>
-            <div className="flex items-center gap-2 mb-5">
-              <FiUser size={15} style={{ color: "#F6B82E" }} />
-              <h2 className="text-base font-extrabold text-gray-800 dark:text-white">{t("settings.account")}</h2>
+            <div className="flex items-center gap-2 mb-4">
+              <FiUser size={15} className="text-ll-gold-ink" />
+              <h2 className="text-[15px] font-semibold text-ll-ink">{t("settings.account")}</h2>
             </div>
             <SettingRow icon={FiGlobe} label={t("settings.language")}>
               <BrandSelect value={language} onChange={handleLanguageChange} />
             </SettingRow>
 
-            <div className="py-3 border-b border-black/5 dark:border-white/5">
+            <div className="py-3 border-b border-ll-line">
               <button
                 onClick={() => setShowChangePassword(true)}
-                className="w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-150 hover:opacity-80"
-                style={{ background: "rgba(158,47,208,0.05)", border: "1px solid rgba(158,47,208,0.10)" }}
+                className="w-full flex items-center gap-3 p-3 rounded-lg border border-ll-line transition-colors hover:bg-ll-subtle"
               >
-                <div
-                  className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                  style={{ background: "rgba(158,47,208,0.08)", border: "1px solid rgba(158,47,208,0.15)" }}
-                >
-                  <FiShield size={14} style={{ color: "#9E2FD0" }} />
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-ll-violet-tint text-ll-violet-ink">
+                  <FiShield size={14} />
                 </div>
-                <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t("settings.changePassword")}</span>
+                <span className="text-[13.5px] font-medium text-ll-ink">{t("settings.changePassword")}</span>
               </button>
             </div>
 
             <div className="pt-3">
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-150 hover:opacity-80"
-                style={{ background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.12)" }}
+                className="w-full flex items-center gap-3 p-3 rounded-lg border border-ll-line transition-colors hover:bg-ll-subtle"
               >
-                <div
-                  className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                  style={{ background: "rgba(239,68,68,0.10)", border: "1px solid rgba(239,68,68,0.20)" }}
-                >
-                  <FiLogOut size={14} style={{ color: "#ef4444" }} />
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'rgb(var(--ll-danger) / .12)', color: 'rgb(var(--ll-danger))' }}>
+                  <FiLogOut size={14} />
                 </div>
-                <span className="text-sm font-semibold" style={{ color: "#ef4444" }}>{t("settings.logout")}</span>
+                <span className="text-[13.5px] font-medium" style={{ color: 'rgb(var(--ll-danger))' }}>{t("settings.logout")}</span>
               </button>
             </div>
           </div>
@@ -523,32 +426,19 @@ const Settings = () => {
 
   return (
     <>
-    <div className="flex w-full relative min-h-screen">
-      {/* Page backgrounds */}
-      <div className="absolute inset-0 pointer-events-none dark:hidden"
-        style={{ background: "linear-gradient(135deg, #f8f8fa 0%, #f2f2f6 100%)" }} />
-      <div className="absolute inset-0 pointer-events-none hidden dark:block"
-        style={{ background: "linear-gradient(135deg, #0d0a1e 0%, #1a1a2e 55%, #110e28 100%)" }} />
-      {/* Ambient orbs */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden hidden dark:block">
-        <div className="absolute rounded-full blur-3xl opacity-10"
-          style={{ background: "radial-gradient(circle, rgba(158,47,208,0.6), transparent 70%)", width: "500px", height: "500px", top: "-5%", right: "0%" }} />
-        <div className="absolute rounded-full blur-3xl opacity-8"
-          style={{ background: "radial-gradient(circle, rgba(38,217,161,0.4), transparent 70%)", width: "350px", height: "350px", bottom: "10%", left: "5%" }} />
-      </div>
-
+    <div className="flex w-full relative min-h-screen bg-ll-canvas">
       <Dashboard />
 
-      <div className="w-full min-w-0 relative z-10 flex flex-col min-h-screen overflow-x-hidden">
+      <div className="ll-shell w-full min-w-0 relative z-10 flex flex-col">
         <Navbar header={t("settings.title")} />
 
-        <div className="px-3 sm:px-6 md:px-8 py-5 sm:py-8 flex flex-col gap-5 sm:gap-8 max-w-4xl mx-auto w-full">
+        <div className="px-3 sm:px-6 md:px-8 py-5 sm:py-8 flex flex-col gap-5 sm:gap-6 max-w-4xl mx-auto w-full">
 
           {/* ── Page header ── */}
           <div>
-            <p className="text-[10px] font-bold tracking-widest text-[#9E2FD0] uppercase mb-1">{t("settings.preferences")}</p>
-            <h1 className="text-2xl sm:text-3xl font-extrabold login-gradient-text">{t("settings.title")}</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t("settings.subtitle")}</p>
+            <p className="text-[11px] font-medium tracking-wide text-ll-ink3 uppercase mb-1">{t("settings.preferences")}</p>
+            <h1 className="text-[24px] font-semibold text-ll-ink tracking-tight">{t("settings.title")}</h1>
+            <p className="text-[13.5px] text-ll-ink3 mt-1">{t("settings.subtitle")}</p>
           </div>
 
           {/* ── Layout ── */}
@@ -556,53 +446,29 @@ const Settings = () => {
 
             {/* Sidebar tabs */}
             <div className="md:col-span-1">
-              <div className="relative rounded-2xl overflow-hidden" style={glassCard}>
-                <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
-                <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.65)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
-                <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#9E2FD0] via-[#F6B82E] to-[#26D9A1] opacity-70" />
-                <div className="relative z-10 p-3 flex md:flex-col flex-row gap-1.5 overflow-x-auto">
-                  {TABS.map(({ id, label, icon: Icon }) => {
-                    const isActive = activeTab === id;
-                    return (
-                      <button
-                        key={id}
-                        onClick={() => setActiveTab(id)}
-                        className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 whitespace-nowrap flex-shrink-0 md:w-full"
-                        style={
-                          isActive
-                            ? {
-                                background: "linear-gradient(135deg, rgba(158,47,208,0.15), rgba(246,184,46,0.06))",
-                                border: "1px solid rgba(158,47,208,0.28)",
-                                color: "#9E2FD0",
-                              }
-                            : {
-                                background: "transparent",
-                                border: "1px solid transparent",
-                                color: "#6b7280",
-                              }
-                        }
-                      >
-                        <Icon size={14} />
-                        {label}
-                      </button>
-                    );
-                  })}
-                </div>
+              <div className="ll-card p-1.5 flex md:flex-col flex-row gap-1 overflow-x-auto">
+                {TABS.map(({ id, label, icon: Icon }) => {
+                  const isActive = activeTab === id;
+                  return (
+                    <button
+                      key={id}
+                      onClick={() => setActiveTab(id)}
+                      className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[13.5px] font-medium transition-colors whitespace-nowrap flex-shrink-0 md:w-full ${
+                        isActive ? "bg-ll-violet-tint text-ll-violet-ink" : "text-ll-ink3 hover:bg-ll-hover hover:text-ll-ink"
+                      }`}
+                    >
+                      <Icon size={14} />
+                      {label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             {/* Content panel */}
             <div className="md:col-span-3">
-              <div className="relative rounded-2xl overflow-hidden" style={glassCard}>
-                <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
-                <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.65)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
-                <div
-                  className="absolute top-0 left-0 w-full h-[2px]"
-                  style={{ background: `linear-gradient(90deg, ${accentForTab[activeTab]}, transparent)` }}
-                />
-                <div className="relative z-10 p-5 sm:p-7">
-                  {renderContent()}
-                </div>
+              <div className="ll-card p-5 sm:p-6">
+                {renderContent()}
               </div>
             </div>
 

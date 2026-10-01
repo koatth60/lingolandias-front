@@ -24,13 +24,13 @@ const UploadStatus = ({ progress, errorCode, onDismissError }) => {
             <span className="text-[11px] text-gray-600 dark:text-gray-300 truncate max-w-[70%]">
               {t("chatWindow.uploading", { name: progress.name })}
             </span>
-            <span className="text-[11px] font-semibold text-purple-600 dark:text-purple-400">
+            <span className="text-[11px] font-semibold text-ll-violet-ink dark:text-ll-violet-ink">
               {Math.round((progress.ratio || 0) * 100)}%
             </span>
           </div>
           <div className="h-1 rounded-full bg-gray-200 dark:bg-white/10 overflow-hidden">
             <div
-              className="h-full rounded-full bg-[#9E2FD0] transition-all duration-150"
+              className="h-full rounded-full bg-ll-violet transition-all duration-150"
               style={{ width: `${Math.max(2, (progress.ratio || 0) * 100)}%` }}
             />
           </div>

@@ -1,3 +1,4 @@
+import { alpha } from "../../utils/colorAlpha";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import Swal from "sweetalert2";
@@ -8,7 +9,7 @@ import { FiUserMinus, FiCheckCircle } from "react-icons/fi";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const panelStyle = {
-  border: "1px solid rgba(158,47,208,0.12)",
+  border: "1px solid rgb(var(--ll-violet) / 0.12)",
 };
 
 const UserRow = ({ person, selected, accentColor, onClick }) => (
@@ -17,10 +18,10 @@ const UserRow = ({ person, selected, accentColor, onClick }) => (
     className="flex items-center gap-3 p-3 rounded-xl cursor-pointer mb-2 transition-all duration-150"
     style={
       selected
-        ? { background: `${accentColor}14`, border: `1px solid ${accentColor}50` }
+        ? { background: `${alpha(accentColor,"14")}`, border: `1px solid ${alpha(accentColor,"50")}` }
         : { background: "transparent", border: "1px solid transparent" }
     }
-    onMouseEnter={(e) => { if (!selected) e.currentTarget.style.background = "rgba(158,47,208,0.06)"; }}
+    onMouseEnter={(e) => { if (!selected) e.currentTarget.style.background = "rgb(var(--ll-violet) / 0.06)"; }}
     onMouseLeave={(e) => { if (!selected) e.currentTarget.style.background = "transparent"; }}
   >
     {person.avatarUrl ? (
@@ -28,7 +29,7 @@ const UserRow = ({ person, selected, accentColor, onClick }) => (
     ) : (
       <div
         className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-        style={{ background: selected ? `linear-gradient(135deg, ${accentColor}, ${accentColor}aa)` : "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}
+        style={{ background: selected ? `linear-gradient(135deg, ${accentColor}, ${alpha(accentColor,"aa")})` : "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}
       >
         {person.name.charAt(0)}{person.lastName.charAt(0)}
       </div>
@@ -98,12 +99,12 @@ const RemoveStudent = ({ teachers, onRefresh }) => {
 
         {/* ── 1. Select Teacher ── */}
         <div className="relative rounded-2xl overflow-hidden" style={panelStyle}>
-          <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, #9E2FD0, transparent)" }} />
+          <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: "linear-gradient(90deg, rgb(var(--ll-violet)), transparent)" }} />
           <div className="absolute inset-0 dark:hidden" style={{ background: "rgba(248,248,250,0.85)" }} />
           <div className="absolute inset-0 hidden dark:block" style={{ background: "rgba(13,10,30,0.55)" }} />
           <div className="relative z-10 p-4">
             <div className="flex items-center gap-2 mb-3">
-              <span className="w-5 h-5 rounded-full bg-[#9E2FD0] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">1</span>
+              <span className="w-5 h-5 rounded-full bg-ll-violet text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">1</span>
               <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200">{t("admin.selectTeacherLabel")}</h3>
             </div>
             <div className="max-h-60 overflow-y-auto custom-scrollbar">
@@ -112,7 +113,7 @@ const RemoveStudent = ({ teachers, onRefresh }) => {
                   key={teacher.id}
                   person={teacher}
                   selected={selectedTeacher?.id === teacher.id}
-                  accentColor="#9E2FD0"
+                  accentColor="rgb(var(--ll-violet))"
                   onClick={() => handleTeacherSelect(teacher)}
                 />
               ))}

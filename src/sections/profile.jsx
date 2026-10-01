@@ -1,3 +1,4 @@
+import { alpha } from "../utils/colorAlpha";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Dashboard from "./dashboard";
@@ -15,9 +16,9 @@ import { useTranslation } from "react-i18next";
 // kept in sync deliberately so the same language always reads the same badge.
 const LANGUAGE_FLAG = { english: "🇬🇧", spanish: "🇪🇸", polish: "🇵🇱" };
 const ROLE_GRADIENT = {
-  teacher: "linear-gradient(135deg, #26D9A1, #1fa07a)",
-  admin: "linear-gradient(135deg, #F6B82E, #d49c1f)",
-  user: "linear-gradient(135deg, #9E2FD0, #7b22a8)",
+  teacher: "linear-gradient(135deg, #1FA48C, #17886F)",
+  admin: "linear-gradient(135deg, #E8A23A, #C4860A)",
+  user: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))",
 };
 // role is stored as "user" in the DB (an old naming choice) but should never
 // be shown raw — reuses the same labels as the ProfileCard popup.
@@ -35,9 +36,9 @@ const authHeaders = () => {
 };
 
 const inputBase =
-  "w-full mt-1 rounded-xl py-2.5 px-3.5 text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#9E2FD0]/20 focus:border-[#9E2FD0]/50 transition-colors border border-gray-200 dark:border-[#9E2FD0]/25 bg-white dark:bg-[#252545]";
+  "w-full mt-1 rounded-xl py-2.5 px-3.5 text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-ll-violet/20 focus:border-ll-violet/50 transition-colors border border-gray-200 dark:border-ll-violet/25 bg-white dark:bg-ll-hover";
 const inputReadOnly =
-  "w-full mt-1 rounded-xl py-2.5 px-3.5 text-sm text-gray-500 dark:text-gray-400 focus:outline-none border border-gray-200 dark:border-[#9E2FD0]/15 bg-gray-50 dark:bg-[#1c1c38] cursor-default";
+  "w-full mt-1 rounded-xl py-2.5 px-3.5 text-sm text-gray-500 dark:text-gray-400 focus:outline-none border border-gray-200 dark:border-ll-violet/15 bg-gray-50 dark:bg-[#1c1c38] cursor-default";
 
 const Profile = () => {
   const user = useSelector((state) => state.user.userInfo.user);
@@ -192,14 +193,14 @@ const Profile = () => {
         <div
           className="absolute rounded-full blur-3xl opacity-10"
           style={{
-            background: "radial-gradient(circle, rgba(158,47,208,0.6), transparent 70%)",
+            background: "radial-gradient(circle, rgb(var(--ll-violet) / 0.6), transparent 70%)",
             width: "600px", height: "600px", top: "-10%", right: "-5%",
           }}
         />
         <div
           className="absolute rounded-full blur-3xl opacity-8"
           style={{
-            background: "radial-gradient(circle, rgba(38,217,161,0.4), transparent 70%)",
+            background: "radial-gradient(circle, rgba(31,164,140,0.4), transparent 70%)",
             width: "400px", height: "400px", bottom: "5%", left: "10%",
           }}
         />
@@ -208,7 +209,7 @@ const Profile = () => {
       <div
         className="absolute inset-0 pointer-events-none opacity-[0.012] dark:opacity-[0.020]"
         style={{
-          backgroundImage: `linear-gradient(rgba(158,47,208,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(158,47,208,0.8) 1px, transparent 1px)`,
+          backgroundImage: `linear-gradient(rgb(var(--ll-violet) / 0.8) 1px, transparent 1px), linear-gradient(90deg, rgb(var(--ll-violet) / 0.8) 1px, transparent 1px)`,
           backgroundSize: "48px 48px",
         }}
       />
@@ -224,24 +225,24 @@ const Profile = () => {
           <div
             className="relative rounded-2xl overflow-hidden mb-6"
             style={{
-              border: "1px solid rgba(158,47,208,0.15)",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(158,47,208,0.06)",
+              border: "1px solid rgb(var(--ll-violet) / 0.15)",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgb(var(--ll-violet) / 0.06)",
             }}
           >
             {/* Top accent line */}
-            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#9E2FD0] via-[#F6B82E] to-[#26D9A1] opacity-80" />
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-ll-violet via-[#E8A23A] to-[#1FA48C] opacity-80" />
             {/* Glass bg */}
             <div
               className="absolute inset-0 dark:hidden"
               style={{
-                background: "linear-gradient(135deg, rgba(158,47,208,0.08) 0%, rgba(246,184,46,0.04) 100%)",
+                background: "linear-gradient(135deg, rgb(var(--ll-violet) / 0.08) 0%, rgba(232,162,58,0.04) 100%)",
                 backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
               }}
             />
             <div
               className="absolute inset-0 hidden dark:block"
               style={{
-                background: "linear-gradient(135deg, rgba(158,47,208,0.18) 0%, rgba(13,10,30,0.70) 100%)",
+                background: "linear-gradient(135deg, rgb(var(--ll-violet) / 0.18) 0%, rgba(13,10,30,0.70) 100%)",
                 backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
               }}
             />
@@ -260,8 +261,8 @@ const Profile = () => {
                   onClick={handleEditProfile}
                   className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white transition-opacity hover:opacity-85 flex-shrink-0"
                   style={{
-                    background: "linear-gradient(135deg, #9E2FD0, #7b22a8)",
-                    boxShadow: "0 4px 15px rgba(158,47,208,0.35)",
+                    background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))",
+                    boxShadow: "0 4px 15px rgb(var(--ll-violet) / 0.35)",
                   }}
                 >
                   <FiEdit2 size={15} />
@@ -273,8 +274,8 @@ const Profile = () => {
                   onClick={handleSaveProfile}
                   className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white transition-opacity hover:opacity-85 flex-shrink-0"
                   style={{
-                    background: "linear-gradient(135deg, #26D9A1, #1fa07a)",
-                    boxShadow: "0 4px 15px rgba(38,217,161,0.35)",
+                    background: "linear-gradient(135deg, #1FA48C, #17886F)",
+                    boxShadow: "0 4px 15px rgba(31,164,140,0.35)",
                   }}
                 >
                   <FiSave size={15} />
@@ -292,8 +293,8 @@ const Profile = () => {
               <div
                 className="relative rounded-2xl overflow-hidden"
                 style={{
-                  border: "1px solid rgba(158,47,208,0.15)",
-                  boxShadow: "0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(158,47,208,0.06)",
+                  border: "1px solid rgb(var(--ll-violet) / 0.15)",
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgb(var(--ll-violet) / 0.06)",
                 }}
               >
                 <div
@@ -344,7 +345,7 @@ const Profile = () => {
                         className="absolute rounded-full pointer-events-none"
                         style={{
                           inset: "-4px",
-                          background: "conic-gradient(from 0deg, #9E2FD0, #c084fc, #F6B82E, #26D9A1, #9E2FD0)",
+                          background: "conic-gradient(from 0deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-ink)), #E8A23A, #1FA48C, rgb(var(--ll-violet)))",
                           animation: "spin 7s linear infinite",
                           WebkitMask: "radial-gradient(farthest-side, transparent calc(100% - 3px), black calc(100% - 2px))",
                           mask: "radial-gradient(farthest-side, transparent calc(100% - 3px), black calc(100% - 2px))",
@@ -361,8 +362,8 @@ const Profile = () => {
                         onClick={handleOpenModal}
                         className="absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center text-white transition-opacity hover:opacity-85"
                         style={{
-                          background: "linear-gradient(135deg, #9E2FD0, #7b22a8)",
-                          boxShadow: "0 2px 8px rgba(158,47,208,0.45)",
+                          background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))",
+                          boxShadow: "0 2px 8px rgb(var(--ll-violet) / 0.45)",
                         }}
                       >
                         <FiCamera size={14} />
@@ -423,28 +424,28 @@ const Profile = () => {
 
                   <div className="w-full mt-6">
                     {/* Gradient divider */}
-                    <div className="h-px bg-gradient-to-r from-transparent via-[#9E2FD0]/20 to-transparent mb-5" />
+                    <div className="h-px bg-gradient-to-r from-transparent via-ll-violet/20 to-transparent mb-5" />
 
                     {/* Student — My Learning */}
                     {user.role === "user" && (
                       <>
-                        <h4 className="text-xs font-bold tracking-widest text-[#9E2FD0] dark:text-[#c084fc] uppercase mb-4">
+                        <h4 className="text-xs font-bold tracking-widest text-ll-violet dark:text-ll-violet-ink uppercase mb-4">
                           {t("profile.myLearning")}
                         </h4>
                         <div className="space-y-3">
                           {[
-                            { icon: FiUser, label: t("profile.myTeacher"), value: teacherAssigned || t("profile.notAssigned"), color: "#9E2FD0", onClick: teacherIdAssigned ? () => handleViewProfile(teacherIdAssigned) : null },
-                            { icon: FiBookOpen, label: t("profile.language"), value: user.language ? user.language.charAt(0).toUpperCase() + user.language.slice(1) : "N/A", color: "#26D9A1" },
-                            { icon: FiAward, label: t("profile.classesTaken"), value: classesCount, color: "#F6B82E" },
+                            { icon: FiUser, label: t("profile.myTeacher"), value: teacherAssigned || t("profile.notAssigned"), color: "rgb(var(--ll-violet))", onClick: teacherIdAssigned ? () => handleViewProfile(teacherIdAssigned) : null },
+                            { icon: FiBookOpen, label: t("profile.language"), value: user.language ? user.language.charAt(0).toUpperCase() + user.language.slice(1) : "N/A", color: "#1FA48C" },
+                            { icon: FiAward, label: t("profile.classesTaken"), value: classesCount, color: "#E8A23A" },
                           ].map(({ icon: Icon, label, value, color, onClick }) => (
                             <div
                               key={label}
                               onClick={onClick || undefined}
-                              className={`flex items-center gap-3 p-3 rounded-xl border border-gray-100 dark:border-[#9E2FD0]/20 bg-white/60 dark:bg-[#1e1e38] ${onClick ? "cursor-pointer hover:border-[#9E2FD0]/50 hover:bg-white dark:hover:bg-[#252545] transition-colors" : ""}`}
+                              className={`flex items-center gap-3 p-3 rounded-xl border border-gray-100 dark:border-ll-violet/20 bg-white/60 dark:bg-[#1e1e38] ${onClick ? "cursor-pointer hover:border-ll-violet/50 hover:bg-white dark:hover:bg-ll-hover transition-colors" : ""}`}
                             >
                               <div
                                 className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                                style={{ background: `${color}18`, border: `1px solid ${color}30` }}
+                                style={{ background: `${alpha(color,"18")}`, border: `1px solid ${alpha(color,"30")}` }}
                               >
                                 <Icon size={16} style={{ color }} />
                               </div>
@@ -461,7 +462,7 @@ const Profile = () => {
                     {/* Teacher — My Students */}
                     {user.role === "teacher" && (
                       <>
-                        <h4 className="text-xs font-bold tracking-widest text-[#9E2FD0] dark:text-[#c084fc] uppercase mb-4">
+                        <h4 className="text-xs font-bold tracking-widest text-ll-violet dark:text-ll-violet-ink uppercase mb-4">
                           {t("profile.myStudents")}
                         </h4>
                         <div className="space-y-2 max-h-72 overflow-y-auto custom-scrollbar">
@@ -470,13 +471,13 @@ const Profile = () => {
                               <div
                                 key={student.id}
                                 onClick={() => handleViewProfile(student.id)}
-                                className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 dark:border-[#9E2FD0]/20 bg-white/60 dark:bg-[#1e1e38] cursor-pointer hover:border-[#9E2FD0]/50 hover:bg-white dark:hover:bg-[#252545] transition-colors"
+                                className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 dark:border-ll-violet/20 bg-white/60 dark:bg-[#1e1e38] cursor-pointer hover:border-ll-violet/50 hover:bg-white dark:hover:bg-ll-hover transition-colors"
                               >
                                 <div
                                   className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                                  style={{ background: "rgba(158,47,208,0.10)", border: "1px solid rgba(158,47,208,0.20)" }}
+                                  style={{ background: "rgb(var(--ll-violet) / 0.10)", border: "1px solid rgb(var(--ll-violet) / 0.20)" }}
                                 >
-                                  <FiUser size={16} style={{ color: "#9E2FD0" }} />
+                                  <FiUser size={16} style={{ color: "rgb(var(--ll-violet))" }} />
                                 </div>
                                 <div className="min-w-0">
                                   <p className="text-sm font-bold text-gray-900 dark:text-white truncate">
@@ -504,11 +505,11 @@ const Profile = () => {
               <div
                 className="relative rounded-2xl overflow-hidden"
                 style={{
-                  border: "1px solid rgba(158,47,208,0.15)",
-                  boxShadow: "0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(158,47,208,0.06)",
+                  border: "1px solid rgb(var(--ll-violet) / 0.15)",
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgb(var(--ll-violet) / 0.06)",
                 }}
               >
-                <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#9E2FD0] via-[#F6B82E] to-[#26D9A1] opacity-60" />
+                <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-ll-violet via-[#E8A23A] to-[#1FA48C] opacity-60" />
                 <div
                   className="absolute inset-0 dark:hidden"
                   style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}
@@ -519,11 +520,11 @@ const Profile = () => {
                 />
 
                 {/* Card header */}
-                <div className="relative z-10 flex items-center justify-between px-6 py-4 border-b border-[#9E2FD0]/10 dark:border-[#9E2FD0]/15 mt-[2px]">
+                <div className="relative z-10 flex items-center justify-between px-6 py-4 border-b border-ll-violet/10 dark:border-ll-violet/15 mt-[2px]">
                   <div className="flex items-center gap-2">
                     <div
                       className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                      style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 2px 8px rgba(158,47,208,0.35)" }}
+                      style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", boxShadow: "0 2px 8px rgb(var(--ll-violet) / 0.35)" }}
                     >
                       <FiUser size={14} className="text-white" />
                     </div>
@@ -535,8 +536,8 @@ const Profile = () => {
                       onClick={handleSaveProfile}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white transition-opacity hover:opacity-85"
                       style={{
-                        background: "linear-gradient(135deg, #26D9A1, #1fa07a)",
-                        boxShadow: "0 2px 8px rgba(38,217,161,0.35)",
+                        background: "linear-gradient(135deg, #1FA48C, #17886F)",
+                        boxShadow: "0 2px 8px rgba(31,164,140,0.35)",
                       }}
                     >
                       <FiSave size={13} /> {t("profile.save")}
@@ -549,7 +550,7 @@ const Profile = () => {
                   <form>
                     {/* Section: About Me — the "headline" of a social profile, so it
                         leads the form instead of being buried under logistics fields */}
-                    <p className="text-[11px] font-bold tracking-widest text-[#9E2FD0] dark:text-[#c084fc] uppercase mb-4">
+                    <p className="text-[11px] font-bold tracking-widest text-ll-violet dark:text-ll-violet-ink uppercase mb-4">
                       {t("profile.aboutMe")}
                     </p>
                     <div className="mb-6">
@@ -566,10 +567,10 @@ const Profile = () => {
                     </div>
 
                     {/* Gradient divider */}
-                    <div className="h-px bg-gradient-to-r from-transparent via-[#9E2FD0]/15 to-transparent mb-6" />
+                    <div className="h-px bg-gradient-to-r from-transparent via-ll-violet/15 to-transparent mb-6" />
 
                     {/* Section: User Information */}
-                    <p className="text-[11px] font-bold tracking-widest text-[#9E2FD0] dark:text-[#c084fc] uppercase mb-4">
+                    <p className="text-[11px] font-bold tracking-widest text-ll-violet dark:text-ll-violet-ink uppercase mb-4">
                       {t("profile.userInformation")}
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -592,12 +593,12 @@ const Profile = () => {
                     </div>
 
                     {/* Gradient divider */}
-                    <div className="h-px bg-gradient-to-r from-transparent via-[#9E2FD0]/15 to-transparent mb-6" />
+                    <div className="h-px bg-gradient-to-r from-transparent via-ll-violet/15 to-transparent mb-6" />
 
                     {/* Section: Location — just city/country, like a social profile.
                         Address and postal code were dropped: nobody looking at a
                         classmate's profile needs a mailing address. */}
-                    <p className="text-[11px] font-bold tracking-widest text-[#9E2FD0] dark:text-[#c084fc] uppercase mb-4">
+                    <p className="text-[11px] font-bold tracking-widest text-ll-violet dark:text-ll-violet-ink uppercase mb-4">
                       {t("profile.location")}
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

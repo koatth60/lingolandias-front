@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { FiAward, FiX } from "react-icons/fi";
 
-const CONFETTI_COLORS = ["#9E2FD0", "#F6B82E", "#26D9A1", "#c084fc"];
+const CONFETTI_COLORS = ["#6A2BD8", "#E8A23A", "#1FA48C", "#B89EFF"];
 const CONFETTI = Array.from({ length: 24 }, (_, i) => ({
   left: (i * 173) % 100,
   delay: (i * 0.09) % 1.2,
@@ -17,14 +17,14 @@ const CourseCelebration = ({ onDismiss }) => {
     <div
       className="relative overflow-hidden rounded-2xl mb-6"
       style={{
-        border: "1px solid rgba(158,47,208,0.3)",
+        border: "1px solid rgba(106,43,216,0.3)",
         animation: "courseCelebrationPop 0.4s cubic-bezier(0.16,1,0.3,1) both",
       }}
     >
-      <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(158,47,208,0.12) 0%, rgba(246,184,46,0.10) 100%)" }} />
+      <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(106,43,216,0.12) 0%, rgba(232,162,58,0.10) 100%)" }} />
       <div className="dark:hidden absolute inset-0 bg-white/60" />
       <div className="hidden dark:block absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(13,10,30,0.6), rgba(26,26,46,0.6))" }} />
-      <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#9E2FD0] via-[#F6B82E] to-[#26D9A1]" />
+      <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-ll-violet via-[#E8A23A] to-[#1FA48C]" />
 
       {/* Confetti burst — contained to this card, not the whole page */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -46,7 +46,7 @@ const CourseCelebration = ({ onDismiss }) => {
       <div className="relative z-10 flex items-start sm:items-center gap-4 p-5 sm:p-6">
         <div
           className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: "linear-gradient(135deg, #9E2FD0, #F6B82E)", boxShadow: "0 4px 14px rgba(158,47,208,0.35)" }}
+          style={{ background: "linear-gradient(135deg, #6A2BD8, #E8A23A)", boxShadow: "0 4px 14px rgba(106,43,216,0.35)" }}
         >
           <FiAward size={22} className="text-white" />
         </div>
@@ -62,7 +62,7 @@ const CourseCelebration = ({ onDismiss }) => {
           <button
             onClick={onDismiss}
             className="hidden sm:inline-flex px-3.5 py-2 rounded-xl text-xs font-semibold text-white transition-opacity hover:opacity-90"
-            style={{ background: "linear-gradient(135deg, #9E2FD0, #c084fc)", boxShadow: "0 4px 14px rgba(158,47,208,0.3)" }}
+            style={{ background: "linear-gradient(135deg, #6A2BD8, #B89EFF)", boxShadow: "0 4px 14px rgba(106,43,216,0.3)" }}
           >
             {t("course.celebrationCta")}
           </button>

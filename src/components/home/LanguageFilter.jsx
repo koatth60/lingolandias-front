@@ -21,13 +21,13 @@ const LanguageFilter = ({ activeSection, setActiveSection }) => {
         style={
           activeSection === filter.id
             ? {
-                background: "linear-gradient(135deg, #9E2FD0, #7b22a8)",
+                background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))",
                 color: "#fff",
-                boxShadow: "0 3px 10px rgba(158,47,208,0.35)",
+                boxShadow: "0 3px 10px rgb(var(--ll-violet) / 0.35)",
               }
             : {
-                background: "rgba(158,47,208,0.08)",
-                border: "1px solid rgba(158,47,208,0.15)",
+                background: "rgb(var(--ll-violet) / 0.08)",
+                border: "1px solid rgb(var(--ll-violet) / 0.15)",
               }
         }
       >

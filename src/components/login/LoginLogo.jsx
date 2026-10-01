@@ -30,7 +30,7 @@ const AnimatedLogo = () => {
         className="absolute rounded-full blur-2xl opacity-50 pointer-events-none"
         style={{
           inset: '-25%',
-          background: 'radial-gradient(circle, rgba(158,47,208,0.55), rgba(246,184,46,0.15), transparent 70%)',
+          background: 'radial-gradient(circle, rgb(var(--ll-violet) / 0.55), rgba(232,162,58,0.15), transparent 70%)',
         }}
       />
 
@@ -43,7 +43,7 @@ const AnimatedLogo = () => {
         className="absolute rounded-full pointer-events-none"
         style={{
           inset: '-5px',
-          background: 'conic-gradient(from 0deg, #9E2FD0, #c084fc, #F6B82E, #26D9A1, #9E2FD0)',
+          background: 'conic-gradient(from 0deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-ink)), #E8A23A, #1FA48C, rgb(var(--ll-violet)))',
           animation: 'spin 7s linear infinite',
           WebkitMask: 'radial-gradient(farthest-side, transparent calc(100% - 3px), black calc(100% - 2px))',
           mask:        'radial-gradient(farthest-side, transparent calc(100% - 3px), black calc(100% - 2px))',
@@ -66,8 +66,8 @@ const AnimatedLogo = () => {
       <span
         className="absolute -top-1 -right-1 w-2 h-2 md:w-3 md:h-3 rounded-full"
         style={{
-          background: '#F6B82E',
-          boxShadow: '0 0 8px rgba(246,184,46,0.9)',
+          background: '#E8A23A',
+          boxShadow: '0 0 8px rgba(232,162,58,0.9)',
           animation: 'loginPulseOrb 2s ease-in-out infinite',
         }}
       />
@@ -75,8 +75,8 @@ const AnimatedLogo = () => {
       <span
         className="absolute -bottom-1 -left-1 w-1.5 h-1.5 md:w-2 md:h-2 rounded-full"
         style={{
-          background: '#26D9A1',
-          boxShadow: '0 0 6px rgba(38,217,161,0.9)',
+          background: '#1FA48C',
+          boxShadow: '0 0 6px rgba(31,164,140,0.9)',
           animation: 'loginPulseOrb 2.5s ease-in-out infinite',
           animationDelay: '1s',
         }}
@@ -105,7 +105,7 @@ const AnimatedLogo = () => {
       {LANGUAGE_BADGES.map(({ flag, lang }) => (
         <span
           key={lang}
-          className="px-3 py-1 text-xs rounded-full border border-white/10 text-gray-300 transition-all duration-300 hover:border-purple-500/50 hover:text-white hover:bg-purple-500/10 cursor-default"
+          className="px-3 py-1 text-xs rounded-full border border-white/10 text-gray-300 transition-all duration-300 hover:border-ll-violet/50 hover:text-white hover:bg-ll-violet/10 cursor-default"
           style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
         >
           {flag} {lang}

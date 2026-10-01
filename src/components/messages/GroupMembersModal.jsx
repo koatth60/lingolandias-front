@@ -80,8 +80,8 @@ const GroupMembersModal = ({
               {chatType === "group" ? (
                 <AvatarPicker value={groupAvatarUrl} onChange={onChangeAvatar} size={32} align="start" />
               ) : (
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-[#F6B82E]/15 flex-shrink-0">
-                  <FiUsers size={15} className="text-[#F6B82E]" />
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-[#E8A23A]/15 flex-shrink-0">
+                  <FiUsers size={15} className="text-[#E8A23A]" />
                 </div>
               )}
               {editingName ? (
@@ -91,9 +91,9 @@ const GroupMembersModal = ({
                     value={nameInput}
                     onChange={(e) => setNameInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && submitRename()}
-                    className="flex-1 min-w-0 text-sm px-2 py-1 rounded-lg bg-gray-50 dark:bg-white/5 border border-[#9E2FD0]/30 text-gray-900 dark:text-white outline-none"
+                    className="flex-1 min-w-0 text-sm px-2 py-1 rounded-lg bg-gray-50 dark:bg-white/5 border border-ll-violet/30 text-gray-900 dark:text-white outline-none"
                   />
-                  <button onClick={submitRename} className="p-1.5 rounded-lg text-white flex-shrink-0" style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}>
+                  <button onClick={submitRename} className="p-1.5 rounded-lg text-white flex-shrink-0" style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}>
                     <FiCheck size={13} />
                   </button>
                 </div>
@@ -101,7 +101,7 @@ const GroupMembersModal = ({
                 <h2 className="text-base font-bold text-gray-900 dark:text-white truncate">{groupName}</h2>
               )}
               {!editingName && canManage && (
-                <button onClick={() => { setNameInput(groupName || ""); setEditingName(true); }} className="p-1 rounded-lg text-gray-400 hover:text-[#9E2FD0] flex-shrink-0">
+                <button onClick={() => { setNameInput(groupName || ""); setEditingName(true); }} className="p-1 rounded-lg text-gray-400 hover:text-ll-violet flex-shrink-0">
                   <FiEdit2 size={13} />
                 </button>
               )}
@@ -127,13 +127,13 @@ const GroupMembersModal = ({
                 type="text"
                 value={classNameInput}
                 onChange={(e) => setClassNameInput(e.target.value)}
-                className="w-full px-3 py-2.5 mb-3 rounded-xl text-sm bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-[#9E2FD0]/20 text-gray-900 dark:text-white outline-none focus:border-[#9E2FD0]"
+                className="w-full px-3 py-2.5 mb-3 rounded-xl text-sm bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-ll-violet/20 text-gray-900 dark:text-white outline-none focus:border-ll-violet"
               />
               <div className="flex gap-2">
                 <button
                   onClick={() => onConfirmAddToClass(classNameInput)}
                   className="flex-1 py-2.5 rounded-xl font-medium text-white transition-all"
-                  style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}
+                  style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}
                 >
                   {t("messagesExtra.addToClassConfirm")}
                 </button>
@@ -180,7 +180,7 @@ const GroupMembersModal = ({
                         {m.avatarUrl ? (
                           <img src={m.avatarUrl} alt={m.name} className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
                         ) : (
-                          <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}>
+                          <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}>
                             {getInitials(m.name, m.lastName)}
                           </div>
                         )}
@@ -188,7 +188,7 @@ const GroupMembersModal = ({
                           <p className="text-xs font-medium text-gray-800 dark:text-gray-100 truncate">
                             {m.name} {m.lastName}
                             {m.memberRole === "owner" && (
-                              <span className="ml-1.5 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-[#F6B82E]/15 text-[#d4a017] dark:text-[#F6B82E]">
+                              <span className="ml-1.5 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-[#E8A23A]/15 text-[#C4860A] dark:text-[#E8A23A]">
                                 {t("messagesExtra.groupOwner")}
                               </span>
                             )}
@@ -196,7 +196,7 @@ const GroupMembersModal = ({
                           <p className="text-[10px] text-gray-400">{t(ROLE_LABEL_KEY[m.role] || "profileCard.roleStudent")}</p>
                         </div>
                       </div>
-                      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${m.online === "online" ? "bg-[#26D9A1]" : "bg-gray-300 dark:bg-gray-600"}`} />
+                      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${m.online === "online" ? "bg-[#1FA48C]" : "bg-gray-300 dark:bg-gray-600"}`} />
                       {canRemove(m) && (
                         <button
                           onClick={() => setConfirmRemoveId(m.id)}
@@ -214,7 +214,7 @@ const GroupMembersModal = ({
                 <button
                   onClick={() => setShowAddPeople(true)}
                   className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-medium text-white transition-all hover:scale-[1.02] active:scale-[0.98] flex-shrink-0"
-                  style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 4px 15px rgba(158,47,208,0.3)" }}
+                  style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", boxShadow: "0 4px 15px rgb(var(--ll-violet) / 0.3)" }}
                 >
                   <FiUserPlus size={15} />
                   {t("messagesExtra.addPeople")}
@@ -240,12 +240,12 @@ const GroupMembersModal = ({
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder={t("messagesExtra.searchMembersPlaceholder")}
-                  className="w-full pl-9 pr-3 py-2.5 rounded-xl text-sm bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-[#9E2FD0]/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:border-[#9E2FD0]"
+                  className="w-full pl-9 pr-3 py-2.5 rounded-xl text-sm bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-ll-violet/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:border-ll-violet"
                 />
               </div>
 
               <label className="flex items-center gap-2 mb-2 px-1 text-xs text-gray-600 dark:text-gray-300 flex-shrink-0 cursor-pointer">
-                <input type="checkbox" checked={shareHistory} onChange={(e) => setShareHistory(e.target.checked)} className="accent-[#9E2FD0]" />
+                <input type="checkbox" checked={shareHistory} onChange={(e) => setShareHistory(e.target.checked)} className="accent-ll-violet" />
                 {t("messagesExtra.shareHistoryToggle")}
               </label>
 
@@ -263,7 +263,7 @@ const GroupMembersModal = ({
                     {u.avatarUrl ? (
                       <img src={u.avatarUrl} alt={u.name} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
                     ) : (
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}>
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}>
                         {getInitials(u.name, u.lastName)}
                       </div>
                     )}

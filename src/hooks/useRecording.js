@@ -233,7 +233,7 @@ export default useRecording;
  *         icon: "error",
  *         background: "#1a1a2e",
  *         color: "#fff",
- *         confirmButtonColor: "#9E2FD0",
+ *         confirmButtonColor: "rgb(var(--ll-violet))",
  *       });
  *     }
  *   };

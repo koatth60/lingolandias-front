@@ -1,44 +1,40 @@
 import PropTypes from 'prop-types';
-import { FiCalendar, FiUser, FiArrowRight, FiMessageSquare } from 'react-icons/fi';
+import { FiCalendar, FiArrowRight, FiMessageSquare } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
 
-export const UpcomingClass = ({ time, teacher, date, onJoin, onMessage, onViewCalendar }) => {
+export const UpcomingClass = ({ time, teacher, date, isGroupClass, onJoin, onMessage, onViewCalendar }) => {
   const { t } = useTranslation();
   return (
-  <div
-    className="relative rounded-xl overflow-hidden transition-all duration-200 hover:-translate-y-0.5 shadow-sm dark:shadow-none"
-    style={{ border: '1px solid rgba(158,47,208,0.15)' }}
-  >
-    <div className="dark:hidden absolute inset-0 bg-white" />
-    <div
-      className="hidden dark:block absolute inset-0"
-      style={{ background: 'linear-gradient(135deg, rgba(13,10,30,0.94), rgba(26,26,46,0.92))' }}
-    />
-
-    <div className="relative z-10 p-4 flex items-center justify-between gap-3">
-      <div className="flex items-center gap-3">
-        <div className="flex-shrink-0 text-center min-w-[44px]">
-          <p className="text-base font-extrabold text-[#9E2FD0] leading-none">{time.split(' ')[0]}</p>
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">{time.split(' ')[1]}</p>
+    <div className="flex-1 min-h-[68px] flex items-center justify-between gap-3 px-4 py-3 first:rounded-t-xl last:rounded-b-xl">
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="flex-shrink-0 text-center min-w-[46px] font-mono tabular">
+          <p className="text-sm font-medium text-ll-ink leading-none">{time.split(' ')[0]}</p>
+          <p className="text-[10px] text-ll-ink3 uppercase tracking-wide mt-1">{time.split(' ')[1]}</p>
         </div>
-        <div className="w-px h-8 bg-gradient-to-b from-transparent via-[#9E2FD0]/25 to-transparent flex-shrink-0" />
-        <div>
-          <p className="text-sm font-semibold text-gray-800 dark:text-white flex items-center gap-1.5">
-            <FiUser size={12} className="text-gray-400 flex-shrink-0" />
-            {teacher}
-          </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mt-0.5">
-            <FiCalendar size={11} className="text-gray-400 flex-shrink-0" />
-            {date}
+        <div className="min-w-0">
+          <p className="text-[13.5px] font-medium text-ll-ink truncate">{teacher}</p>
+          <p className="text-[12px] text-ll-ink3 flex items-center gap-2 mt-0.5">
+            <span className="flex items-center gap-1.5">
+              <FiCalendar size={11} className="flex-shrink-0" />
+              {date}
+            </span>
+            <span className="ll-pill" style={
+              isGroupClass
+                ? { background: 'rgb(var(--ll-teal-tint))', color: 'rgb(var(--ll-teal-ink))' }
+                : { background: 'rgb(var(--ll-violet-tint))', color: 'rgb(var(--ll-violet-ink))' }
+            }>
+              <span className="ll-pill-dot" style={{ background: isGroupClass ? 'rgb(var(--ll-teal))' : 'rgb(var(--ll-violet))' }} />
+              {isGroupClass ? t("toolbar.group", "Group") : t("toolbar.oneOnOne", "1:1")}
+            </span>
           </p>
         </div>
       </div>
-      <div className="flex-shrink-0 flex items-center gap-1.5">
+      <div className="flex-shrink-0 flex items-center gap-1">
         {onMessage && (
           <button
             onClick={onMessage}
             title={t("upcomingClass.message")}
-            className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-[#9E2FD0] hover:bg-[#9E2FD0]/10 transition-colors"
+            className="ll-btn ll-btn-ghost ll-btn-sm !px-1.5"
           >
             <FiMessageSquare size={14} />
           </button>
@@ -47,21 +43,16 @@ export const UpcomingClass = ({ time, teacher, date, onJoin, onMessage, onViewCa
           <button
             onClick={onViewCalendar}
             title={t("upcomingClass.viewInCalendar")}
-            className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-[#26D9A1] hover:bg-[#26D9A1]/10 transition-colors"
+            className="ll-btn ll-btn-ghost ll-btn-sm !px-1.5"
           >
             <FiCalendar size={14} />
           </button>
         )}
-        <button
-          onClick={onJoin}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white text-xs font-bold transition-opacity hover:opacity-85"
-          style={{ background: 'linear-gradient(135deg, #9E2FD0, #7b22a8)', boxShadow: '0 3px 10px rgba(158,47,208,0.35)' }}
-        >
+        <button onClick={onJoin} className="ll-btn ll-btn-primary ll-btn-sm">
           {t("upcomingClass.join")} <FiArrowRight size={12} />
         </button>
       </div>
     </div>
-  </div>
   );
 };
 
@@ -69,6 +60,7 @@ UpcomingClass.propTypes = {
   time: PropTypes.string.isRequired,
   teacher: PropTypes.string.isRequired,
   date: PropTypes.string.isRequired,
+  isGroupClass: PropTypes.bool,
   onJoin: PropTypes.func.isRequired,
   onMessage: PropTypes.func,
   onViewCalendar: PropTypes.func,

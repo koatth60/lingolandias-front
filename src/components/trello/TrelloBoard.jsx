@@ -42,7 +42,7 @@ const BgPickerInline = ({ value, onChange }) => {
       <div className="flex gap-1 mb-2">
         {TABS.map((t) => (
           <button key={t.key} type="button" onClick={() => setTab(t.key)}
-            className={`px-3 py-1 rounded-lg text-xs font-medium transition ${tab === t.key ? 'bg-[#9E2FD0] text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
+            className={`px-3 py-1 rounded-lg text-xs font-medium transition ${tab === t.key ? 'bg-ll-violet text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
           >
             {t.label}
           </button>
@@ -56,7 +56,7 @@ const BgPickerInline = ({ value, onChange }) => {
             return (
               <button key={bg.value} type="button" title={bg.label} onClick={() => onChange(bg.value)}
                 className="h-7 w-7 rounded-lg transition-transform hover:scale-110 relative"
-                style={{ ...getBgStyle(bg.value), boxShadow: isActive ? '0 0 0 2px white, 0 0 0 4px #9E2FD0' : 'none' }}
+                style={{ ...getBgStyle(bg.value), boxShadow: isActive ? '0 0 0 2px white, 0 0 0 4px rgb(var(--ll-violet))' : 'none' }}
               >
                 {isActive && <span className="absolute inset-0 flex items-center justify-center text-white text-xs">✓</span>}
               </button>
@@ -74,7 +74,7 @@ const BgPickerInline = ({ value, onChange }) => {
             return (
               <button key={photo.id} type="button" title={photo.label} onClick={() => onChange(fullUrl)}
                 className="relative rounded-lg overflow-hidden transition-transform hover:scale-105"
-                style={{ height: '52px', boxShadow: isActive ? '0 0 0 2px white, 0 0 0 4px #9E2FD0' : 'none' }}
+                style={{ height: '52px', boxShadow: isActive ? '0 0 0 2px white, 0 0 0 4px rgb(var(--ll-violet))' : 'none' }}
               >
                 <img src={thumbUrl} alt={photo.label} className="w-full h-full object-cover" loading="lazy" />
                 {isActive && <span className="absolute inset-0 flex items-center justify-center bg-black/30 text-white text-sm">✓</span>}
@@ -89,10 +89,10 @@ const BgPickerInline = ({ value, onChange }) => {
         <div className="space-y-2">
           <input type="url" value={imgUrl} onChange={(e) => setImgUrl(e.target.value)}
             placeholder="https://images.unsplash.com/..."
-            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#9E2FD0]"
+            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ll-violet"
           />
           <button type="button" onClick={() => { if (imgUrl.trim()) onChange(imgUrl.trim()); }}
-            className="w-full py-2 text-sm rounded-lg bg-[#9E2FD0] hover:bg-[#8a27b5] text-white transition"
+            className="w-full py-2 text-sm rounded-lg bg-ll-violet hover:bg-ll-violet-hover text-white transition"
           >Apply image</button>
           {value?.startsWith('http') && (
             <div className="h-14 rounded-lg" style={{ background: `url(${value}) center/cover no-repeat` }} />
@@ -125,7 +125,7 @@ const BoardSettingsModal = ({ board, onClose, onUpdated }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-white dark:bg-[#1a1a2e] rounded-2xl shadow-2xl w-full max-w-md mx-4 border border-gray-200 dark:border-[#9E2FD0]/30 overflow-hidden">
+      <div className="bg-white dark:bg-[#1a1a2e] rounded-2xl shadow-2xl w-full max-w-md mx-4 border border-gray-200 dark:border-ll-violet/30 overflow-hidden">
         {/* Live preview strip */}
         <div className="h-20 transition-all duration-300" style={{ ...getBgStyle(background), fontFamily }}>
           <div className="h-full flex items-end px-5 pb-3" style={{ backgroundColor: 'rgba(0,0,0,0.18)' }}>
@@ -140,7 +140,7 @@ const BoardSettingsModal = ({ board, onClose, onUpdated }) => {
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
             <input type="text" value={name} onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#9E2FD0]"
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ll-violet"
             />
           </div>
           <div>
@@ -150,7 +150,7 @@ const BoardSettingsModal = ({ board, onClose, onUpdated }) => {
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Font</label>
             <select value={fontFamily} onChange={(e) => setFontFamily(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#9E2FD0]"
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ll-violet"
             >
               {FONT_OPTIONS.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
             </select>
@@ -158,7 +158,7 @@ const BoardSettingsModal = ({ board, onClose, onUpdated }) => {
         </div>
         <div className="p-5 flex gap-3">
           <button onClick={onClose} className="flex-1 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition">Cancel</button>
-          <button onClick={handleSave} disabled={saving} className="flex-1 py-2 rounded-lg bg-[#9E2FD0] hover:bg-[#8a27b5] text-white font-medium transition disabled:opacity-50">
+          <button onClick={handleSave} disabled={saving} className="flex-1 py-2 rounded-lg bg-ll-violet hover:bg-ll-violet-hover text-white font-medium transition disabled:opacity-50">
             {saving ? 'Saving...' : 'Save changes'}
           </button>
         </div>
@@ -224,7 +224,7 @@ const TrelloCardItem = ({ card, onClick }) => {
       {...attributes}
       {...listeners}
       onClick={() => !isDragging && onClick()}
-      className="bg-white dark:bg-[#212a3a] rounded-xl border border-gray-100 dark:border-white/5 shadow-sm p-3 cursor-grab active:cursor-grabbing hover:shadow-md hover:border-[#9E2FD0]/30 hover:-translate-y-0.5 transition-all duration-150 touch-none"
+      className="bg-white dark:bg-[#212a3a] rounded-xl border border-gray-100 dark:border-white/5 shadow-sm p-3 cursor-grab active:cursor-grabbing hover:shadow-md hover:border-ll-violet/30 hover:-translate-y-0.5 transition-all duration-150 touch-none"
     >
       {cardLabels.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-2">
@@ -291,7 +291,7 @@ const TrelloCardItem = ({ card, onClick }) => {
 const CardGhost = ({ card }) => {
   const cardLabels = parseCardLabels(card.label);
   return (
-    <div className="bg-white dark:bg-[#212a3a] rounded-xl border border-[#9E2FD0]/40 shadow-2xl p-3 w-72 rotate-2 cursor-grabbing">
+    <div className="bg-white dark:bg-[#212a3a] rounded-xl border border-ll-violet/40 shadow-2xl p-3 w-72 rotate-2 cursor-grabbing">
       {cardLabels.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-2">
           {cardLabels.map((lbl) => <span key={lbl.name} className="h-1.5 w-8 rounded-full" style={{ backgroundColor: lbl.color }} />)}
@@ -376,7 +376,7 @@ const TrelloListColumn = ({
             onChange={(e) => setListName(e.target.value)}
             onBlur={handleRenameList}
             onKeyDown={(e) => { if (e.key === 'Enter') handleRenameList(); if (e.key === 'Escape') { setListName(list.name); setRenaming(false); } }}
-            className="flex-1 px-2 py-1 text-sm font-bold rounded border border-[#9E2FD0] bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none"
+            className="flex-1 px-2 py-1 text-sm font-bold rounded border border-ll-violet bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none"
           />
         ) : (
           <h4
@@ -430,10 +430,10 @@ const TrelloListColumn = ({
               onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleAddCard(); } if (e.key === 'Escape') setAddingCard(false); }}
               placeholder="Enter card title..."
               rows={2}
-              className="w-full px-3 py-2 text-sm rounded-lg border border-[#9E2FD0] bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none resize-none"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-ll-violet bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none resize-none"
             />
             <div className="flex gap-1">
-              <button onClick={handleAddCard} className="bg-[#9E2FD0] hover:bg-[#8a27b5] text-white text-xs px-3 py-1.5 rounded-lg transition">Add card</button>
+              <button onClick={handleAddCard} className="bg-ll-violet hover:bg-ll-violet-hover text-white text-xs px-3 py-1.5 rounded-lg transition">Add card</button>
               <button onClick={() => { setAddingCard(false); setNewCardName(''); }} className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white text-xs px-2 py-1.5 rounded-lg transition">Cancel</button>
             </div>
           </div>
@@ -792,10 +792,10 @@ const TrelloBoard = ({ board, onBack, onBoardUpdated }) => {
                       onChange={(e) => setNewListName(e.target.value)}
                       onKeyDown={(e) => { if (e.key === 'Enter') handleAddList(); if (e.key === 'Escape') setAddingList(false); }}
                       placeholder="Enter list name..."
-                      className="w-full px-3 py-2 text-sm rounded-lg border border-[#9E2FD0] bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none"
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-ll-violet bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none"
                     />
                     <div className="flex gap-1">
-                      <button onClick={handleAddList} className="bg-[#9E2FD0] hover:bg-[#8a27b5] text-white text-xs px-3 py-1.5 rounded-lg transition">Add list</button>
+                      <button onClick={handleAddList} className="bg-ll-violet hover:bg-ll-violet-hover text-white text-xs px-3 py-1.5 rounded-lg transition">Add list</button>
                       <button onClick={() => { setAddingList(false); setNewListName(''); }} className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white text-xs px-2 py-1.5 rounded-lg transition">Cancel</button>
                     </div>
                   </div>
@@ -817,7 +817,7 @@ const TrelloBoard = ({ board, onBack, onBoardUpdated }) => {
           <DragOverlay>
             {activeCard ? <CardGhost card={activeCard} /> : null}
             {activeList ? (
-              <div className="w-72 rounded-2xl rotate-1 shadow-2xl opacity-90" style={{ background: 'rgba(235,236,240,0.98)', border: '1px solid rgba(158,47,208,0.4)' }}>
+              <div className="w-72 rounded-2xl rotate-1 shadow-2xl opacity-90" style={{ background: 'rgba(235,236,240,0.98)', border: '1px solid rgb(var(--ll-violet) / 0.4)' }}>
                 <div className="px-3 py-2.5">
                   <h4 className="font-bold text-gray-800 text-sm truncate">{activeList.name}</h4>
                 </div>

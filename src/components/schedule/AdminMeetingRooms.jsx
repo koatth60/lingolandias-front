@@ -1,3 +1,4 @@
+import { alpha } from "../../utils/colorAlpha";
 import { useState } from "react";
 import { FiVideo, FiUsers, FiGlobe, FiArrowRight, FiRadio } from "react-icons/fi";
 import { useTranslation } from "react-i18next";
@@ -9,33 +10,33 @@ const ROOMS = [
     langKey: "english",
     language: "English",
     code: "EN",
-    color: "#9E2FD0",
-    colorAlt: "#7b22a8",
-    shadow: "rgba(158,47,208,0.35)",
-    border: "rgba(158,47,208,0.30)",
-    glow: "rgba(158,47,208,0.12)",
+    color: "rgb(var(--ll-violet))",
+    colorAlt: "rgb(var(--ll-violet-hover))",
+    shadow: "rgb(var(--ll-violet) / 0.35)",
+    border: "rgb(var(--ll-violet) / 0.30)",
+    glow: "rgb(var(--ll-violet) / 0.12)",
   },
   {
     key: meetingRooms.spanish,
     langKey: "spanish",
     language: "Español",
     code: "ES",
-    color: "#26D9A1",
-    colorAlt: "#1fa07a",
-    shadow: "rgba(38,217,161,0.30)",
-    border: "rgba(38,217,161,0.30)",
-    glow: "rgba(38,217,161,0.10)",
+    color: "#1FA48C",
+    colorAlt: "#17886F",
+    shadow: "rgba(31,164,140,0.30)",
+    border: "rgba(31,164,140,0.30)",
+    glow: "rgba(31,164,140,0.10)",
   },
   {
     key: meetingRooms.polish,
     langKey: "polish",
     language: "Polski",
     code: "PL",
-    color: "#F6B82E",
+    color: "#E8A23A",
     colorAlt: "#c8940f",
-    shadow: "rgba(246,184,46,0.28)",
-    border: "rgba(246,184,46,0.28)",
-    glow: "rgba(246,184,46,0.10)",
+    shadow: "rgba(232,162,58,0.28)",
+    border: "rgba(232,162,58,0.28)",
+    glow: "rgba(232,162,58,0.10)",
   },
 ];
 
@@ -51,14 +52,14 @@ const AdminMeetingRooms = ({ onJoinMeeting }) => {
         {/* Live badge */}
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold mb-4"
           style={{
-            background: "rgba(38,217,161,0.10)",
-            border: "1px solid rgba(38,217,161,0.28)",
-            color: "#26D9A1",
+            background: "rgba(31,164,140,0.10)",
+            border: "1px solid rgba(31,164,140,0.28)",
+            color: "#1FA48C",
           }}
         >
           <span
             className="w-1.5 h-1.5 rounded-full animate-pulse"
-            style={{ background: "#26D9A1" }}
+            style={{ background: "#1FA48C" }}
           />
           <FiRadio size={10} />
           {t("adminRooms.liveRooms")}
@@ -74,7 +75,7 @@ const AdminMeetingRooms = ({ onJoinMeeting }) => {
         {/* Gradient rule */}
         <div
           className="h-px mt-5 mx-auto max-w-xs opacity-40"
-          style={{ background: "linear-gradient(90deg, transparent, #9E2FD0, #F6B82E, #26D9A1, transparent)" }}
+          style={{ background: "linear-gradient(90deg, transparent, rgb(var(--ll-violet)), #E8A23A, #1FA48C, transparent)" }}
         />
       </div>
 
@@ -130,8 +131,8 @@ const AdminMeetingRooms = ({ onJoinMeeting }) => {
                   <div
                     className="w-12 h-12 rounded-xl flex items-center justify-center font-extrabold text-sm tracking-widest"
                     style={{
-                      background: `linear-gradient(135deg, ${room.color}22, ${room.color}44)`,
-                      border: `1.5px solid ${room.color}55`,
+                      background: `linear-gradient(135deg, ${alpha(room.color,"22")}, ${alpha(room.color,"44")})`,
+                      border: `1.5px solid ${alpha(room.color,"55")}`,
                       color: room.color,
                     }}
                   >
@@ -220,22 +221,22 @@ const AdminMeetingRooms = ({ onJoinMeeting }) => {
       <div
         className="w-full max-w-4xl rounded-2xl px-6 py-4 flex flex-wrap items-center gap-4"
         style={{
-          border: "1px solid rgba(158,47,208,0.12)",
-          background: "rgba(158,47,208,0.04)",
+          border: "1px solid rgb(var(--ll-violet) / 0.12)",
+          background: "rgb(var(--ll-violet) / 0.04)",
         }}
       >
         <div className="flex items-center gap-2 text-gray-500 dark:text-gray-300">
           <div
             className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-            style={{ background: "rgba(158,47,208,0.12)", border: "1px solid rgba(158,47,208,0.20)" }}
+            style={{ background: "rgb(var(--ll-violet) / 0.12)", border: "1px solid rgb(var(--ll-violet) / 0.20)" }}
           >
-            <FiVideo size={13} style={{ color: "#9E2FD0" }} />
+            <FiVideo size={13} style={{ color: "rgb(var(--ll-violet))" }} />
           </div>
           <span className="text-xs leading-snug">
             {t("adminRooms.stripText")}
           </span>
         </div>
-        <div className="ml-auto flex items-center gap-1.5 text-xs font-semibold" style={{ color: "#9E2FD0" }}>
+        <div className="ml-auto flex items-center gap-1.5 text-xs font-semibold" style={{ color: "rgb(var(--ll-violet))" }}>
           <FiUsers size={12} />
           {t("adminRooms.activeDepts")}
         </div>

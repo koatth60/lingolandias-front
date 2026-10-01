@@ -67,19 +67,19 @@ const MeetingLogsPanel = () => {
           placeholder="Filter by email..."
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#9E2FD0] w-56"
+          className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-ll-violet w-56"
         />
         <input
           type="text"
           placeholder="Filter by room id..."
           value={roomId}
           onChange={(e) => setRoomId(e.target.value)}
-          className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#9E2FD0] w-56"
+          className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-ll-violet w-56"
         />
         <select
           value={level}
           onChange={(e) => setLevel(e.target.value)}
-          className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#9E2FD0]"
+          className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-ll-violet"
         >
           <option value="">All levels</option>
           <option value="error">Error</option>
@@ -89,7 +89,7 @@ const MeetingLogsPanel = () => {
         <button
           onClick={fetchLogs}
           className="px-4 py-2 rounded-xl text-sm font-semibold text-white"
-          style={{ background: 'linear-gradient(135deg, #9E2FD0, #7b22a8)' }}
+          style={{ background: 'linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))' }}
         >
           Refresh
         </button>
@@ -105,7 +105,7 @@ const MeetingLogsPanel = () => {
 
       {loading ? (
         <div className="flex justify-center py-20">
-          <div className="h-10 w-10 rounded-full border-4 border-[#9E2FD0] border-t-transparent animate-spin" />
+          <div className="h-10 w-10 rounded-full border-4 border-ll-violet border-t-transparent animate-spin" />
         </div>
       ) : logs.length === 0 ? (
         <div className="text-center py-20">

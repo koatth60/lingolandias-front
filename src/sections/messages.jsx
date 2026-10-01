@@ -77,6 +77,14 @@ const Messages = () => {
     return () => { activeRoomRef.current = null; };
   }, [selectedChat?.id]);
 
+  // Phone: a conversation is a full-screen view, so the tab bar steps aside
+  // (CSS keys off this class) until the user goes back to the list.
+  const chatFullscreen = !isDesktop && !showChatList && !!selectedChat;
+  useEffect(() => {
+    document.documentElement.classList.toggle("ll-chat-open", chatFullscreen);
+    return () => document.documentElement.classList.remove("ll-chat-open");
+  }, [chatFullscreen]);
+
   const getDisplayName = useCallback((c) => {
     // Covers both real DMs and a `type: 'group'` conversation the backend
     // has resolved an otherUser for — a never-custom-named group that has
@@ -474,7 +482,7 @@ const Messages = () => {
         showCancelButton: true,
         confirmButtonText: t("messagesExtra.scheduleClassConfirm"),
         cancelButtonText: t("messagesExtra.skipScheduling"),
-        confirmButtonColor: "#9E2FD0",
+        confirmButtonColor: "rgb(var(--ll-violet))",
       });
       if (!isConfirmed) return;
       const students = await fetchStudentsForScheduling(conversationId);
@@ -539,7 +547,7 @@ const Messages = () => {
         showCancelButton: true,
         confirmButtonText: t("messagesExtra.scheduleClassConfirm"),
         cancelButtonText: t("messagesExtra.skipScheduling"),
-        confirmButtonColor: "#9E2FD0",
+        confirmButtonColor: "rgb(var(--ll-violet))",
       });
       if (!isConfirmed) return;
 
@@ -863,85 +871,40 @@ const Messages = () => {
   } : null;
 
   return (
-    <div className="flex w-full relative h-screen">
-      {/* Page background */}
-      <div className="absolute inset-0 pointer-events-none dark:hidden" style={{ background: "linear-gradient(135deg, #f8f8fa 0%, #f2f2f6 100%)" }} />
-      <div className="absolute inset-0 pointer-events-none hidden dark:block" style={{ background: "linear-gradient(135deg, #0d0a1e 0%, #1a1a2e 55%, #110e28 100%)" }} />
-      <div className="absolute inset-0 pointer-events-none overflow-hidden hidden dark:block">
-        <div className="absolute rounded-full blur-3xl opacity-10" style={{ background: "radial-gradient(circle, rgba(158,47,208,0.6), transparent 70%)", width: "600px", height: "600px", top: "-10%", right: "-5%" }} />
-        <div className="absolute rounded-full blur-3xl opacity-8" style={{ background: "radial-gradient(circle, rgba(38,217,161,0.4), transparent 70%)", width: "400px", height: "400px", bottom: "5%", left: "10%" }} />
-      </div>
-      <div className="absolute inset-0 pointer-events-none opacity-[0.012] dark:opacity-[0.020]" style={{ backgroundImage: "linear-gradient(rgba(158,47,208,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(158,47,208,0.8) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
-
+    <div className="flex w-full relative h-screen bg-ll-canvas">
       <Dashboard />
-      <div className="w-full relative z-10 flex flex-col min-w-0">
+      <div className="ll-shell w-full relative z-10 flex flex-col min-w-0">
         <Navbar header={t("messages.title")} />
 
-        <section className="flex-grow min-h-0 p-3 sm:p-4 overflow-hidden">
+        <section className="flex-grow min-h-0 p-0 sm:p-4 overflow-hidden">
 
-          {/* ── Desktop: unified glass card ── */}
+          {/* ── Desktop: unified card ── */}
           {isDesktop && (
-          <div
-            className="flex h-full relative rounded-2xl overflow-hidden"
-            style={{
-              border: "1px solid rgba(158,47,208,0.15)",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(158,47,208,0.08)",
-            }}
-          >
-            {/* Light glass bg */}
-            <div
-              className="absolute inset-0 dark:hidden rounded-2xl"
-              style={{ background: "rgba(255,255,255,0.95)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}
-            />
-            {/* Dark glass bg */}
-            <div
-              className="absolute inset-0 hidden dark:block rounded-2xl"
-              style={{ background: "rgba(13,10,30,0.92)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}
-            />
-            {/* Top accent line */}
-            <div className="absolute top-0 left-0 w-full h-[2px] z-20 bg-gradient-to-r from-[#9E2FD0] via-[#F6B82E] to-[#26D9A1]" />
+          <div className="ll-card flex h-full overflow-hidden">
 
-            {/* Inner flex row — starts below the 2px accent */}
-            <div className="relative z-10 flex w-full h-full pt-[2px]">
+            {/* ── ChatList sidebar ── */}
+            <div className="w-[280px] flex-shrink-0 overflow-hidden border-r border-ll-line">
+              <ChatListComponent {...chatListProps} />
+            </div>
 
-              {/* ── ChatList sidebar ── */}
-              <div className="w-[280px] flex-shrink-0 overflow-hidden">
-                <ChatListComponent {...chatListProps} />
-              </div>
-
-              {/* ── Chat / empty area ── */}
-              <div className="relative flex-1 min-w-0 overflow-hidden">
-                {selectedChat ? (
-                  <ChatWindowComponent {...chatWindowProps} />
-                ) : (
-                  /* Empty state */
-                  <div className="flex flex-col items-center justify-center h-full gap-5 px-6">
-                    {/* Ambient glow */}
-                    <div
-                      className="absolute w-72 h-72 rounded-full pointer-events-none"
-                      style={{ background: "radial-gradient(circle, rgba(158,47,208,0.07), transparent 70%)" }}
-                    />
-                    {/* Icon */}
-                    <div
-                      className="relative w-16 h-16 rounded-2xl flex items-center justify-center"
-                      style={{
-                        background: "linear-gradient(135deg, rgba(158,47,208,0.12), rgba(38,217,161,0.06))",
-                        border: "1px solid rgba(158,47,208,0.22)",
-                        boxShadow: "0 4px 20px rgba(158,47,208,0.14)",
-                      }}
-                    >
-                      <FiMessageSquare size={26} style={{ color: "#9E2FD0" }} />
-                    </div>
-                    {/* Text */}
-                    <div className="text-center relative">
-                      <p className="text-base font-extrabold login-gradient-text">{t("messages.emptyTitle")}</p>
-                      <p className="text-sm text-gray-400 dark:text-gray-500 mt-1.5 max-w-[200px] mx-auto leading-relaxed">
-                        {t("messages.selectChat")}
-                      </p>
-                    </div>
+            {/* ── Chat / empty area ── */}
+            <div className="relative flex-1 min-w-0 overflow-hidden">
+              {selectedChat ? (
+                <ChatWindowComponent {...chatWindowProps} />
+              ) : (
+                /* Empty state */
+                <div className="flex flex-col items-center justify-center h-full gap-4 px-6">
+                  <div className="w-14 h-14 rounded-xl flex items-center justify-center bg-ll-violet-tint text-ll-violet-ink">
+                    <FiMessageSquare size={24} />
                   </div>
-                )}
-              </div>
+                  <div className="text-center">
+                    <p className="text-[15px] font-semibold text-ll-ink">{t("messages.emptyTitle")}</p>
+                    <p className="text-[13px] text-ll-ink3 mt-1 max-w-[200px] mx-auto leading-relaxed">
+                      {t("messages.selectChat")}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           )}
@@ -950,13 +913,7 @@ const Messages = () => {
           {!isDesktop && (
           <div className="h-full">
             {showChatList ? (
-              <div
-                className="h-full rounded-2xl overflow-hidden"
-                style={{
-                  border: "1px solid rgba(158,47,208,0.15)",
-                  boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
-                }}
-              >
+              <div className="ll-card h-full overflow-hidden max-sm:!border-0 max-sm:!rounded-none">
                 <ChatListComponent {...chatListProps} />
               </div>
             ) : (

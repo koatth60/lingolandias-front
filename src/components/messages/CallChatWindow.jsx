@@ -341,9 +341,9 @@ const CallChatWindow = ({
     if (isAudio) {
       return (
         <div className="rounded-xl min-w-[200px] px-3 py-2.5"
-          style={{ background: "rgba(158,47,208,0.08)", border: "1px solid rgba(158,47,208,0.25)" }}>
+          style={{ background: "rgb(var(--ll-violet) / 0.08)", border: "1px solid rgb(var(--ll-violet) / 0.25)" }}>
           <div className="flex items-center gap-1.5 mb-2">
-            <FiMusic size={11} className="flex-shrink-0 text-purple-500 dark:text-purple-400" />
+            <FiMusic size={11} className="flex-shrink-0 text-ll-violet-ink dark:text-ll-violet-ink" />
             <p className="text-[11px] font-semibold truncate text-gray-800 dark:text-gray-100 flex-1 min-w-0">{fileName}</p>
           </div>
           <AudioPlayer src={fileUrl} variant="voiceNote" />
@@ -416,10 +416,10 @@ const CallChatWindow = ({
             className="font-semibold rounded px-1"
             style={
               isMe
-                ? { background: "rgba(246,184,46,0.35)", color: "inherit" }
+                ? { background: "rgba(232,162,58,0.35)", color: "inherit" }
                 : isSender
                 ? { background: "rgba(255,255,255,0.25)", color: "inherit" }
-                : { background: "rgba(158,47,208,0.15)", color: "inherit" }
+                : { background: "rgb(var(--ll-violet) / 0.15)", color: "inherit" }
             }
           >
             @{name}
@@ -441,7 +441,7 @@ const CallChatWindow = ({
     return (
       <>
         {translatedText.slice(0, idx)}
-        <span className="font-semibold rounded px-1" style={{ background: "rgba(158,47,208,0.15)", color: "inherit" }}>
+        <span className="font-semibold rounded px-1" style={{ background: "rgb(var(--ll-violet) / 0.15)", color: "inherit" }}>
           @{targetName}
         </span>
         {translatedText.slice(idx + targetName.length)}
@@ -460,31 +460,31 @@ const CallChatWindow = ({
     >
       {isDraggingFile && (
         <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none
-                        bg-[#9E2FD0]/10 dark:bg-[#9E2FD0]/15 backdrop-blur-[1px]">
+                        bg-ll-violet/10 dark:bg-ll-violet/15 backdrop-blur-[1px]">
           <div className="flex flex-col items-center gap-2 px-6 py-5 rounded-2xl border-2 border-dashed
-                          border-[#9E2FD0] bg-white/90 dark:bg-[#1a1a2e]/90">
-            <FiPaperclip size={22} className="text-[#9E2FD0]" />
-            <p className="text-sm font-semibold text-[#9E2FD0]">{t("chatWindow.dropFilesHere")}</p>
+                          border-ll-violet bg-white/90 dark:bg-[#1a1a2e]/90">
+            <FiPaperclip size={22} className="text-ll-violet" />
+            <p className="text-sm font-semibold text-ll-violet">{t("chatWindow.dropFilesHere")}</p>
           </div>
         </div>
       )}
 
       {/* ── Header ── */}
       <div className="relative flex-shrink-0">
-        <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#9E2FD0] via-[#F6B82E] to-[#26D9A1] opacity-80 z-10" />
+        <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-ll-violet via-[#E8A23A] to-[#1FA48C] opacity-80 z-10" />
         <div className="absolute inset-0 dark:hidden"
-          style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.98), rgba(248,245,255,0.98))", borderBottom: "1px solid rgba(158,47,208,0.08)" }} />
+          style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.98), rgba(248,245,255,0.98))", borderBottom: "1px solid rgb(var(--ll-violet) / 0.08)" }} />
         <div className="absolute inset-0 hidden dark:block"
-          style={{ background: "linear-gradient(135deg, rgba(15,13,36,0.98), rgba(26,20,50,0.98))", borderBottom: "1px solid rgba(158,47,208,0.15)" }} />
+          style={{ background: "linear-gradient(135deg, rgba(15,13,36,0.98), rgba(26,20,50,0.98))", borderBottom: "1px solid rgb(var(--ll-violet) / 0.15)" }} />
 
         <div className="relative z-10 flex items-center gap-3 px-4 py-3 mt-[2px]">
           <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-            style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 2px 8px rgba(158,47,208,0.35)" }}>
+            style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", boxShadow: "0 2px 8px rgb(var(--ll-violet) / 0.35)" }}>
             <FiMessageSquare size={14} className="text-white" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-extrabold login-gradient-text truncate">{displayName}</p>
-            <p className="text-[10px] font-medium" style={{ color: "#26D9A1" }}>● Live</p>
+            <p className="text-[10px] font-medium" style={{ color: "#1FA48C" }}>● Live</p>
           </div>
           {/* Close button */}
           {onClose && (
@@ -510,12 +510,12 @@ const CallChatWindow = ({
         }`}
         style={{ minHeight: 0 }}>
         {chatMessages.length === 0 && isLoading && (
-          <div className="w-7 h-7 rounded-full border-4 border-[#9E2FD0]/30 border-t-[#9E2FD0] animate-spin" />
+          <div className="w-7 h-7 rounded-full border-4 border-ll-violet/30 border-t-ll-violet animate-spin" />
         )}
         {chatMessages.length === 0 && !isLoading && (
           <div className="flex flex-col items-center justify-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-500/20 border border-purple-200 dark:border-purple-500/30 flex items-center justify-center">
-              <FaComments className="text-purple-400" size={20} />
+            <div className="w-12 h-12 rounded-full bg-ll-violet-tint dark:bg-ll-violet/20 border border-ll-violet-line dark:border-ll-violet/30 flex items-center justify-center">
+              <FaComments className="text-ll-violet-ink" size={20} />
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400">No messages yet — say hi!</p>
           </div>
@@ -539,7 +539,7 @@ const CallChatWindow = ({
               let icon = <FiUsers size={12} className="text-gray-400 flex-shrink-0" />;
               let text = "";
               if (msg.messageType === "member_added") {
-                icon = <FiUserPlus size={12} className="text-[#26D9A1] flex-shrink-0" />;
+                icon = <FiUserPlus size={12} className="text-[#1FA48C] flex-shrink-0" />;
                 text = renderSystemTextWithTag(
                   t("messagesExtra.systemMemberAdded", { actor: msg.username, target: meta.targetName }),
                   meta.targetName
@@ -554,7 +554,7 @@ const CallChatWindow = ({
                 icon = <FiLogOut size={12} className="text-gray-400 flex-shrink-0" />;
                 text = t("messagesExtra.systemMemberLeft", { actor: msg.username });
               } else if (msg.messageType === "group_renamed") {
-                icon = <FiEdit2 size={12} className="text-[#9E2FD0] flex-shrink-0" />;
+                icon = <FiEdit2 size={12} className="text-ll-violet flex-shrink-0" />;
                 text = t("messagesExtra.systemGroupRenamed", { actor: msg.username, oldName: meta.oldName, newName: meta.newName });
               }
               return (
@@ -597,9 +597,9 @@ const CallChatWindow = ({
                       {isFirstFromUser ? (
                         msg.avatarUrl ? (
                           <img src={msg.avatarUrl} alt="avatar"
-                            className="w-7 h-7 rounded-full object-cover shadow ring-2 ring-purple-200 dark:ring-purple-500/30" />
+                            className="w-7 h-7 rounded-full object-cover shadow ring-2 ring-ll-violet-line dark:ring-ll-violet/30" />
                         ) : (
-                          <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shadow ring-2 ring-purple-200 dark:ring-purple-500/30"
+                          <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shadow ring-2 ring-ll-violet-line dark:ring-ll-violet/30"
                             style={{ background: avatarColor }}>
                             {initials}
                           </div>
@@ -613,7 +613,7 @@ const CallChatWindow = ({
                       {/* Options */}
                       <div className="relative self-end mb-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button onClick={() => toggleOptionsMenu(msg.id)}
-                          className="p-1.5 rounded-full text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-white/10 transition-colors">
+                          className="p-1.5 rounded-full text-gray-400 hover:text-ll-violet-ink dark:hover:text-ll-violet-ink hover:bg-ll-violet-tint dark:hover:bg-white/10 transition-colors">
                           <BsThreeDots size={12} />
                         </button>
                         {openMessageId === msg.id && (
@@ -628,7 +628,7 @@ const CallChatWindow = ({
                       {/* Bubble */}
                       <div>
                       <div className="px-3.5 py-2 rounded-2xl rounded-br-sm text-white text-sm leading-relaxed shadow-md"
-                        style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 3px 10px rgba(158,47,208,0.30)" }}>
+                        style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", boxShadow: "0 3px 10px rgb(var(--ll-violet) / 0.30)" }}>
                         {effectiveFileUrl && renderFile(effectiveFileUrl, true)}
                         {effectiveMessage && (
                           <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
@@ -651,7 +651,7 @@ const CallChatWindow = ({
                   ) : (
                     <div className="max-w-[80%]">
                       {showUsername && msg.username && msg.username !== "undefined" && (
-                        <p className="text-[10px] font-semibold text-purple-600 dark:text-purple-400 mb-1 ml-1">
+                        <p className="text-[10px] font-semibold text-ll-violet-ink dark:text-ll-violet-ink mb-1 ml-1">
                           {msg.username}
                         </p>
                       )}
@@ -698,7 +698,7 @@ const CallChatWindow = ({
       )}
 
       {/* ── Input ── */}
-      <div className="relative flex-shrink-0 p-3 bg-white dark:bg-[#0f0d24] border-t border-gray-100 dark:border-[rgba(158,47,208,0.12)]">
+      <div className="relative flex-shrink-0 p-3 bg-white dark:bg-[#0f0d24] border-t border-gray-100 dark:border-[rgb(var(--ll-violet) / 0.12)]">
         <UploadStatus
           progress={uploadProgress}
           errorCode={uploadErrorCode}
@@ -739,23 +739,23 @@ const CallChatWindow = ({
             </button>
           </div>
         )}
-        <div className="flex items-end gap-1.5 bg-gray-50 dark:bg-white/5 rounded-xl px-3 py-2 border border-gray-200 dark:border-white/10 focus-within:border-[rgba(158,47,208,0.5)] dark:focus-within:border-[rgba(158,47,208,0.4)] transition-colors">
+        <div className="flex items-end gap-1.5 bg-gray-50 dark:bg-white/5 rounded-xl px-3 py-2 border border-gray-200 dark:border-white/10 focus-within:border-[rgb(var(--ll-violet) / 0.5)] dark:focus-within:border-[rgb(var(--ll-violet) / 0.4)] transition-colors">
           <div className="flex items-center gap-0.5 flex-shrink-0 self-end mb-0.5">
             {/* Emoji */}
             <button onClick={() => { setShowEmojiPicker((p) => !p); setShowFormatMenu(false); }}
-              className="p-1 text-gray-400 hover:text-[#F6B82E] transition-colors">
+              className="p-1 text-gray-400 hover:text-[#E8A23A] transition-colors">
               <BsEmojiSmile size={18} />
             </button>
             <button
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => { setShowFormatMenu((p) => !p); setShowEmojiPicker(false); }}
               title={t("chatWindow.formatText")}
-              className="p-1 text-gray-400 hover:text-purple-500 transition-colors">
+              className="p-1 text-gray-400 hover:text-ll-violet-ink transition-colors">
               <BsType size={17} />
             </button>
             {/* File attach */}
             <button onClick={() => fileInputRef.current?.click()} disabled={isUploading}
-              className="p-1 text-gray-400 hover:text-purple-500 disabled:opacity-40 transition-colors"
+              className="p-1 text-gray-400 hover:text-ll-violet-ink disabled:opacity-40 transition-colors"
               title="Attach file">
               <FiPaperclip size={16} className={isUploading ? "animate-pulse" : ""} />
             </button>
@@ -778,7 +778,7 @@ const CallChatWindow = ({
           {/* Send */}
           <button onClick={sendMessage} disabled={!message.trim() && stagedFiles.length === 0}
             className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:opacity-90 active:scale-95 disabled:opacity-30 self-end"
-            style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 2px 8px rgba(158,47,208,0.35)" }}>
+            style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", boxShadow: "0 2px 8px rgb(var(--ll-violet) / 0.35)" }}>
             <FiSend size={13} className="text-white" />
           </button>
         </div>
@@ -807,8 +807,8 @@ const CallChatWindow = ({
                   onClick={() => wrapSelection(delimiter)}
                   title={label}
                   className="p-2 rounded-lg text-gray-600 dark:text-gray-300
-                             hover:text-purple-600 dark:hover:text-purple-400
-                             hover:bg-purple-50 dark:hover:bg-white/10 transition-colors"
+                             hover:text-ll-violet-ink dark:hover:text-ll-violet-ink
+                             hover:bg-ll-violet-tint dark:hover:bg-white/10 transition-colors"
                 >
                   <Icon size={16} />
                 </button>

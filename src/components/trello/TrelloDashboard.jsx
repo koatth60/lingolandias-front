@@ -32,7 +32,7 @@ const BgPicker = ({ value, onChange }) => {
             onClick={() => setTab(t.key)}
             className={`px-3 py-1 rounded-lg text-xs font-medium transition ${
               tab === t.key
-                ? 'bg-[#9E2FD0] text-white'
+                ? 'bg-ll-violet text-white'
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
           >
@@ -54,7 +54,7 @@ const BgPicker = ({ value, onChange }) => {
                 className="h-7 w-7 rounded-lg transition-transform hover:scale-110 relative"
                 style={{
                   ...getBgStyle(bg.value),
-                  boxShadow: isActive ? '0 0 0 2px white, 0 0 0 4px #9E2FD0' : 'none',
+                  boxShadow: isActive ? '0 0 0 2px white, 0 0 0 4px rgb(var(--ll-violet))' : 'none',
                 }}
               >
                 {isActive && (
@@ -81,7 +81,7 @@ const BgPicker = ({ value, onChange }) => {
                 className="relative rounded-lg overflow-hidden transition-transform hover:scale-105"
                 style={{
                   height: '52px',
-                  boxShadow: isActive ? '0 0 0 2px white, 0 0 0 4px #9E2FD0' : 'none',
+                  boxShadow: isActive ? '0 0 0 2px white, 0 0 0 4px rgb(var(--ll-violet))' : 'none',
                 }}
               >
                 <img
@@ -109,12 +109,12 @@ const BgPicker = ({ value, onChange }) => {
             value={imgUrl}
             onChange={(e) => setImgUrl(e.target.value)}
             placeholder="https://images.unsplash.com/..."
-            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#9E2FD0]"
+            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ll-violet"
           />
           <button
             type="button"
             onClick={() => { if (imgUrl.trim()) onChange(imgUrl.trim()); }}
-            className="w-full py-2 text-sm rounded-lg bg-[#9E2FD0] hover:bg-[#8a27b5] text-white transition"
+            className="w-full py-2 text-sm rounded-lg bg-ll-violet hover:bg-ll-violet-hover text-white transition"
           >
             Apply image
           </button>
@@ -154,7 +154,7 @@ const CreateBoardModal = ({ onClose, onCreated, userId }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-white dark:bg-[#1a1a2e] rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-gray-200 dark:border-[#9E2FD0]/30">
+      <div className="bg-white dark:bg-[#1a1a2e] rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-gray-200 dark:border-ll-violet/30">
         {/* Preview */}
         <div
           className="h-28 flex items-end justify-start px-5 pb-4 transition-all duration-300"
@@ -171,7 +171,7 @@ const CreateBoardModal = ({ onClose, onCreated, userId }) => {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="My awesome board"
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#9E2FD0]"
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ll-violet"
             />
           </div>
           <div>
@@ -183,7 +183,7 @@ const CreateBoardModal = ({ onClose, onCreated, userId }) => {
             <select
               value={fontFamily}
               onChange={(e) => setFontFamily(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#9E2FD0]"
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ll-violet"
             >
               {FONT_OPTIONS.map((f) => (
                 <option key={f.value} value={f.value}>{f.label}</option>
@@ -201,7 +201,7 @@ const CreateBoardModal = ({ onClose, onCreated, userId }) => {
             <button
               type="submit"
               disabled={!name.trim() || saving}
-              className="flex-1 py-2.5 rounded-lg bg-[#9E2FD0] hover:bg-[#8a27b5] text-white font-medium transition disabled:opacity-50"
+              className="flex-1 py-2.5 rounded-lg bg-ll-violet hover:bg-ll-violet-hover text-white font-medium transition disabled:opacity-50"
             >
               {saving ? 'Creating...' : 'Create board'}
             </button>
@@ -287,7 +287,7 @@ const TrelloDashboard = () => {
       <div className="relative rounded-2xl overflow-hidden">
         <div
           className="h-44 flex flex-col justify-end px-8 pb-6"
-          style={{ background: 'linear-gradient(135deg, #4f0d8a 0%, #9E2FD0 50%, #c96ff0 100%)' }}
+          style={{ background: 'linear-gradient(135deg, #4f0d8a 0%, rgb(var(--ll-violet)) 50%, #c96ff0 100%)' }}
         >
           {/* subtle texture */}
           <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
@@ -331,7 +331,7 @@ const TrelloDashboard = () => {
           </svg>
           <span className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Your boards</span>
           {boards.length > 0 && (
-            <span className="text-xs font-bold bg-[#9E2FD0]/10 text-[#9E2FD0] px-2 py-0.5 rounded-full">{boards.length}</span>
+            <span className="text-xs font-bold bg-ll-violet/10 text-ll-violet px-2 py-0.5 rounded-full">{boards.length}</span>
           )}
         </div>
         {boards.length > 0 && (
@@ -344,7 +344,7 @@ const TrelloDashboard = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search boards..."
-              className="pl-9 pr-4 py-2 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/60 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#9E2FD0]/40 focus:border-[#9E2FD0] transition w-56"
+              className="pl-9 pr-4 py-2 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/60 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ll-violet/40 focus:border-ll-violet transition w-56"
             />
           </div>
         )}
@@ -353,14 +353,14 @@ const TrelloDashboard = () => {
       {/* ── Board grid ──────────────────────────────────────────── */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 gap-3">
-          <div className="h-10 w-10 rounded-full border-4 border-[#9E2FD0]/30 border-t-[#9E2FD0] animate-spin" />
+          <div className="h-10 w-10 rounded-full border-4 border-ll-violet/30 border-t-ll-violet animate-spin" />
           <p className="text-sm text-gray-400 dark:text-gray-500">Loading your workspace...</p>
         </div>
       ) : boards.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div
             className="w-20 h-20 rounded-2xl mb-6 flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, #9E2FD0 0%, #c96ff0 100%)' }}
+            style={{ background: 'linear-gradient(135deg, rgb(var(--ll-violet)) 0%, #c96ff0 100%)' }}
           >
             <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
@@ -372,7 +372,7 @@ const TrelloDashboard = () => {
           </p>
           <button
             onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 bg-[#9E2FD0] hover:bg-[#8a27b5] text-white font-semibold px-8 py-3 rounded-xl transition shadow-lg shadow-purple-500/25"
+            className="flex items-center gap-2 bg-ll-violet hover:bg-ll-violet-hover text-white font-semibold px-8 py-3 rounded-xl transition shadow-lg shadow-ll-violet/25"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
@@ -386,7 +386,7 @@ const TrelloDashboard = () => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <p className="text-gray-500 dark:text-gray-400 text-sm">No boards match &ldquo;{search}&rdquo;</p>
-          <button onClick={() => setSearch('')} className="mt-2 text-xs text-[#9E2FD0] hover:underline">Clear search</button>
+          <button onClick={() => setSearch('')} className="mt-2 text-xs text-ll-violet hover:underline">Clear search</button>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
@@ -422,7 +422,7 @@ const TrelloDashboard = () => {
 
           <button
             onClick={() => setShowCreate(true)}
-            className="group rounded-2xl h-36 border-2 border-dashed border-gray-200 dark:border-gray-700 hover:border-[#9E2FD0] dark:hover:border-[#9E2FD0] bg-gray-50/50 dark:bg-gray-800/20 hover:bg-[#9E2FD0]/5 text-gray-400 dark:text-gray-600 hover:text-[#9E2FD0] transition-all duration-200 flex flex-col items-center justify-center gap-2"
+            className="group rounded-2xl h-36 border-2 border-dashed border-gray-200 dark:border-gray-700 hover:border-ll-violet dark:hover:border-ll-violet bg-gray-50/50 dark:bg-gray-800/20 hover:bg-ll-violet/5 text-gray-400 dark:text-gray-600 hover:text-ll-violet transition-all duration-200 flex flex-col items-center justify-center gap-2"
           >
             <div className="w-10 h-10 rounded-xl border-2 border-dashed border-current flex items-center justify-center group-hover:scale-110 transition-transform">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

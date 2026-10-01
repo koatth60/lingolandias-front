@@ -15,13 +15,13 @@ const CalendarToolbar = ({ label, onNavigate, onView, view }) => {
   return (
     <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-[#13102a] border-b border-gray-200 dark:border-white/[0.08] flex-wrap gap-3">
       <div className="flex items-center gap-2">
-        <button onClick={() => onNavigate(Navigate.PREVIOUS)} className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:border-purple-400 hover:text-purple-600 dark:hover:text-purple-400 transition-all">
+        <button onClick={() => onNavigate(Navigate.PREVIOUS)} className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-ll-violet-tint dark:hover:bg-ll-violet/10 hover:border-ll-violet hover:text-ll-violet-ink dark:hover:text-ll-violet-ink transition-all">
           <FiChevronLeft size={18} />
         </button>
-        <button onClick={() => onNavigate(Navigate.TODAY)} className="px-4 h-9 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:border-purple-400 hover:text-purple-600 dark:hover:text-purple-400 transition-all">
+        <button onClick={() => onNavigate(Navigate.TODAY)} className="px-4 h-9 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-ll-violet-tint dark:hover:bg-ll-violet/10 hover:border-ll-violet hover:text-ll-violet-ink dark:hover:text-ll-violet-ink transition-all">
           {t("common.today")}
         </button>
-        <button onClick={() => onNavigate(Navigate.NEXT)} className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:border-purple-400 hover:text-purple-600 dark:hover:text-purple-400 transition-all">
+        <button onClick={() => onNavigate(Navigate.NEXT)} className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-ll-violet-tint dark:hover:bg-ll-violet/10 hover:border-ll-violet hover:text-ll-violet-ink dark:hover:text-ll-violet-ink transition-all">
           <FiChevronRight size={18} />
         </button>
       </div>
@@ -34,7 +34,7 @@ const CalendarToolbar = ({ label, onNavigate, onView, view }) => {
             className={`px-4 h-8 rounded-lg text-sm font-bold capitalize transition-all ${
               view === v ? "text-white shadow-md" : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white"
             }`}
-            style={view === v ? { background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" } : {}}
+            style={view === v ? { background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" } : {}}
           >
             {v}
           </button>
@@ -108,11 +108,11 @@ const AddEventModal = ({ student, teacherId, teacherName, onClose, onConfirm, is
 
   const handleSubmit = () => {
     if (!selectedDate || !start || !end) {
-      Swal.fire({ title: t("common.error"), text: "Please fill in all fields.", icon: "error", confirmButtonColor: "#9E2FD0" });
+      Swal.fire({ title: t("common.error"), text: "Please fill in all fields.", icon: "error", confirmButtonColor: "rgb(var(--ll-violet))" });
       return;
     }
     if (end <= start) {
-      Swal.fire({ title: t("common.error"), text: t("addEvent.endBeforeStart"), icon: "error", confirmButtonColor: "#9E2FD0" });
+      Swal.fire({ title: t("common.error"), text: t("addEvent.endBeforeStart"), icon: "error", confirmButtonColor: "rgb(var(--ll-violet))" });
       return;
     }
 
@@ -142,19 +142,19 @@ const AddEventModal = ({ student, teacherId, teacherName, onClose, onConfirm, is
     >
       <div
         className="relative w-full rounded-2xl bg-white dark:bg-[#0d0a1e] flex flex-col"
-        style={{ maxWidth: "min(1100px, 96vw)", height: "min(800px, 90vh)", border: "1px solid rgba(158,47,208,0.30)", boxShadow: "0 32px 80px rgba(0,0,0,0.5)", zIndex: 100000 }}
+        style={{ maxWidth: "min(1100px, 96vw)", height: "min(800px, 90vh)", border: "1px solid rgb(var(--ll-violet) / 0.30)", boxShadow: "0 32px 80px rgba(0,0,0,0.5)", zIndex: 100000 }}
       >
-        <div className="absolute top-0 left-0 w-full h-[3px] rounded-t-2xl" style={{ background: "linear-gradient(90deg, #9E2FD0, #F6B82E, #26D9A1)" }} />
+        <div className="absolute top-0 left-0 w-full h-[3px] rounded-t-2xl" style={{ background: "linear-gradient(90deg, rgb(var(--ll-violet)), #E8A23A, #1FA48C)" }} />
 
         <div className="flex items-center justify-between px-6 pt-5 pb-4 flex-shrink-0 border-b border-gray-100 dark:border-white/[0.07]">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}>
               <FiCalendar size={16} className="text-white" />
             </div>
             <div className="min-w-0">
               <h3 className="text-base font-extrabold text-gray-900 dark:text-white leading-tight">Add Event</h3>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
-                for <span className="font-semibold text-[#9E2FD0]">{student.name} {student.lastName}</span>
+                for <span className="font-semibold text-ll-violet">{student.name} {student.lastName}</span>
               </p>
             </div>
           </div>
@@ -166,7 +166,7 @@ const AddEventModal = ({ student, teacherId, teacherName, onClose, onConfirm, is
         <div className="flex-1 overflow-hidden p-4 relative">
           {loadingSchedules && (
             <div className="absolute inset-4 z-10 flex items-center justify-center rounded-xl bg-white/70 dark:bg-black/40 backdrop-blur-sm">
-              <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "#9E2FD0", borderTopColor: "transparent" }} />
+              <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "rgb(var(--ll-violet))", borderTopColor: "transparent" }} />
             </div>
           )}
           <div className="rbc-admin-cal h-full rounded-xl overflow-hidden border border-gray-200 dark:border-white/[0.07]">
@@ -188,7 +188,7 @@ const AddEventModal = ({ student, teacherId, teacherName, onClose, onConfirm, is
               selectable={!loadingSchedules}
               onSelectSlot={handleSelectSlot}
               eventPropGetter={() => ({
-                style: { background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", border: "none", borderRadius: 6, color: "#fff", fontSize: 12, fontWeight: 600, padding: "2px 6px" },
+                style: { background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", border: "none", borderRadius: 6, color: "#fff", fontSize: 12, fontWeight: 600, padding: "2px 6px" },
               })}
             />
           </div>
@@ -201,12 +201,12 @@ const AddEventModal = ({ student, teacherId, teacherName, onClose, onConfirm, is
           style={{ background: "rgba(0,0,0,0.70)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", zIndex: 100001 }}
           onClick={(e) => { if (e.target === e.currentTarget) setDetailsOpen(false); }}
         >
-          <div className="relative w-full max-w-sm rounded-2xl bg-white dark:bg-[#0d0a1e]" style={{ border: "1px solid rgba(158,47,208,0.30)", boxShadow: "0 32px 64px rgba(0,0,0,0.5)", zIndex: 100002 }}>
-            <div className="absolute top-0 left-0 w-full h-[2px] rounded-t-2xl" style={{ background: "linear-gradient(90deg, #F6B82E, #9E2FD0)" }} />
+          <div className="relative w-full max-w-sm rounded-2xl bg-white dark:bg-[#0d0a1e]" style={{ border: "1px solid rgb(var(--ll-violet) / 0.30)", boxShadow: "0 32px 64px rgba(0,0,0,0.5)", zIndex: 100002 }}>
+            <div className="absolute top-0 left-0 w-full h-[2px] rounded-t-2xl" style={{ background: "linear-gradient(90deg, #E8A23A, rgb(var(--ll-violet)))" }} />
             <div className="p-6">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-base font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
-                  <FiClock size={15} style={{ color: "#F6B82E" }} />
+                  <FiClock size={15} style={{ color: "#E8A23A" }} />
                   {selectedDate ? dayjs(selectedDate).format("dddd, MMMM D") : ""}
                 </h3>
                 <button onClick={() => setDetailsOpen(false)} className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-all">
@@ -234,7 +234,7 @@ const AddEventModal = ({ student, teacherId, teacherName, onClose, onConfirm, is
                         className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all duration-200 ${
                           recurrenceWeeks === opt.value ? "text-white" : "text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-white/10"
                         }`}
-                        style={recurrenceWeeks === opt.value ? { background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" } : {}}
+                        style={recurrenceWeeks === opt.value ? { background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" } : {}}
                       >
                         {opt.label}
                       </button>
@@ -245,7 +245,7 @@ const AddEventModal = ({ student, teacherId, teacherName, onClose, onConfirm, is
                   type="button"
                   onClick={handleSubmit}
                   className="w-full py-3 rounded-xl text-white text-sm font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
-                  style={{ background: "linear-gradient(135deg, #F6B82E, #d4981a)", boxShadow: "0 4px 14px rgba(246,184,46,0.28)" }}
+                  style={{ background: "linear-gradient(135deg, #E8A23A, #C4860A)", boxShadow: "0 4px 14px rgba(232,162,58,0.28)" }}
                 >
                   <FiClock size={14} /> Add Event
                 </button>

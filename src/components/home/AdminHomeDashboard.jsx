@@ -1,3 +1,4 @@
+import HalloweenWeb from "../common/HalloweenWeb";
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -102,8 +103,8 @@ const AdminHomeDashboard = () => {
           <div
             className="w-12 h-12 rounded-full mx-auto mb-4"
             style={{
-              border: "3px solid rgba(158,47,208,0.15)",
-              borderTopColor: "#9E2FD0",
+              border: "3px solid rgb(var(--ll-violet) / 0.15)",
+              borderTopColor: "rgb(var(--ll-violet))",
               animation: "spin 0.8s linear infinite",
             }}
           />
@@ -115,24 +116,25 @@ const AdminHomeDashboard = () => {
 
   return (
     <>
-      <main className="w-full max-w-7xl mx-auto px-3 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8 overflow-x-hidden">
+      <main className="relative w-full max-w-7xl mx-auto px-3 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8 overflow-x-hidden">
+        <HalloweenWeb />
 
         {/* ── Admin hero ── */}
-        <section className="relative rounded-2xl overflow-hidden shadow-sm dark:shadow-none" style={{ border: "1px solid rgba(158,47,208,0.12)" }}>
+        <section className="relative rounded-2xl overflow-hidden shadow-sm dark:shadow-none" style={{ border: "1px solid rgb(var(--ll-violet) / 0.12)" }}>
           <div className="dark:hidden absolute inset-0 bg-white" />
           <div
             className="hidden dark:block absolute inset-0"
             style={{ background: "linear-gradient(135deg, rgba(13,10,30,0.96) 0%, rgba(26,26,46,0.95) 100%)" }}
           />
-          <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#9E2FD0] via-[#F6B82E] to-[#26D9A1]" />
+          <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-ll-violet via-[#E8A23A] to-[#1FA48C]" />
           <div
             className="absolute top-[-60px] right-[-40px] w-[220px] h-[220px] rounded-full pointer-events-none"
-            style={{ background: "radial-gradient(circle, rgba(158,47,208,0.18), transparent 70%)" }}
+            style={{ background: "radial-gradient(circle, rgb(var(--ll-violet) / 0.18), transparent 70%)" }}
           />
           <div className="relative z-10 px-4 sm:px-10 py-6 sm:py-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
             <div>
-              <p className="text-[10px] font-bold tracking-widest text-[#9E2FD0] uppercase mb-2">{t("adminHome.adminPanel")}</p>
-              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight login-gradient-text mb-2">
+              <p className="text-[10px] font-bold tracking-widest text-ll-violet uppercase mb-2">{t("adminHome.adminPanel")}</p>
+              <h1 className="hw-gothic text-3xl sm:text-4xl font-bold tracking-tight login-gradient-text mb-2">
                 {t("adminHome.adminDashboard")}
               </h1>
               <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -143,8 +145,8 @@ const AdminHomeDashboard = () => {
               onClick={() => setShowRecordings(true)}
               className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-sm font-semibold text-white shadow-lg transition-all hover:opacity-90 hover:scale-[1.02] active:scale-100 self-start sm:self-auto flex-shrink-0"
               style={{
-                background: "linear-gradient(135deg, #9E2FD0, #7b22a8)",
-                boxShadow: "0 4px 16px rgba(158,47,208,0.35)",
+                background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))",
+                boxShadow: "0 4px 16px rgb(var(--ll-violet) / 0.35)",
               }}
             >
               <FiVideo size={16} />
@@ -165,11 +167,11 @@ const AdminHomeDashboard = () => {
         {/* ── Today's Classes ── */}
         <section>
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-            <FiGlobe className="text-[#9E2FD0]" size={20} />
+            <FiGlobe className="text-ll-violet" size={20} />
             <h2 className="text-xl font-bold text-gray-800 dark:text-white">{t("adminHome.todaysClasses")}</h2>
             <span
               className="px-2.5 py-0.5 rounded-full text-xs font-bold text-white"
-              style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)", boxShadow: "0 2px 8px rgba(158,47,208,0.35)" }}
+              style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))", boxShadow: "0 2px 8px rgb(var(--ll-violet) / 0.35)" }}
             >
               {filteredClasses.length}
             </span>
@@ -191,7 +193,7 @@ const AdminHomeDashboard = () => {
           {filteredClasses.length === 0 && (
             <div
               className="relative rounded-2xl overflow-hidden text-center py-16 shadow-sm dark:shadow-none"
-              style={{ border: "1px solid rgba(158,47,208,0.15)" }}
+              style={{ border: "1px solid rgb(var(--ll-violet) / 0.15)" }}
             >
               <div className="dark:hidden absolute inset-0 bg-white" />
               <div

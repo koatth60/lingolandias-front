@@ -6,18 +6,18 @@ import { useTranslation } from "react-i18next";
 import { toggleSidebar } from "../redux/sidebarSlice";
 import {
   FiHome, FiCalendar, FiBookOpen, FiMessageSquare, FiUser,
-  FiSettings, FiHelpCircle, FiUsers, FiChevronLeft, FiVideo,
+  FiSettings, FiHelpCircle, FiUsers, FiChevronLeft, FiChevronDown, FiVideo,
   FiRadio,
   FiGrid, FiLogOut, FiBarChart2, FiActivity, FiUserPlus
 } from "react-icons/fi";
 import { socket } from "../socket";
 import { toast } from "react-toastify";
 import { updateUserStatus } from "../redux/userSlice";
-import logo from "../assets/logos/logo3.png";
 import { useLogout } from "../hooks/customHooks";
 import { performLogout } from "../auth/session";
 import { selectTotalUnread } from "../redux/notificationsSlice";
 import { prefetchRoute } from "../routePrefetch";
+import MobileTabBar from "../components/layout/MobileTabBar";
 
 
 const Dashboard = () => {
@@ -99,11 +99,14 @@ const Dashboard = () => {
     // { to: "/learning", icon: FiBookOpen, text: t("nav.learning") }, // Hidden — work in progress
     { to: "/messages", icon: FiMessageSquare, text: t("nav.messages"), unread: conversationsUnread },
     ...(user?.role === "teacher" || user?.role === "user"
-      ? [{ to: "/recordings", icon: FiVideo, text: t("recordings.title") }]
+      ? [{ to: "/recordings", icon: FiVideo, text: t("recordings.title"), short: t("recordings.short") }]
       : []),
     ...(user?.role === "teacher" || user?.role === "admin"
       ? [{ to: "/support", icon: FiRadio, text: t("nav.support"), unread: supportUnreadCount, accent: true }]
       : []),
+  ];
+
+  const workspaceLinks = [
     ...(user?.role === 'teacher' || user?.role === 'admin'
       ? [{ to: '/trello', icon: FiGrid, text: 'Trello 2.0' }]
       : []),
@@ -126,147 +129,56 @@ const Dashboard = () => {
     { to: "/help-center", icon: FiHelpCircle, text: t("nav.helpCenter") },
   ];
 
+  const linkClass = (isActive) =>
+    `relative flex items-center rounded-lg border transition-colors duration-150 ${
+      isSidebarOpen ? "px-3 py-2.5 gap-3" : "p-2.5 justify-center"
+    } ${
+      isActive
+        ? "ll-nav-active bg-ll-panel border-ll-line text-ll-ink font-medium shadow-ll-1"
+        : "border-transparent text-ll-ink3 hover:text-ll-ink hover:bg-ll-hover"
+    }`;
+  const iconClass = (isActive) => (isActive ? "text-ll-violet-ink flex-shrink-0" : "flex-shrink-0");
+
   return (
     <>
       <div
-        className={`h-screen flex flex-col fixed top-0 left-0 z-50 lg:sticky lg:top-0 ${
+        className={`h-screen hidden lg:flex flex-col fixed top-0 left-0 z-50 lg:sticky lg:top-0 bg-ll-sidebar ${
           isSidebarOpen
             ? "w-64 translate-x-0"
             : "w-64 -translate-x-full lg:w-20 lg:translate-x-0"
         }`}
         style={{
-          background: 'linear-gradient(180deg, #ffffff 0%, #f8f8fa 100%)',
-          transition: 'width 300ms cubic-bezier(0.4,0,0.2,1), transform 300ms cubic-bezier(0.4,0,0.2,1)',
+          transition: 'width 200ms cubic-bezier(0.4,0,0.2,1), transform 200ms cubic-bezier(0.4,0,0.2,1)',
           willChange: 'transform',
         }}
       >
-        {/* Dark mode bg — login-identical gradient */}
-        <div
-          className="hidden dark:block absolute inset-0"
-          style={{ background: 'linear-gradient(135deg, #0d0a1e 0%, #1a1a2e 55%, #110e28 100%)' }}
-        />
-
-        {/* Gradient right border */}
-        <div className="absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-[#9E2FD0]/25 to-transparent dark:via-[#9E2FD0]/40 pointer-events-none" />
-
-        {/* Ambient glow orbs */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {/* Light mode orbs — very subtle on clean white */}
-          <div
-            className="absolute rounded-full blur-3xl dark:hidden"
-            style={{
-              background: 'radial-gradient(circle, rgba(158,47,208,0.07), transparent 70%)',
-              width: '260px', height: '260px',
-              top: '-10%', left: '-30%',
-            }}
-          />
-          <div
-            className="absolute rounded-full blur-3xl dark:hidden"
-            style={{
-              background: 'radial-gradient(circle, rgba(246,184,46,0.05), transparent 70%)',
-              width: '200px', height: '200px',
-              bottom: '-6%', right: '-30%',
-            }}
-          />
-
-          {/* Dark mode orbs — same as login */}
-          <div
-            className="absolute rounded-full blur-3xl opacity-20 hidden dark:block"
-            style={{
-              background: 'radial-gradient(circle, rgba(158,47,208,0.35), transparent 70%)',
-              width: '520px', height: '520px',
-              top: '-8%', left: '-8%',
-            }}
-          />
-          <div
-            className="absolute rounded-full blur-3xl opacity-15 hidden dark:block"
-            style={{
-              background: 'radial-gradient(circle, rgba(246,184,46,0.22), transparent 70%)',
-              width: '420px', height: '420px',
-              bottom: '-8%', right: '-6%',
-            }}
-          />
-          <div
-            className="absolute rounded-full blur-3xl opacity-10 hidden dark:block"
-            style={{
-              background: 'radial-gradient(circle, rgba(38,217,161,0.14), transparent 70%)',
-              width: '320px', height: '320px',
-              top: '38%', right: '22%',
-            }}
-          />
-        </div>
-
-        {/* Subtle grid texture — very faint on white, same as login in dark */}
-        <div
-          className="absolute inset-0 pointer-events-none opacity-[0.018] dark:opacity-[0.025]"
-          aria-hidden="true"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(158,47,208,0.6) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(158,47,208,0.6) 1px, transparent 1px)
-            `,
-            backgroundSize: '48px 48px',
-          }}
-        />
-
-        {/* ─── MAIN CONTENT ─── */}
-        <div className="relative z-10 flex flex-col h-full">
+        <div className="flex flex-col h-full pt-3.5 px-2.5 pb-3">
 
           {/* ── Logo Section ── */}
           <div className="flex-shrink-0">
-            <div className="flex items-center justify-between h-24 px-4 border-b border-[#9E2FD0]/10 dark:border-[#9E2FD0]/20">
-              <Link to="/home" className="flex items-center gap-4 min-w-0 group">
-
-                {/* Logo with spinning conic ring — mirrors login logo */}
-                <div className="relative w-12 h-12 flex-shrink-0">
-                  {/* Spinning gradient ring */}
-                  <div
-                    className="absolute rounded-full pointer-events-none"
-                    style={{
-                      inset: '-4px',
-                      background: 'conic-gradient(from 0deg, #9E2FD0, #c084fc, #F6B82E, #26D9A1, #9E2FD0)',
-                      animation: 'spin 7s linear infinite',
-                      WebkitMask: 'radial-gradient(farthest-side, transparent calc(100% - 3px), black calc(100% - 2px))',
-                      mask:        'radial-gradient(farthest-side, transparent calc(100% - 3px), black calc(100% - 2px))',
-                      opacity: 0.80,
-                    }}
-                  />
-                  {/* Ambient glow behind logo */}
-                  <div
-                    className="absolute rounded-full blur-lg opacity-35 pointer-events-none"
-                    style={{
-                      inset: '-8px',
-                      background: 'radial-gradient(circle, rgba(158,47,208,0.5), rgba(246,184,46,0.15), transparent 70%)',
-                    }}
-                  />
-                  <img
-                    src={logo}
-                    alt="Lingolandias"
-                    className="relative w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
-                  />
-                  {/* Pulsing accent dot */}
-                  <span
-                    className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#F6B82E]"
-                    style={{
-                      boxShadow: '0 0 8px rgba(246,184,46,0.9)',
-                      animation: 'loginPulseOrb 2s ease-in-out infinite',
-                    }}
-                  />
+            <div className="flex items-center justify-between gap-2 px-1.5 pb-3.5">
+              <Link to="/home" className="flex items-center gap-2.5 min-w-0 group">
+                <div className="ll-logo-orb w-6 h-6 flex-shrink-0 relative text-xs">
+                  L
+                <svg className="hw-only absolute -left-1.5 -top-[13px] w-[26px] h-5 -rotate-[14deg] pointer-events-none" viewBox="0 0 26 20" aria-hidden="true"><path d="M1 17.5c4 1.6 20 1.6 24 0-1.5-1.4-5-2-6.5-2L15 2.5c-.4-1-1.8-1.2-2.4-.3L8.6 15.5c-2 .1-5.6.7-7.6 2z" fill="#140A1F" stroke="#F08A2C" strokeWidth=".8" /><path d="M8.2 14.2c3 .6 7 .6 10 0" stroke="#F08A2C" strokeWidth="1.6" /></svg>
                 </div>
 
                 {isSidebarOpen && (
-                  <span className="text-xl font-extrabold whitespace-nowrap login-gradient-text">
-                    Lingolandias
-                  </span>
+                  <>
+                    <span className="text-[17px] font-semibold whitespace-nowrap text-ll-ink tracking-tight">
+                      Lingolandias
+                    </span>
+                    <FiChevronDown size={14} className="text-ll-ink3 flex-shrink-0" />
+                  </>
                 )}
               </Link>
 
               {isSidebarOpen && (
                 <button
                   onClick={() => dispatch(toggleSidebar())}
-                  className="lg:hidden text-gray-400 dark:text-gray-400 hover:text-[#9E2FD0] dark:hover:text-white flex-shrink-0 transition-colors duration-200"
+                  className="lg:hidden text-ll-ink3 hover:text-ll-ink flex-shrink-0 transition-colors duration-150"
                 >
-                  <FiChevronLeft size={20} />
+                  <FiChevronLeft size={18} />
                 </button>
               )}
             </div>
@@ -274,11 +186,11 @@ const Dashboard = () => {
 
           {/* ── Main Nav — scrollable ── */}
           <div
-            className="flex-1 overflow-y-auto min-h-0"
+            className="flex-1 overflow-y-auto min-h-0 custom-scrollbar"
             style={{ overscrollBehaviorY: 'contain' }}
           >
-            <nav className="py-4 px-2">
-              <ul className="space-y-1">
+            <nav>
+              <ul className="space-y-0.5">
                 {navLinks.map((item) => {
                   const Icon = item.icon;
                   const isActive = activeLink === item.to;
@@ -290,42 +202,19 @@ const Dashboard = () => {
                         onMouseEnter={() => prefetchRoute(item.to)}
                         onFocus={() => prefetchRoute(item.to)}
                         onTouchStart={() => prefetchRoute(item.to)}
-                        className={`relative flex items-center rounded-xl transition-colors duration-200 ${
-                          isSidebarOpen ? "px-3 py-2.5 gap-3" : "p-2.5 justify-center"
-                        } ${
-                          isActive
-                            ? ""
-                            : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white hover:bg-[#9E2FD0]/5 dark:hover:bg-white/5"
-                        }`}
-                        style={isActive ? {
-                          background: 'linear-gradient(135deg, rgba(158,47,208,0.13) 0%, rgba(246,184,46,0.06) 100%)',
-                          backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
-                          border: '1px solid rgba(158,47,208,0.28)',
-                          boxShadow: '0 2px 14px rgba(158,47,208,0.15), inset 0 1px 0 rgba(255,255,255,0.15)',
-                        } : {}}
+                        className={linkClass(isActive)}
                       >
-                        {/* Left accent bar for active item */}
-                        {isActive && (
-                          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full bg-gradient-to-b from-[#9E2FD0] to-[#F6B82E]" />
-                        )}
-
-                        <Icon
-                          size={18}
-                          className="flex-shrink-0"
-                          style={isActive ? { color: '#9E2FD0' } : {}}
-                        />
+                        <Icon size={17} className={iconClass(isActive)} />
 
                         {isSidebarOpen && (
-                          <span
-                            className={`text-sm font-medium truncate ${isActive ? "login-gradient-text" : ""}`}
-                          >
+                          <span className="text-[13.5px] truncate">
                             {item.text}
                           </span>
                         )}
 
                         {item.unread > 0 && (
                           <span
-                            className={`absolute flex items-center justify-center bg-[#26D9A1] text-white dark:text-[#0d0a1e] text-[10px] font-bold rounded-full flex-shrink-0 notification-badge ${
+                            className={`absolute flex items-center justify-center bg-ll-teal text-white text-[10px] font-semibold rounded-full flex-shrink-0 ${
                               isSidebarOpen
                                 ? "right-3 w-4 h-4"
                                 : "top-1 right-1 w-3.5 h-3.5"
@@ -340,16 +229,58 @@ const Dashboard = () => {
                 })}
               </ul>
             </nav>
+
+            {workspaceLinks.length > 0 && (
+              <nav className="pt-1">
+                {isSidebarOpen && (
+                  <p className="px-3 pt-2 pb-1.5 text-[11px] font-medium tracking-wide text-ll-ink4 uppercase">
+                    {t('nav.workspace')}
+                  </p>
+                )}
+                <ul className="space-y-0.5">
+                  {workspaceLinks.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = activeLink === item.to;
+                    return (
+                      <li key={item.to}>
+                        <Link
+                          to={item.to}
+                          onMouseEnter={() => prefetchRoute(item.to)}
+                          onFocus={() => prefetchRoute(item.to)}
+                          onTouchStart={() => prefetchRoute(item.to)}
+                          className={linkClass(isActive)}
+                        >
+                          <Icon size={17} className={iconClass(isActive)} />
+                          {isSidebarOpen && (
+                            <span className="text-[13.5px] truncate">{item.text}</span>
+                          )}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </nav>
+            )}
           </div>
 
           {/* ── Footer — fixed ── */}
-          <div className="flex-shrink-0">
-            {/* Gradient divider line */}
-            <div className="h-px bg-gradient-to-r from-transparent via-[#9E2FD0]/30 to-transparent dark:via-[#9E2FD0]/50" />
-
-            <div className="p-2">
+          <div className="flex-shrink-0 mt-auto">
+            {isSidebarOpen && (
+              <svg className="hw-only block w-full h-[74px] mb-1.5" viewBox="0 0 200 74" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+                <path d="M0 62c30-10 60-8 100-6s70-4 100 0v18H0z" fill="#1A1226" />
+                <path d="M28 60V40a11 11 0 0 1 22 0v20z" fill="#241A33" />
+                <path d="M34 47h10M39 42v12" stroke="#3A2D4C" strokeWidth="2" />
+                <path d="M118 58V44a8 8 0 0 1 16 0v14z" fill="#241A33" />
+                <path d="M160 58V30M152 38h16" stroke="#241A33" strokeWidth="4" strokeLinecap="round" />
+                <ellipse cx="80" cy="58" rx="9" ry="7" fill="#F08A2C" />
+                <path d="M80 51c0-2 1-3 2.5-3.5" stroke="#3CCB8F" strokeWidth="1.6" fill="none" />
+                <path className="ll-flicker" d="M75.5 57l2-2.5 2 2.5zM80.5 57l2-2.5 2 2.5zM76 60c2.5 2 5.5 2 8 0" fill="#FFE08A" stroke="#FFE08A" strokeWidth=".8" />
+                <path d="M0 70c40-8 80-2 120-4s60-6 80-2v10H0z" fill="rgba(200,185,255,.08)" />
+              </svg>
+            )}
+            <div className="pt-3">
               {/* Bottom nav links */}
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 {bottomLinks.map((item) => {
                   const Icon = item.icon;
                   const isActive = activeLink === item.to;
@@ -361,34 +292,11 @@ const Dashboard = () => {
                       onMouseEnter={() => prefetchRoute(item.to)}
                       onFocus={() => prefetchRoute(item.to)}
                       onTouchStart={() => prefetchRoute(item.to)}
-                      className={`relative flex items-center rounded-xl transition-colors duration-200 ${
-                        isSidebarOpen ? "px-3 py-2.5 gap-3" : "p-2.5 justify-center"
-                      } ${
-                        isActive
-                          ? ""
-                          : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white hover:bg-[#9E2FD0]/5 dark:hover:bg-white/5"
-                      }`}
-                      style={isActive ? {
-                        background: 'linear-gradient(135deg, rgba(158,47,208,0.13) 0%, rgba(246,184,46,0.06) 100%)',
-                        backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
-                        border: '1px solid rgba(158,47,208,0.28)',
-                        boxShadow: '0 2px 14px rgba(158,47,208,0.15), inset 0 1px 0 rgba(255,255,255,0.15)',
-                      } : {}}
+                      className={linkClass(isActive)}
                     >
-                      {isActive && (
-                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full bg-gradient-to-b from-[#9E2FD0] to-[#F6B82E]" />
-                      )}
-                      <Icon
-                        size={18}
-                        className="flex-shrink-0"
-                        style={isActive ? { color: '#9E2FD0' } : {}}
-                      />
+                      <Icon size={17} className={iconClass(isActive)} />
                       {isSidebarOpen && (
-                        <span
-                          className={`text-sm font-medium truncate ${isActive ? "login-gradient-text" : ""}`}
-                        >
-                          {item.text}
-                        </span>
+                        <span className="text-[13.5px] truncate">{item.text}</span>
                       )}
                     </Link>
                   );
@@ -396,17 +304,16 @@ const Dashboard = () => {
               </div>
 
               {/* Logout */}
-              <div className="mt-2">
-                <div className="h-px bg-gradient-to-r from-transparent via-[#9E2FD0]/20 to-transparent dark:via-[#9E2FD0]/30 mb-2" />
+              <div className="mt-1.5 pt-1.5 border-t border-ll-line">
                 <button
                   onClick={handleLogout}
-                  className={`w-full flex items-center rounded-xl transition-colors duration-200 text-gray-500 dark:text-gray-400 hover:text-[#F6B82E] hover:bg-[#F6B82E]/8 dark:hover:bg-white/5 ${
+                  className={`w-full flex items-center rounded-lg transition-colors duration-150 text-ll-ink3 hover:text-ll-danger hover:bg-ll-hover ${
                     isSidebarOpen ? "px-3 py-2.5 gap-3" : "p-2.5 justify-center"
                   }`}
                 >
-                  <FiLogOut size={18} className="flex-shrink-0" />
+                  <FiLogOut size={17} className="flex-shrink-0" />
                   {isSidebarOpen && (
-                    <span className="text-sm font-medium truncate">{t("nav.logout")}</span>
+                    <span className="text-[13.5px]">{t("nav.logout")}</span>
                   )}
                 </button>
               </div>
@@ -416,13 +323,16 @@ const Dashboard = () => {
 
       </div>
 
-      {/* Mobile Overlay */}
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
-          onClick={() => dispatch(toggleSidebar())}
-        />
-      )}
+      {/* Phone: bottom tab bar replaces the sidebar drawer */}
+      <MobileTabBar
+        primary={navLinks.slice(0, 4)}
+        more={[
+          { key: "main", items: navLinks.slice(4) },
+          { key: "workspace", label: t("nav.workspace"), items: workspaceLinks },
+          { key: "account", items: bottomLinks },
+        ].filter((g) => g.items.length > 0)}
+        onLogout={handleLogout}
+      />
 
     </>
   );

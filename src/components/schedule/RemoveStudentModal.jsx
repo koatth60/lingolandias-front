@@ -92,21 +92,21 @@ const RemoveStudentModal = ({ student, teacher, onClose, onConfirm, isOpen }) =>
           </div>
 
           <p className="text-gray-600 dark:text-gray-300 mb-6">
-            Removing <span className="font-semibold text-[#9E2FD0]">{student.name} {student.lastName}</span>
+            Removing <span className="font-semibold text-ll-violet">{student.name} {student.lastName}</span>
           </p>
 
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-200 dark:border-[#9E2FD0]/20">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-200 dark:border-ll-violet/20">
             You can either remove the student completely (which will delete all
             their events and chats) or remove only selected events.
           </p>
 
           {/* Remove All Option */}
-          <label className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-200 dark:border-[#9E2FD0]/20 cursor-pointer mb-4">
+          <label className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-200 dark:border-ll-violet/20 cursor-pointer mb-4">
             <input
               type="checkbox"
               checked={removeAll}
               onChange={() => setRemoveAll(!removeAll)}
-              className="w-5 h-5 rounded border-gray-300 dark:border-[#9E2FD0]/30 text-[#9E2FD0] focus:ring-[#9E2FD0]"
+              className="w-5 h-5 rounded border-gray-300 dark:border-ll-violet/30 text-ll-violet focus:ring-ll-violet"
             />
             <span className="text-gray-900 dark:text-white font-medium">
               Remove student completely
@@ -125,7 +125,7 @@ const RemoveStudentModal = ({ student, teacher, onClose, onConfirm, isOpen }) =>
                   return (
                     <label
                       key={slotKey}
-                      className="flex items-center justify-between p-3 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-200 dark:border-[#9E2FD0]/20 cursor-pointer hover:border-[#9E2FD0] transition-colors"
+                      className="flex items-center justify-between p-3 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-200 dark:border-ll-violet/20 cursor-pointer hover:border-ll-violet transition-colors"
                     >
                       <span className="text-gray-800 dark:text-white">
                         {event.day} at {event.time}
@@ -134,7 +134,7 @@ const RemoveStudentModal = ({ student, teacher, onClose, onConfirm, isOpen }) =>
                         type="checkbox"
                         checked={selectedSlots.includes(slotKey)}
                         onChange={() => handleSlotSelection(slotKey)}
-                        className="w-5 h-5 rounded border-gray-300 dark:border-[#9E2FD0]/30 text-[#9E2FD0] focus:ring-[#9E2FD0]"
+                        className="w-5 h-5 rounded border-gray-300 dark:border-ll-violet/30 text-ll-violet focus:ring-ll-violet"
                       />
                     </label>
                   );
@@ -156,8 +156,8 @@ const RemoveStudentModal = ({ student, teacher, onClose, onConfirm, isOpen }) =>
               disabled={!removeAll && selectedSlots.length === 0}
               className="flex-1 py-3 px-4 rounded-xl font-medium text-white transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
               style={{
-                background: 'linear-gradient(135deg, #F6B82E, #d49c1f)',
-                boxShadow: '0 4px 15px rgba(246,184,46,0.3)',
+                background: 'linear-gradient(135deg, #E8A23A, #C4860A)',
+                boxShadow: '0 4px 15px rgba(232,162,58,0.3)',
               }}
             >
               <FiTrash2 size={16} />

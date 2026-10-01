@@ -30,7 +30,7 @@ const LoginForm = ({
       >
         {/* Card header */}
         <div className="mb-4 md:mb-7 text-center">
-          <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight mb-1">
+          <h1 className="hw-gothic text-xl sm:text-2xl font-extrabold text-white tracking-tight mb-1">
             {t("login.welcomeBack")}
           </h1>
           <p className="text-gray-500 text-xs sm:text-sm">
@@ -41,7 +41,7 @@ const LoginForm = ({
         {/* Divider line with gradient */}
         <div
           className="h-px mb-4 md:mb-7 opacity-30"
-          style={{ background: 'linear-gradient(90deg, transparent, #9E2FD0, #F6B82E, transparent)' }}
+          style={{ background: 'linear-gradient(90deg, transparent, rgb(var(--ll-violet)), #E8A23A, transparent)' }}
         />
 
         <form onSubmit={handleLogin} className="space-y-4 md:space-y-5">
@@ -52,7 +52,7 @@ const LoginForm = ({
             </label>
             <div className="relative">
               <FiMail
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-purple-400 transition-colors duration-200"
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-ll-violet-ink transition-colors duration-200"
                 size={16}
               />
               <input
@@ -61,7 +61,7 @@ const LoginForm = ({
                   background: 'rgba(255,255,255,0.05)',
                   borderColor: 'rgba(255,255,255,0.1)',
                 }}
-                onFocus={(e) => { e.target.style.borderColor = 'rgba(158,47,208,0.7)'; e.target.style.background = 'rgba(158,47,208,0.08)'; }}
+                onFocus={(e) => { e.target.style.borderColor = 'rgb(var(--ll-violet) / 0.7)'; e.target.style.background = 'rgb(var(--ll-violet) / 0.08)'; }}
                 onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.1)'; e.target.style.background = 'rgba(255,255,255,0.05)'; }}
                 type="email"
                 placeholder={t("login.emailPlaceholder")}
@@ -80,7 +80,7 @@ const LoginForm = ({
             </label>
             <div className="relative">
               <FiLock
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-purple-400 transition-colors duration-200"
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-ll-violet-ink transition-colors duration-200"
                 size={16}
               />
               <input
@@ -89,7 +89,7 @@ const LoginForm = ({
                   background: 'rgba(255,255,255,0.05)',
                   borderColor: 'rgba(255,255,255,0.1)',
                 }}
-                onFocus={(e) => { e.target.style.borderColor = 'rgba(158,47,208,0.7)'; e.target.style.background = 'rgba(158,47,208,0.08)'; }}
+                onFocus={(e) => { e.target.style.borderColor = 'rgb(var(--ll-violet) / 0.7)'; e.target.style.background = 'rgb(var(--ll-violet) / 0.08)'; }}
                 onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.1)'; e.target.style.background = 'rgba(255,255,255,0.05)'; }}
                 type="password"
                 placeholder={t("login.passwordPlaceholder")}
@@ -106,13 +106,13 @@ const LoginForm = ({
             <label className="flex items-center gap-2 text-gray-500 cursor-pointer group">
               <input
                 type="checkbox"
-                className="w-4 h-4 rounded border-white/20 bg-white/5 text-purple-500 focus:ring-purple-500/30 focus:ring-offset-0"
+                className="w-4 h-4 rounded border-white/20 bg-white/5 text-ll-violet-ink focus:ring-ll-violet/30 focus:ring-offset-0"
               />
               <span className="text-xs group-hover:text-gray-300 transition-colors duration-200">{t("login.rememberMe")}</span>
             </label>
             <Link
               to="/forgotpassword"
-              className="text-xs text-purple-400 hover:text-orange-400 transition-colors duration-200 font-medium"
+              className="text-xs text-ll-violet-ink hover:text-orange-400 transition-colors duration-200 font-medium"
             >
               {t("login.forgotPassword")}
             </Link>
@@ -124,8 +124,8 @@ const LoginForm = ({
             disabled={userStatus === "loading"}
             className="relative w-full py-3 md:py-3.5 px-6 rounded-xl font-bold text-white text-sm overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed transition-transform duration-150 hover:scale-[1.02] active:scale-[0.98] mt-1 md:mt-2"
             style={{
-              background: 'linear-gradient(135deg, #9E2FD0 0%, #7b22a8 50%, #b84a10 100%)',
-              boxShadow: '0 4px 24px rgba(158,47,208,0.4)',
+              background: 'linear-gradient(135deg, rgb(var(--ll-violet)) 0%, rgb(var(--ll-violet-hover)) 50%, #b84a10 100%)',
+              boxShadow: '0 4px 24px rgb(var(--ll-violet) / 0.4)',
             }}
           >
             {/* Shine sweep on hover */}

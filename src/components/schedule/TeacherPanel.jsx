@@ -8,7 +8,7 @@ import { removeStudent, updateUserEvents, addTeacherSchedule, removeTeacherSched
 import { addSchedule, removeSchedules } from "../../redux/schedulesSlice";
 import { FiUserPlus, FiUserMinus, FiCalendar, FiMail, FiChevronRight } from "react-icons/fi";
 
-const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
+const TeacherPanel = ({ students, events, teacherId, teacherName, embedded = false }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -28,13 +28,13 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
     return `${firstInitial}${lastInitial}`;
   };
 
-  const generateColor = (name) => {
+  // Cycles through the palette's own tints instead of an arbitrary hsl hash —
+  // keeps every avatar inside the same restrained system as the rest of the UI.
+  const TINTS = ["bg-ll-violet-tint text-ll-violet-ink", "bg-ll-teal-tint text-ll-teal-ink", "bg-ll-gold-tint text-ll-gold-ink"];
+  const tintFor = (name) => {
     let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-      hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const color = `hsl(${hash % 360}, 75%, 60%)`;
-    return color;
+    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    return TINTS[Math.abs(hash) % TINTS.length];
   };
 
   const handleRemoveStudent = async ({ events, removeAll }) => {
@@ -63,7 +63,7 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
             icon: "success",
             background: '#1a1a2e',
             color: '#fff',
-            confirmButtonColor: '#9E2FD0',
+            confirmButtonColor: 'rgb(var(--ll-violet))',
           }).then(() => {
            if (selectedStudent && selectedStudent.id) {
              dispatch(removeStudent(selectedStudent.id));
@@ -81,7 +81,7 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
             icon: "error",
             background: '#1a1a2e',
             color: '#fff',
-            confirmButtonColor: '#9E2FD0',
+            confirmButtonColor: 'rgb(var(--ll-violet))',
           });
         }
       } else {
@@ -104,7 +104,7 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
             icon: "success",
             background: '#1a1a2e',
             color: '#fff',
-            confirmButtonColor: '#9E2FD0',
+            confirmButtonColor: 'rgb(var(--ll-violet))',
           }).then(() => {
            if (selectedStudent && selectedStudent.id) {
              const updatedEvents = selectedStudent.events
@@ -126,7 +126,7 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
             icon: "error",
             background: '#1a1a2e',
             color: '#fff',
-            confirmButtonColor: '#9E2FD0',
+            confirmButtonColor: 'rgb(var(--ll-violet))',
           });
         }
       }
@@ -138,7 +138,7 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
         icon: "error",
         background: '#1a1a2e',
         color: '#fff',
-        confirmButtonColor: '#9E2FD0',
+        confirmButtonColor: 'rgb(var(--ll-violet))',
       });
     }
     setIsRemoveModalOpen(false);
@@ -162,7 +162,7 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
           icon: "success",
           background: '#1a1a2e',
           color: '#fff',
-          confirmButtonColor: '#9E2FD0',
+          confirmButtonColor: 'rgb(var(--ll-violet))',
         }).then(async (result) => {
          if (result.isConfirmed) {
            try {
@@ -187,7 +187,7 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
           icon: "error",
           background: '#1a1a2e',
           color: '#fff',
-          confirmButtonColor: '#9E2FD0',
+          confirmButtonColor: 'rgb(var(--ll-violet))',
         });
       }
     } catch (error) {
@@ -198,167 +198,131 @@ const TeacherPanel = ({ students, events, teacherId, teacherName }) => {
         icon: "error",
         background: '#1a1a2e',
         color: '#fff',
-        confirmButtonColor: '#9E2FD0',
+        confirmButtonColor: 'rgb(var(--ll-violet))',
       });
     }
     setIsAddModalOpen(false);
   };
 
   return (
-    <div className="relative rounded-2xl shadow-xl overflow-hidden mt-4 border border-gray-200 dark:border-[#9E2FD0]/20">
-      {/* Fondo con gradiente */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-[#0d0a1e] dark:via-[#1a1a2e] dark:to-[#110e28]" />
-      
-      {/* Ambient glow orbs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none hidden dark:block">
-        <div className="absolute w-64 h-64 rounded-full bg-[#9E2FD0]/5 blur-3xl -top-32 -right-32" />
-        <div className="absolute w-64 h-64 rounded-full bg-[#26D9A1]/5 blur-3xl -bottom-32 -left-32" />
-      </div>
+    <div className={embedded ? "ll-fade-up mt-3" : "ll-card relative overflow-hidden mt-4 p-5"}>
+      {!embedded && (<svg className="hw-only absolute right-0 bottom-0 w-[54px] h-[54px] z-[5] pointer-events-none opacity-70" style={{ stroke: 'rgb(var(--ll-ink-4))', fill: 'none', strokeWidth: .8, transform: 'rotate(180deg)' }} viewBox="0 0 54 54" aria-hidden="true"><path d="M0 0l54 54M0 0l26 54M0 0l54 24" /><path d="M0 14c8 0 14-2 14-14M0 28c16 0 26-6 28-28M0 42c24 0 38-10 42-42" /></svg>)}
+      <h3 className={`text-[15px] font-semibold text-ll-ink mb-4 ${embedded ? "hidden" : ""}`}>
+        {t("teacherPanel.title")}
+      </h3>
 
-      {/* Línea de acento superior */}
-      <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#9E2FD0] via-[#F6B82E] to-[#26D9A1] opacity-50" />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Students List */}
+        <div>
+          <h4 className="text-[11.5px] font-medium text-ll-ink3 uppercase tracking-wide mb-2.5 flex items-center gap-1.5">
+            <FiUserPlus size={13} />
+            {t("teacherPanel.students")} <span className="font-mono tabular">{students.length}</span>
+          </h4>
+          <div className="max-h-80 overflow-y-auto custom-scrollbar rounded-lg border border-ll-line divide-y divide-ll-line">
+            {students.map((student) => {
+              const initials = getInitials(student.name, student.lastName);
+              const tint = tintFor(student.name);
+              const isSelected = selectedStudent?.id === student.id;
 
-      {/* Content */}
-      <div className="relative z-10 p-6">
-        <h3 className="text-xl font-bold bg-gradient-to-r from-[#9E2FD0] to-[#F6B82E] bg-clip-text text-transparent dark:text-white mb-6">
-          {t("teacherPanel.title")}
-        </h3>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Students List */}
-          <div>
-            <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
-              <FiUserPlus className="text-[#9E2FD0]" size={16} />
-              {t("teacherPanel.students")}
-            </h4>
-            <div className="max-h-80 overflow-y-auto pr-2 custom-scrollbar space-y-2">
-              {students.map((student) => {
-                const initials = getInitials(student.name, student.lastName);
-                const avatarColor = generateColor(student.name);
-                const isSelected = selectedStudent?.id === student.id;
-                
-                return (
-                  <div
-                    key={student.id}
-                    className={`group relative p-4 rounded-xl cursor-pointer transition-all duration-300 ${
-                      isSelected
-                        ? 'bg-gradient-to-r from-[#9E2FD0]/10 to-[#F6B82E]/10 border-2 border-[#9E2FD0]/30'
-                        : 'bg-white/50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 border border-gray-200 dark:border-[#9E2FD0]/20'
-                    }`}
-                    onClick={() => handleStudentSelect(student)}
-                  >
-                    <div className="flex items-center gap-3">
-                      {student.avatarUrl ? (
-                        <img
-                          src={student.avatarUrl}
-                          alt={`${student.name} ${student.lastName}`}
-                          className="w-12 h-12 rounded-xl object-cover ring-2 ring-[#9E2FD0]/30"
-                        />
-                      ) : (
-                        <div
-                          className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg"
-                          style={{ backgroundColor: avatarColor }}
-                        >
-                          {initials}
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-gray-900 dark:text-white truncate">
-                          {student.name} {student.lastName}
-                        </p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
-                          <FiMail size={12} />
-                          <span className="truncate">{student.email}</span>
-                        </p>
-                      </div>
-                      {isSelected && (
-                        <FiChevronRight className="text-[#9E2FD0] animate-pulse" size={20} />
-                      )}
-                    </div>
-
-                    {/* Student stats */}
-                    <div className="mt-3 flex items-center gap-4 text-xs">
-                      <span className="text-gray-500 dark:text-gray-400">
-                        {t("teacherPanel.eventsLabel")}: <span className="font-semibold text-[#9E2FD0]">
-                          {events.filter(e => e.studentId === student.id).length}
-                        </span>
-                      </span>
-                      <span className="text-gray-500 dark:text-gray-400">
-                        {t("teacherPanel.statusLabel")}: <span className="font-semibold text-[#26D9A1]">{t("teacherPanel.active")}</span>
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div>
-            <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
-              <FiCalendar className="text-[#F6B82E]" size={16} />
-              {t("teacherPanel.actions")}
-            </h4>
-            
-            {selectedStudent ? (
-              <div className="space-y-3">
-                <button
-                  onClick={() => setIsAddModalOpen(true)}
-                  className="w-full relative overflow-hidden group rounded-xl p-4 text-left transition-all hover:scale-[1.02] active:scale-[0.98]"
-                  style={{
-                    background: 'linear-gradient(135deg, #26D9A1, #1fa07a)',
-                    boxShadow: '0 4px 15px rgba(38,217,161,0.3)',
-                  }}
+              return (
+                <div
+                  key={student.id}
+                  className={`flex items-center gap-3 p-3 cursor-pointer transition-colors ${isSelected ? "bg-ll-violet-tint" : "hover:bg-ll-subtle"}`}
+                  onClick={() => handleStudentSelect(student)}
                 >
-                  <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                  <div className="relative flex items-center gap-3">
-                    <FiCalendar size={24} className="text-white" />
-                    <div>
-                      <p className="font-semibold text-white">{t("teacherPanel.addClass")}</p>
-                      <p className="text-sm text-white/80">{t("teacherPanel.addClassDesc")}</p>
+                  {student.avatarUrl ? (
+                    <img
+                      src={student.avatarUrl}
+                      alt={`${student.name} ${student.lastName}`}
+                      className="w-9 h-9 rounded-full object-cover flex-shrink-0"
+                    />
+                  ) : (
+                    <div className={`w-9 h-9 rounded-full flex items-center justify-center font-semibold text-[12px] flex-shrink-0 ${tint}`}>
+                      {initials}
                     </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13.5px] font-medium text-ll-ink truncate">
+                      {student.name} {student.lastName}
+                    </p>
+                    <p className="text-[12px] text-ll-ink3 font-mono truncate">{student.email}</p>
                   </div>
-                </button>
-
-                <button
-                  onClick={() => setIsRemoveModalOpen(true)}
-                  className="w-full relative overflow-hidden group rounded-xl p-4 text-left transition-all hover:scale-[1.02] active:scale-[0.98]"
-                  style={{
-                    background: 'linear-gradient(135deg, #F6B82E, #d49c1f)',
-                    boxShadow: '0 4px 15px rgba(246,184,46,0.3)',
-                  }}
-                >
-                  <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                  <div className="relative flex items-center gap-3">
-                    <FiUserMinus size={24} className="text-white" />
-                    <div>
-                      <p className="font-semibold text-white">{t("teacherPanel.removeClass")}</p>
-                      <p className="text-sm text-white/80">{t("teacherPanel.removeClassDesc")}</p>
-                    </div>
-                  </div>
-                </button>
-
-                {/* Selected student info */}
-                <div className="mt-4 p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-200 dark:border-[#9E2FD0]/20">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {t("teacherPanel.selectedLabel")}: <span className="font-semibold text-[#9E2FD0]">
-                      {selectedStudent.name} {selectedStudent.lastName}
+                  <div className="flex-shrink-0 flex items-center gap-3 text-[11.5px] text-ll-ink3">
+                    <span className="font-mono tabular">{events.filter(e => e.studentId === student.id).length}</span>
+                    <span className="ll-pill" style={{ background: 'rgb(var(--ll-teal-tint))', color: 'rgb(var(--ll-teal-ink))' }}>
+                      <span className="ll-pill-dot" style={{ background: 'rgb(var(--ll-teal))' }} />
+                      {t("teacherPanel.active")}
                     </span>
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                    {t("teacherPanel.totalEventsLabel")}: {selectedStudent.events?.length || 0}
+                    {isSelected && <FiChevronRight className="text-ll-violet-ink" size={16} />}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div>
+          <h4 className="text-[11.5px] font-medium text-ll-ink3 uppercase tracking-wide mb-2.5 flex items-center gap-1.5">
+            <FiCalendar size={13} />
+            {t("teacherPanel.actions")}
+          </h4>
+
+          {selectedStudent ? (
+            <div key={selectedStudent.id} className="ll-fade-up rounded-lg border border-ll-line divide-y divide-ll-line overflow-hidden">
+              <div className="flex items-center gap-3 p-3 bg-ll-violet-tint">
+                {selectedStudent.avatarUrl ? (
+                  <img src={selectedStudent.avatarUrl} alt="" className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
+                ) : (
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center font-semibold text-[12px] flex-shrink-0 ${tintFor(selectedStudent.name)}`}>
+                    {getInitials(selectedStudent.name, selectedStudent.lastName)}
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13.5px] font-medium text-ll-ink truncate">{selectedStudent.name} {selectedStudent.lastName}</p>
+                  <p className="text-[12px] text-ll-ink3">
+                    {t("teacherPanel.totalEventsLabel")}: <span className="font-mono tabular text-ll-ink2">{events.filter(e => e.studentId === selectedStudent.id).length}</span>
                   </p>
                 </div>
               </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center h-64 text-center p-6 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-200 dark:border-[#9E2FD0]/20">
-                <FiUserPlus size={40} className="text-gray-400 mb-3" />
-                <p className="text-gray-500 dark:text-gray-400">
-                  {t("teacherPanel.selectStudent")}
-                </p>
-              </div>
-            )}
-          </div>
+
+              <button
+                onClick={() => setIsAddModalOpen(true)}
+                className="w-full flex items-center gap-3 p-3 text-left transition-colors hover:bg-ll-subtle"
+              >
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 bg-ll-teal-tint text-ll-teal-ink">
+                  <FiCalendar size={17} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13.5px] font-medium text-ll-ink">{t("teacherPanel.addClass")}</p>
+                  <p className="text-[12px] text-ll-ink3">{t("teacherPanel.addClassDesc")}</p>
+                </div>
+                <FiChevronRight className="text-ll-ink4 flex-shrink-0" size={16} />
+              </button>
+
+              <button
+                onClick={() => setIsRemoveModalOpen(true)}
+                className="w-full flex items-center gap-3 p-3 text-left transition-colors hover:bg-ll-subtle"
+              >
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 bg-ll-gold-tint text-ll-gold-ink">
+                  <FiUserMinus size={17} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13.5px] font-medium text-ll-ink">{t("teacherPanel.removeClass")}</p>
+                  <p className="text-[12px] text-ll-ink3">{t("teacherPanel.removeClassDesc")}</p>
+                </div>
+                <FiChevronRight className="text-ll-ink4 flex-shrink-0" size={16} />
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center min-h-[11.5rem] text-center p-6 rounded-lg border border-dashed border-ll-line2 bg-ll-subtle">
+              <FiUserPlus size={28} className="hw-hide text-ll-ink4 mb-2.5" />
+              <svg className="hw-only ll-bob w-[30px] h-[34px] mb-2.5" viewBox="0 0 40 46" aria-hidden="true"><path d="M20 2C10.5 2 4 9.5 4 19.5V42l4-3 4 3 4-3 4 3 4-3 4 3 4-3 4 3V19.5C36 9.5 29.5 2 20 2z" fill="rgba(246,242,255,.94)" /><ellipse cx="14.5" cy="19" rx="2.6" ry="3.6" fill="#140E1C" /><ellipse cx="25.5" cy="19" rx="2.6" ry="3.6" fill="#140E1C" /><ellipse cx="20" cy="28" rx="2.4" ry="3" fill="#140E1C" /></svg>
+              <p className="text-[13px] text-ll-ink3">
+                {t("teacherPanel.selectStudent")}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 

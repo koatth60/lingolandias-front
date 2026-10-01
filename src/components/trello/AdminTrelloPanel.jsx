@@ -16,7 +16,7 @@ const BoardPreviewModal = ({ board, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-white dark:bg-[#1a1a2e] rounded-2xl shadow-2xl w-full max-w-3xl border border-gray-200 dark:border-[#9E2FD0]/30 overflow-hidden">
+      <div className="bg-white dark:bg-[#1a1a2e] rounded-2xl shadow-2xl w-full max-w-3xl border border-gray-200 dark:border-ll-violet/30 overflow-hidden">
         <div
           className="px-6 py-4 flex items-center justify-between"
           style={{ ...getBgStyle(board.background), fontFamily: board.fontFamily }}
@@ -34,7 +34,7 @@ const BoardPreviewModal = ({ board, onClose }) => {
         <div className="p-6">
           {loading ? (
             <div className="flex justify-center py-8">
-              <div className="h-8 w-8 rounded-full border-4 border-[#9E2FD0] border-t-transparent animate-spin" />
+              <div className="h-8 w-8 rounded-full border-4 border-ll-violet border-t-transparent animate-spin" />
             </div>
           ) : lists.length === 0 ? (
             <p className="text-center text-gray-400 dark:text-gray-500 py-8">No lists in this board</p>
@@ -75,7 +75,7 @@ const BoardPreviewModal = ({ board, onClose }) => {
 
 const ROLE_BADGE = {
   admin: { label: 'Admin', className: 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400' },
-  teacher: { label: 'Teacher', className: 'bg-[#9E2FD0]/10 text-[#9E2FD0] dark:bg-[#9E2FD0]/15 dark:text-purple-300' },
+  teacher: { label: 'Teacher', className: 'bg-ll-violet/10 text-ll-violet dark:bg-ll-violet/15 dark:text-ll-violet-ink' },
 };
 
 const AdminTrelloPanel = () => {
@@ -145,12 +145,12 @@ const AdminTrelloPanel = () => {
           placeholder="Search boards or teachers..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#9E2FD0] w-64"
+          className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-ll-violet w-64"
         />
         <select
           value={filterTeacher}
           onChange={(e) => setFilterTeacher(e.target.value)}
-          className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#9E2FD0]"
+          className="px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-ll-violet"
         >
           <option value="">All teachers</option>
           {Object.keys(grouped).map((userId) => (
@@ -170,7 +170,7 @@ const AdminTrelloPanel = () => {
       {/* Boards grid */}
       {loading ? (
         <div className="flex justify-center py-20">
-          <div className="h-10 w-10 rounded-full border-4 border-[#9E2FD0] border-t-transparent animate-spin" />
+          <div className="h-10 w-10 rounded-full border-4 border-ll-violet border-t-transparent animate-spin" />
         </div>
       ) : filteredBoards.length === 0 ? (
         <div className="text-center py-20">
@@ -194,7 +194,7 @@ const AdminTrelloPanel = () => {
               return (
                 <div key={userId}>
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#9E2FD0] to-[#F6B82E] flex items-center justify-center text-white text-sm font-bold">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-ll-violet to-[#E8A23A] flex items-center justify-center text-white text-sm font-bold">
                       {getTeacherName(userId).charAt(0)}
                     </div>
                     <div>

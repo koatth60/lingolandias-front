@@ -7,10 +7,10 @@ import { fetchInvitados, createInvitado, deleteInvitado } from "../../data/invit
 import { removeStudent } from "../../redux/userSlice";
 
 const onFocus = (e) => {
-  e.target.style.borderColor = "rgba(158,47,208,0.7)";
+  e.target.style.borderColor = "rgb(var(--ll-violet) / 0.7)";
   e.target.style.background = document.documentElement.classList.contains("dark")
-    ? "rgba(158,47,208,0.10)"
-    : "rgba(158,47,208,0.06)";
+    ? "rgb(var(--ll-violet) / 0.10)"
+    : "rgb(var(--ll-violet) / 0.06)";
 };
 const onBlur = (e) => {
   e.target.style.borderColor = "";
@@ -55,12 +55,12 @@ const CreateInvitadoModal = ({ show, handleClose, onCreated }) => {
       <div className="relative w-full max-w-md rounded-3xl overflow-y-auto max-h-[92vh]" style={{ boxShadow: "0 32px 64px rgba(0,0,0,0.25)" }}>
         <div className="absolute inset-0 dark:hidden rounded-3xl" style={{ background: "rgba(255,255,255,0.98)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "1px solid rgba(0,0,0,0.08)" }} />
         <div className="absolute inset-0 hidden dark:block rounded-3xl" style={{ background: "rgba(13,10,30,0.98)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.08)" }} />
-        <div className="absolute top-0 left-0 w-full h-[2px] z-10 rounded-t-3xl" style={{ background: "linear-gradient(90deg, #26D9A1, #9E2FD0, #F6B82E)" }} />
+        <div className="absolute top-0 left-0 w-full h-[2px] z-10 rounded-t-3xl" style={{ background: "linear-gradient(90deg, #1FA48C, rgb(var(--ll-violet)), #E8A23A)" }} />
 
         <div className="relative z-10 p-6 sm:p-8">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(38,217,161,0.12)", border: "1px solid rgba(38,217,161,0.28)" }}>
-              <FiUserPlus size={17} style={{ color: "#26D9A1" }} />
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(31,164,140,0.12)", border: "1px solid rgba(31,164,140,0.28)" }}>
+              <FiUserPlus size={17} style={{ color: "#1FA48C" }} />
             </div>
             <div>
               <h2 className="text-lg font-extrabold text-gray-800 dark:text-white leading-tight">{t("invitadosPanel.createTitle")}</h2>
@@ -71,7 +71,7 @@ const CreateInvitadoModal = ({ show, handleClose, onCreated }) => {
             </button>
           </div>
 
-          <div className="h-px mb-6 opacity-20" style={{ background: "linear-gradient(90deg, transparent, #9E2FD0, #F6B82E, transparent)" }} />
+          <div className="h-px mb-6 opacity-20" style={{ background: "linear-gradient(90deg, transparent, rgb(var(--ll-violet)), #E8A23A, transparent)" }} />
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
@@ -94,7 +94,7 @@ const CreateInvitadoModal = ({ show, handleClose, onCreated }) => {
               <button type="button" onClick={handleClose} className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-white/6 border border-gray-200 dark:border-white/10">
                 {t("invitadosPanel.cancel")}
               </button>
-              <button type="submit" disabled={submitting} className="flex-1 py-3 rounded-xl text-white text-sm font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2" style={{ background: "linear-gradient(135deg, #26D9A1, #1fa07a)", boxShadow: "0 4px 20px rgba(38,217,161,0.35)" }}>
+              <button type="submit" disabled={submitting} className="flex-1 py-3 rounded-xl text-white text-sm font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2" style={{ background: "linear-gradient(135deg, #1FA48C, #17886F)", boxShadow: "0 4px 20px rgba(31,164,140,0.35)" }}>
                 <FiUserPlus size={14} />
                 {t("invitadosPanel.submit")}
               </button>
@@ -162,7 +162,7 @@ const InvitadosPanel = () => {
         <button
           onClick={() => setShowCreate(true)}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
-          style={{ background: "linear-gradient(135deg, #26D9A1, #1fa07a)", boxShadow: "0 4px 20px rgba(38,217,161,0.35)" }}
+          style={{ background: "linear-gradient(135deg, #1FA48C, #17886F)", boxShadow: "0 4px 20px rgba(31,164,140,0.35)" }}
         >
           <FiUserPlus size={15} />
           {t("invitadosPanel.create")}
@@ -185,7 +185,7 @@ const InvitadosPanel = () => {
             >
               <div
                 className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold text-white"
-                style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}
+                style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}
               >
                 {invitado.name?.[0]?.toUpperCase()}
               </div>

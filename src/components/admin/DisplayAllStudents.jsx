@@ -5,9 +5,9 @@ import { useTranslation } from "react-i18next";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const LANG_CONFIG = {
-  english: { labelKey: "admin.englishStudents", code: "EN", color: "#9E2FD0", glow: "rgba(158,47,208,0.10)", border: "rgba(158,47,208,0.22)" },
-  spanish: { labelKey: "admin.spanishStudents", code: "ES", color: "#26D9A1", glow: "rgba(38,217,161,0.10)", border: "rgba(38,217,161,0.22)" },
-  polish:  { labelKey: "admin.polishStudents",  code: "PL", color: "#F6B82E", glow: "rgba(246,184,46,0.10)",  border: "rgba(246,184,46,0.22)"  },
+  english: { labelKey: "admin.englishStudents", code: "EN", color: "rgb(var(--ll-violet))", glow: "rgb(var(--ll-violet) / 0.10)", border: "rgb(var(--ll-violet) / 0.22)" },
+  spanish: { labelKey: "admin.spanishStudents", code: "ES", color: "#1FA48C", glow: "rgba(31,164,140,0.10)", border: "rgba(31,164,140,0.22)" },
+  polish:  { labelKey: "admin.polishStudents",  code: "PL", color: "#E8A23A", glow: "rgba(232,162,58,0.10)",  border: "rgba(232,162,58,0.22)"  },
 };
 
 const StudentRow = ({ student }) => (
@@ -21,7 +21,7 @@ const StudentRow = ({ student }) => (
     ) : (
       <div
         className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-        style={{ background: "linear-gradient(135deg, #9E2FD0, #7b22a8)" }}
+        style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}
       >
         {student.name.charAt(0)}{student.lastName.charAt(0)}
       </div>
@@ -150,7 +150,7 @@ const DisplayAllStudents = ({ refreshKey }) => {
       {/* Header + search */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-5">
         <div className="flex items-center gap-2">
-          <FiBookOpen size={17} style={{ color: "#9E2FD0" }} />
+          <FiBookOpen size={17} style={{ color: "rgb(var(--ll-violet))" }} />
           <h2 className="text-lg font-extrabold text-gray-800 dark:text-white">{t("admin.allStudentsByLang")}</h2>
         </div>
         {/* Search bar */}
@@ -164,7 +164,7 @@ const DisplayAllStudents = ({ refreshKey }) => {
             className="w-full pl-8 pr-8 py-2 rounded-xl text-sm outline-none border transition-colors duration-200
                        bg-white dark:bg-white/5 border-gray-200 dark:border-white/10
                        text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500
-                       focus:border-purple-400 dark:focus:border-purple-500/50"
+                       focus:border-ll-violet dark:focus:border-ll-violet/50"
           />
           {search && (
             <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-white">

@@ -36,11 +36,11 @@
   padding: 6px 10px;
 }
 .rbc-admin-cal .rbc-date-cell.rbc-now > a {
-  color: #9E2FD0;
+  color: #6A2BD8;
   font-weight: 800;
 }
 .rbc-admin-cal .rbc-show-more {
-  color: #9E2FD0;
+  color: #6A2BD8;
   font-weight: 700;
   font-size: 11px;
 }
@@ -53,7 +53,7 @@
   font-size: 11px;
 }
 .rbc-admin-cal .rbc-current-time-indicator {
-  background: #9E2FD0;
+  background: #6A2BD8;
 }
 .rbc-admin-cal .rbc-time-content,
 .rbc-admin-cal .rbc-time-header-content {
@@ -83,7 +83,7 @@
   border-color: rgba(255,255,255,0.07);
 }
 .dark .rbc-admin-cal .rbc-today {
-  background: rgba(158,47,208,0.10);
+  background: rgba(106,43,216,0.10);
 }
 .dark .rbc-admin-cal .rbc-off-range-bg {
   background: rgba(0,0,0,0.2);
@@ -92,10 +92,10 @@
   color: #d1d5db;
 }
 .dark .rbc-admin-cal .rbc-date-cell.rbc-now > a {
-  color: #c084fc;
+  color: #B89EFF;
 }
 .dark .rbc-admin-cal .rbc-show-more {
-  color: #c084fc;
+  color: #B89EFF;
 }
 .dark .rbc-admin-cal .rbc-time-slot {
   color: #6b7280;
@@ -104,7 +104,7 @@
   color: #6b7280;
 }
 .dark .rbc-admin-cal .rbc-current-time-indicator {
-  background: #9E2FD0;
+  background: #6A2BD8;
 }
 .dark .rbc-admin-cal .rbc-time-content,
 .dark .rbc-admin-cal .rbc-time-header-content {

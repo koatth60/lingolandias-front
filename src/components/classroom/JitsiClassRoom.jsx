@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { JitsiMeeting } from "@jitsi/react-sdk";
+import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import CallChatWindow from "../messages/CallChatWindow";
 import { useSelector } from "react-redux";
@@ -62,6 +63,15 @@ const MEDIA_DENIED_PATTERNS = [
 // local tracks" line, with ["desktop"] as the device list. That is not a
 // camera/mic problem, so it must not show the "blocked" overlay.
 const SCREENSHARE_LOG_PATTERNS = ['"desktop"', "screensharing"];
+// Jitsi can lose track of which local track is in the call. The logs show it
+// mostly after stopping a screen share and starting another. Every later
+// replaceTrack then fails, so the new share never reaches the other side even
+// though Chrome says it is sharing. Rejoining the call clears it.
+const SHARE_BROKEN_PATTERNS = [
+  "Replace track failed",
+  "does not belong to this conference",
+  "Renegotiate failed",
+];
 
 // The 3 fixed "Teachers Meeting" rooms (see constants/index.js + schedule.jsx's
 // handleJoinMeeting) can have several admins and teachers in the same call — in
@@ -193,6 +203,20 @@ const JitsiClassRoom = () => {
   const [loadStuck, setLoadStuck] = useState(false);
   const [mediaBlocked, setMediaBlocked] = useState(false);
   const [joinStuck, setJoinStuck] = useState(false);
+  const [shareStuck, setShareStuck] = useState(false);
+  // Bumped to remount JitsiMeeting, i.e. leave and rejoin the same room.
+  // A page reload can't be used: roomId lives in router state and a reload loses it.
+  const [jitsiKey, setJitsiKey] = useState(0);
+  const { t } = useTranslation();
+
+  const reconnectJitsi = () => {
+    logEvent("rejoin_after_share_stuck");
+    setShareStuck(false);
+    try { apiRef.current?.dispose(); } catch { /* iframe already gone */ }
+    apiRef.current = null;
+    setLoading(true);
+    setJitsiKey((k) => k + 1);
+  };
   // Probe camera/mic access ourselves before Jitsi ever tries — if we join
   // with startWithAudioMuted/VideoMuted: false and the browser denies both
   // (incognito, device already in use elsewhere, etc.), Jitsi's own
@@ -675,6 +699,7 @@ const JitsiClassRoom = () => {
       >
         {mediaPreflight && (
         <JitsiMeeting
+          key={jitsiKey}
           domain={domain}
           roomName={roomId}
           configOverwrite={options.configOverwrite}
@@ -832,6 +857,7 @@ const JitsiClassRoom = () => {
                 MEDIA_DENIED_PATTERNS.some((p) => text.includes(p)) &&
                 !SCREENSHARE_LOG_PATTERNS.some((p) => text.includes(p))
               ) setMediaBlocked(true);
+              if (SHARE_BROKEN_PATTERNS.some((p) => text.includes(p))) setShareStuck(true);
               if (BENIGN_LOG_PATTERNS.some((p) => text.includes(p))) return;
               logEvent("jitsi_log", { logLevel, args }, logLevel);
             });
@@ -845,8 +871,9 @@ const JitsiClassRoom = () => {
               }
             });
 
-            // Track class session — teachers only
-            if (user.role === "teacher") {
+            // Track class session — teachers only. Once per page: a rejoin after
+            // a stuck screen share (reconnectJitsi) is still the same class.
+            if (user.role === "teacher" && !sessionStartRef.current) {
               sessionStartRef.current = Date.now();
               fetch(`${BACKEND_URL}/class-sessions/start`, {
                 method: "POST",
@@ -887,6 +914,26 @@ const JitsiClassRoom = () => {
             }
           }}
         />
+        )}
+
+        {shareStuck && !loading && (
+          <div
+            role="alert"
+            className="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex flex-wrap items-center justify-center gap-3 px-4 py-3 rounded-2xl max-w-[calc(100%-32px)]"
+            style={{ background: "rgba(0,0,0,0.85)", backdropFilter: "blur(6px)" }}
+          >
+            <div className="text-white text-sm">
+              <p className="font-semibold">{t("classroom.shareStuck.title")}</p>
+              <p className="text-white/80">{t("classroom.shareStuck.body")}</p>
+            </div>
+            <button
+              onClick={reconnectJitsi}
+              className="px-4 py-2 rounded-full text-white text-sm font-semibold shrink-0"
+              style={{ background: "linear-gradient(135deg, rgb(var(--ll-violet)), rgb(var(--ll-violet-hover)))" }}
+            >
+              {t("classroom.shareStuck.button")}
+            </button>
+          </div>
         )}
 
         {/* Gradient bar — glows at the bottom when chat is open */}

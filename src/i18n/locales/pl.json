@@ -824,5 +824,12 @@
     "classesTaught": "Poprowadzone zajęcia",
     "classesTaken": "Odbyte zajęcia",
     "memberSince": "Członek od"
+  },
+  "classroom": {
+    "shareStuck": {
+      "title": "Udostępnianie ekranu się zawiesiło",
+      "body": "Połącz ponownie, aby to naprawić. Za kilka sekund wrócisz do tych samych zajęć.",
+      "button": "Połącz ponownie"
+    }
   }
 }

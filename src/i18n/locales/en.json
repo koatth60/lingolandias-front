@@ -824,5 +824,12 @@
     "classesTaught": "Classes taught",
     "classesTaken": "Classes taken",
     "memberSince": "Member since"
+  },
+  "classroom": {
+    "shareStuck": {
+      "title": "Screen sharing got stuck",
+      "body": "Reconnect to fix it. You will be back in the same class in a few seconds.",
+      "button": "Reconnect"
+    }
   }
 }

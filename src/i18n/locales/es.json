@@ -824,5 +824,12 @@
     "classesTaught": "Clases dictadas",
     "classesTaken": "Clases tomadas",
     "memberSince": "Miembro desde"
+  },
+  "classroom": {
+    "shareStuck": {
+      "title": "Compartir pantalla se trabó",
+      "body": "Reconecta para arreglarlo. Vuelves a la misma clase en unos segundos.",
+      "button": "Reconectar"
+    }
   }
 }

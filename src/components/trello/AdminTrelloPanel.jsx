@@ -19,7 +19,7 @@ const BoardPreviewModal = ({ board, onClose }) => {
       <div className="bg-ll-panel rounded-2xl shadow-2xl w-full max-w-3xl border border-ll-line overflow-hidden">
         <div
           className="px-6 py-4 flex items-center justify-between"
-          style={{ ...getBgStyle(board.background), fontFamily: board.fontFamily }}
+          data-keep-gradient="1" style={{ ...getBgStyle(board.background), fontFamily: board.fontFamily }}
         >
           <div>
             <h3 className="text-xl font-bold text-white drop-shadow">{board.name}</h3>
@@ -209,7 +209,7 @@ const AdminTrelloPanel = () => {
                       <div
                         key={board.id}
                         className="relative group rounded-xl overflow-hidden cursor-pointer border border-ll-line hover:shadow-ll-2 transition-shadow duration-200 h-28"
-                        style={{ ...getBgStyle(board.background), fontFamily: board.fontFamily }}
+                        data-keep-gradient="1" style={{ ...getBgStyle(board.background), fontFamily: board.fontFamily }}
                         onClick={() => setSelectedBoard(board)}
                       >
                         <div className="absolute inset-0 bg-black/10 group-hover:bg-black/25 transition" />

@@ -480,8 +480,10 @@ const JitsiClassRoom = () => {
       username: "sincelejana",
       credential: "asdkASDIORNVM345Fasdegf23",
     },
+    // The coturn certificate is issued for turns.lingolandias.com only, so TLS to
+    // the jitsi hostname fails the name check.
     {
-      urls: `turns:${JITSI_DOMAIN}:5349`,
+      urls: "turns:turns.lingolandias.com:5349",
       username: "sincelejana",
       credential: "asdkASDIORNVM345Fasdegf23",
     },
@@ -838,6 +840,28 @@ const JitsiClassRoom = () => {
               }
             });
             externalApi.addEventListener("participantJoined", (e) => handOffModeratorIfNeeded(e.id));
+
+            // Whether media goes direct (P2P) or through the bridge in Manchester (JVB).
+            // Without this, a "bad call" report can't be tied to either path.
+            externalApi.addEventListener("p2pStatusChanged", ({ isP2p }) => {
+              let participants;
+              try { participants = externalApi.getParticipantsInfo().length; } catch { /* not settled yet */ }
+              logEvent("p2p_status_changed", { isP2p, participants });
+            });
+
+            // CPU pressure on this device (Chrome only). Logged only when the state changes to or
+            // from serious/critical, so a slow laptop shows up in meeting_log instead of
+            // being blamed on the network.
+            let lastPressure = "nominal";
+            externalApi.addEventListener("computePressureChanged", ({ records }) => {
+              const state = records?.[records.length - 1]?.state;
+              if (!state || state === lastPressure) return;
+              const high = (s) => s === "serious" || s === "critical";
+              if (high(state) || high(lastPressure)) {
+                logEvent("cpu_pressure_changed", { from: lastPressure, to: state }, high(state) ? "warn" : "info");
+              }
+              lastPressure = state;
+            });
 
             // Camera/mic failures are the usual cause of a black tile — capture the reason
             externalApi.addEventListener("cameraError", (err) => {

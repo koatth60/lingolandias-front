@@ -253,11 +253,11 @@ const UserHomePage = () => {
         <div>
           <SectionHeader title={t("home.wordOfDayTitle")} right={<span className="ll-pill" style={{ background: 'rgb(var(--ll-gold-tint))', color: 'rgb(var(--ll-gold-ink))' }}>{tip.lang}</span>} />
           <div className="ll-card ll-wotd-surface relative p-6 sm:p-7 flex flex-col min-h-[13.5rem]">
-            <div className="hw-only absolute right-5 top-[18px] w-[92px] h-[86px] pointer-events-none" aria-hidden="true">
+            <div className="hw-only absolute right-4 sm:right-5 top-[18px] w-[64px] h-[60px] sm:w-[92px] sm:h-[86px] pointer-events-none" aria-hidden="true">
               <div className="absolute -inset-5 rounded-full" style={{ background: 'radial-gradient(circle,rgba(240,138,44,.35),transparent 65%)' }} />
               <svg className="relative w-full h-full" viewBox="0 0 96 90"><path d="M48 20c-1-7 2-12 7-15" stroke="#3CCB8F" strokeWidth="4" fill="none" strokeLinecap="round" /><path d="M55 8c6-3 11-1 14 3-6 1-10 0-14-3z" fill="#3CCB8F" /><ellipse cx="30" cy="53" rx="21" ry="30" fill="#C85E12" /><ellipse cx="66" cy="53" rx="21" ry="30" fill="#C85E12" /><ellipse cx="48" cy="53" rx="22" ry="33" fill="#F08A2C" /><path d="M40 24c-3 8-3 50 0 60M56 24c3 8 3 50 0 60" stroke="#C85E12" strokeWidth="2" fill="none" /><g className="ll-flicker"><path d="M28 47l8-12 8 12zM52 47l8-12 8 12z" fill="#FFE08A" /><path d="M44 56l4-6 4 6z" fill="#FFE08A" /><path d="M24 64c8 9 40 9 48 0l-6 2-4-4-5 4-5-4-5 4-5-4-4 4z" fill="#FFE08A" /></g></svg>
             </div>
-            <p className={`ll-brackets inline-block self-start max-w-[calc(100%-6rem)] break-words pr-4 pb-2 font-semibold text-ll-gold-ink leading-[1.05] tracking-[-0.035em] ${halloween ? 'hw-gothic text-[44px] sm:text-[54px]' : 'text-[34px] sm:text-[40px]'}`}>{tip.word}</p>
+            <p className={`ll-brackets inline-block self-start max-w-[calc(100%-4.5rem)] sm:max-w-[calc(100%-6rem)] break-words pr-4 pb-2 font-semibold text-ll-gold-ink leading-[1.05] tracking-[-0.035em] ${halloween ? 'hw-gothic text-[34px] sm:text-[54px]' : 'text-[26px] sm:text-[40px]'}`}>{tip.word}</p>
             <p className="text-[13.5px] text-ll-ink2 mt-0.5">{tip.meaning}</p>
             <p className="text-[13px] text-ll-ink2 italic leading-relaxed mt-auto pt-4 border-t border-ll-line">
               "{tip.sentence}"

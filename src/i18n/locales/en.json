@@ -332,6 +332,7 @@
     "failed": "Failed to change password."
   },
   "admin": {
+    "searchStudents": "Search students…",
     "hello": "Hello {{name}}, welcome to the Admin Interface",
     "subtitle": "Manage users, assign students to teachers, and oversee all platform activity.",
     "createUser": "Create User",

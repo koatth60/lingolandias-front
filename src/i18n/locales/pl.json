@@ -332,6 +332,7 @@
     "failed": "Nie udało się zmienić hasła."
   },
   "admin": {
+    "searchStudents": "Szukaj uczniów…",
     "hello": "Cześć {{name}}, witaj w Interfejsie Administratora",
     "subtitle": "Zarządzaj użytkownikami, przypisuj studentów do nauczycieli i nadzoruj całą aktywność platformy.",
     "createUser": "Utwórz Użytkownika",

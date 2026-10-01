@@ -283,43 +283,28 @@ const TrelloDashboard = () => {
   return (
     <div className="w-full max-w-7xl mx-auto space-y-8">
 
-      {/* ── Hero banner ─────────────────────────────────────────── */}
-      <div className="relative rounded-2xl overflow-hidden">
-        <div
-          className="h-44 flex flex-col justify-end px-8 pb-6"
-          style={{ background: 'linear-gradient(135deg, #4f0d8a 0%, rgb(var(--ll-violet)) 50%, #c96ff0 100%)' }}
-        >
-          {/* subtle texture */}
-          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
-          <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-1">
-              <svg className="w-7 h-7 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
-              </svg>
-              <h1 className="text-3xl font-extrabold text-white tracking-tight">Trello 2.0</h1>
-            </div>
-            <p className="text-white/70 text-sm font-medium">
-              {user?.name ? `Welcome back, ${user.name.split(' ')[0]} ·` : ''} {boards.length} board{boards.length !== 1 ? 's' : ''} in your workspace
-            </p>
-          </div>
-          <div className="absolute top-5 right-5 flex items-center gap-2">
-            <button
-              onClick={() => setShowImport(true)}
-              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold px-4 py-2 rounded-xl border border-white/30 transition text-sm"
-              title="Copy your boards from a real Trello account"
-            >
-              Migrate from Trello
-            </button>
-            <button
-              onClick={() => setShowCreate(true)}
-              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white font-semibold px-4 py-2 rounded-xl border border-white/30 transition text-sm"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-              </svg>
-              New board
-            </button>
-          </div>
+      {/* ── Header ──────────────────────────────────────────────── */}
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-[28px] sm:text-[32px] font-semibold tracking-[-0.03em] text-ll-ink leading-[1.05]">Trello 2.0</h1>
+          <p className="text-[14px] text-ll-ink2 mt-2">
+            {user?.name ? `Welcome back, ${user.name.split(' ')[0]} · ` : ''}{boards.length} board{boards.length !== 1 ? 's' : ''} in your workspace
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowImport(true)}
+            className="ll-btn ll-btn-secondary"
+            title="Copy your boards from a real Trello account"
+          >
+            Migrate from Trello
+          </button>
+          <button onClick={() => setShowCreate(true)} className="ll-btn ll-btn-primary">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+            </svg>
+            New board
+          </button>
         </div>
       </div>
 

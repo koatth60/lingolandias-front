@@ -332,6 +332,7 @@
     "failed": "Error al cambiar la contraseña."
   },
   "admin": {
+    "searchStudents": "Buscar estudiantes…",
     "hello": "Hola {{name}}, bienvenido a la Interfaz de Administración",
     "subtitle": "Gestiona usuarios, asigna estudiantes a profesores y supervisa toda la actividad de la plataforma.",
     "createUser": "Crear Usuario",

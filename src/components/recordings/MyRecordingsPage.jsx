@@ -108,9 +108,9 @@ const MyRecordingsPage = () => {
           <div className="h-10 w-10 rounded-full border-4 border-ll-violet border-t-transparent animate-spin" />
         </div>
       ) : (
-        <div className="flex gap-6" style={{ minHeight: "50vh" }}>
+        <div className="flex flex-col md:flex-row gap-4 md:gap-6" style={{ minHeight: "50vh" }}>
           {isTeacher && (
-            <div className="w-64 flex-shrink-0 rounded-2xl overflow-hidden" style={{ border: "1px solid rgb(var(--ll-violet) / 0.15)" }}>
+            <div className="w-full md:w-64 md:flex-shrink-0 rounded-2xl overflow-hidden" style={{ border: "1px solid rgb(var(--ll-violet) / 0.15)" }}>
               <div className="p-3 space-y-1 max-h-[70vh] overflow-y-auto">
                 {students.length === 0 ? (
                   <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-8">
@@ -148,7 +148,7 @@ const MyRecordingsPage = () => {
             </div>
           )}
 
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             {currentRecordings.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-gray-400 dark:text-gray-500">
                 <div className="text-5xl mb-4">🎥</div>

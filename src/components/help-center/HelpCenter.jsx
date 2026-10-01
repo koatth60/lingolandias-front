@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import {
-  FiChevronDown, FiMail, FiHelpCircle, FiMessageCircle,
+  FiChevronDown, FiMail, FiMessageCircle,
   FiSend, FiCheckCircle, FiAlertCircle,
 } from "react-icons/fi";
 import Dashboard from "../../sections/dashboard";
@@ -180,8 +180,7 @@ const HelpCenter = () => {
       {/* Backgrounds */}
       <div className="absolute inset-0 pointer-events-none dark:hidden"
         style={{ background: "linear-gradient(135deg, #f8f8fa 0%, #f2f2f6 100%)" }} />
-      <div className="absolute inset-0 pointer-events-none hidden dark:block"
-        style={{ background: "linear-gradient(135deg, #0d0a1e 0%, #1a1a2e 55%, #110e28 100%)" }} />
+      
       <div className="absolute inset-0 pointer-events-none overflow-hidden hidden dark:block">
         <div className="absolute rounded-full blur-3xl opacity-10"
           style={{ background: "radial-gradient(circle, rgb(var(--ll-violet) / 0.6), transparent 70%)", width: "500px", height: "500px", top: "-5%", right: "0%" }} />
@@ -191,21 +190,14 @@ const HelpCenter = () => {
 
       <Dashboard />
 
-      <div className="w-full min-w-0 relative z-10 flex flex-col min-h-screen overflow-x-hidden">
+      <div className="ll-shell w-full min-w-0 relative z-10 flex flex-col">
         <Navbar header={t("nav.helpCenter")} />
 
         <div className="px-3 sm:px-6 md:px-8 py-5 sm:py-8 flex flex-col gap-6 sm:gap-10 max-w-4xl mx-auto w-full">
 
           {/* Hero */}
           <div className="text-center py-2 sm:py-6">
-            <div
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold mb-4"
-              style={{ background: "rgb(var(--ll-violet) / 0.10)", border: "1px solid rgb(var(--ll-violet) / 0.25)", color: "rgb(var(--ll-violet))" }}
-            >
-              <FiHelpCircle size={11} />
-              {t("helpCenter.support")}
-            </div>
-            <h1 className="hw-gothic text-3xl sm:text-5xl font-extrabold login-gradient-text mb-3">
+            <h1 className="hw-gothic text-3xl sm:text-5xl font-semibold tracking-[-0.03em] text-ll-ink mb-3">
               {t("helpCenter.title")}
             </h1>
             <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 max-w-md mx-auto">

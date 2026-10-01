@@ -14,12 +14,9 @@ const Recordings = () => {
           className="absolute inset-0 pointer-events-none dark:hidden"
           style={{ background: "linear-gradient(135deg, #f8f8fa 0%, #f2f2f6 100%)" }}
         />
-        <div
-          className="absolute inset-0 pointer-events-none hidden dark:block"
-          style={{ background: "linear-gradient(135deg, #0d0a1e 0%, #1a1a2e 55%, #110e28 100%)" }}
-        />
+        
         <Dashboard />
-        <div className="flex-1 relative z-10 flex flex-col min-h-screen overflow-hidden">
+        <div className="ll-shell flex-1 relative z-10 flex flex-col min-w-0">
           <Navbar header={t("recordings.title")} />
           <div className="flex-1 p-6 overflow-auto">
             <MyRecordingsPage />

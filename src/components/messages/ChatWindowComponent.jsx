@@ -1304,7 +1304,7 @@ const ChatWindowComponent = ({
                           style={isImageOnly
                             ? { boxShadow: "0 4px 16px rgba(0,0,0,0.25)" }
                             : isFileOnly ? {}
-                            : { background: "linear-gradient(135deg, rgb(var(--ll-violet)) 0%, rgb(var(--ll-violet-hover)) 100%)", boxShadow: "0 3px 10px rgb(var(--ll-violet) / 0.35)" }}>
+                            : { background: "rgb(var(--ll-violet))", color: "rgb(var(--ll-on-violet))" }}>
                           {/* Reply quote in bubble */}
                           {msg.replyTo && (
                             <div className="mb-2 pl-2 border-l-2 border-white/50 rounded bg-white/10 text-xs" style={{ padding: "4px 6px" }}>
@@ -1371,9 +1371,9 @@ const ChatWindowComponent = ({
                           <div className={`rounded-2xl rounded-bl-sm ${
                               isImageOnly ? "overflow-hidden"
                               : isFileOnly ? ""
-                              : "px-4 py-2.5 text-sm leading-relaxed bg-gray-100 dark:bg-[#211d38] text-gray-800 dark:text-gray-100 border border-gray-100 dark:border-white/10"
+                              : "px-4 py-2.5 text-sm leading-relaxed text-ll-ink border border-ll-line"
                             }`}
-                            style={isImageOnly ? { boxShadow: "0 4px 16px rgba(0,0,0,0.16)" } : isFileOnly ? {} : { boxShadow: "0 2px 8px rgba(20,20,40,0.08)" }}>
+                            style={isImageOnly ? { boxShadow: "0 4px 16px rgba(0,0,0,0.16)" } : isFileOnly ? {} : { background: "rgb(var(--ll-bubble-in))" }}>
                             {/* Reply quote in received bubble */}
                             {msg.replyTo && (
                               <div className="mb-2 pl-2 border-l-2 border-ll-violet/60 rounded bg-ll-violet/5 dark:bg-white/5 text-xs" style={{ padding: "4px 6px" }}>

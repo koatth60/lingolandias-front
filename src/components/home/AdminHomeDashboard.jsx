@@ -133,8 +133,7 @@ const AdminHomeDashboard = () => {
           />
           <div className="relative z-10 px-4 sm:px-10 py-6 sm:py-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
             <div>
-              <p className="text-[10px] font-bold tracking-widest text-ll-violet uppercase mb-2">{t("adminHome.adminPanel")}</p>
-              <h1 className="hw-gothic text-3xl sm:text-4xl font-bold tracking-tight login-gradient-text mb-2">
+              <h1 className="hw-gothic text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-ll-ink mb-2">
                 {t("adminHome.adminDashboard")}
               </h1>
               <p className="text-sm text-gray-500 dark:text-gray-400">

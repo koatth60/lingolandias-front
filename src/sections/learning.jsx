@@ -80,8 +80,7 @@ const Learning = () => {
       {/* Page backgrounds */}
       <div className="absolute inset-0 pointer-events-none dark:hidden"
         style={{ background: "linear-gradient(135deg, #f8f8fa 0%, #f2f2f6 100%)" }} />
-      <div className="absolute inset-0 pointer-events-none hidden dark:block"
-        style={{ background: "linear-gradient(135deg, #0d0a1e 0%, #1a1a2e 55%, #110e28 100%)" }} />
+      
       {/* Ambient orbs (dark only) */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden hidden dark:block">
         <div className="absolute rounded-full blur-3xl opacity-10"
@@ -92,7 +91,7 @@ const Learning = () => {
 
       <Dashboard />
 
-      <div className="w-full min-w-0 relative z-10 flex flex-col min-h-screen overflow-x-hidden">
+      <div className="ll-shell w-full min-w-0 relative z-10 flex flex-col">
         <Navbar header={t("learning.title")} />
 
         <div className="px-3 sm:px-6 md:px-8 py-5 sm:py-8 flex flex-col gap-8 sm:gap-12">

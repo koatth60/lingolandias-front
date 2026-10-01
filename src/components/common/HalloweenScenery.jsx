@@ -22,7 +22,7 @@ const HalloweenScenery = () => (
       className="ll-fog absolute -left-[10%] -right-[10%] bottom-0 h-28"
       style={{ background: 'radial-gradient(50% 60% at 30% 100%,rgba(200,185,255,.22),transparent 70%),radial-gradient(45% 60% at 80% 100%,rgba(200,185,255,.16),transparent 70%)' }}
     />
-    <svg className="absolute left-0 right-0 bottom-0 w-full h-36" viewBox="0 0 660 96" preserveAspectRatio="xMidYMax slice">
+    <svg className="absolute left-0 right-0 bottom-0 w-full h-52" viewBox="0 0 660 96" preserveAspectRatio="xMidYMax slice">
       <path d="M0 74c110-20 220-8 330-12s220-18 330-6v40H0z" fill="#0A0612" />
       <path d="M16 62h120" stroke="#0A0612" strokeWidth="3" />
       <g fill="#0A0612">

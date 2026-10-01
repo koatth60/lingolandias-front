@@ -58,6 +58,10 @@ const MEDIA_DENIED_PATTERNS = [
   "Permission dismissed",
   "Failed to create local tracks",
 ];
+// A screen share that fails or is cancelled logs the same "Failed to create
+// local tracks" line, with ["desktop"] as the device list. That is not a
+// camera/mic problem, so it must not show the "blocked" overlay.
+const SCREENSHARE_LOG_PATTERNS = ['"desktop"', "screensharing"];
 
 // The 3 fixed "Teachers Meeting" rooms (see constants/index.js + schedule.jsx's
 // handleJoinMeeting) can have several admins and teachers in the same call — in
@@ -681,6 +685,18 @@ const JitsiClassRoom = () => {
             apiRef.current = externalApi;
             externalApi.executeCommand("displayName", displayNameForJitsi);
 
+            // Inside the Lingolandias desktop app (Electron), Jitsi shows its own
+            // screen picker and asks this page for the list of screens/windows.
+            // lingoDesktop comes from the desktop app's preload; in a normal
+            // browser it is absent and Chrome's own picker is used instead.
+            if (window.lingoDesktop?.getDesktopSources) {
+              externalApi.on("_requestDesktopSources", (request, callback) => {
+                window.lingoDesktop.getDesktopSources(request?.options)
+                  .then((sources) => callback({ sources }))
+                  .catch((err) => callback({ error: String(err?.message || err) }));
+              });
+            }
+
             // The iframe can load fine (api_ready) and then silently hang before actually
             // joining the conference — e.g. stuck on a permission prompt or ICE negotiation
             // with no JS error thrown, so nothing else would ever get logged for that session.
@@ -812,7 +828,10 @@ const JitsiClassRoom = () => {
             externalApi.addEventListener("log", ({ logLevel, args }) => {
               if (logLevel !== "error" && logLevel !== "warn") return;
               const text = JSON.stringify(args);
-              if (MEDIA_DENIED_PATTERNS.some((p) => text.includes(p))) setMediaBlocked(true);
+              if (
+                MEDIA_DENIED_PATTERNS.some((p) => text.includes(p)) &&
+                !SCREENSHARE_LOG_PATTERNS.some((p) => text.includes(p))
+              ) setMediaBlocked(true);
               if (BENIGN_LOG_PATTERNS.some((p) => text.includes(p))) return;
               logEvent("jitsi_log", { logLevel, args }, logLevel);
             });

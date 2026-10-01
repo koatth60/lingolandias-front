@@ -420,3 +420,6 @@ html.theme-hw .rbc-time-view { background: rgb(var(--ll-panel) / .5) !important;
 html.theme-hw .rbc-time-header { background: rgb(var(--ll-subtle) / .7) !important; }
 html.theme-hw .rbc-today { background: rgb(var(--ll-violet) / .08) !important; }
 html.theme-hw .ll-nav-name { font-size: 18px; line-height: 1; color: #FFE9C7; }
+
+/* Auth pages: the footer is the graveyard's ground, same colour as the silhouettes, and sits above them. */
+html.theme-hw .ll-login-footer { background: #0A0612; border-top-color: transparent; }

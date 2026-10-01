@@ -2,7 +2,7 @@ import { FiExternalLink, FiTrash2, FiVideo } from "react-icons/fi";
 import { formatDate, formatFilename, formatSize } from "../../utils/recordingFormat";
 
 const RecordingCard = ({ rec, onDelete, deleting, t }) => (
-  <div className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-ll-line bg-ll-panel transition-colors hover:bg-ll-subtle">
+  <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 px-4 py-3 rounded-xl border border-ll-line bg-ll-panel transition-colors hover:bg-ll-subtle">
     <div className="flex items-center gap-3 min-w-0">
       <div className="w-9 h-9 rounded-lg flex-shrink-0 flex items-center justify-center bg-ll-violet-tint text-ll-violet-ink">
         <FiVideo size={16} />
@@ -18,7 +18,7 @@ const RecordingCard = ({ rec, onDelete, deleting, t }) => (
       </div>
     </div>
 
-    <div className="flex items-center gap-2 flex-shrink-0">
+    <div className="flex items-center gap-2 sm:flex-shrink-0 w-full sm:w-auto">
       <a
         href={rec.url}
         target="_blank"
